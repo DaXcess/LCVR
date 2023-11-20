@@ -16,13 +16,13 @@ namespace LethalCompanyVR
         [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.SwitchCamera))]
         private static void OnCameraSwitched()
         {
-            Debug.LogWarning("SwitchCamera called !!!");
+            Logger.LogWarning("SwitchCamera called !!!");
 
             activeCamera = StartOfRound.Instance.activeCamera;
 
             if (activeCamera == null)
             {
-                Debug.LogError("Where is StartOfRound.activeCamera?!?!?");
+                Logger.LogError("Where is StartOfRound.activeCamera?!?!?");
                 return;
             }
 
@@ -58,23 +58,16 @@ namespace LethalCompanyVR
                 {
                     helmet.SetActive(false);
                 }
-
-                // TODO: Make this work somehow
-                Actions.XR_RightHand_Something.Enable();
-                Actions.XR_LeftHand_Something.Enable();
             }
-        }
-
-        private static void XR_RightHand_Something_performed(InputAction.CallbackContext obj)
-        {
-            Debug.LogWarning("RightHand performed!");
         }
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.SpawnPlayerAnimation))]
-        private static bool OnGameInitialize()
+        private static bool OnPlayerSpawnAnimation()
         {
-            Debug.Log("PlayerControllerB.SpawnPlayerAnimation called");
+            if (!Plugin.VR_ENABLED) return true;
+
+            Logger.Log("PlayerControllerB.SpawnPlayerAnimation called");
 
             return false;
         }

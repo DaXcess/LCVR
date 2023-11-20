@@ -16,11 +16,14 @@ namespace LethalCompanyVR.Player.Patches
         {
             var codes = new List<CodeInstruction>(instructions);
 
-            // Remove FOV updating
-            for (int i = 302; i <= 313; i++)
+            if (Plugin.VR_ENABLED)
             {
-                codes[i].opcode = OpCodes.Nop;
-                codes[i].operand = null;
+                // Remove FOV updating
+                for (int i = 302; i <= 313; i++)
+                {
+                    codes[i].opcode = OpCodes.Nop;
+                    codes[i].operand = null;
+                }
             }
 
             return codes.AsEnumerable();

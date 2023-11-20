@@ -1,5 +1,4 @@
-﻿
-using LethalCompanyVR.UI.Patches;
+﻿using LethalCompanyVR.UI.Patches;
 using UnityEngine;
 
 namespace LethalCompanyVR.UI

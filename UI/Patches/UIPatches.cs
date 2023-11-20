@@ -18,6 +18,8 @@ namespace LethalCompanyVR.UI.Patches
         [HarmonyPatch(typeof(PreInitSceneScript), "Start")]
         private static void ImmediateOnline()
         {
+            if (!Plugin.VR_ENABLED) return;
+
             SceneManager.LoadScene("InitScene");
         }
 
@@ -26,6 +28,8 @@ namespace LethalCompanyVR.UI.Patches
         [HarmonyPatch(typeof(MenuManager), "Start")]
         private static void MoveToWorldSpace(MenuManager __instance)
         {
+            if (!Plugin.VR_ENABLED) return;
+
             try
             {
                 var newCamera = GameObject.Find("UICamera").GetComponent<Camera>();
@@ -49,7 +53,7 @@ namespace LethalCompanyVR.UI.Patches
                 if (!canvas) return;
                 if (!UICamera)
                 {
-                    Debug.LogError("Where is UICamera??");
+                    Logger.LogError("Where is UICamera??");
                     return;
                 }
 
@@ -65,7 +69,7 @@ namespace LethalCompanyVR.UI.Patches
             }
             catch (Exception exception)
             {
-                Debug.LogWarning($"Failed to move canvas to world space ({__instance.name}): {exception}");
+                Logger.LogWarning($"Failed to move canvas to world space ({__instance.name}): {exception}");
             }
         }
     }
