@@ -11,3 +11,4 @@ Collecting Scrap in VR
 - [ ] Fix non-player cameras (spectating, ship leaving after death, etc)
 - [ ] Correctly display HUD by moving them to World Position and updating it's position/rotation based on HMD
 - [ ] Probably a whole lot more, expect this list to be updated frequently
+- [ ] Check if we can prepare for a possible Il2Cpp version of the game. Currently the method patching transpilers will not work if the game were to be converted to Il2Cpp.
