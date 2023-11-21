@@ -5,7 +5,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.XR;
 using UnityEngine.XR.Management;
@@ -16,13 +15,28 @@ using UnityEngine.XR.OpenXR.Features.Interactions;
 namespace LethalCompanyVR
 {
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
+    //[BepInIncompatibility("com.sinai.unityexplorer")]
     public class Plugin : BaseUnityPlugin
     {
         public static bool VR_ENABLED = true;
-        public static Camera VR_CAMERA = null;
 
-        public class MyStaticMB : MonoBehaviour { }
-        public static MyStaticMB myStaticMB;
+        /// <summary>
+        /// Temporary value to tell the game to instantly host a game
+        /// </summary>
+        public static bool FORCE_INGAME = true;
+
+        /// <summary>
+        /// The main in-game player camera
+        /// </summary>
+        public static Camera MainCamera = null;
+
+        /// <summary>
+        /// The main render camera. This is the camera that actually outputs to the HMD/Monitor.
+        /// </summary>
+        public static Camera RenderCamera
+        {
+            get => GameObject.Find("UICamera").GetComponent<Camera>();
+        }
 
         private void Awake()
         {
@@ -41,16 +55,9 @@ namespace LethalCompanyVR
             Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
 
             Logger.LogDebug("Inserted VR patches using Harmony");
-
-            if (myStaticMB == null)
-            {
-                var @object = new GameObject("MyStatic");
-
-                myStaticMB = @object.AddComponent<MyStaticMB>();
-            }
-
-            Logger.LogDebug("Running InitVRLoader...");
-            myStaticMB.StartCoroutine(InitVRLoader());
+            
+            Logger.LogInfo("Loading VR...");
+            StartCoroutine(InitVRLoader());
         }
 
         private IEnumerator InitVRLoader()
@@ -63,10 +70,16 @@ namespace LethalCompanyVR
                 Logger.LogError("Failed to start in VR Mode, disabling VR...");
 
                 VR_ENABLED = false;
+
+                yield break;
             }
-            else
+
+            var devices = new List<InputDevice>();
+            InputDevices.GetDevices(devices);
+
+            foreach (InputDevice device in devices)
             {
-                Logger.LogInfo("VR has been initialized successfully");
+                Logger.LogDebug(device.name);
             }
 
             yield break;
@@ -133,6 +146,7 @@ namespace LethalCompanyVR
 
             managerSettings.InitializeLoaderSync();
 
+            // TODO: Ditto for these
             typeof(XRGeneralSettings).GetMethod("AttemptInitializeXRSDKOnLoad", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, []);
             typeof(XRGeneralSettings).GetMethod("AttemptStartXRSDKOnBeforeSplashScreen", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, []);
 

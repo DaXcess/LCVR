@@ -1,6 +1,9 @@
 ﻿using HarmonyLib;
 using System;
+using System.Text;
 using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.UI;
 using UnityEngine.SceneManagement;
 
 namespace LethalCompanyVR
@@ -8,8 +11,6 @@ namespace LethalCompanyVR
     [HarmonyPatch]
     public class UIPatches
     {
-        public static Camera UICamera;
-
         // TODO: Remove after mod is done
         /// <summary>
         /// For ease of use, when VR is enabled immediately choose the online option in favor of LAN
@@ -36,8 +37,14 @@ namespace LethalCompanyVR
 
             try
             {
-                var camera = GameObject.Find("UICamera").GetComponent<Camera>();
                 var canvas = __instance.GetComponentInParent<Canvas>();
+                var input = GameObject.Find("EventSystem")?.GetComponent<InputSystemUIInputModule>();
+
+                if (input == null)
+                {
+                    Logger.LogWarning("Failed to find InputSystemUIInputModule, main menu will not look good!");
+                    return;
+                }
 
                 if (canvas == null)
                 {
@@ -45,24 +52,30 @@ namespace LethalCompanyVR
                     return;
                 }
 
-                if (camera == null)
+                if (Plugin.RenderCamera == null)
                 {
                     Logger.LogWarning("Failed to find UICamera, main menu will not look good!");
                     return;
                 }
 
-                VRCamera.InitializeHMDCamera(camera);
+                VRCamera.InitializeHMDCamera(Plugin.RenderCamera);
+
+                Logger.LogDebug("Initialized main menu camera");
 
                 // Position the main menu canvas in world 5 units away from the player
 
                 canvas.transform.localScale = Vector3.one * 0.0085f;
-                canvas.transform.position = new Vector3(5, 0, 0);
+                canvas.transform.position = new Vector3(0, 1, 5);
                 canvas.renderMode = RenderMode.WorldSpace;
+
+                input.actionsAsset = InputActionAsset.FromJson(Encoding.UTF8.GetString(Properties.Resources.inputs_vr_menu));
             }
             catch (Exception exception)
             {
                 Logger.LogWarning($"Failed to move canvas to world space ({__instance.name}): {exception}");
             }
+
+            if (Plugin.FORCE_INGAME) __instance.ConfirmHostButton();
         }
     }
 }

@@ -1,0 +1,130 @@
+{
+  "name": "PlayerActions",
+  "maps": [
+    {
+      "name": "UI",
+      "id": "433b3177-0846-4f85-945a-4a31dfbefd28",
+      "actions": [
+        {
+          "name": "Navigate",
+          "type": "Value",
+          "id": "c63a6ade-6c5a-4659-9aa5-e336e7b9970f",
+          "expectedControlType": "Vector2",
+          "processors": "",
+          "interactions": "",
+          "initialStateCheck": false
+        },
+        {
+          "name": "Submit",
+          "type": "Value",
+          "id": "1af759ec-380d-4f9b-9108-c4e024e17c3e",
+          "expectedControlType": "Button",
+          "processors": "",
+          "interactions": "",
+          "initialStateCheck": false
+        },
+        {
+          "name": "Cancel",
+          "type": "Button",
+          "id": "29820219-83ac-41cb-9f43-9ba2bcb7882c",
+          "expectedControlType": "Button",
+          "processors": "",
+          "interactions": "",
+          "initialStateCheck": false
+        },
+        {
+          "name": "ScrollWheel",
+          "type": "Value",
+          "id": "38a90280-ca06-4012-853a-06cd9bf6cda3",
+          "expectedControlType": "Vector2",
+          "processors": "",
+          "interactions": "",
+          "initialStateCheck": false
+        },
+        {
+          "name": "MiddleClick",
+          "type": "Button",
+          "id": "61f99167-dec0-46cb-a700-a21e900ddbe6",
+          "expectedControlType": "Button",
+          "processors": "",
+          "interactions": "",
+          "initialStateCheck": false
+        },
+        {
+          "name": "Point",
+          "type": "Value",
+          "id": "7dc7e4c4-a4eb-449d-a885-cf7ad4b8faaa",
+          "expectedControlType": "Vector2",
+          "processors": "",
+          "interactions": "",
+          "initialStateCheck": false
+        },
+        {
+          "name": "Click",
+          "type": "Button",
+          "id": "a5e81f24-9799-4b3e-b009-386c60e18cc1",
+          "expectedControlType": "Button",
+          "processors": "",
+          "interactions": "",
+          "initialStateCheck": false
+        },
+        {
+          "name": "RightClick",
+          "type": "Button",
+          "id": "afa10779-50c6-45ee-828e-2c782fd48921",
+          "expectedControlType": "Button",
+          "processors": "",
+          "interactions": "",
+          "initialStateCheck": false
+        }
+      ],
+      "bindings": [
+        {
+          "name": "",
+          "id": "7aea34a9-040b-4a60-b98a-ef8cb75e8ccf",
+          "path": "<XRController>{RightHand}/Primary2DAxis",
+          "interactions": "",
+          "processors": "",
+          "groups": "",
+          "action": "Navigate",
+          "isComposite": false,
+          "isPartOfComposite": false
+        },
+        {
+          "name": "",
+          "id": "7aea34a9-040b-4a60-b98a-ef8cb75e81cf",
+          "path": "<XRController>{RightHand}/primaryButton",
+          "interactions": "",
+          "processors": "",
+          "groups": "",
+          "action": "Submit",
+          "isComposite": false,
+          "isPartOfComposite": false
+        },
+        {
+          "name": "",
+          "id": "7aea34a9-040b-4a60-b98a-ff8cb75e81cf",
+          "path": "<XRController>{RightHand}/secondaryButton",
+          "interactions": "",
+          "processors": "",
+          "groups": "",
+          "action": "Cancel",
+          "isComposite": false,
+          "isPartOfComposite": false
+        },
+        {
+          "name": "",
+          "id": "7aea34a9-040b-4a60-b98a-ff8cb75e81cf",
+          "path": "<XRController>{RightHand}/primaryButton",
+          "interactions": "",
+          "processors": "",
+          "groups": "",
+          "action": "Click",
+          "isComposite": false,
+          "isPartOfComposite": false
+        }
+      ]
+    }
+  ],
+  "controlSchemes": []
+}

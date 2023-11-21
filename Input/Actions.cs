@@ -13,6 +13,7 @@ namespace LethalCompanyVR
         public static InputAction XR_LeftHand_Thumbstick = new(binding: "<XRController>{LeftHand}/Primary2DAxis");
         public static InputAction XR_RightHand_Thumbstick = new(binding: "<XRController>{RightHand}/Primary2DAxis");
 
+        // Buttons are float values, probably because some controllers allow these to be partially pressed
         public static InputAction XR_Button_A = new(binding: "<XRController>{RightHand}/primaryButton");
         public static InputAction XR_Button_B = new(binding: "<XRController>{RightHand}/secondaryButton");
         public static InputAction XR_Button_X = new(binding: "<XRController>{LeftHand}/primaryButton");
