@@ -5,6 +5,7 @@ Collecting Scrap in VR
 
 - [ ] Complete controller support
 - [ ] Build a working XRRig (or feasible alternative), that correctly applies player rotation based on head rotation
+- [ ] Maybe hand movement based on controller movement? Would be cool for flashlights and stuff. Will have to check how item pickup/interactions will work though.
 - [ ] Fix the item pickup/interact raycasting (currently still requires mouse input, even though it looks like nothing is happening)
 - [ ] Fix non-player cameras (spectating, ship leaving after death, etc)
 - [ ] Correctly display HUD by moving them to World Position and updating it's position/rotation based on HMD
