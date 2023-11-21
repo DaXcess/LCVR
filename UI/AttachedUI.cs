@@ -1,14 +1,12 @@
-﻿using LethalCompanyVR.UI.Patches;
-using UnityEngine;
+﻿using UnityEngine;
 
-namespace LethalCompanyVR.UI
+namespace LethalCompanyVR
 {
-    // TODO: This looks like absolute garbage rn
+    /// <summary>
+    /// Attach a canvas as a world space rendered canvas to the VR camera
+    /// </summary>
     public class AttachedUI : MonoBehaviour
     {
-        private Vector3 targetPosition;
-        private Quaternion targetRotation;
-
         public static AttachedUI Create(Canvas canvas, float scale = 0)
         {
             var instance = canvas.gameObject.AddComponent<AttachedUI>();
@@ -21,36 +19,14 @@ namespace LethalCompanyVR.UI
         protected virtual void Update()
         {
             UpdateTransform();
-
-            if (UIPatches.UICamera != null)
-            {
-                if (targetPosition == null || Vector3.Distance(UIPatches.UICamera.transform.position, targetPosition) > 10f)
-                {
-                    var forward = UIPatches.UICamera.transform.forward;
-                    forward.y = 0;
-                    forward.Normalize();
-
-                    var newPosition = UIPatches.UICamera.transform.position + forward * 5;
-                    newPosition.y = 0;
-
-                    SetTargetTransform(newPosition, Quaternion.Euler(0, UIPatches.UICamera.transform.rotation.eulerAngles.y, 0));
-                }
-            }
-        }
-
-        public void SetTargetTransform(Vector3 targetPosition, Quaternion targetRotation)
-        {
-            this.targetPosition = targetPosition;
-            this.targetRotation = targetRotation;
         }
 
         private void UpdateTransform()
         {
-            if (targetPosition != null && targetRotation != null)
-            {
-                transform.position = targetPosition;
-                transform.rotation = targetRotation;
-            }
+            if (Plugin.VR_CAMERA == null) return;
+
+            transform.position = Plugin.VR_CAMERA.transform.position + Plugin.VR_CAMERA.transform.forward;
+            transform.rotation = Plugin.VR_CAMERA.transform.rotation;
         }
     }
 }

@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace LethalCompanyVR.Input.Patches
+namespace LethalCompanyVR
 {
+    // TODO: Try to make Il2Cpp compatible alternative
+
     [HarmonyPatch(typeof(PlayerActions))]
     [HarmonyPatch(MethodType.Constructor)]
     public static class PlayerInputPatches

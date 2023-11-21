@@ -1,4 +1,5 @@
 # Lethal Company VR Mod
+
 Collecting Scrap in VR
 
 ## TODO
@@ -10,5 +11,13 @@ Collecting Scrap in VR
 - [ ] Fix the item pickup/interact raycasting (currently still requires mouse input, even though it looks like nothing is happening)
 - [ ] Fix non-player cameras (spectating, ship leaving after death, etc)
 - [ ] Correctly display HUD by moving them to World Position and updating it's position/rotation based on HMD
-- [ ] Probably a whole lot more, expect this list to be updated frequently
 - [ ] Check if we can prepare for a possible Il2Cpp version of the game. Currently the method patching transpilers will not work if the game were to be converted to Il2Cpp.
+- [ ] (Optional) Controller haptics (e.g. vibrate when a Giant takes a step, when low health, when damaged, when in a panicked state etc).
+
+- [ ] Probably a whole lot more, expect this list to be updated frequently
+
+## Helpful tools and documentation
+
+- [Unity Explorer](https://github.com/sinai-dev/UnityExplorer)
+- [Unity OpenXR Plugin](https://docs.unity3d.com/Packages/com.unity.xr.openxr@1.8/manual/index.html)
+- [OpenXR 1.0 Specification](https://registry.khronos.org/OpenXR/specs/1.0/html/xrspec.html)

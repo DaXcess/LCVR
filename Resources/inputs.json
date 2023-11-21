@@ -388,17 +388,6 @@
         },
         {
           "name": "",
-          "id": "a0d6c3d4-6041-4492-bbb3-c0b84914ffcb",
-          "path": "<XRController>{RightHand}/Primary2DAxis",
-          "interactions": "",
-          "processors": "",
-          "groups": "",
-          "action": "Move",
-          "isComposite": false,
-          "isPartOfComposite": false
-        },
-        {
-          "name": "",
           "id": "7b616c75-7032-463c-b9d3-72884bcded84",
           "path": "<Gamepad>/buttonSouth",
           "interactions": "",

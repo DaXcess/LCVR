@@ -3,8 +3,8 @@ using HarmonyLib;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.XR;
 using UnityEngine.XR.Management;
@@ -18,30 +18,28 @@ namespace LethalCompanyVR
     public class Plugin : BaseUnityPlugin
     {
         public static bool VR_ENABLED = true;
-
-        public static XRManagerSettings managerSettings = null;
-
-        public static List<XRDisplaySubsystemDescriptor> displayDescriptors = new List<XRDisplaySubsystemDescriptor>();
-        public static List<XRDisplaySubsystem> displays = new List<XRDisplaySubsystem>();
-        public static XRDisplaySubsystem myDisplay = null;
-
-        public static GameObject secondEye = null;
-        public static Camera secondCam = null;
+        public static Camera VR_CAMERA = null;
 
         public class MyStaticMB : MonoBehaviour { }
         public static MyStaticMB myStaticMB;
 
-        public static Plugin Instance = null;
-
         private void Awake()
         {
-            Instance = this;
+            // Plugin startup logic
             LethalCompanyVR.Logger.SetSource(Logger);
 
-            // Plugin startup logic
             Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is starting...");
-                        
+
+            // Allow disabling VR via command line
+            if (Environment.GetCommandLineArgs().Contains("--disable-vr", StringComparer.OrdinalIgnoreCase))
+            {
+                Logger.LogWarning("VR has been disabled by the `--disable-vr` command line flag");
+                return;
+            }
+
             Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
+
+            Logger.LogDebug("Inserted VR patches using Harmony");
 
             if (myStaticMB == null)
             {
@@ -50,36 +48,35 @@ namespace LethalCompanyVR
                 myStaticMB = @object.AddComponent<MyStaticMB>();
             }
 
-            if (VR_ENABLED) myStaticMB.StartCoroutine(InitVRLoader());
+            Logger.LogDebug("Running InitVRLoader...");
+            myStaticMB.StartCoroutine(InitVRLoader());
         }
 
-        [DllImport("UnityOpenXR", EntryPoint = "DiagnosticReport_GenerateReport")]
-        private static extern IntPtr Internal_GenerateReport();
-
-        [DllImport("UnityOpenXR", EntryPoint = "DiagnosticReport_ReleaseReport")]
-        private static extern void Internal_ReleaseReport(IntPtr report);
-
-        internal static string GenerateReport()
-        {
-            string result = "";
-            IntPtr intPtr = Internal_GenerateReport();
-            if (intPtr != IntPtr.Zero)
-            {
-                result = Marshal.PtrToStringAnsi(intPtr);
-                Internal_ReleaseReport(intPtr);
-                intPtr = IntPtr.Zero;
-            }
-
-            return result;
-        }
-
-        // TODO: Clean clean clean
         private IEnumerator InitVRLoader()
         {
-            var generalSettings = ScriptableObject.CreateInstance<XRGeneralSettings>();
-            managerSettings = ScriptableObject.CreateInstance<XRManagerSettings>();
-            var xrLoader = ScriptableObject.CreateInstance<OpenXRLoader>();
+            EnableControllerProfiles();
+            InitializeXRRuntime();
 
+            if (!StartDisplay())
+            {
+                Logger.LogError("Failed to start in VR Mode, disabling VR...");
+
+                VR_ENABLED = false;
+            }
+            else
+            {
+                Logger.LogInfo("VR has been initialized successfully");
+            }
+
+            yield break;
+        }
+
+        /// <summary>
+        /// Loads controller profiles provided by Unity into OpenXR, which will enable controller support.
+        /// By default, only the HMD input profile is loaded.
+        /// </summary>
+        private static void EnableControllerProfiles()
+        {
             var valveIndex = ScriptableObject.CreateInstance<ValveIndexControllerProfile>();
             var hpReverb = ScriptableObject.CreateInstance<HPReverbG2ControllerProfile>();
             var htcVive = ScriptableObject.CreateInstance<HTCViveControllerProfile>();
@@ -95,9 +92,10 @@ namespace LethalCompanyVR
             khrSimple.enabled = true;
             metaQuestTouch.enabled = true;
             oculusTouch.enabled = true;
-            
+
             // Patch the OpenXRSettings.features field to include controller profiles
-            OpenXRFeature[] features = (OpenXRFeature[])typeof(OpenXRSettings).GetField("features", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(OpenXRSettings.Instance);
+            // This feature list is empty by default if the game isn't a VR game
+
             var featList = new List<OpenXRFeature>()
             {
                 valveIndex,
@@ -110,31 +108,54 @@ namespace LethalCompanyVR
             };
             typeof(OpenXRSettings).GetField("features", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(OpenXRSettings.Instance, featList.ToArray());
 
-            OpenXRSettings.Instance.renderMode = OpenXRSettings.RenderMode.MultiPass;
+            LethalCompanyVR.Logger.LogDebug("Enabled XR Controller Profiles");
+        }
+
+        /// <summary>
+        /// Attempt to start the OpenXR runtime.
+        /// </summary>
+        private static void InitializeXRRuntime()
+        {
+            // Set up the OpenXR loader
+            var generalSettings = ScriptableObject.CreateInstance<XRGeneralSettings>();
+            var managerSettings = ScriptableObject.CreateInstance<XRManagerSettings>();
+            var xrLoader = ScriptableObject.CreateInstance<OpenXRLoader>();
 
             generalSettings.Manager = managerSettings;
 
-            managerSettings.loaders.Clear();
-            managerSettings.loaders.Add(xrLoader);
+            // Casting this, because I couldn't stand the `this field is obsolete` warning
+            ((List<XRLoader>)managerSettings.activeLoaders).Clear();
+            ((List<XRLoader>)managerSettings.activeLoaders).Add(xrLoader);
+
+            // TODO: Test if this is even necessary
+            OpenXRSettings.Instance.renderMode = OpenXRSettings.RenderMode.MultiPass;
 
             managerSettings.InitializeLoaderSync();
 
             typeof(XRGeneralSettings).GetMethod("AttemptInitializeXRSDKOnLoad", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, []);
             typeof(XRGeneralSettings).GetMethod("AttemptStartXRSDKOnBeforeSplashScreen", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, []);
 
+            LethalCompanyVR.Logger.LogDebug("Initialized XR Runtime");
+        }
+
+        /// <summary>
+        /// Start the display subsystem (I have no idea what that means).
+        /// </summary>
+        /// <returns><see langword="false"/> if no displays were found, <see langword="true"/> otherwise.</returns>
+        private static bool StartDisplay()
+        {
+            var displays = new List<XRDisplaySubsystem>();
+
             SubsystemManager.GetInstances(displays);
 
             if (displays.Count < 1)
             {
-                VR_ENABLED = false;
+                return false;
             }
 
-            myDisplay = displays[0];
-            myDisplay.Start();
+            displays[0].Start();
 
-            Logger.LogWarning(GenerateReport());
-
-            yield return null;
+            return true;
         }
     }
 }
