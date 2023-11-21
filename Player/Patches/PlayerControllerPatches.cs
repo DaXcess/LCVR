@@ -4,10 +4,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
 
-namespace LethalCompanyVR.Player.Patches
+namespace LethalCompanyVR
 {
     // TODO: Determine what to do with dynamic FOV updates and stuff
     // (PlayerControllerB::Update)
+
+    // TODO: Try to see if this can be made Il2Cpp compatible
 
     [HarmonyPatch(typeof(PlayerControllerB), "Update")]
     public static class PlayerControllerB_Update_Patch

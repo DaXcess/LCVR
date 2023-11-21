@@ -30,5 +30,10 @@ namespace LethalCompanyVR
         {
             logSource.LogError(message);
         }
+
+        public static void LogDebug(object message)
+        {
+            logSource.LogDebug(message);
+        }
     }
 }

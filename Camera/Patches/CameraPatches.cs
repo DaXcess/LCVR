@@ -1,6 +1,5 @@
 ﻿using GameNetcodeStuff;
 using HarmonyLib;
-using LethalCompanyVR.Input;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.XR;
@@ -76,6 +75,17 @@ namespace LethalCompanyVR
         [HarmonyPatch(typeof(PlayerControllerB), "Update")]
         private static void OnTick()
         {
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(Camera), "fieldOfView")]
+        [HarmonyPatch(MethodType.Setter)]
+        private static void OnSetFieldOfView()
+        {
+            var st = new System.Diagnostics.StackTrace();
+
+            Logger.LogDebug("Camera FOV Updated");
+            Logger.LogDebug(st.ToString());
         }
     }
 }

@@ -1,12 +1,9 @@
 ﻿using HarmonyLib;
-using LethalCompanyVR.Input;
 using System;
 using UnityEngine;
-using UnityEngine.InputSystem.XR;
-using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
-namespace LethalCompanyVR.UI.Patches
+namespace LethalCompanyVR
 {
     [HarmonyPatch]
     public class UIPatches
@@ -14,6 +11,9 @@ namespace LethalCompanyVR.UI.Patches
         public static Camera UICamera;
 
         // TODO: Remove after mod is done
+        /// <summary>
+        /// For ease of use, when VR is enabled immediately choose the online option in favor of LAN
+        /// </summary>
         [HarmonyPostfix]
         [HarmonyPatch(typeof(PreInitSceneScript), "Start")]
         private static void ImmediateOnline()
@@ -24,48 +24,40 @@ namespace LethalCompanyVR.UI.Patches
         }
 
         // TODO: Clean up, especially the AttachedUI part in here
+        /// <summary>
+        /// This function runs when the main menu is shown
+        /// </summary>
+        /// <param name="__instance"></param>
         [HarmonyPostfix]
         [HarmonyPatch(typeof(MenuManager), "Start")]
-        private static void MoveToWorldSpace(MenuManager __instance)
+        private static void OnMainMenuShown(MenuManager __instance)
         {
             if (!Plugin.VR_ENABLED) return;
 
             try
             {
-                var newCamera = GameObject.Find("UICamera").GetComponent<Camera>();
-
-                if (newCamera != UICamera)
-                {
-                    UICamera = newCamera;
-
-                    var driver = UICamera.gameObject.AddComponent<TrackedPoseDriver>();
-
-                    driver.trackingType = TrackedPoseDriver.TrackingType.RotationAndPosition;
-                    driver.updateType = TrackedPoseDriver.UpdateType.UpdateAndBeforeRender;
-
-                    driver.positionAction = Actions.XR_HeadPosition;
-                    driver.rotationAction = Actions.XR_HeadRotation;
-                    driver.trackingStateInput = new InputActionProperty(Actions.XR_HeadTrackingState);
-                }
-
+                var camera = GameObject.Find("UICamera").GetComponent<Camera>();
                 var canvas = __instance.GetComponentInParent<Canvas>();
 
-                if (!canvas) return;
-                if (!UICamera)
+                if (canvas == null)
                 {
-                    Logger.LogError("Where is UICamera??");
+                    Logger.LogWarning("Failed to find Canvas, main menu will not look good!");
                     return;
                 }
 
-                var forward = UIPatches.UICamera.transform.forward;
-                forward.y = 0;
-                forward.Normalize();
+                if (camera == null)
+                {
+                    Logger.LogWarning("Failed to find UICamera, main menu will not look good!");
+                    return;
+                }
 
-                var newPosition = UIPatches.UICamera.transform.position + forward * 5;
-                newPosition.y = 0;
+                VRCamera.InitializeHMDCamera(camera);
 
-                var instance = AttachedUI.Create(canvas, 0.0085f);
-                instance.SetTargetTransform(newPosition, Quaternion.Euler(0, UIPatches.UICamera.transform.rotation.eulerAngles.y, 0));
+                // Position the main menu canvas in world 5 units away from the player
+
+                canvas.transform.localScale = Vector3.one * 0.0085f;
+                canvas.transform.position = new Vector3(5, 0, 0);
+                canvas.renderMode = RenderMode.WorldSpace;
             }
             catch (Exception exception)
             {
