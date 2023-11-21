@@ -20,6 +20,13 @@ namespace LethalCompanyVR
 
             if (Plugin.VR_ENABLED)
             {
+                // Remove HUD rotating
+                for (int i = 108; i <= 120; i++)
+                {
+                    codes[i].opcode = OpCodes.Nop;
+                    codes[i].operand = null;
+                }
+
                 // Remove FOV updating
                 for (int i = 302; i <= 313; i++)
                 {

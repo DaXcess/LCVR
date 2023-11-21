@@ -23,10 +23,10 @@ namespace LethalCompanyVR
 
         private void UpdateTransform()
         {
-            if (Plugin.VR_CAMERA == null) return;
+            if (Plugin.MainCamera == null) return;
 
-            transform.position = Plugin.VR_CAMERA.transform.position + Plugin.VR_CAMERA.transform.forward;
-            transform.rotation = Plugin.VR_CAMERA.transform.rotation;
+            transform.position = Plugin.MainCamera.transform.position + Plugin.MainCamera.transform.forward;
+            transform.rotation = Plugin.MainCamera.transform.rotation;
         }
     }
 }

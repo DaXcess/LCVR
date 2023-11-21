@@ -69,5 +69,15 @@ namespace LethalCompanyVR.Properties {
                 return ((byte[])(obj));
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] inputs_vr_menu {
+            get {
+                object obj = ResourceManager.GetObject("inputs_vr_menu", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
     }
 }
