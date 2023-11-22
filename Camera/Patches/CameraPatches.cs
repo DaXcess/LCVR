@@ -34,31 +34,14 @@ namespace LethalCompanyVR
 
             Plugin.MainCamera.stereoTargetEye = StereoTargetEyeMask.Both;
 
-            // TODO: Check if HMD tracking can be done better
-            var driver = Plugin.MainCamera.gameObject.AddComponent<CameraPoseDriver>();
-
-            driver.trackingType = TrackedPoseDriver.TrackingType.RotationAndPosition;
-            driver.updateType = TrackedPoseDriver.UpdateType.UpdateAndBeforeRender;
-
-            driver.positionAction = Actions.XR_HeadPosition;
-            driver.rotationAction = Actions.XR_HeadRotation;
-            driver.trackingStateInput = new InputActionProperty(Actions.XR_HeadTrackingState);
-
-            var player = GameObject.Find("Player");
-
-            var playerDriver = player.gameObject.AddComponent<PlayerPoseDriver>();
-
-            playerDriver.trackingType = TrackedPoseDriver.TrackingType.RotationOnly;
-            playerDriver.updateType = TrackedPoseDriver.UpdateType.BeforeRender;
-            playerDriver.rotationAction = Actions.XR_HeadRotation;
-
+            
             // TODO: Keep helmet model once we know how to render it properly
-            var helmet = GameObject.Find("PlayerHUDHelmetModel");
+            //var helmet = GameObject.Find("PlayerHUDHelmetModel");
 
-            if (helmet)
-            {
-                helmet.SetActive(false);
-            }
+            //if (helmet)
+            //{
+            //    helmet.SetActive(false);
+            //}
 
             // TODO: Oh god why did they make it like this
             // var ui = GameObject.Find("UI");
@@ -72,7 +55,7 @@ namespace LethalCompanyVR
 
             // Maybe this was all that was necessary idk lol
             // TODO: Test this
-            hud.transform.localScale *= 0.5f;
+            hud.transform.localScale *= 0.25f;
 
             // TODO: Disable chat maybe?
 

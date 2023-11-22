@@ -2,6 +2,7 @@
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.InputSystem;
 using Unity.XR.CoreUtils;
+using UnityEngine.InputSystem.XR;
 
 namespace LethalCompanyVR.Player
 {
@@ -22,27 +23,25 @@ namespace LethalCompanyVR.Player
                 return;
             }
 
-            // Add XR components to the player object
+            var driver = Plugin.MainCamera.gameObject.AddComponent<CameraPoseDriver>();
+
+            driver.trackingType = TrackedPoseDriver.TrackingType.RotationOnly;
+            driver.updateType = TrackedPoseDriver.UpdateType.UpdateAndBeforeRender;
+
+            driver.positionAction = Actions.XR_HeadPosition;
+            driver.rotationAction = Actions.XR_HeadRotation;
+            driver.trackingStateInput = new InputActionProperty(Actions.XR_HeadTrackingState);
+
+            driver.playerTransform = player.transform;
+
+            var camOffset = new GameObject("CameraOffset");
+
+            // INITIALIZE XR ORIGIN
             var xrRig = player.GetComponent<XROrigin>() ?? player.AddComponent<XROrigin>();
-            xrRig.CameraFloorOffsetObject = player;
+            xrRig.CameraFloorOffsetObject = camOffset;
             xrRig.Origin = player;
             xrRig.Camera = Plugin.MainCamera;
-
-            // Add locomotion system and other components
-            var locomotionSystem = player.AddComponent<LocomotionSystem>();
-            var snapTurnProvider = player.AddComponent<ActionBasedSnapTurnProvider>();
-
-            // Making component work
-            snapTurnProvider.enabled = true;
-            snapTurnProvider.leftHandSnapTurnAction = new InputActionProperty(Actions.XR_RightHand_Thumbstick);
-            snapTurnProvider.enableTurnLeftRight = true;
-            snapTurnProvider.turnAmount = 25f;
-            snapTurnProvider.debounceTime = .05f;
-            snapTurnProvider.system = locomotionSystem;
-
-            locomotionSystem.enabled = true;
-            locomotionSystem.xrOrigin = xrRig;
-
+            xrRig.RequestedTrackingOriginMode = XROrigin.TrackingOriginMode.Device;
             xrRig.enabled = true;
 
             Logger.LogDebug("XR Rig has been created");
