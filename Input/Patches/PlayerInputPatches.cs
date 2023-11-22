@@ -15,7 +15,10 @@ namespace LethalCompanyVR
         {
             var codes = new List<CodeInstruction>(instructions);
 
-            codes[6].operand = Encoding.UTF8.GetString(Properties.Resources.inputs);
+            if (Plugin.VR_ENABLED)
+            {
+                codes[6].operand = Encoding.UTF8.GetString(Properties.Resources.inputs);
+            }
 
             return codes.AsEnumerable();
         }

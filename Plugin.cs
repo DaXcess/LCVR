@@ -48,7 +48,10 @@ namespace LethalCompanyVR
             // Allow disabling VR via command line
             if (Environment.GetCommandLineArgs().Contains("--disable-vr", StringComparer.OrdinalIgnoreCase))
             {
+                Plugin.VR_ENABLED = false;
                 Logger.LogWarning("VR has been disabled by the `--disable-vr` command line flag");
+
+                Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
                 return;
             }
 

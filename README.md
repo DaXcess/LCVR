@@ -21,4 +21,5 @@ Collecting Scrap in VR
 
 - [Unity Explorer](https://github.com/sinai-dev/UnityExplorer)
 - [Unity OpenXR Plugin](https://docs.unity3d.com/Packages/com.unity.xr.openxr@1.8/manual/index.html)
+- [Unity XR Inputs](https://docs.unity3d.com/Manual/xr_input.html)
 - [OpenXR 1.0 Specification](https://registry.khronos.org/OpenXR/specs/1.0/html/xrspec.html)
