@@ -1,6 +1,4 @@
-﻿using UnityEngine;
-using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.XR;
+﻿using UnityEngine.InputSystem;
 
 namespace LethalCompanyVR
 {
