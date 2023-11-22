@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.InputSystem;
 using Unity.XR.CoreUtils;
 using UnityEngine.InputSystem.XR;
