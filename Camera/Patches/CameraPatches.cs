@@ -1,5 +1,6 @@
 ﻿using GameNetcodeStuff;
 using HarmonyLib;
+using LethalCompanyVR.Player;
 using System.Collections.Generic;
 using Unity.XR.CoreUtils;
 using UnityEngine;
@@ -19,6 +20,7 @@ namespace LethalCompanyVR
         [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.SwitchCamera))]
         private static void OnCameraSwitched()
         {
+            VRPlayer.InitializeXRRig();
             if (!Plugin.VR_ENABLED) return;
 
             Logger.LogWarning("SwitchCamera called !!!");
