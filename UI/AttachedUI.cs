@@ -2,6 +2,8 @@
 
 namespace LethalCompanyVR
 {
+    // TODO: Since this game appears to do their UI very differently, this file may not be needed
+
     /// <summary>
     /// Attach a canvas as a world space rendered canvas to the VR camera
     /// </summary>

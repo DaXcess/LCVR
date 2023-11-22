@@ -13,6 +13,7 @@ Collecting Scrap in VR
 - [ ] Correctly display HUD by moving them to World Position and updating it's position/rotation based on HMD
 - [ ] Check if we can prepare for a possible Il2Cpp version of the game. Currently the method patching transpilers will not work if the game were to be converted to Il2Cpp.
 - [ ] (Optional) Controller haptics (e.g. vibrate when a Giant takes a step, when low health, when damaged, when in a panicked state etc).
+- [ ] Be able to interact with the terminal, either via Virtual Keyboard (must be custom made as this mod avoids explicitly using SteamVR in favor of complete OpenXR support) or some other custom UI that has some presets.
 
 - [ ] Probably a whole lot more, expect this list to be updated frequently
 

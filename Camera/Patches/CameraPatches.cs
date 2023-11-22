@@ -1,33 +1,26 @@
 ﻿using GameNetcodeStuff;
 using HarmonyLib;
 using LethalCompanyVR.Player;
-using System.Collections.Generic;
-using Unity.XR.CoreUtils;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.XR;
-using UnityEngine.UI;
-using UnityEngine.XR.Interaction.Toolkit;
 
 namespace LethalCompanyVR
 {
     [HarmonyPatch]
     public class CameraPatches
     {
-        public static Camera activeCamera = null;
-
         [HarmonyPostfix]
         [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.SwitchCamera))]
         private static void OnCameraSwitched()
         {
-            VRPlayer.InitializeXRRig();
             if (!Plugin.VR_ENABLED) return;
 
-            Logger.LogWarning("SwitchCamera called !!!");
+            Logger.LogDebug("SwitchCamera called");
 
-            activeCamera = StartOfRound.Instance.activeCamera;
+            Plugin.MainCamera = StartOfRound.Instance.activeCamera;
 
-            if (activeCamera == null)
+            if (Plugin.MainCamera == null)
             {
                 Logger.LogError("Where is StartOfRound.activeCamera?!?!?");
                 return;
@@ -36,13 +29,13 @@ namespace LethalCompanyVR
             // TODO: I'm guessing this ain't always the correct FOV
             if (Plugin.RenderCamera != null)
             {
-                activeCamera.fieldOfView = Plugin.RenderCamera.fieldOfView;
+                Plugin.MainCamera.fieldOfView = Plugin.RenderCamera.fieldOfView;
             }
 
-            activeCamera.stereoTargetEye = StereoTargetEyeMask.Both;
+            Plugin.MainCamera.stereoTargetEye = StereoTargetEyeMask.Both;
 
             // TODO: Check if HMD tracking can be done better
-            var driver = activeCamera.gameObject.AddComponent<CameraPoseDriver>();
+            var driver = Plugin.MainCamera.gameObject.AddComponent<CameraPoseDriver>();
 
             driver.trackingType = TrackedPoseDriver.TrackingType.RotationAndPosition;
             driver.updateType = TrackedPoseDriver.UpdateType.UpdateAndBeforeRender;
@@ -68,34 +61,39 @@ namespace LethalCompanyVR
             }
 
             // TODO: Oh god why did they make it like this
-            var ui = GameObject.Find("UI");
+            // var ui = GameObject.Find("UI");
             var hud = GameObject.Find("IngamePlayerHUD");
-            //var canvas = hud.GetComponentInParent<Canvas>();
 
-            if (hud == null || ui == null)
+            if (hud == null /* || ui == null */)
             {
                 Logger.LogError("Failed to find HUD, game will look weird");
                 return;
             }
 
-            var canvasObject = new GameObject("HUDCanvas");
-            var canvas = canvasObject.AddComponent<Canvas>();
+            // Maybe this was all that was necessary idk lol
+            // TODO: Test this
+            hud.transform.localScale *= 0.5f;
 
-            hud.transform.parent = canvasObject.transform;
+            // TODO: Disable chat maybe?
 
-            var imageObject = new GameObject("RedSquare");
-            imageObject.transform.parent = hud.transform;
+            // var canvasObject = new GameObject("HUDCanvas");
+            // var canvas = canvasObject.AddComponent<Canvas>();
 
-            var image = imageObject.AddComponent<Image>();
-            image.color = Color.red;
+            // hud.transform.parent = canvasObject.transform;
 
-            var rect = image.GetComponent<RectTransform>();
-            rect.localPosition = new Vector3(0, 0, 0);
-            rect.sizeDelta = new Vector2(480, 480);
+            // var imageObject = new GameObject("RedSquare");
+            // imageObject.transform.parent = hud.transform;
 
-            Plugin.MainCamera = activeCamera;
+            // var image = imageObject.AddComponent<Image>();
+            // image.color = Color.red;
 
-            AttachedUI.Create(canvas, 0.00085f);
+            // var rect = image.GetComponent<RectTransform>();
+            // rect.localPosition = new Vector3(0, 0, 0);
+            // rect.sizeDelta = new Vector2(480, 480);
+
+            // AttachedUI.Create(canvas, 0.00085f);
+
+            VRPlayer.InitializeXRRig();
         }
 
         [HarmonyPrefix]
