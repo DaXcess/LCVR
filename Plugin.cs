@@ -68,7 +68,7 @@ namespace LethalCompanyVR
             EnableControllerProfiles();
             InitializeXRRuntime();
 
-            if (!StartDisplay())
+            if (VR_ENABLED && !StartDisplay())
             {
                 Logger.LogError("Failed to start in VR Mode, disabling VR...");
 
