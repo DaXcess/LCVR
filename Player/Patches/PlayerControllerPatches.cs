@@ -7,6 +7,8 @@ using System.Reflection;
 using System.Reflection.Emit;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.XR;
+using LethalCompanyVR.Player;
 
 namespace LethalCompanyVR
 {
@@ -80,14 +82,35 @@ namespace LethalCompanyVR
         [HarmonyPostfix]
         private static void AfterPlayerLookInput(PlayerControllerB __instance)
         {
-            var rot = Actions.XR_HeadRotation.ReadValue<Quaternion>().eulerAngles.x;
-
-            if (rot > 180)
+            if (Plugin.VR_ENABLED)
             {
-                rot -= 360;
-            }
+                var rot = Actions.XR_HeadRotation.ReadValue<Quaternion>().eulerAngles.x;
 
-            typeof(PlayerControllerB).GetField("cameraUp", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(__instance, rot);
+                if (rot > 180)
+                {
+                    rot -= 360;
+                }
+
+                typeof(PlayerControllerB).GetField("cameraUp", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(__instance, rot);
+            }
+            
         }
     }
+    
+    [HarmonyPatch]
+    public static class DamagePlayer {
+        [HarmonyPatch(typeof(PlayerControllerB), "DamagePlayer")]
+        [HarmonyPostfix]
+        public static void AfterDamagePlayer()
+        {
+            if (Plugin.VR_ENABLED)
+            {
+                VRPlayer.VibrateController(XRNode.LeftHand, 0.1f, 0.5f);
+                VRPlayer.VibrateController(XRNode.RightHand, 0.1f, 0.5f);
+
+            }
+
+        }
+    } 
+
 }
