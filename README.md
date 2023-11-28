@@ -2,6 +2,12 @@
 
 Collecting Scrap in VR
 
+## Motion Controls
+
+Motion controls are currently being worked on in a seperate plugin which does not have a repository.
+
+Once enough advancements have been made on that front the code will be merged into this repo.
+
 ## TODO
 
 - [ ] Complete controller support
