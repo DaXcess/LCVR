@@ -2,6 +2,12 @@
 
 Collecting Scrap in VR
 
+## HDRP
+
+HDRP out here really ruining our day. Check to see if we can apply performance upgrades using DLSS/FSR to allow the game to be playable in VR.
+
+Such a shame that this game uses HDRP it really seems like that wasn't necessary.
+
 ## Motion Controls
 
 Motion controls are currently being worked on in a seperate plugin which does not have a repository.
