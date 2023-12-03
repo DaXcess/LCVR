@@ -18,25 +18,10 @@ namespace LethalCompanyVR
     //[BepInIncompatibility("com.sinai.unityexplorer")]
     public class Plugin : BaseUnityPlugin
     {
-        public static bool VR_ENABLED = true;
-
         /// <summary>
         /// Temporary value to tell the game to instantly host a game
         /// </summary>
         public static bool FORCE_INGAME = true;
-
-        /// <summary>
-        /// The main in-game player camera
-        /// </summary>
-        public static Camera MainCamera = null;
-
-        /// <summary>
-        /// The main render camera. This is the camera that actually outputs to the HMD/Monitor.
-        /// </summary>
-        public static Camera RenderCamera
-        {
-            get => GameObject.Find("UICamera").GetComponent<Camera>();
-        }
 
         private void Awake()
         {
@@ -48,16 +33,15 @@ namespace LethalCompanyVR
             // Allow disabling VR via command line
             if (Environment.GetCommandLineArgs().Contains("--disable-vr", StringComparer.OrdinalIgnoreCase))
             {
-                Plugin.VR_ENABLED = false;
                 Logger.LogWarning("VR has been disabled by the `--disable-vr` command line flag");
-
-                Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
                 return;
             }
 
-            Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
-
-            Logger.LogDebug("Inserted VR patches using Harmony");
+            if (!AssetManager.LoadAssets())
+            {
+                Logger.LogError("DIsabling VR because assets could not be loaded!");
+                return;
+            }
             
             Logger.LogInfo("Loading VR...");
             StartCoroutine(InitVRLoader());
@@ -68,22 +52,16 @@ namespace LethalCompanyVR
             EnableControllerProfiles();
             InitializeXRRuntime();
 
-            if (VR_ENABLED && !StartDisplay())
+            if (!StartDisplay())
             {
-                Logger.LogError("Failed to start in VR Mode, disabling VR...");
-
-                VR_ENABLED = false;
+                Logger.LogError("Failed to start in VR Mode");
 
                 yield break;
             }
 
-            var devices = new List<InputDevice>();
-            InputDevices.GetDevices(devices);
+            Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
 
-            foreach (InputDevice device in devices)
-            {
-                Logger.LogDebug(device.name);
-            }
+            Logger.LogDebug("Inserted VR patches using Harmony");
 
             yield break;
         }

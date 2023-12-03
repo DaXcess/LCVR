@@ -19,8 +19,6 @@ namespace LethalCompanyVR
         [HarmonyPatch(typeof(PreInitSceneScript), "Start")]
         private static void ImmediateOnline()
         {
-            if (!Plugin.VR_ENABLED) return;
-
             SceneManager.LoadScene("InitScene");
         }
 
@@ -33,8 +31,6 @@ namespace LethalCompanyVR
         [HarmonyPatch(typeof(MenuManager), "Start")]
         private static void OnMainMenuShown(MenuManager __instance)
         {
-            if (!Plugin.VR_ENABLED) return;
-
             try
             {
                 var canvas = __instance.GetComponentInParent<Canvas>();
@@ -52,13 +48,15 @@ namespace LethalCompanyVR
                     return;
                 }
 
-                if (Plugin.RenderCamera == null)
+                var uiCamera = GameObject.Find("UICamera")?.GetComponent<Camera>();
+
+                if (uiCamera == null)
                 {
                     Logger.LogWarning("Failed to find UICamera, main menu will not look good!");
                     return;
                 }
 
-                VRCamera.InitializeHMDCamera(Plugin.RenderCamera);
+                VRCamera.InitializeHMDCamera(uiCamera);
 
                 Logger.LogDebug("Initialized main menu camera");
 
@@ -67,6 +65,9 @@ namespace LethalCompanyVR
                 canvas.transform.localScale = Vector3.one * 0.0085f;
                 canvas.transform.position = new Vector3(0, 1, 5);
                 canvas.renderMode = RenderMode.WorldSpace;
+
+                // :)
+                GameObject.Instantiate(AssetManager.cockroach);
 
                 input.actionsAsset = InputActionAsset.FromJson(Encoding.UTF8.GetString(Properties.Resources.inputs_vr_menu));
             }
