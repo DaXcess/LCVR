@@ -13,9 +13,7 @@ Such a shame that this game uses HDRP it really seems like that wasn't necessary
 
 ## Motion Controls
 
-Motion controls are currently being worked on in a seperate plugin which does not have a repository.
-
-Once enough advancements have been made on that front the code will be merged into this repo.
+✅ Merged initial implementation
 
 ## TODO
 
