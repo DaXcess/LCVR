@@ -1,6 +1,7 @@
 ﻿using GameNetcodeStuff;
 using HarmonyLib;
 using UnityEngine;
+using UnityEngine.Rendering.HighDefinition;
 
 namespace LethalCompanyVR
 {
@@ -29,12 +30,15 @@ namespace LethalCompanyVR
                 return;
             }
 
-            mainCamera.fieldOfView = uiCamera.fieldOfView;
-
             GameObject.Find("PlayerHUDHelmetModel").transform.localScale = Vector3.zero;
 
             mainCamera.targetTexture = null;
             uiCamera.gameObject.SetActive(false);
+
+            // TODO: Make configurable
+            var hdCamera = mainCamera.GetComponent<HDAdditionalCameraData>();
+            hdCamera.allowDeepLearningSuperSampling = false;
+            hdCamera.allowDynamicResolution = true;
 
             // TODO: Cleanup
             // Manually walk to the player object because in multiplayer you are not "Player" but instead one of the other player objects

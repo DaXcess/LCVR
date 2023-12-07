@@ -1,28 +1,24 @@
 ﻿using HarmonyLib;
 using System;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Text;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
-using UnityEngine.SceneManagement;
 
 namespace LethalCompanyVR
 {
     [HarmonyPatch]
     public class UIPatches
     {
-        // TODO: Remove after mod is done
-        /// <summary>
-        /// For ease of use, when VR is enabled immediately choose the online option in favor of LAN
-        /// </summary>
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(PreInitSceneScript), "Start")]
-        private static void ImmediateOnline()
-        {
-            SceneManager.LoadScene("InitScene");
-        }
+        [DllImport("user32.dll")]
+        private static extern bool SetForegroundWindow(IntPtr hWnd);
 
-        // TODO: Clean up, especially the AttachedUI part in here
+        [DllImport("user32.dll")]
+        private static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, int dwExtraInfo);
+
+
         /// <summary>
         /// This function runs when the main menu is shown
         /// </summary>
@@ -70,13 +66,26 @@ namespace LethalCompanyVR
                 GameObject.Instantiate(AssetManager.cockroach);
 
                 input.actionsAsset = InputActionAsset.FromJson(Encoding.UTF8.GetString(Properties.Resources.inputs_vr_menu));
+
+#if RELEASE
+                // Having the game be focussed improves performance significantly
+                MoveToForeground();
+#endif
             }
             catch (Exception exception)
             {
                 Logger.LogWarning($"Failed to move canvas to world space ({__instance.name}): {exception}");
             }
+        }
+        private static void MoveToForeground()
+        {
+            var proc = Process.GetCurrentProcess();
 
-            if (Plugin.FORCE_INGAME) __instance.ConfirmHostButton();
+            // Hack to allow SetForegroundWindow to function
+            keybd_event(0xA4, 0x45, 0x1, 0);
+            keybd_event(0xA4, 0x45, 0x3, 0);
+            
+            SetForegroundWindow(proc.MainWindowHandle);
         }
     }
 }

@@ -5,6 +5,7 @@ using System.Reflection;
 using UnityEngine.InputSystem;
 using UnityEngine;
 using UnityEngine.XR;
+using Unity.Netcode;
 
 namespace LethalCompanyVR
 {
@@ -25,7 +26,6 @@ namespace LethalCompanyVR
             }
             set
             {
-                Logger.LogDebug($"Setting text: {value}");
                 playerController.cursorTip.text = value;
             }
         }
@@ -71,7 +71,7 @@ namespace LethalCompanyVR
 
                     if (playerController.spectatedPlayerScript != null && !playerController.spectatedPlayerScript.isPlayerDead)
                     {
-                        InvokeFunction<object>("SpectateNextPlayer");
+                        InvokeAction("SpectateNextPlayer");
                     }
 
                     return;
@@ -110,6 +110,7 @@ namespace LethalCompanyVR
             }
             catch (Exception ex)
             {
+                Debug.LogError(ex.Message);
                 Debug.LogError(ex.StackTrace);
             }
         }
@@ -121,25 +122,25 @@ namespace LethalCompanyVR
 
             if (!pressed)
             {
-                InvokeFunction<object>("StopHoldInteractionOnTrigger");
+                InvokeAction("StopHoldInteractionOnTrigger");
                 return;
             }
 
             if (playerController.hoveringOverTrigger == null || !playerController.hoveringOverTrigger.interactable)
             {
-                InvokeFunction<object>("StopHoldInteractionOnTrigger");
+                InvokeAction("StopHoldInteractionOnTrigger");
                 return;
             }
 
             if (playerController.hoveringOverTrigger == null || !playerController.hoveringOverTrigger.gameObject.activeInHierarchy || !playerController.hoveringOverTrigger.holdInteraction || playerController.hoveringOverTrigger.currentCooldownValue > 0f || (playerController.isHoldingObject && !playerController.hoveringOverTrigger.oneHandedItemAllowed) || (playerController.twoHanded && !playerController.hoveringOverTrigger.twoHandedItemAllowed))
             {
-                InvokeFunction<object>("StopHoldInteractionOnTrigger");
+                InvokeAction("StopHoldInteractionOnTrigger");
                 return;
             }
 
             if (playerController.isGrabbingObjectAnimation || playerController.isTypingChat || playerController.inSpecialInteractAnimation || GetFieldValue<bool>("throwingObject"))
             {
-                InvokeFunction<object>("StopHoldInteractionOnTrigger");
+                InvokeAction("StopHoldInteractionOnTrigger");
                 return;
             }
 
@@ -168,8 +169,6 @@ namespace LethalCompanyVR
 
                 if (Physics.Raycast(ray, out var hit, playerController.grabDistance, interactableObjectsMask) && hit.collider.gameObject.layer != 8)
                 {
-                    Logger.LogDebug($"[RAYCAST] {name}: {hit.collider.gameObject.name} - [{hit.collider.gameObject.tag}]");
-
                     if (playerController.hoveringOverTrigger == null)
                         VRPlayer.VibrateController(XRNode.RightHand, 0.1f, 0.2f);
 
@@ -272,7 +271,7 @@ namespace LethalCompanyVR
                     playerController.playerBodyAnimator.SetBool("GrabValidated", false);
                     playerController.playerBodyAnimator.SetBool("cancelHolding", false);
                     playerController.playerBodyAnimator.ResetTrigger("Throw");
-                    InvokeFunction<object>("SetSpecialGrabAnimationBool", true, null);
+                    InvokeAction("SetSpecialGrabAnimationBool", true, null);
                     playerController.isGrabbingObjectAnimation = true;
                     playerController.cursorIcon.enabled = false;
                     cursorTip = "";
@@ -284,7 +283,7 @@ namespace LethalCompanyVR
                         playerController.grabObjectAnimationTime = 0.4f;
 
                     if (!playerController.isTestingPlayer)
-                        InvokeFunction<object>("GrabObjectServerRpc", networkObject);
+                        InvokeAction("GrabObjectServerRpc", new NetworkObjectReference(networkObject));
 
                     var grabObjectCoroutine = GetFieldValue<Coroutine>("grabObjectCoroutine");
                     if (grabObjectCoroutine != null)
@@ -292,7 +291,7 @@ namespace LethalCompanyVR
                         playerController.StopCoroutine(grabObjectCoroutine);
                     }
 
-                    SetFieldValue("grabObjectCoroutine", playerController.StartCoroutine((IEnumerator)InvokeFunction<IEnumerable>("GrabObject")));
+                    SetFieldValue("grabObjectCoroutine", playerController.StartCoroutine(InvokeFunction<IEnumerator>("GrabObject")));
                 }
             }
         }
@@ -302,10 +301,13 @@ namespace LethalCompanyVR
             return InvokeFunction<int>("FirstEmptyItemSlot");
         }
 
+        private void InvokeAction(string name, params object[] args)
+        {
+            typeof(PlayerControllerB).GetMethod(name, BindingFlags.Instance | BindingFlags.NonPublic).Invoke(playerController, args);
+        }
+
         private T InvokeFunction<T>(string name, params object[] args)
         {
-            Logger.LogDebug($"Invoking function: {name} ({args.Length} arg{(args.Length == 1 ? "" : "s")})");
-
             return (T)typeof(PlayerControllerB).GetMethod(name, BindingFlags.Instance | BindingFlags.NonPublic).Invoke(playerController, args);
         }
 

@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>LethalCompanyVR</AssemblyName>
     <Description>Collecting Scrap in VR</Description>
-    <Version>1.0.0</Version>
+    <Version>0.0.1</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
@@ -32,6 +32,12 @@
     </Reference>
     <Reference Include="Unity.Netcode.Runtime">
       <HintPath>Libs\Managed\Unity.Netcode.Runtime.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.RenderPipelines.Core.Runtime">
+      <HintPath>Libs\Managed\Unity.RenderPipelines.Core.Runtime.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.RenderPipelines.HighDefinition.Runtime">
+      <HintPath>Libs\Managed\Unity.RenderPipelines.HighDefinition.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="Unity.TextMeshPro">
       <HintPath>Libs\Managed\Unity.TextMeshPro.dll</HintPath>

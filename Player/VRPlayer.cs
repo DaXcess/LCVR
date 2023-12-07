@@ -4,6 +4,7 @@ using UnityEngine.InputSystem.XR;
 using UnityEngine.XR;
 using System;
 using UnityEngine.Animations.Rigging;
+using UnityEngine.Rendering;
 
 namespace LethalCompanyVR
 {
@@ -11,8 +12,17 @@ namespace LethalCompanyVR
 
     internal class VRPlayer : MonoBehaviour
     {
+        private const float SCALE_FACTOR = 1.6f;
+
         private GameObject leftController;
         private GameObject rightController;
+
+        private GameObject cameraContainer;
+        private Camera mainCamera;
+
+        private GameObject cameraAnchor;
+
+        private Vector3 lastFrameHMDPosition = new Vector3(0, 0, 0);
 
         private void Awake()
         {
@@ -21,23 +31,28 @@ namespace LethalCompanyVR
                 Logger.LogDebug("Going to intialize XR Rig");
 
                 // Disable base rig
-                Find("ScavengerModel/metarig").GetComponent<Animator>().enabled = false;
+                //Find("ScavengerModel/metarig").GetComponent<Animator>().enabled = false;
+
+                // Disable base model shadows
+                Find("ScavengerModel/LOD1").GetComponent<SkinnedMeshRenderer>().enabled = false;
 
                 // Make sure the player doesn't rotate
                 transform.rotation = Quaternion.identity;
 
                 // Create XR stuff
                 var scavengerModel = Find("ScavengerModel");
-                var camContainer = Find("ScavengerModel/metarig/CameraContainer");
-                var mainCamera = Find("ScavengerModel/metarig/CameraContainer/MainCamera");
+                cameraContainer = Find("ScavengerModel/metarig/CameraContainer");
+                mainCamera = Find("ScavengerModel/metarig/CameraContainer/MainCamera").GetComponent<Camera>();
+                cameraAnchor = new GameObject("Camera Anchor");
 
-                camContainer.transform.parent = scavengerModel.transform;
-                camContainer.transform.localPosition = Vector3.zero;
-                camContainer.transform.localRotation = Quaternion.Euler(0, 0, 0);
-                camContainer.transform.localScale = Vector3.one;
+                // Unparent camera container
+                cameraContainer.transform.parent = null;
+                cameraContainer.transform.localPosition = Vector3.zero;
+                cameraContainer.transform.localRotation = Quaternion.Euler(0, 0, 0);
+                cameraContainer.transform.localScale = Vector3.one;
 
                 // Create HMD tracker
-                var cameraPoseDriver = mainCamera.AddComponent<TrackedPoseDriver>();
+                var cameraPoseDriver = mainCamera.gameObject.AddComponent<TrackedPoseDriver>();
                 cameraPoseDriver.positionAction = Actions.XR_HeadPosition;
                 cameraPoseDriver.rotationAction = Actions.XR_HeadRotation;
                 cameraPoseDriver.trackingStateInput = new InputActionProperty(Actions.XR_HeadTrackingState);
@@ -47,8 +62,8 @@ namespace LethalCompanyVR
                 leftController = new GameObject("Left Controller");
 
                 // And mount to camera container
-                rightController.transform.parent = camContainer.transform;
-                leftController.transform.parent = camContainer.transform;
+                rightController.transform.parent = cameraContainer.transform;
+                leftController.transform.parent = cameraContainer.transform;
 
                 // Left hand tracking
                 var rightHandPoseDriver = rightController.AddComponent<TrackedPoseDriver>();
@@ -74,19 +89,18 @@ namespace LethalCompanyVR
                 // Head defintely does need to have offsets (in this case an offset of 0, 0, 0)
                 headVRTarget.transform.localPosition = Vector3.zero;
 
-                rightHandVRTarget.transform.localPosition = new Vector3(0.012f, -0.034f, -0.146f);
-                rightHandVRTarget.transform.localRotation = Quaternion.Euler(0, 90, 135);
+                rightHandVRTarget.transform.localPosition = new Vector3(0.012f, 0.016f, -0.146f);
+                rightHandVRTarget.transform.localRotation = Quaternion.Euler(0, 90, 90 + 45);
 
-                leftHandVRTarget.transform.localPosition = new Vector3(-0.012f, -0.034f, -0.146f);
-                leftHandVRTarget.transform.localRotation = Quaternion.Euler(180, 90, 135);
+                leftHandVRTarget.transform.localPosition = new Vector3(-0.012f, 0.016f, -0.146f);
+                leftHandVRTarget.transform.localRotation = Quaternion.Euler(180, 90, 90 - 45);
 
-                Logger.LogDebug("Creating debug hands...");
-
-                // TODO: Remove debug controller objects
-                GameObject.Instantiate(AssetManager.rightHand).transform.parent = rightController.transform;
-                GameObject.Instantiate(AssetManager.leftHand).transform.parent = leftController.transform;
-
-                Logger.LogDebug("Created debug hands");
+                if (true)
+                {
+                    // TODO: Remove debug controller objects
+                    GameObject.Instantiate(AssetManager.rightHand).transform.parent = rightController.transform;
+                    GameObject.Instantiate(AssetManager.leftHand).transform.parent = leftController.transform;
+                }
 
                 // Disable built-in constraints
                 GameObject.Destroy(Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/RigArms/RightArm").GetComponent<ChainIKConstraint>());
@@ -196,11 +210,13 @@ namespace LethalCompanyVR
                 };
 
                 rigFollow.headBodyPositionOffset = new Vector3(0, -2.25f, 0);
-
+                
                 // Notify rig about our new constraints
                 rigBuilder.Build();
 
-                CreateRaycasters();
+                // Add controller interactor
+                var right = rightController.AddComponent<VRController>();
+                right.Initialize(this);
 
                 Logger.LogDebug("Initialized XR Rig");
             }
@@ -214,28 +230,25 @@ namespace LethalCompanyVR
 
         private void Update()
         {
-            var camContainer = Find("ScavengerModel/CameraContainer");
+            var movement = mainCamera.transform.localPosition - lastFrameHMDPosition;
+            movement.y = 0;
 
-            transform.rotation = Quaternion.identity;
+            transform.position += new Vector3(movement.x * SCALE_FACTOR, 0, movement.z * SCALE_FACTOR);
+         
+            // Hmmmm?
+            //GetComponent<CharacterController>().Move(movement);
 
-            camContainer.transform.localPosition = Vector3.zero;
-            camContainer.transform.rotation = Quaternion.Euler(0, 0, 0);
-            camContainer.transform.localScale = Vector3.one * 0.8f;
-        }
+            cameraAnchor.transform.position = new Vector3(transform.position.x - mainCamera.transform.localPosition.x * SCALE_FACTOR, 0, transform.position.z - mainCamera.transform.localPosition.z * SCALE_FACTOR);
+            //cameraAnchor.transform.localPosition = new Vector3(-mainCamera.transform.localPosition.x, 0, -mainCamera.transform.localPosition.z);
+            //cameraAnchor.transform.rotation = Quaternion.Euler(0, -transform.eulerAngles.y, 0);
 
-        /// <summary>
-        /// Creates rays shooting off the controllers
-        /// </summary>
-        private void CreateRaycasters()
-        {
-            // Only one controller is supported at this moment
-            // TODO: Make dominant hand configurable
+            cameraContainer.transform.position = cameraAnchor.transform.position;
+            cameraContainer.transform.rotation = Quaternion.Euler(0, 0, 0);
+            cameraContainer.transform.localScale = Vector3.one * SCALE_FACTOR;
 
-            //var left = leftController.AddComponent<VRController>();
-            var right = rightController.AddComponent<VRController>();
+            transform.rotation = Quaternion.Euler(0, mainCamera.transform.eulerAngles.y, 0);
 
-            //left.Initialize(this);
-            right.Initialize(this);
+            lastFrameHMDPosition = mainCamera.transform.localPosition;
         }
 
         private GameObject Find(string name, bool resetLocalPosition = false)
@@ -244,9 +257,7 @@ namespace LethalCompanyVR
             if (@object == null) return null;
 
             if (resetLocalPosition)
-            {
                 @object.transform.localPosition = Vector3.zero;
-            }
 
             return @object;
         }

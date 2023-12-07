@@ -1,11 +1,12 @@
 ﻿using BepInEx;
 using HarmonyLib;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.XR;
 using UnityEngine.XR.Management;
 using UnityEngine.XR.OpenXR;
@@ -14,21 +15,20 @@ using UnityEngine.XR.OpenXR.Features.Interactions;
 
 namespace LethalCompanyVR
 {
-    [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
+    [BepInPlugin(PLUGIN_GUID, PLUGIN_NAME, PLUGIN_VERSION)]
     //[BepInIncompatibility("com.sinai.unityexplorer")]
     public class Plugin : BaseUnityPlugin
     {
-        /// <summary>
-        /// Temporary value to tell the game to instantly host a game
-        /// </summary>
-        public static bool FORCE_INGAME = true;
+        public const string PLUGIN_GUID = "io.daxcess.lcvr";
+        public const string PLUGIN_NAME = "LCVR";
+        public const string PLUGIN_VERSION = "0.0.1";
 
         private void Awake()
         {
             // Plugin startup logic
             LethalCompanyVR.Logger.SetSource(Logger);
 
-            Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is starting...");
+            Logger.LogInfo($"Plugin {PLUGIN_NAME} is starting...");
 
             // Allow disabling VR via command line
             if (Environment.GetCommandLineArgs().Contains("--disable-vr", StringComparer.OrdinalIgnoreCase))
@@ -39,15 +39,28 @@ namespace LethalCompanyVR
 
             if (!AssetManager.LoadAssets())
             {
-                Logger.LogError("DIsabling VR because assets could not be loaded!");
+                Logger.LogError("Disabling VR because assets could not be loaded!");
                 return;
             }
+
+            // TODO: Make this configurable
+            var asset = QualitySettings.renderPipeline as HDRenderPipelineAsset;
+            var settings = asset.currentPlatformRenderPipelineSettings;
+
+            settings.dynamicResolutionSettings.enabled = true;
+            settings.dynamicResolutionSettings.enableDLSS = false;
+            settings.dynamicResolutionSettings.dynResType = DynamicResolutionType.Hardware;
+            settings.dynamicResolutionSettings.upsampleFilter = DynamicResUpscaleFilter.CatmullRom;
+            settings.dynamicResolutionSettings.minPercentage = 25;
+            settings.dynamicResolutionSettings.maxPercentage = 50;
+
+            asset.currentPlatformRenderPipelineSettings = settings;
             
             Logger.LogInfo("Loading VR...");
-            StartCoroutine(InitVRLoader());
+            InitVRLoader();
         }
 
-        private IEnumerator InitVRLoader()
+        private void InitVRLoader()
         {
             EnableControllerProfiles();
             InitializeXRRuntime();
@@ -56,21 +69,19 @@ namespace LethalCompanyVR
             {
                 Logger.LogError("Failed to start in VR Mode");
 
-                yield break;
+                return;
             }
 
             Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
 
             Logger.LogDebug("Inserted VR patches using Harmony");
-
-            yield break;
         }
 
         /// <summary>
         /// Loads controller profiles provided by Unity into OpenXR, which will enable controller support.
         /// By default, only the HMD input profile is loaded.
         /// </summary>
-        private static void EnableControllerProfiles()
+        private void EnableControllerProfiles()
         {
             var valveIndex = ScriptableObject.CreateInstance<ValveIndexControllerProfile>();
             var hpReverb = ScriptableObject.CreateInstance<HPReverbG2ControllerProfile>();
@@ -103,13 +114,13 @@ namespace LethalCompanyVR
             };
             typeof(OpenXRSettings).GetField("features", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(OpenXRSettings.Instance, featList.ToArray());
 
-            LethalCompanyVR.Logger.LogDebug("Enabled XR Controller Profiles");
+            Logger.LogDebug("Enabled XR Controller Profiles");
         }
 
         /// <summary>
         /// Attempt to start the OpenXR runtime.
         /// </summary>
-        private static void InitializeXRRuntime()
+        private void InitializeXRRuntime()
         {
             // Set up the OpenXR loader
             var generalSettings = ScriptableObject.CreateInstance<XRGeneralSettings>();
@@ -122,23 +133,21 @@ namespace LethalCompanyVR
             ((List<XRLoader>)managerSettings.activeLoaders).Clear();
             ((List<XRLoader>)managerSettings.activeLoaders).Add(xrLoader);
 
-            // TODO: Test if this is even necessary
             OpenXRSettings.Instance.renderMode = OpenXRSettings.RenderMode.MultiPass;
 
             managerSettings.InitializeLoaderSync();
 
-            // TODO: Ditto for these
             typeof(XRGeneralSettings).GetMethod("AttemptInitializeXRSDKOnLoad", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, []);
             typeof(XRGeneralSettings).GetMethod("AttemptStartXRSDKOnBeforeSplashScreen", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, []);
 
-            LethalCompanyVR.Logger.LogDebug("Initialized XR Runtime");
+            Logger.LogDebug("Initialized XR Runtime");
         }
 
         /// <summary>
         /// Start the display subsystem (I have no idea what that means).
         /// </summary>
         /// <returns><see langword="false"/> if no displays were found, <see langword="true"/> otherwise.</returns>
-        private static bool StartDisplay()
+        private bool StartDisplay()
         {
             var displays = new List<XRDisplaySubsystem>();
 
