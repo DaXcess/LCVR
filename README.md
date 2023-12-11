@@ -5,34 +5,14 @@
 
 Collecting Scrap in VR
 
-## HDRP
+## Performance
 
-HDRP out here really ruining our day. Check to see if we can apply performance upgrades using DLSS/FSR to allow the game to be playable in VR.
+Since Lethal Company is using the High Definition Render Pipeline, enabling XR causes a lot of performance issues. Luckily we can use Dynamic Resolution to alleviate some of the lag.
 
-Such a shame that this game uses HDRP it really seems like that wasn't necessary.
-
-## Motion Controls
-
-✅ Merged initial implementation
-
-## TODO
-
-- [ ] Complete controller support
-- [ ] Get the correct FOV based on the headset being used. It looks like Unity somehow knows this already, just gotta figure out how to extract it.
-- [ ] Build a working XRRig (or feasible alternative), that correctly applies player rotation based on head rotation
-- [ ] Maybe hand movement based on controller movement? Would be cool for flashlights and stuff. Will have to check how item pickup/interactions will work though.
-- [ ] Fix the item pickup/interact raycasting (currently still requires mouse input, even though it looks like nothing is happening)
-- [ ] Fix non-player cameras (spectating, ship leaving after death, etc)
-- [ ] Correctly display HUD by moving them to World Position and updating it's position/rotation based on HMD
-- [ ] Check if we can prepare for a possible Il2Cpp version of the game. Currently the method patching transpilers will not work if the game were to be converted to Il2Cpp.
-- [ ] (Optional) Controller haptics (e.g. vibrate when a Giant takes a step, when low health, when damaged, when in a panicked state etc).
-- [ ] Be able to interact with the terminal, either via Virtual Keyboard (must be custom made as this mod avoids explicitly using SteamVR in favor of complete OpenXR support) or some other custom UI that has some presets.
-
-- [ ] Probably a whole lot more, expect this list to be updated frequently
+At the time of writing, there has been a very simple initial draft added to the code that enables Dynamic Resolution with a Catmull Rom upscale filter, with an aggressive setting of 25%-50% screen scale. More research and testing needs to be done to see if it's also feasible to use DLSS/FSR, without compromising quality and with adequate performance gains.
 
 ## Helpful tools and documentation
 
 - [Unity Explorer](https://github.com/sinai-dev/UnityExplorer)
 - [Unity OpenXR Plugin](https://docs.unity3d.com/Packages/com.unity.xr.openxr@1.8/manual/index.html)
 - [Unity XR Inputs](https://docs.unity3d.com/Manual/xr_input.html)
-- [OpenXR 1.0 Specification](https://registry.khronos.org/OpenXR/specs/1.0/html/xrspec.html)
