@@ -135,10 +135,8 @@ namespace LethalCompanyVR
 
             OpenXRSettings.Instance.renderMode = OpenXRSettings.RenderMode.MultiPass;
 
-            managerSettings.InitializeLoaderSync();
-
-            typeof(XRGeneralSettings).GetMethod("AttemptInitializeXRSDKOnLoad", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, []);
-            typeof(XRGeneralSettings).GetMethod("AttemptStartXRSDKOnBeforeSplashScreen", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, []);
+            typeof(XRGeneralSettings).GetMethod("InitXRSDK", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(generalSettings, []);
+            typeof(XRGeneralSettings).GetMethod("Start", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(generalSettings, []);
 
             Logger.LogDebug("Initialized XR Runtime");
         }

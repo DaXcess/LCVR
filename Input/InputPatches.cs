@@ -1,22 +1,22 @@
 ﻿using HarmonyLib;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace LethalCompanyVR
 {
-    // TODO: Is this even necessary anymore?
-
-    [HarmonyPatch(typeof(PlayerActions))]
-    [HarmonyPatch(MethodType.Constructor)]
+    [HarmonyPatch]
     public class InputPatches
     {
-        static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+        [HarmonyPatch(typeof(IngamePlayerSettings), nameof(IngamePlayerSettings.LoadSettingsFromPrefs))]
+        [HarmonyPostfix]
+        private static void OnLoadSettings(IngamePlayerSettings __instance)
         {
-            var codes = new List<CodeInstruction>(instructions);
+            __instance.playerInput.actions.LoadFromJson(Properties.Resources.inputs);
+            __instance.playerInput.actions.Enable();
 
-            codes[6].operand = Properties.Resources.inputs;
-            
-            return codes.AsEnumerable();
+            // Oh my fucking god I love having to spend an entire night only to find out **THIS** is what I needed to do
+            __instance.playerInput.enabled = false;
+            __instance.playerInput.enabled = true;
+
+            Logger.LogDebug("Loaded XR input binding overrides");
         }
     }
 }

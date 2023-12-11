@@ -105,7 +105,7 @@ namespace LethalCompanyVR
                 leftHandVRTarget.transform.localPosition = new Vector3(-0.0355f, -0.0189f, -0.086f);
                 leftHandVRTarget.transform.localRotation = Quaternion.Euler(0, 270, 270 - 13);
 
-                if (true)
+                if (false)
                 {
                     // TODO: Remove debug controller objects
                     GameObject.Instantiate(AssetManager.rightHand).transform.parent = rightController.transform;
