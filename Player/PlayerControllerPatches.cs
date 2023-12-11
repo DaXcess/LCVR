@@ -18,25 +18,25 @@ namespace LethalCompanyVR
             var codes = new List<CodeInstruction>(instructions);
 
             // Remove HUD rotating
-            for (int i = 108; i <= 120; i++)
+            for (int i = 111; i <= 123; i++)
             {
                 codes[i].opcode = OpCodes.Nop;
                 codes[i].operand = null;
             }
 
             // Remove FOV updating
-            for (int i = 302; i <= 313; i++)
+            for (int i = 305; i <= 316; i++)
             {
                 codes[i].opcode = OpCodes.Nop;
                 codes[i].operand = null;
             }
 
             // Remove Player Rig Updating
-            for (int i = 1965; i <= 1990; i++)
-            {
-                codes[i].opcode = OpCodes.Nop;
-                codes[i].operand = null;
-            }
+            //for (int i = 1965; i <= 1990; i++)
+            //{
+            //    codes[i].opcode = OpCodes.Nop;
+            //    codes[i].operand = null;
+            //}
 
             return codes.AsEnumerable();
         }
@@ -50,17 +50,17 @@ namespace LethalCompanyVR
             var codes = new List<CodeInstruction>(instructions);
 
             // Remove Player Rig Updating
-            for (int i = 497; i <= 516; i++)
-            {
-                codes[i].opcode = OpCodes.Nop;
-                codes[i].operand = null;
-            }
+            //for (int i = 497; i <= 516; i++)
+            //{
+            //    codes[i].opcode = OpCodes.Nop;
+            //    codes[i].operand = null;
+            //}
 
             return codes.AsEnumerable();
         }
     }
 
-    [HarmonyPatch(typeof(PlayerControllerB), "SwitchItem_performed")]
+    [HarmonyPatch(typeof(PlayerControllerB), "ScrollMouse_performed")]
     public static class PlayerControllerB_SwitchItem_Patch
     {
         static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator, MethodBase original)
@@ -88,8 +88,19 @@ namespace LethalCompanyVR
     }
 
     [HarmonyPatch]
-    public static class DamagePlayer
+    public static class PlayerControllerPatches
     {
+        // TODO: Somehow get the animator to work properly in VR
+        [HarmonyPatch(typeof(PlayerControllerB), "Update")]
+        [HarmonyPostfix]
+        private static void UpdatePrefix(PlayerControllerB __instance)
+        {
+            if (__instance.playerBodyAnimator.runtimeAnimatorController != null)
+            {
+                __instance.playerBodyAnimator.runtimeAnimatorController = null;
+            }
+        }
+
         [HarmonyPatch(typeof(PlayerControllerB), "DamagePlayer")]
         [HarmonyPostfix]
         public static void AfterDamagePlayer()

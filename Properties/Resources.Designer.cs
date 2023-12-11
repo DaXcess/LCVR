@@ -63,6 +63,16 @@ namespace LethalCompanyVR.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
+        internal static byte[] animator {
+            get {
+                object obj = ResourceManager.GetObject("animator", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
         internal static byte[] hands {
             get {
                 object obj = ResourceManager.GetObject("hands", resourceCulture);
@@ -71,22 +81,57 @@ namespace LethalCompanyVR.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
+        ///   Looks up a localized string similar to {
+        ///  &quot;name&quot;: &quot;PlayerActions&quot;,
+        ///  &quot;maps&quot;: [
+        ///    {
+        ///      &quot;name&quot;: &quot;Movement&quot;,
+        ///      &quot;id&quot;: &quot;1560e87b-23aa-4005-bf8b-264f6a3c3736&quot;,
+        ///      &quot;actions&quot;: [
+        ///        {
+        ///          &quot;name&quot;: &quot;Look&quot;,
+        ///          &quot;type&quot;: &quot;Value&quot;,
+        ///          &quot;id&quot;: &quot;c63a6ade-6c5a-4659-9aa5-e336e7b9970f&quot;,
+        ///          &quot;expectedControlType&quot;: &quot;Vector2&quot;,
+        ///          &quot;processors&quot;: &quot;AxisDeadzone(max=1)&quot;,
+        ///          &quot;interactions&quot;: &quot;&quot;,
+        ///          &quot;initialStateCheck&quot;: true
+        ///        },
+        ///        {
+        ///          &quot;name&quot;: &quot;Move&quot;,
+        ///          &quot;type&quot;: &quot;Value&quot;,        /// [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static byte[] inputs {
+        internal static string inputs {
             get {
-                object obj = ResourceManager.GetObject("inputs", resourceCulture);
-                return ((byte[])(obj));
+                return ResourceManager.GetString("inputs", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
+        ///   Looks up a localized string similar to {
+        ///  &quot;name&quot;: &quot;PlayerActions&quot;,
+        ///  &quot;maps&quot;: [
+        ///    {
+        ///      &quot;name&quot;: &quot;UI&quot;,
+        ///      &quot;id&quot;: &quot;433b3177-0846-4f85-945a-4a31dfbefd28&quot;,
+        ///      &quot;actions&quot;: [
+        ///        {
+        ///          &quot;name&quot;: &quot;Navigate&quot;,
+        ///          &quot;type&quot;: &quot;Value&quot;,
+        ///          &quot;id&quot;: &quot;c63a6ade-6c5a-4659-9aa5-e336e7b9970f&quot;,
+        ///          &quot;expectedControlType&quot;: &quot;Vector2&quot;,
+        ///          &quot;processors&quot;: &quot;&quot;,
+        ///          &quot;interactions&quot;: &quot;&quot;,
+        ///          &quot;initialStateCheck&quot;: false
+        ///        },
+        ///        {
+        ///          &quot;name&quot;: &quot;Submit&quot;,
+        ///          &quot;type&quot;: &quot;Value&quot;,
+        ///          &quot;id&quot;: &quot; [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static byte[] inputs_vr_menu {
+        internal static string inputs_vr_menu {
             get {
-                object obj = ResourceManager.GetObject("inputs_vr_menu", resourceCulture);
-                return ((byte[])(obj));
+                return ResourceManager.GetString("inputs_vr_menu", resourceCulture);
             }
         }
         

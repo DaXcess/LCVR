@@ -1,5 +1,6 @@
 ﻿using GameNetcodeStuff;
 using HarmonyLib;
+using LethalCompanyVR.Input;
 using UnityEngine;
 using UnityEngine.Rendering.HighDefinition;
 
@@ -49,6 +50,9 @@ namespace LethalCompanyVR
             var hud = hudObject.AddComponent<VRHUD>();
 
             hud.Initialize(mainCamera);
+
+            // Input controls
+            VRControls.InsertVRControls();
         }
 
         [HarmonyPrefix]

@@ -11,10 +11,13 @@ namespace LethalCompanyVR
         public static GameObject leftHand;
         public static GameObject rightHand;
 
+        public static RuntimeAnimatorController metarig;
+
         public static bool LoadAssets()
         {
             assetBundle = AssetBundle.LoadFromMemory(Properties.Resources.lethalcompanyvr);
             var handsBundle = AssetBundle.LoadFromMemory(Properties.Resources.hands);
+            var animatorBundle = AssetBundle.LoadFromMemory(Properties.Resources.animator);
 
             if (assetBundle == null)
             {
@@ -32,6 +35,7 @@ namespace LethalCompanyVR
             cockroach = assetBundle.LoadAsset<GameObject>("Cockroach");
             leftHand = handsBundle.LoadAsset<GameObject>("Left Hand Model");
             rightHand = handsBundle.LoadAsset<GameObject>("Right Hand Model");
+            metarig = animatorBundle.LoadAsset<RuntimeAnimatorController>("metarig");
 
             return true;
         }

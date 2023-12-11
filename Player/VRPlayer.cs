@@ -5,6 +5,7 @@ using UnityEngine.XR;
 using System;
 using UnityEngine.Animations.Rigging;
 using UnityEngine.Rendering;
+using GameNetcodeStuff;
 
 namespace LethalCompanyVR
 {
@@ -17,12 +18,14 @@ namespace LethalCompanyVR
         private GameObject leftController;
         private GameObject rightController;
 
-        private GameObject cameraContainer;
+        private GameObject xrOrigin;
         private Camera mainCamera;
 
         private GameObject cameraAnchor;
 
-        private Vector3 lastFrameHMDPosition = new Vector3(0, 0, 0);
+        private Vector3 lastFrameHMDPosition = new(0, 0, 0);
+
+        private PlayerControllerB playerController;
 
         private void Awake()
         {
@@ -36,20 +39,27 @@ namespace LethalCompanyVR
                 // Disable base model shadows
                 Find("ScavengerModel/LOD1").GetComponent<SkinnedMeshRenderer>().enabled = false;
 
-                // Make sure the player doesn't rotate
-                transform.rotation = Quaternion.identity;
+                // Get player controller
+                playerController = GetComponent<PlayerControllerB>();
+
+                var cube = GameObject.Instantiate(AssetManager.aLiteralCube);
+                cube.transform.localScale = Vector3.one * 0.1f;
+                cube.transform.parent = playerController.localItemHolder;
 
                 // Create XR stuff
                 var scavengerModel = Find("ScavengerModel");
-                cameraContainer = Find("ScavengerModel/metarig/CameraContainer");
+                xrOrigin = new GameObject("XR Origin"); // Find("ScavengerModel/metarig/CameraContainer");
                 mainCamera = Find("ScavengerModel/metarig/CameraContainer/MainCamera").GetComponent<Camera>();
                 cameraAnchor = new GameObject("Camera Anchor");
 
+                // Fool the animator (this removes console error spam)
+                new GameObject("MainCamera").transform.parent = Find("ScavengerModel/metarig/CameraContainer").transform;
+
                 // Unparent camera container
-                cameraContainer.transform.parent = null;
-                cameraContainer.transform.localPosition = Vector3.zero;
-                cameraContainer.transform.localRotation = Quaternion.Euler(0, 0, 0);
-                cameraContainer.transform.localScale = Vector3.one;
+                mainCamera.transform.parent = xrOrigin.transform;
+                xrOrigin.transform.localPosition = Vector3.zero;
+                xrOrigin.transform.localRotation = Quaternion.Euler(0, 0, 0);
+                xrOrigin.transform.localScale = Vector3.one;
 
                 // Create HMD tracker
                 var cameraPoseDriver = mainCamera.gameObject.AddComponent<TrackedPoseDriver>();
@@ -62,8 +72,8 @@ namespace LethalCompanyVR
                 leftController = new GameObject("Left Controller");
 
                 // And mount to camera container
-                rightController.transform.parent = cameraContainer.transform;
-                leftController.transform.parent = cameraContainer.transform;
+                rightController.transform.parent = xrOrigin.transform;
+                leftController.transform.parent = xrOrigin.transform;
 
                 // Left hand tracking
                 var rightHandPoseDriver = rightController.AddComponent<TrackedPoseDriver>();
@@ -89,11 +99,11 @@ namespace LethalCompanyVR
                 // Head defintely does need to have offsets (in this case an offset of 0, 0, 0)
                 headVRTarget.transform.localPosition = Vector3.zero;
 
-                rightHandVRTarget.transform.localPosition = new Vector3(0.012f, 0.016f, -0.146f);
-                rightHandVRTarget.transform.localRotation = Quaternion.Euler(0, 90, 90 + 45);
+                rightHandVRTarget.transform.localPosition = new Vector3(0.0355f, -0.0189f, -0.086f);
+                rightHandVRTarget.transform.localRotation = Quaternion.Euler(0, 90, 90 + 13);
 
-                leftHandVRTarget.transform.localPosition = new Vector3(-0.012f, 0.016f, -0.146f);
-                leftHandVRTarget.transform.localRotation = Quaternion.Euler(180, 90, 90 - 45);
+                leftHandVRTarget.transform.localPosition = new Vector3(-0.0355f, -0.0189f, -0.086f);
+                leftHandVRTarget.transform.localRotation = Quaternion.Euler(0, 270, 270 - 13);
 
                 if (true)
                 {
@@ -102,21 +112,13 @@ namespace LethalCompanyVR
                     GameObject.Instantiate(AssetManager.leftHand).transform.parent = leftController.transform;
                 }
 
-                // Disable built-in constraints
-                GameObject.Destroy(Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/RigArms/RightArm").GetComponent<ChainIKConstraint>());
-                GameObject.Destroy(Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/RigArms/LeftArm").GetComponent<ChainIKConstraint>());
-
                 // Set up rigging
                 var model = Find("ScavengerModel/metarig/ScavengerModelArmsOnly", true);
                 var modelMetarig = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig", true);
 
                 Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/RigArms", true);
 
-                var rig = modelMetarig.AddComponent<Rig>();
-                var rigBuilder = model.AddComponent<RigBuilder>();
                 var rigFollow = model.AddComponent<IKRigFollowVRRig>();
-
-                rigBuilder.layers.Add(new RigLayer(rig, true));
 
                 var head = Find("ScavengerModel/metarig/Rig 1/LookHead");
                 var rightArm = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/RigArms/RightArm", true);
@@ -128,20 +130,6 @@ namespace LethalCompanyVR
                 var headTarget = new GameObject("Head_Target");
 
                 headTarget.transform.parent = head.transform;
-
-                var headConstraint = head.AddComponent<MultiParentConstraint>();
-                headConstraint.data.constrainedPositionXAxis = true;
-                headConstraint.data.constrainedPositionYAxis = true;
-                headConstraint.data.constrainedPositionZAxis = true;
-                headConstraint.data.constrainedRotationXAxis = true;
-                headConstraint.data.constrainedRotationYAxis = true;
-                headConstraint.data.constrainedRotationZAxis = true;
-                headConstraint.data.constrainedObject = headIKTarget.transform;
-                headConstraint.data.sourceObjects = new WeightedTransformArray(1);
-                headConstraint.data.sourceObjects.SetTransform(0, headTarget.transform);
-                headConstraint.data.sourceObjects.SetWeight(0, 1);
-
-                headConstraint.Reset();
 
                 rigFollow.head = new IKRigFollowVRRig.VRMap()
                 {
@@ -162,16 +150,6 @@ namespace LethalCompanyVR
 
                 rightArmHint.transform.localPosition = new Vector3(2.5f, -2f, -1f);
 
-                var rightArmConstraint = rightArm.AddComponent<TwoBoneIKConstraint>();
-                rightArmConstraint.data.root = rightArmRoot.transform;
-                rightArmConstraint.data.mid = rightArmMid.transform;
-                rightArmConstraint.data.tip = rightArmTip.transform;
-                rightArmConstraint.data.target = rightArmTarget.transform;
-                rightArmConstraint.data.hint = rightArmHint.transform;
-                rightArmConstraint.data.hintWeight = 1;
-                rightArmConstraint.data.targetRotationWeight = 1;
-                rightArmConstraint.data.targetPositionWeight = 1;
-
                 rigFollow.rightHand = new IKRigFollowVRRig.VRMap()
                 {
                     ikTarget = rightArmTarget.transform,
@@ -191,16 +169,6 @@ namespace LethalCompanyVR
 
                 leftArmHint.transform.localPosition = new Vector3(-1f, -2f, -1f);
 
-                var leftArmConstraint = leftArm.AddComponent<TwoBoneIKConstraint>();
-                leftArmConstraint.data.root = leftArmRoot.transform;
-                leftArmConstraint.data.mid = leftArmMid.transform;
-                leftArmConstraint.data.tip = leftArmTip.transform;
-                leftArmConstraint.data.target = leftArmTarget.transform;
-                leftArmConstraint.data.hint = leftArmHint.transform;
-                leftArmConstraint.data.hintWeight = 1;
-                leftArmConstraint.data.targetRotationWeight = 1;
-                leftArmConstraint.data.targetPositionWeight = 1;
-
                 rigFollow.leftHand = new IKRigFollowVRRig.VRMap()
                 {
                     ikTarget = leftArmTarget.transform,
@@ -209,10 +177,7 @@ namespace LethalCompanyVR
                     trackingRotationOffset = Vector3.zero
                 };
 
-                rigFollow.headBodyPositionOffset = new Vector3(0, -2.25f, 0);
-                
-                // Notify rig about our new constraints
-                rigBuilder.Build();
+                rigFollow.headBodyPositionOffset = new Vector3(0, 0, 0);
 
                 // Add controller interactor
                 var right = rightController.AddComponent<VRController>();
@@ -235,16 +200,11 @@ namespace LethalCompanyVR
 
             transform.position += new Vector3(movement.x * SCALE_FACTOR, 0, movement.z * SCALE_FACTOR);
          
-            // Hmmmm?
-            //GetComponent<CharacterController>().Move(movement);
-
-            cameraAnchor.transform.position = new Vector3(transform.position.x - mainCamera.transform.localPosition.x * SCALE_FACTOR, 0, transform.position.z - mainCamera.transform.localPosition.z * SCALE_FACTOR);
-            //cameraAnchor.transform.localPosition = new Vector3(-mainCamera.transform.localPosition.x, 0, -mainCamera.transform.localPosition.z);
-            //cameraAnchor.transform.rotation = Quaternion.Euler(0, -transform.eulerAngles.y, 0);
-
-            cameraContainer.transform.position = cameraAnchor.transform.position;
-            cameraContainer.transform.rotation = Quaternion.Euler(0, 0, 0);
-            cameraContainer.transform.localScale = Vector3.one * SCALE_FACTOR;
+            cameraAnchor.transform.position = new Vector3(transform.position.x - mainCamera.transform.localPosition.x * SCALE_FACTOR, transform.position.y, transform.position.z - mainCamera.transform.localPosition.z * SCALE_FACTOR);
+            
+            xrOrigin.transform.position = cameraAnchor.transform.position;
+            xrOrigin.transform.rotation = Quaternion.Euler(0, 0, 0);
+            xrOrigin.transform.localScale = Vector3.one * SCALE_FACTOR;
 
             transform.rotation = Quaternion.Euler(0, mainCamera.transform.eulerAngles.y, 0);
 
