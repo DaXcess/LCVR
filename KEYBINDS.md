@@ -8,7 +8,7 @@
 |      Sprint      | Shift            | Left J Down      |                                                                        |
 |     OpenMenu     | Escape, Tab      | Menu button      |                                                                        |
 |     Interact     | E                | L Grip Button    |                                                                        |
-|      Crouch      | Ctrl             | right J down     | Touch here might be better, holding joysticks down is hard             |
+|      Crouch      | Ctrl             | Right J Down     |                                                                        |
 |       Use        | LMB              | Left trigger     |                                                                        |
 |   ActivateItem   | LMB              | Left trigger     |                                                                        |
 |     Discard      | G                | B                |                                                                        |
@@ -28,7 +28,7 @@
 |  SetFreeCamera   | C                | (Disabled)       | Most likely a developer only cheat                                     |
 |    SpeedCheat    | H                | (Disabled)       | Most likely a developer only cheat                                     |
 
-*Subject to change*
+_Subject to change_
 
 ## Available controller inputs (Oculus)
 
