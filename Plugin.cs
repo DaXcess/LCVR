@@ -57,13 +57,6 @@ namespace LethalCompanyVR
             var asset = QualitySettings.renderPipeline as HDRenderPipelineAsset;
             var settings = asset.currentPlatformRenderPipelineSettings;
 
-            settings.dynamicResolutionSettings.enabled = EnableDynamicRes.Value;
-            settings.dynamicResolutionSettings.enableDLSS = EnableDLSS.Value;
-            settings.dynamicResolutionSettings.dynResType = DynamicResType.Value;
-            settings.dynamicResolutionSettings.upsampleFilter = UpscaleFilter.Value;
-            settings.dynamicResolutionSettings.minPercentage = DynamicResMinPercent.Value;
-            settings.dynamicResolutionSettings.maxPercentage = DynamicResMaxPercent.Value;
-
             asset.currentPlatformRenderPipelineSettings = settings;
             
             Logger.LogInfo("Loading VR...");
