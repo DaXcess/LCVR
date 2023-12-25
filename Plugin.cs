@@ -1,4 +1,5 @@
 ﻿using BepInEx;
+using BepInEx.Configuration;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
@@ -23,6 +24,14 @@ namespace LethalCompanyVR
         public const string PLUGIN_NAME = "LCVR";
         public const string PLUGIN_VERSION = "0.0.1";
 
+        //Config
+        ConfigEntry<bool> EnableDynamicRes;
+        ConfigEntry<bool> EnableDLSS;
+        ConfigEntry<DynamicResolutionType> DynamicResType;
+        ConfigEntry<DynamicResUpscaleFilter> UpscaleFilter;
+        ConfigEntry<float> DynamicResMaxPercent;
+        ConfigEntry<float> DynamicResMinPercent;
+
         private void Awake()
         {
             // Plugin startup logic
@@ -42,22 +51,49 @@ namespace LethalCompanyVR
                 Logger.LogError("Disabling VR because assets could not be loaded!");
                 return;
             }
-
+            ConfigBind();
+            UpdateCongiurableValues();
             // TODO: Make this configurable
             var asset = QualitySettings.renderPipeline as HDRenderPipelineAsset;
             var settings = asset.currentPlatformRenderPipelineSettings;
 
-            settings.dynamicResolutionSettings.enabled = true;
-            settings.dynamicResolutionSettings.enableDLSS = false;
-            settings.dynamicResolutionSettings.dynResType = DynamicResolutionType.Hardware;
-            settings.dynamicResolutionSettings.upsampleFilter = DynamicResUpscaleFilter.CatmullRom;
-            settings.dynamicResolutionSettings.minPercentage = 25;
-            settings.dynamicResolutionSettings.maxPercentage = 50;
+            settings.dynamicResolutionSettings.enabled = EnableDynamicRes.Value;
+            settings.dynamicResolutionSettings.enableDLSS = EnableDLSS.Value;
+            settings.dynamicResolutionSettings.dynResType = DynamicResType.Value;
+            settings.dynamicResolutionSettings.upsampleFilter = UpscaleFilter.Value;
+            settings.dynamicResolutionSettings.minPercentage = DynamicResMinPercent.Value;
+            settings.dynamicResolutionSettings.maxPercentage = DynamicResMaxPercent.Value;
 
             asset.currentPlatformRenderPipelineSettings = settings;
             
             Logger.LogInfo("Loading VR...");
             InitVRLoader();
+        }
+
+        void ConfigBind()
+        {
+            EnableDynamicRes = Config.Bind("Settings", "Enable Dynamic Resolution", true);
+            EnableDLSS = Config.Bind("Settings", "Enable DLSS", false);
+            DynamicResType = Config.Bind("Settings", "Type of Dymaic Resolution", DynamicResolutionType.Hardware);
+            UpscaleFilter = Config.Bind("Settings", "Type of Upscale Filter", DynamicResUpscaleFilter.CatmullRom);
+            DynamicResMinPercent = Config.Bind("Settings", "Minimum Percent for Res", 25f);
+            DynamicResMaxPercent = Config.Bind("Settings", "Max Percent For Res", 50f);
+            //TODO add a way to update the config if they change
+            // there is a Config.SettingChanged event
+            
+        }
+
+        void UpdateCongiurableValues()
+        {
+            var asset = QualitySettings.renderPipeline as HDRenderPipelineAsset;
+            var settings = asset.currentPlatformRenderPipelineSettings;
+
+            settings.dynamicResolutionSettings.enabled = EnableDynamicRes.Value;
+            settings.dynamicResolutionSettings.enableDLSS = EnableDLSS.Value;
+            settings.dynamicResolutionSettings.dynResType = DynamicResType.Value;
+            settings.dynamicResolutionSettings.upsampleFilter = UpscaleFilter.Value;
+            settings.dynamicResolutionSettings.minPercentage = DynamicResMinPercent.Value;
+            settings.dynamicResolutionSettings.maxPercentage = DynamicResMaxPercent.Value;
         }
 
         private void InitVRLoader()
