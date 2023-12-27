@@ -1,4 +1,8 @@
 /.vs
+/*.csproj.user
 /obj
 /bin
 /Libs/Managed/Assembly-CSharp.dll
+
+# Paid software so I'm keeping the assembly out of the repo
+/Libs/Managed/DissonanceVoip.dll

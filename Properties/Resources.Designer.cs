@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace LethalCompanyVR.Properties {
+namespace LCVR.Properties {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace LethalCompanyVR.Properties {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("LethalCompanyVR.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("LCVR.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -142,6 +142,29 @@ namespace LethalCompanyVR.Properties {
             get {
                 object obj = ResourceManager.GetObject("lethalcompanyvr", resourceCulture);
                 return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {
+        ///        &quot;name&quot;: &quot;OpenXR XR Plugin&quot;,
+        ///        &quot;version&quot;: &quot;1.8.2&quot;,
+        ///        &quot;libraryName&quot;: &quot;UnityOpenXR&quot;,
+        ///        &quot;displays&quot;: [
+        ///                {
+        ///                        &quot;id&quot;: &quot;OpenXR Display&quot;
+        ///                }
+        ///        ],
+        ///        &quot;inputs&quot;: [
+        ///                {
+        ///                        &quot;id&quot;: &quot;OpenXR Input&quot;
+        ///                }
+        ///        ]
+        ///}.
+        /// </summary>
+        internal static string UnitySubsystemsManifest {
+            get {
+                return ResourceManager.GetString("UnitySubsystemsManifest", resourceCulture);
             }
         }
     }

@@ -76,6 +76,24 @@
           "processors": "",
           "interactions": "",
           "initialStateCheck": false
+        },
+        {
+          "name": "TrackedDevicePosition",
+          "type": "Value",
+          "id": "afa10779-50c6-45ee-828e-2c782fd48922",
+          "expectedControlType": "Vector3",
+          "processors": "",
+          "interactions": "",
+          "initialStateCheck": false
+        },
+        {
+          "name": "TrackedDeviceOrientation",
+          "type": "Value",
+          "id": "afa10779-50c6-45ee-828e-2c782fd48923",
+          "expectedControlType": "Quaternion",
+          "processors": "",
+          "interactions": "",
+          "initialStateCheck": false
         }
       ],
       "bindings": [
@@ -120,6 +138,28 @@
           "processors": "",
           "groups": "",
           "action": "Click",
+          "isComposite": false,
+          "isPartOfComposite": false
+        },
+        {
+          "name": "",
+          "id": "7aea34a9-040b-4a60-b98a-ff8cb75e82cf",
+          "path": "<XRController>/devicePosition",
+          "interactions": "",
+          "processors": "",
+          "groups": "",
+          "action": "TrackedDevicePosition",
+          "isComposite": false,
+          "isPartOfComposite": false
+        },
+        {
+          "name": "",
+          "id": "7aea34a9-040b-4a60-b98a-ff8cb75e82cf",
+          "path": "<XRController>/deviceRotation",
+          "interactions": "",
+          "processors": "",
+          "groups": "",
+          "action": "TrackedDeviceOrientation",
           "isComposite": false,
           "isPartOfComposite": false
         }

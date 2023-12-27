@@ -6,8 +6,10 @@ using UnityEngine.InputSystem;
 using UnityEngine;
 using UnityEngine.XR;
 using Unity.Netcode;
+using LCVR.Input;
+using LCVR.Assets;
 
-namespace LethalCompanyVR
+namespace LCVR.Player
 {
     internal class VRController : MonoBehaviour
     {
@@ -16,7 +18,12 @@ namespace LethalCompanyVR
         public VRPlayer player;
         public PlayerControllerB playerController;
 
-        public GameObject raycastOrigin;
+        public Transform interactOrigin;
+        public MotionDetector motionDetector;
+
+        public LineRenderer debugLineRenderer;
+
+        private bool hitInteractable = false;
 
         private string cursorTip
         {
@@ -46,12 +53,41 @@ namespace LethalCompanyVR
         {
             this.player = player;
             this.playerController = player.gameObject.GetComponent<PlayerControllerB>();
-            this.raycastOrigin = new GameObject("Raycast Origin");
+            
+            var interactOriginObject = new GameObject("Raycast Origin");
 
-            this.raycastOrigin.transform.SetParent(transform, false);
-            this.raycastOrigin.transform.rotation = Quaternion.Euler(45, 0, 0);
+            motionDetector = player.rightController.AddComponent<MotionDetector>();
+
+            interactOrigin = interactOriginObject.transform;
+            interactOrigin.SetParent(transform, false);
+            interactOrigin.localPosition = new Vector3(0.01f, 0, 0);
+            interactOrigin.rotation = Quaternion.Euler(80, 0, 0);
+
+            debugLineRenderer = gameObject.AddComponent<LineRenderer>();
+            debugLineRenderer.widthCurve.keys = [new Keyframe(0, 1)];
+            debugLineRenderer.widthMultiplier = 0.005f;
+            debugLineRenderer.positionCount = 2;
+            debugLineRenderer.SetPositions(new Vector3[] { Vector3.zero, Vector3.zero });
+            debugLineRenderer.numCornerVertices = 4;
+            debugLineRenderer.numCapVertices = 4;
+            debugLineRenderer.alignment = LineAlignment.View;
+            debugLineRenderer.shadowBias = 0.5f;
+            debugLineRenderer.useWorldSpace = true;
+            debugLineRenderer.maskInteraction = SpriteMaskInteraction.None;
+            debugLineRenderer.SetMaterials([AssetManager.defaultRayMat]);
+            debugLineRenderer.enabled = Plugin.Config.EnableInteractRay.Value;
 
             Actions.XR_RightHand_Grip_Button.performed += OnGrabPerformed;
+        }
+
+        public void ShowDebugLineRenderer()
+        {
+            debugLineRenderer.enabled = Plugin.Config.EnableInteractRay.Value;
+        }
+
+        public void HideDebugLineRenderer()
+        {
+            debugLineRenderer.enabled = false;
         }
 
         private void OnGrabPerformed(InputAction.CallbackContext context)
@@ -96,9 +132,7 @@ namespace LethalCompanyVR
 
                 // Here we try and pickup the item if that is possible
                 if (!playerController.activatingItem)
-                {
                     BeginGrabObject();
-                }
 
                 // WHAT?
                 if (playerController.hoveringOverTrigger == null || playerController.hoveringOverTrigger.holdInteraction || (playerController.isHoldingObject && !playerController.hoveringOverTrigger.oneHandedItemAllowed) || (playerController.twoHanded && (!playerController.hoveringOverTrigger.twoHandedItemAllowed || playerController.hoveringOverTrigger.specialCharacterAnimation)))
@@ -163,14 +197,24 @@ namespace LethalCompanyVR
 
         private void LateUpdate()
         {
+            var origin = interactOrigin.position + interactOrigin.forward * 0.1f;
+            var end = interactOrigin.position + interactOrigin.forward * playerController.grabDistance;
+
+            debugLineRenderer.SetPositions(new Vector3[] { origin, end });
+
             if (!playerController.isGrabbingObjectAnimation)
             {
-                var ray = new Ray(raycastOrigin.transform.position, raycastOrigin.transform.forward);
+                var ray = new Ray(interactOrigin.position, interactOrigin.forward);
 
                 if (Physics.Raycast(ray, out var hit, playerController.grabDistance, interactableObjectsMask) && hit.collider.gameObject.layer != 8)
                 {
-                    if (playerController.hoveringOverTrigger == null)
+                    if (!hitInteractable)
                         VRPlayer.VibrateController(XRNode.RightHand, 0.1f, 0.2f);
+
+                    hitInteractable = true;
+
+                    // Place interaction hud on object
+                    player.hud.UpdateInteractCanvasPosition(hit.transform.position);
 
                     if (hit.collider.gameObject.CompareTag("InteractTrigger"))
                     {
@@ -179,8 +223,6 @@ namespace LethalCompanyVR
                         {
                             playerController.previousHoveringOverTrigger.isBeingHeldByPlayer = false;
                         }
-
-                        Logger.LogDebug(component);
 
                         if (component != null)
                         {
@@ -218,7 +260,8 @@ namespace LethalCompanyVR
                         else
                         {
                             var component = hit.collider.gameObject.GetComponent<GrabbableObject>();
-                            if (!GameNetworkManager.Instance.gameHasStarted && !component.itemProperties.canBeGrabbedBeforeGameStart && !StartOfRound.Instance.testRoom.activeSelf)
+
+                            if (!GameNetworkManager.Instance.gameHasStarted && !component.itemProperties.canBeGrabbedBeforeGameStart)
                             {
                                 cursorTip = "(Cannot hold until ship has landed)";
                                 return;
@@ -233,6 +276,8 @@ namespace LethalCompanyVR
                 }
                 else
                 {
+                    hitInteractable = false;
+
                     playerController.cursorIcon.enabled = false;
                     cursorTip = "";
                     if (playerController.hoveringOverTrigger != null)
@@ -245,7 +290,7 @@ namespace LethalCompanyVR
 
         private void BeginGrabObject()
         {
-            var ray = new Ray(raycastOrigin.transform.position, raycastOrigin.transform.forward);
+            var ray = new Ray(interactOrigin.position, interactOrigin.forward);
             if (Physics.Raycast(ray, out var hit, playerController.grabDistance, interactableObjectsMask) && hit.collider.gameObject.layer != 8 && hit.collider.CompareTag("PhysicsProp"))
             {
                 if (playerController.twoHanded || playerController.sinkingValue > 0.73f) return;
