@@ -13,9 +13,7 @@ namespace LCVR.Input
             bool shouldExecute = MathF.Abs(value) > 0.75;
 
             if (shouldExecute)
-            {
-                offset += (value > 0 ? 90 : -90) * Time.deltaTime;
-            }
+                offset += (value > 0 ? 90 : -90) * Time.deltaTime * Plugin.Config.SmoothTurnSpeedModifier.Value;
         }
 
         public float GetRotationOffset()
