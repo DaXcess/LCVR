@@ -1,5 +1,7 @@
+*.suo
+*.user
+
 /.vs
-/*.csproj.user
 /obj
 /bin
 /Libs/Managed/Assembly-CSharp.dll

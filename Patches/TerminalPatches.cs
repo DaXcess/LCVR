@@ -26,16 +26,4 @@ namespace LCVR.Patches
             player.OnExitTerminal();
         }
     }
-
-    [LCVRPatch(LCVRPatchTarget.Universal)]
-    [HarmonyPatch]
-    internal static class UniversalTerminalPatches
-    {
-        [HarmonyPatch(typeof(Terminal), "BeginUsingTerminal")]
-        [HarmonyPostfix]
-        private static void OnEnterTerminal()
-        {
-
-        }
-    }
 }
