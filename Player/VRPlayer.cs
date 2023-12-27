@@ -451,6 +451,7 @@ namespace LCVR.Player
             rightController.GetComponent<VRController>().ShowDebugLineRenderer();
         }
 
+        // TODO: Don't scale the camera, it messes up the HUD
         public void ResetHeight()
         {
             StartCoroutine(ResetHeightRoutine());
