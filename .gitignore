@@ -4,7 +4,7 @@
 /.vs
 /obj
 /bin
-/Libs/Managed/Assembly-CSharp.dll
+/Libs/Assembly-CSharp.dll
 
 # Paid software so I'm keeping the assembly out of the repo
-/Libs/Managed/DissonanceVoip.dll
+/Libs/DissonanceVoip.dll
