@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 
 namespace LCVR
 {
@@ -22,7 +21,7 @@ namespace LCVR
                 if (mod == null)
                     continue;
 
-                if (plugin.Metadata.Version.ToString() != mod[2])
+                if (mod[2] != null && plugin.Metadata.Version.ToString() != mod[2] && !Plugin.Config.OverrideCompatibilityVersionCheck.Value)
                     continue;
 
                 Logger.LogInfo($"Found compatible mod {mod[0]}");

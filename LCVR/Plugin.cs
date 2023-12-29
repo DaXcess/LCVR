@@ -72,6 +72,8 @@ namespace LCVR
             settings.dynamicResolutionSettings.upsampleFilter = DynamicResUpscaleFilter.CatmullRom;
             settings.dynamicResolutionSettings.minPercentage = Config.ResolutionPercentage.Value;
             settings.dynamicResolutionSettings.maxPercentage = Config.ResolutionPercentage.Value;
+
+            settings.xrSettings.singlePass = false;
             
             if (Config.LODBias.Value != -1f)
                 settings.lodBias = new FloatScalableSetting([Config.LODBias.Value, Config.LODBias.Value, Config.LODBias.Value], ScalableSettingSchemaId.With3Levels);

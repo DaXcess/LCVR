@@ -153,6 +153,10 @@ namespace LCVR
             };
 
             Actions.ReloadInputBindings();
+
+#if DEBUG
+            Experiments.Experiments.RunExperiments();
+#endif
         }
     }
 

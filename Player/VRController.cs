@@ -8,6 +8,7 @@ using UnityEngine.XR;
 using Unity.Netcode;
 using LCVR.Input;
 using LCVR.Assets;
+using System.Linq;
 
 namespace LCVR.Player
 {
@@ -267,6 +268,12 @@ namespace LCVR.Player
                                 return;
                             }
 
+                            if (Items.unsupportedItems.Contains(component.itemProperties.itemName))
+                            {
+                                cursorTip = "(This item cannot be used in VR)";
+                                return;
+                            }
+
                             if (component != null && !string.IsNullOrEmpty(component.customGrabTooltip))
                                 cursorTip = component.customGrabTooltip;
                             else
@@ -295,7 +302,7 @@ namespace LCVR.Player
             {
                 if (playerController.twoHanded || playerController.sinkingValue > 0.73f) return;
 
-                SetFieldValue("currentlyGrabbingObject", hit.collider.transform.gameObject.GetComponent<GrabbableObject>());
+                currentlyGrabbingObject = hit.collider.transform.gameObject.GetComponent<GrabbableObject>();
 
                 if (!GameNetworkManager.Instance.gameHasStarted && !currentlyGrabbingObject.itemProperties.canBeGrabbedBeforeGameStart && !StartOfRound.Instance.testRoom.activeSelf)
                     return;
