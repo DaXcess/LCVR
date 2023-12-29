@@ -89,8 +89,4 @@
   <ItemGroup>
     <Folder Include="ThirdParty\" />
   </ItemGroup>
-
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition=" '$(OS)' == 'Windows_NT' ">
-    <Copy SourceFiles="$(OutDir)LCVR.dll" DestinationFolder="C:\Program Files (x86)\Steam\steamapps\common\Lethal Company\BepInEx\plugins\LCVR\" SkipUnchangedFiles="true" />
-  </Target>
 </Project>

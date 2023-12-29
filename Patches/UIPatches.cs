@@ -188,6 +188,9 @@ namespace LCVR.Patches
             vrIntroPanel.transform.localEulerAngles = Vector3.zero;
             vrIntroPanel.transform.localScale = Vector3.one;
 
+            var backdrop = vrIntroPanel.Find("Image");
+            backdrop.transform.localScale = new Vector3(10, 10, 1);
+
             var title = vrIntroPanel.Find("Panel/NotificationText").GetComponent<TextMeshProUGUI>();
             var description = vrIntroPanel.Find("Panel/DemoText").GetComponent<TextMeshProUGUI>();
 
@@ -228,9 +231,19 @@ namespace LCVR.Patches
             githubButton.onClick.AddListener(() => Application.OpenURL("https://github.com/DaXcess/LCVR"));
             kofiButton.onClick.AddListener(() => Application.OpenURL("https://ko-fi.com/daxcess"));
 
-            vrIntroPanel.SetActive(true);
+            var continueButton = vrIntroPanel.Find("Panel/ResponseButton").GetComponent<Button>();
+            continueButton.onClick.AddListener(() =>
+            {
 
-            Plugin.Config.IntroScreenSeen.Value = true;
+                Plugin.Config.IntroScreenSeen.Value = true;
+
+#if DEBUG
+                if (!UniversalUIPatches.debugScreenSeen)
+                    menuContainer.Find("ModDebugPanel").SetActive(true);
+#endif
+            });
+
+            vrIntroPanel.SetActive(true);
         }
 
         private static void SetupMoreCompanyUI()
@@ -292,6 +305,61 @@ namespace LCVR.Patches
             text.fontSize = 18;
             text.raycastTarget = false;
         }
+
+
+#if DEBUG
+        internal static bool debugScreenSeen = false;
+
+        /// <summary>
+        /// This function runs when the main menu is shown
+        /// </summary>
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(MenuManager), "Start")]
+        private static void OnMainMenuShown()
+        {
+            InjectDebugScreen();
+        }
+
+        private static void InjectDebugScreen()
+        {
+            if (debugScreenSeen)
+                return;
+
+            var menuContainer = GameObject.Find("MenuContainer");
+
+            var keybindingsButton = menuContainer.Find("SettingsPanel/KeybindingsButton")?.GetComponent<Button>();
+
+            if (keybindingsButton == null)
+                // Not the actual main menu, ignore
+                return;
+
+            var modDebugPanel = Object.Instantiate(menuContainer.Find("NewsPanel"));
+            modDebugPanel.name = "ModDebugPanel";
+            modDebugPanel.transform.parent = menuContainer.transform;
+            modDebugPanel.transform.localPosition = new Vector3(-4.8199f, -1.78f, 1.4412f);
+            modDebugPanel.transform.localEulerAngles = Vector3.zero;
+            modDebugPanel.transform.localScale = Vector3.one;
+
+            var backdrop = modDebugPanel.Find("Image");
+            backdrop.transform.localScale = new Vector3(10, 10, 1);
+
+            var title = modDebugPanel.Find("Panel/NotificationText").GetComponent<TextMeshProUGUI>();
+            var description = modDebugPanel.Find("Panel/DemoText").GetComponent<TextMeshProUGUI>();
+
+            title.text = "LCVR DEBUG BUILD!";
+            description.text = "You are using a development version of LCVR! Expect this version of the mod to be highly unstable!";
+
+            var picture = modDebugPanel.Find("Panel/Picture").GetComponent<Image>();
+            picture.transform.SetSiblingIndex(0);
+            picture.transform.localScale = Vector3.one * 0.4f;
+            picture.transform.localPosition = new Vector3(196, 59, 1);
+            picture.sprite = AssetManager.warningImage;
+
+            modDebugPanel.SetActive(!Plugin.VR_ENABLED || Plugin.Config.IntroScreenSeen.Value);
+
+            debugScreenSeen = true;
+        }
+#endif
     }
 
     [LCVRPatch(dependency: "MoreCompany")]

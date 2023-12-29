@@ -8,7 +8,7 @@ using UnityEngine;
 namespace LCVR.Items
 {
     // The holding is insanely scuffed but I really have no clue how to do it properly I'm not /that/ good of a developer
-    internal class ShovelItem : VRItem<Shovel>
+    internal class VRShovelItem : VRItem<Shovel>
     {
         private readonly Vector3 positionOffset = new Vector3(-0.09f, 0, 0.25f);
 
@@ -34,17 +34,14 @@ namespace LCVR.Items
             }
         }
 
-        private bool IsHeld
-        {
-            get
-            {
-                return item.isHeld && !item.isPocketed;
-            }
-        }
-
         private new void Awake()
         {
             base.Awake();
+
+            CancelGameUpdate = true;
+
+            if (!IsLocal)
+                return;
 
             var @object = new GameObject("Shovel Interaction Point");
         
@@ -54,16 +51,16 @@ namespace LCVR.Items
             interactTransform.localPosition = new Vector3(0, 0, 1.25f);
         }
 
-        private void OnDisable()
+        private void OnDestroy()
         {
+            if (!IsLocal)
+                return;
+
             positions.Clear();
 
             if (item.reelingUp)
                 item.StartCoroutine(cancelShovelSwing());
-        }
 
-        private void OnDestroy()
-        {
             Destroy(interactTransform.gameObject);
         }
 
@@ -72,6 +69,19 @@ namespace LCVR.Items
             // This part is my attempt to hold an item with two hands
             // Some numbers might not make sense but that is because they probably don't
             
+            if (!IsLocal)
+            {
+                transform.position = networkPlayer.leftItemHolder.position;
+                transform.LookAt(networkPlayer.rightItemHolder.position);
+
+                var rotation2 = transform.rotation;
+
+                transform.eulerAngles = new Vector3(transform.eulerAngles.x, transform.eulerAngles.y, 360 - networkPlayer.leftItemHolder.eulerAngles.z);
+                transform.position += rotation2 * positionOffset;
+
+                return;
+            }
+
             var player = VRPlayer.Instance;
 
             transform.position = player.leftItemHolder.position;
@@ -99,7 +109,7 @@ namespace LCVR.Items
 
             var dot = Vector3.Dot(vector, forward);
 
-            if (dot < 0 && IsHeld)
+            if (dot < 0)
             {
                 // Also check for speed to prevent looking around causing the shovel to be reeled up
                 if (GetAverageSpeed() > 3 && !item.reelingUp)
@@ -111,7 +121,7 @@ namespace LCVR.Items
                 {
                     if (!hasSwung && GetAverageSpeed() > 8)
                     {
-                        item.SwingShovel(!IsHeld);
+                        item.SwingShovel();
                         hasSwung = true;
                     }
 
@@ -127,7 +137,7 @@ namespace LCVR.Items
                 }
             }
 
-            if (dot > 0.8 && item.reelingUp && !isHitting && IsHeld)
+            if (dot > 0.8 && item.reelingUp && !isHitting)
             {
                 var averageSpeed = GetAverageSpeed();
 
@@ -167,7 +177,7 @@ namespace LCVR.Items
 
         private IEnumerator shovelSwing()
         {
-            item.HitShovel(!IsHeld);
+            item.HitShovel();
             yield return new WaitForSeconds(0.3f);
             item.reelingUp = false;
             isHitting = false;

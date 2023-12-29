@@ -34,6 +34,9 @@ namespace Microsoft.MixedReality.Toolkit.Experimental.UI
             Space,
             Backspace,
 
+            // LCVR
+            Macro,
+
             UNDEFINED,
         }
 
@@ -43,7 +46,13 @@ namespace Microsoft.MixedReality.Toolkit.Experimental.UI
         //[Experimental]
         [SerializeField, FormerlySerializedAs("m_ButtonFunction")] private Function buttonFunction = Function.UNDEFINED;
 
+        /// <summary>
+        /// Macro text for when the button function is set to "Macro"
+        /// </summary>
+        [SerializeField, FormerlySerializedAs("m_MacroText")] private string macroText = null;
+
         public Function ButtonFunction => buttonFunction;
+        public string MacroText => macroText;
 
         /// <summary>
         /// Subscribe to the onClick event.

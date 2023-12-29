@@ -1,11 +1,10 @@
 ﻿using GameNetcodeStuff;
 using LCVR.Player;
 using System.Reflection;
-using SprayPaint = SprayPaintItem;
 
 namespace LCVR.Items
 {
-    internal class SprayPaintItem : VRItem<SprayPaint>
+    internal class VRSprayPaintItem : VRItem<SprayPaintItem>
     {
         private VRController hand;
 
@@ -13,13 +12,17 @@ namespace LCVR.Items
         {
             base.Awake();
 
+            if (!IsLocal)
+                return;
+
             hand = VRPlayer.Instance.mainHand;
             hand.motionDetector.onShake.AddListener(OnShakeMotion);
         }
 
         private void OnDestroy()
         {
-            hand.motionDetector.onShake.RemoveListener(OnShakeMotion);
+            if (IsLocal)
+                hand.motionDetector.onShake.RemoveListener(OnShakeMotion);
         }
 
         private void OnShakeMotion()

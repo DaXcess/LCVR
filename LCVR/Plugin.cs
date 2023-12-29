@@ -50,7 +50,11 @@ namespace LCVR
             if (disableVr)
                 Logger.LogWarning("VR has been disabled by config or the `--disable-vr` command line flag");
 
-            LoadEarlyRuntimeDependencies();
+            if (!LoadEarlyRuntimeDependencies())
+            {
+                Logger.LogError("Disabling mod because required runtime dependencies could not be loaded!");
+                return;
+            }
 
             if (!AssetManager.LoadAssets())
             {
@@ -68,6 +72,9 @@ namespace LCVR
             settings.dynamicResolutionSettings.upsampleFilter = DynamicResUpscaleFilter.CatmullRom;
             settings.dynamicResolutionSettings.minPercentage = Config.ResolutionPercentage.Value;
             settings.dynamicResolutionSettings.maxPercentage = Config.ResolutionPercentage.Value;
+            
+            if (Config.LODBias.Value != -1f)
+                settings.lodBias = new FloatScalableSetting([Config.LODBias.Value, Config.LODBias.Value, Config.LODBias.Value], ScalableSettingSchemaId.With3Levels);
 
             asset.currentPlatformRenderPipelineSettings = settings;
 
@@ -79,30 +86,40 @@ namespace LCVR
             Logger.LogDebug("Inserted universal patches using Harmony");
         }
 
-        private void LoadEarlyRuntimeDependencies()
+        private bool LoadEarlyRuntimeDependencies()
         {
-            var current = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            var deps = Path.Combine(current, "RuntimeDeps");
-        
-            foreach (var file in Directory.GetFiles(deps, "*.dll"))
+            try
             {
-                var filename = Path.GetFileName(file);
+                var current = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                var deps = Path.Combine(current, "RuntimeDeps");
 
-                // Ignore known unmanaged libraries
-                if (filename == "UnityOpenXR.dll" || filename == "openxr_loader.dll")
-                    continue;
-
-                Logger.LogDebug($"Early loading {filename}");
-
-                try
+                foreach (var file in Directory.GetFiles(deps, "*.dll"))
                 {
-                    Assembly.LoadFile(file);
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogWarning($"Failed to early load {filename}: {ex.Message}");
+                    var filename = Path.GetFileName(file);
+
+                    // Ignore known unmanaged libraries
+                    if (filename == "UnityOpenXR.dll" || filename == "openxr_loader.dll")
+                        continue;
+
+                    Logger.LogDebug($"Early loading {filename}");
+
+                    try
+                    {
+                        Assembly.LoadFile(file);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogWarning($"Failed to early load {filename}: {ex.Message}");
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Unexpected error occured while loading early runtime dependencies (incorrect folder structure?): {ex.Message}");
+                return false;
+            }
+
+            return true;
         }
 
         private bool InitVRLoader()

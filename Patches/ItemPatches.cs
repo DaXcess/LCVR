@@ -1,22 +1,20 @@
 ﻿using HarmonyLib;
+using LCVR.Items;
 
 namespace LCVR.Patches
 {
-    [LCVRPatch]
+    [LCVRPatch(LCVRPatchTarget.Universal)]
     [HarmonyPatch]
-    internal static class ItemPatches
+    internal static class UniversalItemPatches
     {
         [HarmonyPatch(typeof(GrabbableObject), "LateUpdate")]
         [HarmonyPrefix]
         private static bool LateUpdatePrefix(GrabbableObject __instance)
         {
-            var cancel = __instance.itemProperties.itemName switch
-            {
-                "Shovel" or "Stop sign" or "Yield sign" => true,
-                _ => false
-            };
+            if (VRItem<GrabbableObject>.itemCache.TryGetValue(__instance, out var item))
+                return !item.CancelGameUpdate;
 
-            return !cancel;
+            return true;
         }
 
         [HarmonyPatch(typeof(GrabbableObject), "LateUpdate")]

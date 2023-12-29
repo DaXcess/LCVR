@@ -1,9 +1,12 @@
 ﻿using Dissonance;
 using Dissonance.Integrations.Unity_NFGO;
 using Dissonance.Networking;
+using GameNetcodeStuff;
+using LCVR.Player;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 
 namespace LCVR.Networking
@@ -102,10 +105,24 @@ namespace LCVR.Networking
 
             var playerObject = ((NfgoPlayer)player.Tracker).gameObject;
             var networkPlayer = playerObject.AddComponent<VRNetPlayer>();
+            var playerController = playerObject.GetComponent<PlayerControllerB>();
 
             Logger.LogInfo($"Found VR player {player.Name}");
 
             vrPlayers.Add(player.Name, networkPlayer);
+
+            foreach (var item in playerController.ItemSlots.Where(val => val != null))
+            {
+                // Add or enable VR item script on item if there is one for this item
+                if (Player.Items.items.TryGetValue(item.itemProperties.itemName, out var type))
+                {
+                    var component = (MonoBehaviour)item.GetComponent(type);
+                    if (component == null)
+                        item.gameObject.AddComponent(type);
+                    else
+                        component.enabled = true;
+                }
+            }
         }
 
         private static void HandleRigUpdate(string sender, string packet)

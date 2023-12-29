@@ -33,7 +33,7 @@ namespace LCVR.Player
             }
             set
             {
-                playerController.cursorTip.text = value;
+                playerController.cursorTip.text = value.Replace(": [LMB]", "").Replace(": [RMB]", "").Replace(": [E]", "").TrimEnd();
             }
         }
 

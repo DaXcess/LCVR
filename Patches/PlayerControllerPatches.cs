@@ -2,6 +2,7 @@
 using HarmonyLib;
 using LCVR.Assets;
 using LCVR.Input;
+using LCVR.Items;
 using LCVR.Networking;
 using LCVR.Player;
 using System;
@@ -152,8 +153,15 @@ namespace LCVR.Patches
 
         [HarmonyPatch(typeof(PlayerControllerB), "SetHoverTipAndCurrentInteractTrigger")]
         [HarmonyPrefix]
-        private static bool SetHoverTipAndCurrentInteractTriggerPrefix()
+        private static bool SetHoverTipAndCurrentInteractTriggerPrefix(PlayerControllerB __instance)
         {
+            if (__instance.isGrabbingObjectAnimation)
+                return false;
+
+            var ray = new Ray(__instance.gameplayCamera.transform.position, __instance.gameplayCamera.transform.forward);
+            if (!__instance.isFreeCamera && Physics.SphereCast(ray, 0.5f, out var hit, 5, 8))
+                hit.collider.gameObject.GetComponent<PlayerControllerB>()?.ShowNameBillboard();
+
             return false;
         }
 
@@ -211,6 +219,8 @@ namespace LCVR.Patches
         [HarmonyPostfix]
         private static void OnSpectateNextPlayer(PlayerControllerB __instance)
         {
+            Logger.LogDebug($"SpectateNextPlayer called (IsOwner: {__instance.IsOwner})");
+
             if (!__instance.IsOwner)
                 return;
 
@@ -224,6 +234,30 @@ namespace LCVR.Patches
             spectateCamera.nearClipPlane = 0.43f;
         }
 
+        [HarmonyPatch(typeof(PlayerControllerB), "SwitchToItemSlot")]
+        [HarmonyPostfix]
+        private static void SwitchedToItemSlot(PlayerControllerB __instance)
+        {
+            // Ignore if it's someone else, that is handled by the universal patch
+            if (!__instance.IsOwner)
+                return;
+
+            // Find held item
+            var item = __instance.currentlyHeldObjectServer;
+            if (item == null)
+                return;
+
+            // Add or enable VR item script on item if there is one for this item
+            if (Player.Items.items.TryGetValue(item.itemProperties.itemName, out var type))
+            {
+                var component = (MonoBehaviour)item.GetComponent(type);
+                if (component == null)
+                    item.gameObject.AddComponent(type);
+                else
+                    component.enabled = true;
+            }
+        }
+
         private static bool IsInactivePlayer(this PlayerControllerB player)
         {
             if (player == StartOfRound.Instance.localPlayerController)
@@ -235,7 +269,7 @@ namespace LCVR.Patches
 
     [LCVRPatch(LCVRPatchTarget.Universal)]
     [HarmonyPatch]
-    internal static class PlayerControllerUniversalPatches
+    internal static class UniversalPlayerControllerPatches
     {
         [HarmonyPatch(typeof(PlayerControllerB), "Update")]
         [HarmonyPostfix]
@@ -253,6 +287,37 @@ namespace LCVR.Patches
                 {
                     __instance.playerBodyAnimator.runtimeAnimatorController = __instance.playersManager.otherClientsAnimatorController;
                 }
+            }
+        }
+
+        [HarmonyPatch(typeof(PlayerControllerB), "SwitchToItemSlot")]
+        [HarmonyPostfix]
+        private static void SwitchedToItemSlot(PlayerControllerB __instance)
+        {
+            // Ignore if it's us, we have the VR patch for that if we're in VR
+            if (__instance.IsOwner)
+                return;
+
+            // Find held item
+            var item = __instance.currentlyHeldObjectServer;
+            if (item == null)
+                return;
+
+            // Find remote VR player, if they're not VR then we don't have to set up special VR items
+            var remotePlayer = __instance.GetComponent<VRNetPlayer>();
+            if (remotePlayer == null)
+                return;
+
+            Logger.LogDebug(item.itemProperties.itemName);
+
+            // Add or enable VR item script on item if there is one for this item
+            if (Player.Items.items.TryGetValue(item.itemProperties.itemName, out var type))
+            {
+                var component = (MonoBehaviour)item.GetComponent(type);
+                if (component == null)
+                    item.gameObject.AddComponent(type);
+                else
+                    component.enabled = true;
             }
         }
     }

@@ -230,6 +230,7 @@ namespace LCVR
             specialGraphics.transform.localScale = Vector3.one;
 
             specialGraphics.Find("SinkingUnderCover").SetActive(false);
+            specialGraphics.Find("ScrapItemInfo").transform.localPosition = new Vector3(-90, -6, 0);
 
             // Cinematic Graphics (Planet description)
             var cinematicGraphics = GameObject.Find("CinematicGraphics");

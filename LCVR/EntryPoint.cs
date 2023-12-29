@@ -9,6 +9,7 @@ using LCVR.Assets;
 using Microsoft.MixedReality.Toolkit.Experimental.UI;
 using UnityEngine.InputSystem.UI;
 using LCVR.Input;
+using UnityEngine.InputSystem;
 
 namespace LCVR
 {
@@ -29,6 +30,9 @@ namespace LCVR
         private static IEnumerator Start()
         {
             Logger.Log("Hello from VR!");
+
+            // Log input devices
+            InputSystem.devices.Do(device => Logger.LogDebug($"Input Device: {device.displayName}"));
 
             yield return new WaitUntil(() => StartOfRound.Instance.activeCamera != null);
 
@@ -70,6 +74,30 @@ namespace LCVR
             if (Plugin.Config.DisableVolumetrics.Value)
                 Utils.DisableQualitySetting(hdCamera, FrameSettingsField.Volumetrics);
 
+            // Create desktop camera
+            if (Plugin.Config.EnableCustomCamera.Value)
+            {
+                var children = mainCamera.transform.GetChildren();
+
+                children.Do(child => child.SetParent(null, true));
+
+                var customCamera = Object.Instantiate(mainCamera);
+                customCamera.name = "Custom Camera";
+                customCamera.transform.SetParent(mainCamera.transform, false);
+                customCamera.transform.localEulerAngles = Vector3.zero;
+                customCamera.transform.localScale = Vector3.one;
+
+                customCamera.fieldOfView = Plugin.Config.CustomCameraFOV.Value;
+                customCamera.depth++;
+                customCamera.stereoTargetEye = StereoTargetEyeMask.None;
+                customCamera.targetDisplay = 0;
+
+                var hdDesktopCamera = customCamera.GetComponent<HDAdditionalCameraData>();
+                hdDesktopCamera.xrRendering = false;
+
+                children.Do(child => child.SetParent(mainCamera.transform, true));
+            }
+
             // Manually walk to the player object because in multiplayer you are not "Player" but instead one of the other player objects
             var player = mainCamera.gameObject.transform.parent.parent.parent.parent.gameObject.AddComponent<VRPlayer>();
 
@@ -108,6 +136,14 @@ namespace LCVR
 
             keyboard.OnTextSubmitted += (_, _) =>
             {
+                terminal.OnSubmit();
+            };
+
+            keyboard.OnMacroTriggered += (text) =>
+            {
+                terminal.screenText.text = terminal.screenText.text.Substring(0, terminal.screenText.text.Length - terminal.textAdded);
+                terminal.screenText.text += text;
+                terminal.textAdded = text.Length;
                 terminal.OnSubmit();
             };
 

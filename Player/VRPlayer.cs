@@ -12,7 +12,6 @@ using LCVR.Assets;
 using GameNetcodeStuff;
 using UnityEngine.XR.Interaction.Toolkit;
 using Microsoft.MixedReality.Toolkit.Experimental.UI;
-using LCVR.Items;
 
 namespace LCVR.Player
 {
@@ -22,10 +21,15 @@ namespace LCVR.Player
     {
         public static VRPlayer Instance { get; private set; }
 
-        public float scaleFactor = 1f;
+        public float scaleFactor = 1.5f;
+        private float cameraFloorOffset = 0f;
+        private float crouchOffset = 0f;
+
+        private bool wasInSpecialAnimation = false;
+        private Vector3 specialAnimationPositionOffset = Vector3.zero;
 
         private PlayerControllerB playerController;
-
+        
         public GameObject leftController;
         public GameObject rightController;
 
@@ -33,15 +37,16 @@ namespace LCVR.Player
         private GameObject rightControllerRayInteractor;
 
         private GameObject xrOrigin;
-        private GameObject cameraAnchor;
 
         private Vector3 lastFrameHMDPosition = new(0, 0, 0);
+        private Vector3 lastFrameHMDRotation = new(0, 0, 0);
 
         private TurningProvider turningProvider;
 
         public VRHUD hud;
         public VRController mainHand;
         public Camera mainCamera;
+        public Camera customCamera;
         public Camera uiCamera;
 
         public Transform leftHandRigTransform;
@@ -60,12 +65,14 @@ namespace LCVR.Player
             Logger.LogDebug("Going to intialize XR Rig");
 
             playerController = GetComponent<PlayerControllerB>();
-
+            
             // Create XR stuff
             xrOrigin = new GameObject("XR Origin");
             mainCamera = Find("ScavengerModel/metarig/CameraContainer/MainCamera").GetComponent<Camera>();
             uiCamera = GameObject.Find("UICamera").GetComponent<Camera>();
-            cameraAnchor = new GameObject("Camera Anchor");
+
+            if (Plugin.Config.EnableCustomCamera.Value)
+                customCamera = mainCamera.gameObject.Find("Custom Camera").GetComponent<Camera>();
 
             // Fool the animator (this removes console error spam)
             new GameObject("MainCamera").transform.parent = Find("ScavengerModel/metarig/CameraContainer").transform;
@@ -181,8 +188,8 @@ namespace LCVR.Player
                 trackingRotationOffset = Vector3.zero
             };
 
-            // This one is pretty hit or miss, sometimes y needs to be 0, other times it needs to be -2.25f
-            rigFollow.headBodyPositionOffset = new Vector3(0, 0, 0);
+            // This one is pretty hit or miss, sometimes y needs to be -0.2f, other times it needs to be -2.25f
+            rigFollow.headBodyPositionOffset = new Vector3(0, -0.2f, 0);
 
             // Disable badges
             Find("ScavengerModel/metarig/spine/spine.001/spine.002/spine.003/LevelSticker").gameObject.SetActive(false);
@@ -191,10 +198,10 @@ namespace LCVR.Player
             // FULL BODY RIG
 
             // Set up rigging
-            var fullModel = Find("ScavengerModel", true);
+            var fullModel = Find("ScavengerModel", true).gameObject;
             var fullModelMetarig = Find("ScavengerModel/metarig", true);
 
-            var fullRigFollow = model.AddComponent<IKRigFollowVRRig>();
+            var fullRigFollow = fullModel.AddComponent<IKRigFollowVRRig>();
 
             // Setting up the right arm
 
@@ -330,19 +337,29 @@ namespace LCVR.Player
             var movementAccounted = rotationOffset * movement;
             var cameraPosAccounted = rotationOffset * new Vector3(mainCamera.transform.localPosition.x, 0, mainCamera.transform.localPosition.z);
 
+            if (!wasInSpecialAnimation && playerController.inSpecialInteractAnimation)
+                specialAnimationPositionOffset = new Vector3(-cameraPosAccounted.x * scaleFactor, 0, -cameraPosAccounted.z * scaleFactor);
+
+            wasInSpecialAnimation = playerController.inSpecialInteractAnimation;
+
+            // Move player if we're not in special interact animation
             if (!playerController.inSpecialInteractAnimation)
                 transform.position += new Vector3(movementAccounted.x * scaleFactor, 0, movementAccounted.z * scaleFactor);
 
             // Update rotation offset after adding movement from frame
             turningProvider.Update();
 
-            // Idea is that anchor position + camera position = player position
+            // If we are in special animation allow 6 DOF but don't update player position
             if (!playerController.inSpecialInteractAnimation)
-                cameraAnchor.transform.position = new Vector3(transform.position.x - cameraPosAccounted.x * scaleFactor, transform.position.y, transform.position.z - cameraPosAccounted.z * scaleFactor);
+                xrOrigin.transform.position = new Vector3(transform.position.x - cameraPosAccounted.x * scaleFactor, transform.position.y, transform.position.z - cameraPosAccounted.z * scaleFactor);
             else
-                cameraAnchor.transform.position = transform.position;
+                xrOrigin.transform.position = transform.position + specialAnimationPositionOffset;
 
-            xrOrigin.transform.position = cameraAnchor.transform.position;
+            // Apply crouch offset
+            crouchOffset = Mathf.Lerp(crouchOffset, playerController.isCrouching ? -1 : 0, 0.1f);
+
+            // Apply floor offset and sinking value
+            xrOrigin.transform.position += new Vector3(0, cameraFloorOffset + crouchOffset - playerController.sinkingValue * 2.5f, 0);
             xrOrigin.transform.rotation = rotationOffset;
             xrOrigin.transform.localScale = Vector3.one * scaleFactor;
 
@@ -362,34 +379,23 @@ namespace LCVR.Player
 
                 cameraEulers = mainCamera.transform.eulerAngles,
             });
-
-            UpdateHeldItem();
         }
 
-        public Vector3 lookAtRotate = Vector3.zero;
-
-        private void UpdateHeldItem()
+        private void LateUpdate()
         {
-            // Add custom client item scripts to held objects if they haven't been added yet
-            var item = playerController.currentlyHeldObjectServer;
+            var angles = mainCamera.transform.eulerAngles;
+            StartOfRound.Instance.playerLookMagnitudeThisFrame = (angles - lastFrameHMDRotation).magnitude * Time.deltaTime;
 
-            if (item == null)
-                return;
-
-            if (Items.items.TryGetValue(item.itemProperties.itemName, out var type))
-            {
-                var component = (MonoBehaviour)item.GetComponent(type);
-                if (component == null)
-                    item.gameObject.AddComponent(type);
-                else
-                    component.enabled = true;
-            }
+            lastFrameHMDRotation = angles;
         }
 
         public void OnDeath()
         {
             VRPlayer.VibrateController(XRNode.LeftHand, 1f, 1f);
             VRPlayer.VibrateController(XRNode.RightHand, 1f, 1f);
+
+            if (Plugin.Config.EnableCustomCamera.Value)
+                customCamera.enabled = false;
 
             var uiCameraAnchor = GameObject.Find("VR UI Camera Anchor") ?? new GameObject("VR UI Camera Anchor");
             uiCameraAnchor.transform.position = new Vector3(0, -1000, 0);
@@ -417,6 +423,9 @@ namespace LCVR.Player
 
         public void OnRevive()
         {
+            if (Plugin.Config.EnableCustomCamera.Value)
+                customCamera.enabled = true;
+
             var hdUICamera = uiCamera.GetComponent<HDAdditionalCameraData>();
             var hdMainCamera = mainCamera.GetComponent<HDAdditionalCameraData>();
 
@@ -461,12 +470,13 @@ namespace LCVR.Player
         {
             yield return new WaitForSeconds(0.2f);
 
-            var realHeight = mainCamera.transform.localPosition.y * 100;
-            var targetHeight = 230;
+            var realHeight = mainCamera.transform.localPosition.y * scaleFactor;
+            var targetHeight = 2.3f;
 
-            scaleFactor = targetHeight / realHeight;
+            //scaleFactor = targetHeight / realHeight;
+            cameraFloorOffset = (targetHeight - realHeight);
 
-            Logger.LogDebug($"Scaling player with real height: {MathF.Round(realHeight)}cm");
+            Logger.LogDebug($"Scaling player with real height: {MathF.Round(realHeight*100)/100}cm");
             Logger.Log($"Setting player height scale: {scaleFactor}");
         }
 

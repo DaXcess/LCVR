@@ -9,16 +9,22 @@ namespace LCVR.Player
     {
         public static readonly Dictionary<string, Type> items = new()
         {
-            { "Shovel", typeof(ShovelItem) },
-            { "Yield sign", typeof(ShovelItem) },
-            { "Stop sign", typeof(ShovelItem) },
-            { "Spray paint", typeof(SprayPaintItem) },
+            { "Shovel", typeof(VRShovelItem) },
+            { "Yield sign", typeof(VRShovelItem) },
+            { "Stop sign", typeof(VRShovelItem) },
+            { "Spray paint", typeof(VRSprayPaintItem) },
+            { "Pro-flashlight", typeof(VRFlashlight) },
+            { "Flashlight", typeof(VRFlashlight) },
         };
 
         public static void UpdateVRControlsItemsOffsets()
         {
             foreach (var item in StartOfRound.Instance.allItemsList.itemsList)
             {
+                Logger.LogDebug(item.itemName);
+
+                item.canBeGrabbedBeforeGameStart = true;
+
                 if (item.itemName == "Shovel" || item.itemName == "Yield sign" || item.itemName == "Stop sign")
                 {
                     //item.positionOffset = new Vector3(-0.1f, 0.15f, 0.07f);
@@ -27,6 +33,8 @@ namespace LCVR.Player
                     //item.rotationOffset = new Vector3(0, 0, 0);
                     item.canBeGrabbedBeforeGameStart = true;
                 }
+                else if (item.itemName == "Spray paint")
+                    item.canBeGrabbedBeforeGameStart = true;
                 else if (item.itemName == "Chemical Jug")
                 {
                     item.positionOffset = new Vector3(-0.1f, 0.18f, -0.24f);

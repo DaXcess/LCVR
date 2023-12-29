@@ -45,6 +45,11 @@ namespace Microsoft.MixedReality.Toolkit.Experimental.UI
         public event EventHandler OnTextSubmitted = delegate { };
 
         /// <summary>
+        /// Sent when a macro key is pressed. The macro text will be the parameter of this event.
+        /// </summary>
+        public event Action<string> OnMacroTriggered = delegate { };
+
+        /// <summary>
         /// Fired every time the text in the InputField changes.
         /// (Cleared when keyboard is closed.)
         /// </summary>
@@ -651,46 +656,46 @@ namespace Microsoft.MixedReality.Toolkit.Experimental.UI
             switch (functionKey.ButtonFunction)
             {
                 case KeyboardKeyFunc.Function.Enter:
-                {
-                    Enter();
-                    break;
-                }
+                    {
+                        Enter();
+                        break;
+                    }
 
                 case KeyboardKeyFunc.Function.Tab:
-                {
-                    Tab();
-                    break;
-                }
+                    {
+                        Tab();
+                        break;
+                    }
 
                 case KeyboardKeyFunc.Function.ABC:
-                {
-                    ActivateSpecificKeyboard(m_LastKeyboardLayout);
-                    break;
-                }
+                    {
+                        ActivateSpecificKeyboard(m_LastKeyboardLayout);
+                        break;
+                    }
 
                 case KeyboardKeyFunc.Function.Symbol:
-                {
-                    ActivateSpecificKeyboard(LayoutType.Symbol);
-                    break;
-                }
+                    {
+                        ActivateSpecificKeyboard(LayoutType.Symbol);
+                        break;
+                    }
 
                 case KeyboardKeyFunc.Function.Previous:
-                {
-                    MoveCaretLeft();
-                    break;
-                }
+                    {
+                        MoveCaretLeft();
+                        break;
+                    }
 
                 case KeyboardKeyFunc.Function.Next:
-                {
-                    MoveCaretRight();
-                    break;
-                }
+                    {
+                        MoveCaretRight();
+                        break;
+                    }
 
                 case KeyboardKeyFunc.Function.Close:
-                {
-                    Close();
-                    break;
-                }
+                    {
+                        Close();
+                        break;
+                    }
 
                 //case KeyboardKeyFunc.Function.Dictate:
                 //{
@@ -708,34 +713,40 @@ namespace Microsoft.MixedReality.Toolkit.Experimental.UI
                 //}
 
                 case KeyboardKeyFunc.Function.Shift:
-                {
-                    Shift(!m_IsShifted);
-                    break;
-                }
+                    {
+                        Shift(!m_IsShifted);
+                        break;
+                    }
 
                 case KeyboardKeyFunc.Function.CapsLock:
-                {
-                    CapsLock(!m_IsCapslocked);
-                    break;
-                }
+                    {
+                        CapsLock(!m_IsCapslocked);
+                        break;
+                    }
 
                 case KeyboardKeyFunc.Function.Space:
-                {
-                    Space();
-                    break;
-                }
+                    {
+                        Space();
+                        break;
+                    }
 
                 case KeyboardKeyFunc.Function.Backspace:
-                {
-                    Backspace();
-                    break;
-                }
+                    {
+                        Backspace();
+                        break;
+                    }
+
+                case KeyboardKeyFunc.Function.Macro:
+                    {
+                        Macro(functionKey.MacroText);
+                        break;
+                    }
 
                 case KeyboardKeyFunc.Function.UNDEFINED:
-                {
-                    Debug.LogErrorFormat("The {0} key on this keyboard hasn't been assigned a function.", functionKey.name);
-                    break;
-                }
+                    {
+                        Debug.LogErrorFormat("The {0} key on this keyboard hasn't been assigned a function.", functionKey.name);
+                        break;
+                    }
 
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -816,7 +827,14 @@ namespace Microsoft.MixedReality.Toolkit.Experimental.UI
 
                 UpdateCaretPosition(m_CaretPosition);
             }
+        }
 
+        /// <summary>
+        /// Set the input text and immediately press the Enter button
+        /// </summary>
+        public void Macro(string text)
+        {
+            OnMacroTriggered?.Invoke(text);
         }
 
         /// <summary>
