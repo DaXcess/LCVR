@@ -7,6 +7,7 @@ namespace LCVR.Player
 {
     internal class Items
     {
+        public static readonly string[] unsupportedItems = ["Jetpack"];
         public static readonly Dictionary<string, Type> items = new()
         {
             { "Shovel", typeof(VRShovelItem) },
