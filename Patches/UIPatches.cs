@@ -26,6 +26,8 @@ namespace LCVR.Patches
         [HarmonyPatch(typeof(PreInitSceneScript), "Start")]
         private static void OnPreInitMenuShown()
         {
+            InputSystem.devices.Do(device => Logger.LogDebug($"Input Device: {device.displayName}"));
+            
             InitMenuScene();
         }
 
