@@ -406,12 +406,14 @@ namespace LCVR.Player
             hdMainCamera.xrRendering = false;
             mainCamera.stereoTargetEye = StereoTargetEyeMask.None;
             mainCamera.depth = uiCamera.depth - 1;
+            mainCamera.enabled = false;
 
             hdUICamera.xrRendering = true;
             uiCamera.stereoTargetEye = StereoTargetEyeMask.Both;
             uiCamera.transform.SetParent(uiCameraAnchor.transform, false);
             uiCamera.nearClipPlane = 0.01f;
             uiCamera.farClipPlane = 15f;
+            uiCamera.enabled = true;
 
             var poseDriver = uiCamera.GetComponent<TrackedPoseDriver>() ?? uiCamera.gameObject.AddComponent<TrackedPoseDriver>();
             poseDriver.positionAction = Actions.XR_HeadPosition;
@@ -431,10 +433,12 @@ namespace LCVR.Player
 
             hdUICamera.xrRendering = false;
             uiCamera.stereoTargetEye = StereoTargetEyeMask.None;
+            uiCamera.enabled = false;
 
             hdMainCamera.xrRendering = true;
             mainCamera.stereoTargetEye = StereoTargetEyeMask.Both;
             mainCamera.depth = uiCamera.depth + 1;
+            mainCamera.enabled = true;
 
             hud.RevertHUDFromSpectatorCam();
         }

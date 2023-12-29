@@ -58,6 +58,7 @@ namespace LCVR
             mainCamera.targetTexture = null;
             uiCamera.GetComponent<HDAdditionalCameraData>().xrRendering = false;
             uiCamera.stereoTargetEye = StereoTargetEyeMask.None;
+            uiCamera.enabled = false;
 
             mainCamera.stereoTargetEye = StereoTargetEyeMask.Both;
             mainCamera.GetComponent<HDAdditionalCameraData>().xrRendering = true;
