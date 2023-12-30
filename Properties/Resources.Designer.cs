@@ -61,26 +61,6 @@ namespace LCVR.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
-        internal static byte[] animator {
-            get {
-                object obj = ResourceManager.GetObject("animator", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
-        internal static byte[] hands {
-            get {
-                object obj = ResourceManager.GetObject("hands", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to {
         ///  &quot;name&quot;: &quot;PlayerActions&quot;,
         ///  &quot;maps&quot;: [
