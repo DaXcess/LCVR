@@ -21,8 +21,9 @@ namespace LCVR
         // Input configuration
 
         private ConfigEntry<string> _turnProvider = file.Bind("Input", "TurnProvider", "Snap", new ConfigDescription("Specify which turning provider your player uses, if any.", new AcceptableValueList<string>("Snap", "Smooth", "Disabled")));
-        public ConfigEntry<float> SmoothTurnSpeedModifier = file.Bind("Input", "SmoothTurnSpeedModifier", 1f, "A multiplier that is added to the smooth turning speed. Requires turn provider to be set to smooth");
-        
+        public ConfigEntry<float> SmoothTurnSpeedModifier { get; } = file.Bind("Input", "SmoothTurnSpeedModifier", 1f, "A multiplier that is added to the smooth turning speed. Requires turn provider to be set to smooth");
+        public ConfigEntry<float> SpectateCameraSpeedModifier { get; } = file.Bind("Input", "SpectateCameraSpeedModifier", 2f, "Specifies how fast the camera should pivot around a spectated player.");
+
         public TurnProviderOption TurnProvider
         {
             get

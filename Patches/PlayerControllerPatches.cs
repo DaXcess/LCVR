@@ -77,8 +77,6 @@ namespace LCVR.Patches
     internal static class PlayerControllerPatches
     {
         private static bool isDead = false;
-        private static bool allowSpectatorPivot = false;
-        private static bool lastPivotCallAllowed = false;
 
         [HarmonyPatch(typeof(PlayerControllerB), "ScrollMouse_performed")]
         [HarmonyPrefix]
@@ -106,17 +104,6 @@ namespace LCVR.Patches
             {
                 __instance.playerBodyAnimator.runtimeAnimatorController = AssetManager.localVrMetarig;
             }
-
-            if (isDead && __instance.spectatedPlayerScript != null)
-            {
-                var isPlayerDead = __instance.spectatedPlayerScript.isPlayerDead;
-                var spectatedPlayerDeadTimer = (float)typeof(PlayerControllerB).GetField("spectatedPlayerDeadTimer", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(__instance);
-
-                if (spectatedPlayerDeadTimer < 1.5f && isPlayerDead)
-                {
-                    allowSpectatorPivot = true;
-                }
-            }
         }
 
         [HarmonyPatch(typeof(PlayerControllerB), "DamagePlayer")]
@@ -127,12 +114,34 @@ namespace LCVR.Patches
             VRPlayer.VibrateController(XRNode.RightHand, 0.1f, 0.5f);
         }
 
+        private static FieldInfo cameraUpField = typeof(PlayerControllerB).GetField("cameraUp", BindingFlags.NonPublic | BindingFlags.Instance);
+
+        private static void SetCameraUp(this PlayerControllerB player, float value)
+        {
+            cameraUpField.SetValue(player, value);
+        }
+
+        private static float GetCameraUp(this PlayerControllerB player)
+        {
+            return (float)cameraUpField.GetValue(player);
+        }
+
         [HarmonyPatch(typeof(PlayerControllerB), "PlayerLookInput")]
         [HarmonyPostfix]
         private static void AfterPlayerLookInput(PlayerControllerB __instance)
         {
+            // Handle spectator camera pivoting
             if (isDead)
+            {
+                var movement = Actions.XR_RightHand_Thumbstick.ReadValue<Vector2>() * Plugin.Config.SpectateCameraSpeedModifier.Value;
+
+                __instance.spectateCameraPivot.Rotate(new Vector3(0, movement.x, 0));
+                __instance.SetCameraUp(__instance.GetCameraUp() - movement.y);
+                __instance.SetCameraUp(Mathf.Clamp(__instance.GetCameraUp(), -80, 80));
+                __instance.spectateCameraPivot.transform.localEulerAngles = new Vector3(__instance.GetCameraUp(), __instance.spectateCameraPivot.transform.localEulerAngles.y, 0);
+
                 return;
+            }
 
             var rot = Actions.XR_HeadRotation.ReadValue<Quaternion>().eulerAngles.x;
 
@@ -199,39 +208,6 @@ namespace LCVR.Patches
             Logger.Log("VR Player revived");
 
             __instance.localPlayerController.GetComponent<VRPlayer>().OnRevive();
-        }
-
-        [HarmonyPatch(typeof(PlayerControllerB), "RaycastSpectateCameraAroundPivot")]
-        [HarmonyPrefix]
-        private static bool OnSpectatorCamPivot(PlayerControllerB __instance)
-        {
-            if (!lastPivotCallAllowed && allowSpectatorPivot)
-                __instance.playersManager.spectateCamera.transform.SetParent(GameObject.Find("SpectateCameraPivot").transform, false);
-            else if (lastPivotCallAllowed && !allowSpectatorPivot && __instance.spectatedPlayerScript != null)
-                __instance.playersManager.spectateCamera.transform.SetParent(__instance.spectatedPlayerScript.transform.Find("ScavengerModel/metarig/CameraContainer/MainCamera"), false);
-
-            lastPivotCallAllowed = allowSpectatorPivot;
-
-            return allowSpectatorPivot;
-        }
-
-        [HarmonyPatch(typeof(PlayerControllerB), "SpectateNextPlayer")]
-        [HarmonyPostfix]
-        private static void OnSpectateNextPlayer(PlayerControllerB __instance)
-        {
-            Logger.LogDebug($"SpectateNextPlayer called (IsOwner: {__instance.IsOwner})");
-
-            if (!__instance.IsOwner)
-                return;
-
-            var spectateCamera = StartOfRound.Instance.spectateCamera;
-            var playerToSpectate = __instance.spectatedPlayerScript;
-            var playerCamera = playerToSpectate.transform.Find("ScavengerModel/metarig/CameraContainer/MainCamera");
-
-            spectateCamera.transform.SetParent(playerCamera, false);
-            spectateCamera.transform.localEulerAngles = Vector3.zero;
-            spectateCamera.transform.localPosition = Vector3.zero;
-            spectateCamera.nearClipPlane = 0.43f;
         }
 
         [HarmonyPatch(typeof(PlayerControllerB), "SwitchToItemSlot")]
