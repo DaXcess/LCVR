@@ -2,10 +2,8 @@
 using HarmonyLib;
 using LCVR.Assets;
 using LCVR.Input;
-using LCVR.Items;
 using LCVR.Networking;
 using LCVR.Player;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -78,6 +76,18 @@ namespace LCVR.Patches
     {
         private static bool isDead = false;
 
+        private static readonly FieldInfo cameraUpField = typeof(PlayerControllerB).GetField("cameraUp", BindingFlags.NonPublic | BindingFlags.Instance);
+
+        private static void SetCameraUp(this PlayerControllerB player, float value)
+        {
+            cameraUpField.SetValue(player, value);
+        }
+
+        private static float GetCameraUp(this PlayerControllerB player)
+        {
+            return (float)cameraUpField.GetValue(player);
+        }
+
         [HarmonyPatch(typeof(PlayerControllerB), "ScrollMouse_performed")]
         [HarmonyPrefix]
         private static bool OnScroll(PlayerControllerB __instance, ref InputAction.CallbackContext context)
@@ -114,18 +124,6 @@ namespace LCVR.Patches
             VRPlayer.VibrateController(XRNode.RightHand, 0.1f, 0.5f);
         }
 
-        private static FieldInfo cameraUpField = typeof(PlayerControllerB).GetField("cameraUp", BindingFlags.NonPublic | BindingFlags.Instance);
-
-        private static void SetCameraUp(this PlayerControllerB player, float value)
-        {
-            cameraUpField.SetValue(player, value);
-        }
-
-        private static float GetCameraUp(this PlayerControllerB player)
-        {
-            return (float)cameraUpField.GetValue(player);
-        }
-
         [HarmonyPatch(typeof(PlayerControllerB), "PlayerLookInput")]
         [HarmonyPostfix]
         private static void AfterPlayerLookInput(PlayerControllerB __instance)
@@ -150,7 +148,7 @@ namespace LCVR.Patches
                 rot -= 360;
             }
 
-            typeof(PlayerControllerB).GetField("cameraUp", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(__instance, rot);
+            __instance.SetCameraUp(rot);
         }
 
         [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.SpawnPlayerAnimation))]
