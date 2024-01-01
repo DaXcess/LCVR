@@ -19,7 +19,6 @@ using UnityEngine.XR.OpenXR.Features.Interactions;
 namespace LCVR
 {
     [BepInPlugin(PLUGIN_GUID, PLUGIN_NAME, PLUGIN_VERSION)]
-    [BepInIncompatibility("com.sinai.unityexplorer")]
     [BepInDependency("me.swipez.melonloader.morecompany", BepInDependency.DependencyFlags.SoftDependency)]
     public class Plugin : BaseUnityPlugin
     {
@@ -40,6 +39,10 @@ namespace LCVR
 
             Config = new Config(base.Config);
             Compatibility = new Compat([.. Chainloader.PluginInfos.Values]);
+
+            foreach (var plugin in Chainloader.PluginInfos.Values)
+                if (plugin.Metadata.GUID == "com.sinai.unityexplorer")
+                    Logger.LogWarning("WARNING: UNITY EXPLORER DETECTED! UNITY EXPLORER *WILL* BREAK VR UI INPUTS!");
 
             Logger.LogInfo($"Plugin {PLUGIN_NAME} is starting...");
 
