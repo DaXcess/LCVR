@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using LCVR.Input;
+using System.Collections;
 using UnityEngine;
 
 namespace LCVR.UI
@@ -20,6 +21,8 @@ namespace LCVR.UI
 
         void Update()
         {
+            Logger.LogDebug(Actions.XR_HeadRotation.ReadValueAsObject());
+
             if (isInitialFrame)
             {
                 isInitialFrame = false;
