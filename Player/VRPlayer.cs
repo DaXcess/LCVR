@@ -127,20 +127,6 @@ namespace LCVR.Player
             leftHandVRTarget.transform.localPosition = new Vector3(-0.0279f, 0.0353f, 0.0044f);
             leftHandVRTarget.transform.localRotation = Quaternion.Euler(0, 270, 192);
 
-            if (false)
-            {
-                // TODO: Remove debug controller objects
-                var rightHand = GameObject.Instantiate(AssetManager.rightHand);
-                rightHand.transform.parent = rightController.transform;
-                rightHand.transform.localPosition = new Vector3(-0.03f, 0.02f, 0.03f);
-                rightHand.transform.localRotation = Quaternion.Euler(58.1285f, 0, 270);
-
-                var leftHand = GameObject.Instantiate(AssetManager.leftHand);
-                leftHand.transform.parent = leftController.transform;
-                leftHand.transform.localPosition = new Vector3(0.03f, 0.02f, 0.03f);
-                leftHand.transform.localRotation = Quaternion.Euler(58.1285f, 0, 90);
-            }
-
             // ARMS ONLY RIG
 
             // Set up rigging
@@ -406,12 +392,14 @@ namespace LCVR.Player
             hdMainCamera.xrRendering = false;
             mainCamera.stereoTargetEye = StereoTargetEyeMask.None;
             mainCamera.depth = uiCamera.depth - 1;
+            mainCamera.enabled = false;
 
             hdUICamera.xrRendering = true;
             uiCamera.stereoTargetEye = StereoTargetEyeMask.Both;
             uiCamera.transform.SetParent(uiCameraAnchor.transform, false);
             uiCamera.nearClipPlane = 0.01f;
             uiCamera.farClipPlane = 15f;
+            uiCamera.enabled = true;
 
             var poseDriver = uiCamera.GetComponent<TrackedPoseDriver>() ?? uiCamera.gameObject.AddComponent<TrackedPoseDriver>();
             poseDriver.positionAction = Actions.XR_HeadPosition;
@@ -431,10 +419,12 @@ namespace LCVR.Player
 
             hdUICamera.xrRendering = false;
             uiCamera.stereoTargetEye = StereoTargetEyeMask.None;
+            uiCamera.enabled = false;
 
             hdMainCamera.xrRendering = true;
             mainCamera.stereoTargetEye = StereoTargetEyeMask.Both;
             mainCamera.depth = uiCamera.depth + 1;
+            mainCamera.enabled = true;
 
             hud.RevertHUDFromSpectatorCam();
         }
@@ -460,7 +450,6 @@ namespace LCVR.Player
             rightController.GetComponent<VRController>().ShowDebugLineRenderer();
         }
 
-        // TODO: Don't scale the camera, it messes up the HUD
         public void ResetHeight()
         {
             StartCoroutine(ResetHeightRoutine());
@@ -473,7 +462,6 @@ namespace LCVR.Player
             var realHeight = mainCamera.transform.localPosition.y * scaleFactor;
             var targetHeight = 2.3f;
 
-            //scaleFactor = targetHeight / realHeight;
             cameraFloorOffset = (targetHeight - realHeight);
 
             Logger.LogDebug($"Scaling player with real height: {MathF.Round(realHeight*100)/100}cm");
