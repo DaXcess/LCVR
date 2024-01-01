@@ -29,6 +29,23 @@ namespace LCVR.Patches
             InputSystem.devices.Do(device => Logger.LogDebug($"Input Device: {device.displayName}"));
             
             InitMenuScene();
+
+            if (!Plugin.UE_DETECTED)
+                return;
+
+            var canvas = GameObject.Find("Canvas");
+            var textObject = Object.Instantiate(canvas.Find("GameObject/LANOrOnline/OnlineButton/Text (TMP) (1)"));
+            var text = textObject.GetComponent<TextMeshProUGUI>();
+
+            text.transform.parent = canvas.Find("GameObject").transform;
+            text.transform.localPosition = new Vector3(200, -170, 0);
+            text.transform.localScale = Vector3.one;
+            text.text = "Unity Explorer Detected!\nUI controls are most likely nonfunctional!";
+            text.autoSizeTextContainer = true;
+            text.color = new Color(0.9434f, 0.9434f, 0.0434f, 1);
+            text.alignment = TextAlignmentOptions.Center;
+            text.fontSize = 18;
+            text.raycastTarget = false;
         }
 
         /// <summary>
@@ -45,16 +62,6 @@ namespace LCVR.Patches
 
             if (Plugin.Compatibility.IsLoaded("MoreCompany"))
                 SetupMoreCompanyUI();
-        }
-
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(QuickMenuManager), "OpenQuickMenu")]
-        private static void OnPauseMenuOpened()
-        {
-            var input = GameObject.Find("EventSystem")?.GetComponent<InputSystemUIInputModule>();
-
-            if (input != null)
-                input.actionsAsset = InputActionAsset.FromJson(Properties.Resources.inputs_vr_menu);
         }
 
         private static void InitMenuScene()

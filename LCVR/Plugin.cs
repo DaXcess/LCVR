@@ -28,6 +28,7 @@ namespace LCVR
 
         public static bool VR_ENABLED = false;
         public static bool MUST_RESTART = false;
+        public static bool UE_DETECTED = false;
 
         public static new Config Config { get; private set; }
         public static Compat Compatibility { get; private set; }
@@ -42,7 +43,10 @@ namespace LCVR
 
             foreach (var plugin in Chainloader.PluginInfos.Values)
                 if (plugin.Metadata.GUID == "com.sinai.unityexplorer")
+                {
                     Logger.LogWarning("WARNING: UNITY EXPLORER DETECTED! UNITY EXPLORER *WILL* BREAK VR UI INPUTS!");
+                    UE_DETECTED = true;
+                }
 
             Logger.LogInfo($"Plugin {PLUGIN_NAME} is starting...");
 
