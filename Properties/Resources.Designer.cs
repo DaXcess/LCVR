@@ -147,5 +147,29 @@ namespace LCVR.Properties {
                 return ResourceManager.GetString("UnitySubsystemsManifest", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {
+        ///    &quot;name&quot;: &quot;VR&quot;,
+        ///    &quot;maps&quot;: [
+        ///        {
+        ///            &quot;name&quot;: &quot;Head&quot;,
+        ///            &quot;id&quot;: &quot;7f3d9a5f-aadc-4a0b-9b79-b32e1b5afa1c&quot;,
+        ///            &quot;actions&quot;: [
+        ///                {
+        ///                    &quot;name&quot;: &quot;Position&quot;,
+        ///                    &quot;type&quot;: &quot;Value&quot;,
+        ///                    &quot;id&quot;: &quot;3bbc2aad-20de-4984-9d68-83cb6f68ce5b&quot;,
+        ///                    &quot;expectedControlType&quot;: &quot;Vector3&quot;,
+        ///                    &quot;processors&quot;: &quot;&quot;,
+        ///                    &quot;interactions&quot;: &quot;&quot;,
+        ///                    &quot;initialStateCheck&quot;: true
+        ///    [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string VRInputs {
+            get {
+                return ResourceManager.GetString("VRInputs", resourceCulture);
+            }
+        }
     }
 }
