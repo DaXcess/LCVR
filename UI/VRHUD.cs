@@ -1,10 +1,10 @@
 ﻿using LCVR.Assets;
 using LCVR.Player;
 using LCVR.UI;
-using System.Diagnostics;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.XR.Interaction.Toolkit.UI;
 
 namespace LCVR
 {
@@ -58,6 +58,13 @@ namespace LCVR
             var canvas = gameObject.AddComponent<Canvas>();
             canvas.worldCamera = player.mainCamera;
             canvas.renderMode = RenderMode.WorldSpace;
+
+            // Flat Canvas: Add tracked graphic raycaster
+            GameObject.Find("Systems").Find("UI/Canvas").AddComponent<TrackedDeviceGraphicRaycaster>();
+
+            // Pause menu: Move a little forward
+            var quickMenu = GameObject.Find("Systems").Find("UI/Canvas/QuickMenu").transform;
+            quickMenu.localPosition = new Vector3(0, 0, -50);
 
             // Object scanner: Custom handler
             var objectScanner = GameObject.Find("ObjectScanner");
@@ -273,16 +280,6 @@ namespace LCVR
 
             darkenScreen.transform.localScale = Vector3.one * 18;
 
-            // Pause menu: In front of eyes
-            var pauseMenu = GameObject.Find("Systems").transform.Find("UI/Canvas/QuickMenu").gameObject;
-
-            pauseMenu.transform.SetParent(transform, false);
-            pauseMenu.transform.localPosition = Vector3.zero;
-            pauseMenu.transform.localRotation = Quaternion.identity;
-            pauseMenu.transform.localScale = Vector3.one;
-
-            pauseMenu.transform.Find("Panel (2)").localScale = Vector3.one * 18;
-
             // Fired screen: In front of eyes
             var firedScreen = GameObject.Find("GameOverScreen");
 
@@ -325,8 +322,6 @@ namespace LCVR
 
         public void UpdateHUDForSpectatorCam()
         {
-            spectateCanvas.GetComponent<CanvasTransformFollow>().enabled = true;
-
             // Revert Endgame Stats
             var endgameStats = GameObject.Find("EndgameStats").transform;
             endgameStats.SetParent(spectateCanvas.transform, false);
@@ -344,8 +339,6 @@ namespace LCVR
 
         public void RevertHUDFromSpectatorCam()
         {
-            spectateCanvas.GetComponent<CanvasTransformFollow>().enabled = false;
-
             var endgameStats = GameObject.Find("EndgameStats").transform;
 
             endgameStats.SetParent(GameObject.Find("EndgameStatsScaleContainer").transform, false);

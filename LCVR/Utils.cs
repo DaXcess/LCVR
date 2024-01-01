@@ -4,6 +4,8 @@ using UnityEngine.InputSystem.XR;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering.HighDefinition;
 using System.Collections.Generic;
+using LCVR.Assets;
+using UnityEngine.XR.Interaction.Toolkit;
 
 namespace LCVR
 {
@@ -47,6 +49,46 @@ namespace LCVR
             transform.rotation = parent.rotation;
             transform.Rotate(rotationOffset);
             transform.position = parent.position + parent.rotation * positionOffset;
+        }
+
+        public static void CreateInteractorController(this GameObject @object, string hand)
+        {
+            var controller = @object.AddComponent<ActionBasedController>();
+            @object.AddComponent<XRRayInteractor>();
+            var visual = @object.AddComponent<XRInteractorLineVisual>();
+            var renderer = @object.GetComponent<LineRenderer>();
+
+            visual.lineBendRatio = 1;
+            visual.invalidColorGradient = new Gradient()
+            {
+                mode = GradientMode.Blend,
+                alphaKeys = [
+                    new GradientAlphaKey(0.1f, 0),
+                    new GradientAlphaKey(0.1f, 1)
+                ],
+                colorKeys = [
+                    new GradientColorKey(Color.white, 0),
+                    new GradientColorKey(Color.white, 1)
+                ]
+            };
+
+            renderer.material = AssetManager.defaultRayMat;
+
+            controller.positionAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Position"));
+            controller.rotationAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Rotation"));
+            controller.trackingStateAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Tracking State"));
+
+            controller.selectAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Select"));
+            controller.selectActionValue = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Select Value"));
+            controller.activateAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Activate"));
+            controller.activateActionValue = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Activate Value"));
+            controller.uiPressAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/UI Press"));
+            controller.uiPressActionValue = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/UI Press Value"));
+            controller.uiScrollAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/UI Scroll"));
+            controller.rotateAnchorAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Rotate Anchor"));
+            controller.translateAnchorAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Translate Anchor"));
+            controller.scaleToggleAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Scale Toggle"));
+            controller.scaleDeltaAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Scale Delta"));
         }
     }
 }

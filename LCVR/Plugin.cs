@@ -19,7 +19,7 @@ using UnityEngine.XR.OpenXR.Features.Interactions;
 namespace LCVR
 {
     [BepInPlugin(PLUGIN_GUID, PLUGIN_NAME, PLUGIN_VERSION)]
-    //[BepInIncompatibility("com.sinai.unityexplorer")]
+    [BepInIncompatibility("com.sinai.unityexplorer")]
     [BepInDependency("me.swipez.melonloader.morecompany", BepInDependency.DependencyFlags.SoftDependency)]
     public class Plugin : BaseUnityPlugin
     {

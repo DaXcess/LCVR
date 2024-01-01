@@ -25,6 +25,8 @@ namespace LCVR.Player
         private float cameraFloorOffset = 0f;
         private float crouchOffset = 0f;
 
+        private bool isDead = false;
+
         private bool wasInSpecialAnimation = false;
         private Vector3 specialAnimationPositionOffset = Vector3.zero;
 
@@ -36,7 +38,7 @@ namespace LCVR.Player
         private GameObject leftControllerRayInteractor;
         private GameObject rightControllerRayInteractor;
 
-        private GameObject xrOrigin;
+        private Transform xrOrigin;
 
         private Vector3 lastFrameHMDPosition = new(0, 0, 0);
         private Vector3 lastFrameHMDRotation = new(0, 0, 0);
@@ -48,6 +50,7 @@ namespace LCVR.Player
         public Camera mainCamera;
         public Camera customCamera;
         public Camera uiCamera;
+        private Transform uiCameraAnchor;
 
         public Transform leftHandRigTransform;
         public Transform rightHandRigTransform;
@@ -67,9 +70,21 @@ namespace LCVR.Player
             playerController = GetComponent<PlayerControllerB>();
             
             // Create XR stuff
-            xrOrigin = new GameObject("XR Origin");
+            xrOrigin = new GameObject("XR Origin").transform;
             mainCamera = Find("ScavengerModel/metarig/CameraContainer/MainCamera").GetComponent<Camera>();
             uiCamera = GameObject.Find("UICamera").GetComponent<Camera>();
+            uiCameraAnchor = new GameObject("UI Camera Anchor").transform;
+
+            // Set up pause menu stuff
+            uiCameraAnchor.position = new Vector3(0, -1000, 0);
+            uiCamera.transform.SetParent(uiCameraAnchor.transform, false);
+
+            uiCamera.cullingMask = -1;
+
+            var poseDriver = uiCamera.GetComponent<TrackedPoseDriver>() ?? uiCamera.gameObject.AddComponent<TrackedPoseDriver>();
+            poseDriver.positionAction = Actions.XR_HeadPosition;
+            poseDriver.rotationAction = Actions.XR_HeadRotation;
+            poseDriver.trackingStateInput = new InputActionProperty(Actions.XR_HeadTrackingState);
 
             if (Plugin.Config.EnableCustomCamera.Value)
                 customCamera = mainCamera.gameObject.Find("Custom Camera").GetComponent<Camera>();
@@ -78,10 +93,10 @@ namespace LCVR.Player
             new GameObject("MainCamera").transform.parent = Find("ScavengerModel/metarig/CameraContainer").transform;
 
             // Unparent camera container
-            mainCamera.transform.parent = xrOrigin.transform;
-            xrOrigin.transform.localPosition = Vector3.zero;
-            xrOrigin.transform.localRotation = Quaternion.Euler(0, 0, 0);
-            xrOrigin.transform.localScale = Vector3.one;
+            mainCamera.transform.parent = xrOrigin;
+            xrOrigin.localPosition = Vector3.zero;
+            xrOrigin.localRotation = Quaternion.Euler(0, 0, 0);
+            xrOrigin.localScale = Vector3.one;
 
             // Create HMD tracker
             var cameraPoseDriver = mainCamera.gameObject.AddComponent<TrackedPoseDriver>();
@@ -94,8 +109,8 @@ namespace LCVR.Player
             leftController = new GameObject("Left Controller");
 
             // And mount to camera container
-            rightController.transform.parent = xrOrigin.transform;
-            leftController.transform.parent = xrOrigin.transform;
+            rightController.transform.parent = xrOrigin;
+            leftController.transform.parent = xrOrigin;
 
             // Left hand tracking
             var rightHandPoseDriver = rightController.AddComponent<TrackedPoseDriver>();
@@ -337,17 +352,17 @@ namespace LCVR.Player
 
             // If we are in special animation allow 6 DOF but don't update player position
             if (!playerController.inSpecialInteractAnimation)
-                xrOrigin.transform.position = new Vector3(transform.position.x - cameraPosAccounted.x * scaleFactor, transform.position.y, transform.position.z - cameraPosAccounted.z * scaleFactor);
+                xrOrigin.position = new Vector3(transform.position.x - cameraPosAccounted.x * scaleFactor, transform.position.y, transform.position.z - cameraPosAccounted.z * scaleFactor);
             else
-                xrOrigin.transform.position = transform.position + specialAnimationPositionOffset;
+                xrOrigin.position = transform.position + specialAnimationPositionOffset;
 
             // Apply crouch offset
             crouchOffset = Mathf.Lerp(crouchOffset, playerController.isCrouching ? -1 : 0, 0.1f);
 
             // Apply floor offset and sinking value
-            xrOrigin.transform.position += new Vector3(0, cameraFloorOffset + crouchOffset - playerController.sinkingValue * 2.5f, 0);
-            xrOrigin.transform.rotation = rotationOffset;
-            xrOrigin.transform.localScale = Vector3.one * scaleFactor;
+            xrOrigin.position += new Vector3(0, cameraFloorOffset + crouchOffset - playerController.sinkingValue * 2.5f, 0);
+            xrOrigin.rotation = rotationOffset;
+            xrOrigin.localScale = Vector3.one * scaleFactor;
 
             if (!playerController.inSpecialInteractAnimation)
                 transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles.x, mainCamera.transform.eulerAngles.y, transform.rotation.eulerAngles.z);
@@ -377,56 +392,61 @@ namespace LCVR.Player
 
         public void OnDeath()
         {
+            isDead = true;
+
             VRPlayer.VibrateController(XRNode.LeftHand, 1f, 1f);
             VRPlayer.VibrateController(XRNode.RightHand, 1f, 1f);
 
             if (Plugin.Config.EnableCustomCamera.Value)
                 customCamera.enabled = false;
 
-            var uiCameraAnchor = GameObject.Find("VR UI Camera Anchor") ?? new GameObject("VR UI Camera Anchor");
-            uiCameraAnchor.transform.position = new Vector3(0, -1000, 0);
-
-            var hdUICamera = uiCamera.GetComponent<HDAdditionalCameraData>();
-            var hdMainCamera = mainCamera.GetComponent<HDAdditionalCameraData>();
-
-            hdMainCamera.xrRendering = false;
-            mainCamera.stereoTargetEye = StereoTargetEyeMask.None;
-            mainCamera.depth = uiCamera.depth - 1;
-            mainCamera.enabled = false;
-
-            hdUICamera.xrRendering = true;
-            uiCamera.stereoTargetEye = StereoTargetEyeMask.Both;
-            uiCamera.transform.SetParent(uiCameraAnchor.transform, false);
-            uiCamera.nearClipPlane = 0.01f;
-            uiCamera.farClipPlane = 15f;
-            uiCamera.enabled = true;
-
-            var poseDriver = uiCamera.GetComponent<TrackedPoseDriver>() ?? uiCamera.gameObject.AddComponent<TrackedPoseDriver>();
-            poseDriver.positionAction = Actions.XR_HeadPosition;
-            poseDriver.rotationAction = Actions.XR_HeadRotation;
-            poseDriver.trackingStateInput = new InputActionProperty(Actions.XR_HeadTrackingState);
+            SwitchToUICamera();
 
             hud.UpdateHUDForSpectatorCam();
         }
 
         public void OnRevive()
         {
+            isDead = false;
+
             if (Plugin.Config.EnableCustomCamera.Value)
                 customCamera.enabled = true;
 
-            var hdUICamera = uiCamera.GetComponent<HDAdditionalCameraData>();
-            var hdMainCamera = mainCamera.GetComponent<HDAdditionalCameraData>();
-
-            hdUICamera.xrRendering = false;
-            uiCamera.stereoTargetEye = StereoTargetEyeMask.None;
-            uiCamera.enabled = false;
-
-            hdMainCamera.xrRendering = true;
-            mainCamera.stereoTargetEye = StereoTargetEyeMask.Both;
-            mainCamera.depth = uiCamera.depth + 1;
-            mainCamera.enabled = true;
-
+            SwitchToGameCamera();
+            playerController.quickMenuManager.CloseQuickMenu();
             hud.RevertHUDFromSpectatorCam();
+        }
+
+        public void OnPauseMenuOpened()
+        {
+            Logger.LogDebug("Opened pause menu");
+
+            if (!isDead)
+                SwitchToUICamera();
+
+            mainHand.enabled = false;
+            leftControllerRayInteractor.GetComponent<XRInteractorLineVisual>().enabled = true;
+            rightControllerRayInteractor.GetComponent<XRInteractorLineVisual>().enabled = true;
+
+            leftController.transform.SetParent(uiCameraAnchor, false);
+            rightController.transform.SetParent(uiCameraAnchor, false);
+            rightController.GetComponent<VRController>().HideDebugLineRenderer();
+        }
+
+        public void OnPauseMenuClosed()
+        {
+            Logger.LogDebug("Closed pause menu");
+
+            if (!isDead)
+                SwitchToGameCamera();
+
+            mainHand.enabled = true;
+            leftControllerRayInteractor.GetComponent<XRInteractorLineVisual>().enabled = false;
+            rightControllerRayInteractor.GetComponent<XRInteractorLineVisual>().enabled = false;
+
+            leftController.transform.SetParent(xrOrigin, false);
+            rightController.transform.SetParent(xrOrigin, false);
+            rightController.GetComponent<VRController>().ShowDebugLineRenderer();
         }
 
         public void OnEnterTerminal()
@@ -466,6 +486,38 @@ namespace LCVR.Player
 
             Logger.LogDebug($"Scaling player with real height: {MathF.Round(realHeight*100)/100}cm");
             Logger.Log($"Setting player height scale: {scaleFactor}");
+        }
+
+        private void SwitchToUICamera()
+        {
+            var hdUICamera = uiCamera.GetComponent<HDAdditionalCameraData>();
+            var hdMainCamera = mainCamera.GetComponent<HDAdditionalCameraData>();
+
+            hdMainCamera.xrRendering = false;
+            mainCamera.stereoTargetEye = StereoTargetEyeMask.None;
+            mainCamera.depth = uiCamera.depth - 1;
+            mainCamera.enabled = false;
+
+            hdUICamera.xrRendering = true;
+            uiCamera.stereoTargetEye = StereoTargetEyeMask.Both;
+            uiCamera.nearClipPlane = 0.01f;
+            uiCamera.farClipPlane = 15f;
+            uiCamera.enabled = true;
+        }
+
+        private void SwitchToGameCamera()
+        {
+            var hdUICamera = uiCamera.GetComponent<HDAdditionalCameraData>();
+            var hdMainCamera = mainCamera.GetComponent<HDAdditionalCameraData>();
+
+            hdUICamera.xrRendering = false;
+            uiCamera.stereoTargetEye = StereoTargetEyeMask.None;
+            uiCamera.enabled = false;
+
+            hdMainCamera.xrRendering = true;
+            mainCamera.stereoTargetEye = StereoTargetEyeMask.Both;
+            mainCamera.depth = uiCamera.depth + 1;
+            mainCamera.enabled = true;
         }
 
         private Transform Find(string name, bool resetLocalPosition = false)
