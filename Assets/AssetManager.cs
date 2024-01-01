@@ -28,18 +28,10 @@ namespace LCVR.Assets
         public static bool LoadAssets()
         {
             assetBundle = AssetBundle.LoadFromMemory(Properties.Resources.lethalcompanyvr);
-            var handsBundle = AssetBundle.LoadFromMemory(Properties.Resources.hands);
-            var animatorBundle = AssetBundle.LoadFromMemory(Properties.Resources.animator);
 
             if (assetBundle == null)
             {
                 Logger.LogError("Failed to load asset bundle!");
-                return false;
-            }
-
-            if (handsBundle == null)
-            {
-                Logger.LogError("Failed to load hands asset bundle!");
                 return false;
             }
 
@@ -52,10 +44,8 @@ namespace LCVR.Assets
             githubImage = assetBundle.LoadAsset<Sprite>("Github");
             kofiImage = assetBundle.LoadAsset<Sprite>("Ko-Fi");
             warningImage = assetBundle.LoadAsset<Sprite>("Warning");
-            leftHand = handsBundle.LoadAsset<GameObject>("Left Hand Model");
-            rightHand = handsBundle.LoadAsset<GameObject>("Right Hand Model");
-            localVrMetarig = animatorBundle.LoadAsset<RuntimeAnimatorController>("metarig");
-            remoteVrMetarig = animatorBundle.LoadAsset<RuntimeAnimatorController>("metarigOtherPlayers");
+            localVrMetarig = assetBundle.LoadAsset<RuntimeAnimatorController>("metarig");
+            remoteVrMetarig = assetBundle.LoadAsset<RuntimeAnimatorController>("metarigOtherPlayers");
 
             return true;
         }

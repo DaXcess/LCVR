@@ -9,20 +9,21 @@ namespace LCVR
 
         public ConfigEntry<bool> DisableVR { get; } = file.Bind("General", "DisableVR", false, "Disables the main functionality of this mod, can be used if you want to play without VR while keeping the mod installed.");
         public ConfigEntry<bool> IntroScreenSeen { get; } = file.Bind("General", "IntroScreenSeen", false, "Whether the VR intro screen has been displayed before. This configuration option should be set automatically.");
-        public ConfigEntry<bool> OverrideCompatibilityVersionCheck { get; } = file.Bind("General", "OverrideCompatibilityVersionCheck", false, "If enables, ignores the version check when detecting compatible mods. Warning: Enabling this may cause problems if non-standard compatible mod versions are used.");
+        public ConfigEntry<bool> OverrideCompatibilityVersionCheck { get; } = file.Bind("General", "OverrideCompatibilityVersionCheck", false, "If enabled, ignores the version check when detecting compatible mods. Warning: Enabling this may cause problems if non-standard compatible mod versions are used.");
 
         // Performance configuration
 
         public ConfigEntry<bool> EnableUpscaling { get; } = file.Bind("Performance", "EnableUpscaling", false, "This setting enables 'Dynamic Resolution' in the HDRP pipeline, which is required for upscaling.");
-        public ConfigEntry<bool> EnableDLLS { get; } = file.Bind("Performance", "EnableDLLS", false, "Enable DLLS support for the game. Requires upscaling to be enabled.");
+        public ConfigEntry<bool> EnableDLSS { get; } = file.Bind("Performance", "EnableDLSS", false, "Enable DLSS support for the game. Requires upscaling to be enabled.");
         public ConfigEntry<int> ResolutionPercentage { get; } = file.Bind("Performance", "ResolutionPercentage", 80, new ConfigDescription("The resolution to render the game on, which will then be upsampled. Requires upscaling to be enabled.", new AcceptableValueRange<int>(0, 100)));
         public ConfigEntry<bool> DisableVolumetrics { get; } = file.Bind("Performance", "DisableVolumetrics", false, "Disables volumetrics in the game, which significantly improves performance, but removes all fog and may be considered cheating.");
 
         // Input configuration
 
         private ConfigEntry<string> _turnProvider = file.Bind("Input", "TurnProvider", "Snap", new ConfigDescription("Specify which turning provider your player uses, if any.", new AcceptableValueList<string>("Snap", "Smooth", "Disabled")));
-        public ConfigEntry<float> SmoothTurnSpeedModifier = file.Bind("Input", "SmoothTurnSpeedModifier", 1f, "A multiplier that is added to the smooth turning speed. Requires turn provider to be set to smooth");
-        
+        public ConfigEntry<float> SmoothTurnSpeedModifier { get; } = file.Bind("Input", "SmoothTurnSpeedModifier", 1f, "A multiplier that is added to the smooth turning speed. Requires turn provider to be set to smooth");
+        public ConfigEntry<float> SpectateCameraSpeedModifier { get; } = file.Bind("Input", "SpectateCameraSpeedModifier", 2f, "Specifies how fast the camera should pivot around a spectated player.");
+
         public TurnProviderOption TurnProvider
         {
             get

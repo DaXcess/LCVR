@@ -67,7 +67,7 @@ namespace LCVR
             var settings = asset.currentPlatformRenderPipelineSettings;
 
             settings.dynamicResolutionSettings.enabled = Config.EnableUpscaling.Value;
-            settings.dynamicResolutionSettings.enableDLSS = Config.EnableDLLS.Value;
+            settings.dynamicResolutionSettings.enableDLSS = Config.EnableDLSS.Value;
             settings.dynamicResolutionSettings.dynResType = DynamicResolutionType.Hardware;
             settings.dynamicResolutionSettings.upsampleFilter = DynamicResUpscaleFilter.CatmullRom;
             settings.dynamicResolutionSettings.minPercentage = Config.ResolutionPercentage.Value;

@@ -58,6 +58,7 @@ namespace LCVR
             mainCamera.targetTexture = null;
             uiCamera.GetComponent<HDAdditionalCameraData>().xrRendering = false;
             uiCamera.stereoTargetEye = StereoTargetEyeMask.None;
+            uiCamera.enabled = false;
 
             mainCamera.stereoTargetEye = StereoTargetEyeMask.Both;
             mainCamera.GetComponent<HDAdditionalCameraData>().xrRendering = true;
@@ -67,7 +68,7 @@ namespace LCVR
             // Apply optimization configuration
             var hdCamera = mainCamera.GetComponent<HDAdditionalCameraData>();
             hdCamera.allowDynamicResolution = Plugin.Config.EnableUpscaling.Value;
-            hdCamera.allowDeepLearningSuperSampling = Plugin.Config.EnableDLLS.Value;
+            hdCamera.allowDeepLearningSuperSampling = Plugin.Config.EnableDLSS.Value;
 
             Utils.DisableQualitySetting(hdCamera, FrameSettingsField.DepthOfField);
 

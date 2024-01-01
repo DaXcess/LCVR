@@ -359,7 +359,11 @@ namespace LCVR.Patches
 
             modDebugPanel.SetActive(!Plugin.VR_ENABLED || Plugin.Config.IntroScreenSeen.Value);
 
-            debugScreenSeen = true;
+            var continueButton = modDebugPanel.Find("Panel/ResponseButton").GetComponent<Button>();
+            continueButton.onClick.AddListener(() =>
+            {
+                debugScreenSeen = true;
+            });
         }
 #endif
     }
