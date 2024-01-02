@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace LCVR.LCVR
+namespace LCVR
 {
     internal class OpenXR
     {
