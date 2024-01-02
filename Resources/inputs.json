@@ -319,7 +319,7 @@
         {
           "name": "Use: Right Trigger",
           "id": "73118618-851a-4995-8aae-3848f6f81ab5",
-          "path": "<XRController>{RightHand}/triggerButton",
+          "path": "<XRController>{RightHand}/trigger",
           "interactions": "",
           "processors": "",
           "groups": "",
@@ -330,7 +330,7 @@
         {
           "name": "Activate Item: Right Trigger",
           "id": "15a2f703-29f3-46b5-a1d0-508a159aad30",
-          "path": "<XRController>{RightHand}/triggerButton",
+          "path": "<XRController>{RightHand}/trigger",
           "interactions": "",
           "processors": "",
           "groups": "",
@@ -363,7 +363,7 @@
         {
           "name": "Ping Scan: Left Trigger Button",
           "id": "82b7c0d0-3d7c-4b80-acf2-17e66cf5b3ac",
-          "path": "<XRController>{LeftHand}/triggerButton",
+          "path": "<XRController>{LeftHand}/trigger",
           "interactions": "",
           "processors": "",
           "groups": "",
