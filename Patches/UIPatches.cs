@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using LCVR.Assets;
+using LCVR.LCVR;
 using LCVR.UI;
 using MoreCompany.Behaviors;
 using MoreCompany.Cosmetics;
@@ -66,6 +67,8 @@ namespace LCVR.Patches
 
         private static void InitMenuScene()
         {
+            OpenXR.DumpOpenXRDiag();
+
             var canvas = GameObject.Find("Canvas")?.GetComponent<Canvas>();
             var input = GameObject.Find("EventSystem")?.GetComponent<InputSystemUIInputModule>();
 
