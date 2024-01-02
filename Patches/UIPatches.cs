@@ -28,7 +28,8 @@ namespace LCVR.Patches
         private static void OnPreInitMenuShown()
         {
             InputSystem.devices.Do(device => Logger.LogDebug($"Input Device: {device.displayName}"));
-            
+            OpenXR.DumpOpenXRDiag();
+
             InitMenuScene();
 
             if (!Plugin.UE_DETECTED)
@@ -67,8 +68,6 @@ namespace LCVR.Patches
 
         private static void InitMenuScene()
         {
-            OpenXR.DumpOpenXRDiag();
-
             var canvas = GameObject.Find("Canvas")?.GetComponent<Canvas>();
             var input = GameObject.Find("EventSystem")?.GetComponent<InputSystemUIInputModule>();
 
