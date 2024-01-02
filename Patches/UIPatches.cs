@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using LCVR.Assets;
+using LCVR.Player;
 using LCVR.UI;
 using MoreCompany.Behaviors;
 using MoreCompany.Cosmetics;
@@ -28,6 +29,8 @@ namespace LCVR.Patches
         {
             InputSystem.devices.Do(device => Logger.LogDebug($"Input Device: {device.displayName}"));
             OpenXR.DumpOpenXRDiag();
+
+            LCVR.Player.VRPlayer.VibrateController(UnityEngine.XR.XRNode.RightHand, 1, 1);
 
             InitMenuScene();
 

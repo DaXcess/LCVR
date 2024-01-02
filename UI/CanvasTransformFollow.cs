@@ -1,6 +1,7 @@
 ﻿using LCVR.Input;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace LCVR.UI
 {
@@ -18,6 +19,32 @@ namespace LCVR.UI
 
         private Quaternion targetRotation;
         private Vector3 targetPosition;
+
+        void Awake()
+        {
+            StartCoroutine(idk());
+        }
+
+        private int frame = 0;
+        private InputAction action;
+
+        IEnumerator idk()
+        {
+            while (true)
+            {
+                if (frame % 5 == 0)
+                {
+                    action = new InputAction(binding: "<XRHMD>/centerEyeRotation");
+                    action.Enable();
+                }
+                frame++;
+
+
+                Logger.LogDebug(action.ReadValueAsObject());
+                
+                yield return null;
+            }
+        }
 
         void Update()
         {
