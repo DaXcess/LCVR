@@ -21,8 +21,6 @@ namespace LCVR.UI
 
         void Update()
         {
-            Logger.LogDebug(Actions.XR_HeadRotation.ReadValueAsObject());
-
             if (isInitialFrame)
             {
                 isInitialFrame = false;

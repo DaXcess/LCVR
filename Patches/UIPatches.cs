@@ -1,6 +1,5 @@
 ﻿using HarmonyLib;
 using LCVR.Assets;
-using LCVR.LCVR;
 using LCVR.UI;
 using MoreCompany.Behaviors;
 using MoreCompany.Cosmetics;
