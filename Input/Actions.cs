@@ -92,7 +92,12 @@ namespace LCVR.Input
             XR_LeftHand_Rotation = ExperimentalActions.FindAction("Left Hand/Rotation");
             XR_LeftHand_TrackingState = ExperimentalActions.FindAction("Left Hand/Tracking State");
 
+            Logger.LogDebug(ExperimentalActions.FindAction("Head/Position"));
             Logger.LogDebug(ExperimentalActions.FindAction("Head/Rotation"));
+            Logger.LogDebug(ExperimentalActions.FindAction("Left Hand/Position"));
+            Logger.LogDebug(ExperimentalActions.FindAction("Left Hand/Rotation"));
+            Logger.LogDebug(ExperimentalActions.FindAction("Right Hand/Position"));
+            Logger.LogDebug(ExperimentalActions.FindAction("Right Hand/Rotation"));
 
             ExperimentalActions.Enable();
         }

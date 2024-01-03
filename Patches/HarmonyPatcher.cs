@@ -24,16 +24,23 @@ namespace LCVR.Patches
         {
             AccessTools.GetTypesFromAssembly(Assembly.GetExecutingAssembly()).Do((type) =>
             {
-                var attribute = (LCVRPatchAttribute)Attribute.GetCustomAttribute(type, typeof(LCVRPatchAttribute));
+                try
+                {
+                    var attribute = (LCVRPatchAttribute)Attribute.GetCustomAttribute(type, typeof(LCVRPatchAttribute));
 
-                if (attribute == null)
-                    return;
+                    if (attribute == null)
+                        return;
 
-                if (attribute.Dependency != null && !Plugin.Compatibility.IsLoaded(attribute.Dependency))
-                    return;
+                    if (attribute.Dependency != null && !Plugin.Compatibility.IsLoaded(attribute.Dependency))
+                        return;
 
-                if (attribute.Target == target)
-                    patcher.CreateClassProcessor(type).Patch();
+                    if (attribute.Target == target)
+                        patcher.CreateClassProcessor(type).Patch();
+                }
+                catch (Exception e)
+                {
+                    Logger.LogError($"Failed to apply patches from {type}: {e.Message}");
+                }
             });
         }
     }
