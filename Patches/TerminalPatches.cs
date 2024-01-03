@@ -10,8 +10,12 @@ namespace LCVR.Patches
     {
         [HarmonyPatch(typeof(Terminal), "BeginUsingTerminal")]
         [HarmonyPostfix]
-        private static void OnEnterTerminal()
+        private static void OnEnterTerminal(Terminal __instance)
         {
+            // TODO: Remove
+            __instance.groupCredits = 2500;
+            __instance.SyncGroupCreditsServerRpc(2500, __instance.numberOfItemsInDropship);
+
             var player = Object.FindObjectOfType<VRPlayer>();
 
             player.OnEnterTerminal();

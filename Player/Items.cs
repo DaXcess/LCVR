@@ -22,6 +22,7 @@ namespace LCVR.Player
         {
             foreach (var item in StartOfRound.Instance.allItemsList.itemsList)
             {
+                // TODO: remove canBeGrabbedBeforeGameStart
                 Logger.LogDebug(item.itemName);
 
                 item.canBeGrabbedBeforeGameStart = true;

@@ -41,6 +41,8 @@ namespace LCVR
             Config = new Config(base.Config);
             Compatibility = new Compat([.. Chainloader.PluginInfos.Values]);
 
+            HarmonyPatcher.PatchUniversal();
+
             foreach (var plugin in Chainloader.PluginInfos.Values)
                 if (plugin.Metadata.GUID == "com.sinai.unityexplorer")
                 {
@@ -89,8 +91,6 @@ namespace LCVR
 
             if (!disableVr && InitVRLoader())
                 VR_ENABLED = true;
-
-            HarmonyPatcher.PatchUniversal();
 
             Logger.LogDebug("Inserted universal patches using Harmony");
         }
