@@ -4,7 +4,6 @@ using LCVR.Player;
 using LCVR.UI;
 using MoreCompany.Behaviors;
 using MoreCompany.Cosmetics;
-using System;
 using System.Reflection;
 using TMPro;
 using UnityEngine;
@@ -51,7 +50,7 @@ namespace LCVR.Patches
 
                     var bytes = (byte[])obj;
 
-                    Logger.LogWarning($"[HMD]: {BitConverter.ToString(bytes).Replace("-", "")}");
+                    Logger.LogWarning($"[HMD]: {System.BitConverter.ToString(bytes).Replace("-", "")}");
                 }
             });
 
