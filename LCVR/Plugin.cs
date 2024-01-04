@@ -44,8 +44,6 @@ namespace LCVR
             // Plugin startup logic
             LCVR.Logger.SetSource(Logger);
 
-            Logger.LogWarning(new StackTrace().ToString());
-
             Config = new Config(base.Config);
             Compatibility = new Compat([.. Chainloader.PluginInfos.Values]);
 
@@ -99,9 +97,6 @@ namespace LCVR
 
             if (!disableVr && InitVRLoader())
                 VR_ENABLED = true;
-
-            //var manager = typeof(InputSystem).GetField("s_Manager", BindingFlags.NonPublic | BindingFlags.Static).GetValue(null);
-            //AccessTools.TypeByName("UnityEngine.InputSystem.InputManager").GetMethod("PerformDefaultPluginInitialization", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(manager, []);
 
             Logger.LogDebug("Inserted universal patches using Harmony");
         }

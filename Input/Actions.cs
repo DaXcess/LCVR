@@ -1,11 +1,6 @@
-﻿using System.Diagnostics;
-using System.Reflection;
-using HarmonyLib;
-using LCVR.Patches;
-using LCVR.Player;
+﻿using LCVR.Player;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.Layouts;
 
 namespace LCVR.Input
 {
@@ -114,60 +109,6 @@ namespace LCVR.Input
             player?.ResetHeight();
 
             ReloadInputBindings();
-        }
-    }
-
-    //[LCVRPatch(LCVRPatchTarget.Universal)]
-    [HarmonyPatch]
-    internal static class IdkPatches
-    {
-
-
-        [HarmonyPatch(typeof(InputActionMap), "SetUpPerActionControlAndBindingArrays")]
-        [HarmonyPrefix]
-        private static void WhatTheHell(InputActionMap __instance)
-        {
-            if (__instance.actions[0].name != "BRUH")
-                return;
-
-            Logger.LogWarning("Resolving input controls and bindings for HMD action");
-            Logger.LogWarning(__instance.bindings);
-
-            var fieldInfo = typeof(InputActionMap).GetField("m_SingletonAction", BindingFlags.NonPublic | BindingFlags.Instance);
-
-            if (fieldInfo == null)
-            {
-                Logger.LogError("MISSING FIELDINFO?");
-                return;
-            }
-
-            Debugger.Break();
-
-            var value = (InputAction)fieldInfo.GetValue(__instance);
-
-            if (value == null)
-            {
-                Logger.LogError("MISSING VALUE?");
-                return;
-            }
-
-            Logger.LogWarning("Gonna log now bruh");
-            Logger.LogWarning(value);
-        }
-    }
-
-    //[LCVRPatch(LCVRPatchTarget.Universal)]
-    [HarmonyPatch]
-    internal static class XRLayoutOnFindLayout_Patches
-    {
-        private static MethodInfo TargetMethod()
-        {
-            return AccessTools.TypeByName("UnityEngine.InputSystem.XR.XRLayoutBuilder").GetMethod("OnFindLayoutForDevice", BindingFlags.NonPublic | BindingFlags.Static);
-        }
-
-        private static void Postfix(ref InputDeviceDescription description, string matchedLayout)
-        {
-            Logger.LogDebug($"Found device for layout {matchedLayout}");
         }
     }
 }
