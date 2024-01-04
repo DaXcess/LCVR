@@ -1,6 +1,5 @@
 ﻿using HarmonyLib;
 using LCVR.Assets;
-using LCVR.Player;
 using LCVR.UI;
 using MoreCompany.Behaviors;
 using MoreCompany.Cosmetics;
@@ -8,7 +7,6 @@ using System.Reflection;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
 using UnityEngine.XR.Interaction.Toolkit;
@@ -27,30 +25,6 @@ namespace LCVR.Patches
         [HarmonyPatch(typeof(PreInitSceneScript), "Start")]
         private static void OnPreInitMenuShown()
         {
-            InputSystem.devices.Do(device => Logger.LogDebug($"Input Device: {device.displayName}"));
-            InputSystem.devices.Do(device =>
-            {
-                if (device.displayName.ToLower().Contains("head tracking"))
-                {
-                    var obj = device.ReadValueAsObject();
-
-                    if (obj == null)
-                    {
-                        Logger.LogError("HMD DATA RETURNED NULL FROM DEVICE");
-                        return;
-                    }
-                    else if (obj is not byte[])
-                    {
-                        Logger.LogError($"HMD DATA RETURNED UNKNOWN DATA FROM DEVICE: {obj.GetType()}");
-                        return;
-                    }
-
-                    var bytes = (byte[])obj;
-
-                    Logger.LogWarning($"[HMD]: {System.BitConverter.ToString(bytes).Replace("-", "")}");
-                }
-            });
-
             InitMenuScene();
 
             if (!Plugin.UE_DETECTED)

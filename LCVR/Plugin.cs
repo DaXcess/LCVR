@@ -1,6 +1,5 @@
 ﻿using BepInEx;
 using BepInEx.Bootstrap;
-using HarmonyLib;
 using LCVR.Assets;
 using LCVR.Patches;
 using System;
@@ -37,9 +36,10 @@ namespace LCVR
         public static Compat Compatibility { get; private set; }
 
         private void Awake()
-        { 
-            // OH GOD WHAT THE FUCK
-            //typeof(InputSystem).GetMethod("InitializeInPlayer", BindingFlags.NonPublic | BindingFlags.Static).Invoke(null, [null, null]);
+        {
+            // Reload Unity's Input System plugins since BepInEx in some
+            // configurations runs after the Input System has already been initialized
+            typeof(InputSystem).GetMethod("PerformDefaultPluginInitialization", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, []);
 
             // Plugin startup logic
             LCVR.Logger.SetSource(Logger);
@@ -96,8 +96,6 @@ namespace LCVR
                 settings.lodBias = new FloatScalableSetting([Config.LODBias.Value, Config.LODBias.Value, Config.LODBias.Value], ScalableSettingSchemaId.With3Levels);
 
             asset.currentPlatformRenderPipelineSettings = settings;
-
-            typeof(InputSystem).GetMethod("PerformDefaultPluginInitialization", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, []);
 
             if (!disableVr && InitVRLoader())
                 VR_ENABLED = true;
