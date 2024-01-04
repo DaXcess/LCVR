@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.XR;
@@ -159,6 +160,9 @@ namespace LCVR
             HarmonyPatcher.PatchVR();
 
             Logger.LogDebug("Inserted VR patches using Harmony");
+
+            // OH GOD WHAT THE FUCK
+            typeof(InputSystem).GetMethod("InitializeInPlayer", BindingFlags.NonPublic | BindingFlags.Static).Invoke(null, [null, null]);
 
             return true;
         }

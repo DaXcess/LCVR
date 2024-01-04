@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics;
+using System.Reflection;
 using HarmonyLib;
 using LCVR.Patches;
 using LCVR.Player;
@@ -96,7 +97,7 @@ namespace LCVR.Input
             XR_LeftHand_Rotation = ExperimentalActions.FindAction("Left Hand/Rotation");
             XR_LeftHand_TrackingState = ExperimentalActions.FindAction("Left Hand/Tracking State");
 
-            Logger.LogDebug(new InputAction(binding: "<XRHMD>/centerEyeRotation"));
+            Logger.LogDebug(new InputAction("BRUH", binding: "<XRHMD>/centerEyeRotation"));
             Logger.LogDebug(ExperimentalActions.FindAction("Head/Position"));
             Logger.LogDebug(ExperimentalActions.FindAction("Head/Rotation"));
             Logger.LogDebug(ExperimentalActions.FindAction("Left Hand/Position"));
@@ -124,19 +125,46 @@ namespace LCVR.Input
         }
     }
 
-    [LCVRPatch(LCVRPatchTarget.Universal)]
+    //[LCVRPatch(LCVRPatchTarget.Universal)]
     [HarmonyPatch]
     internal static class IdkPatches
     {
+
+
         [HarmonyPatch(typeof(InputActionMap), "SetUpPerActionControlAndBindingArrays")]
         [HarmonyPrefix]
         private static void WhatTheHell(InputActionMap __instance)
         {
-            Logger.LogError(__instance.actions[0].bindings[0].path);
+            if (__instance.actions[0].name != "BRUH")
+                return;
+
+            Logger.LogWarning("Resolving input controls and bindings for HMD action");
+            Logger.LogWarning(__instance.bindings);
+
+            var fieldInfo = typeof(InputActionMap).GetField("m_SingletonAction", BindingFlags.NonPublic | BindingFlags.Instance);
+
+            if (fieldInfo == null)
+            {
+                Logger.LogError("MISSING FIELDINFO?");
+                return;
+            }
+
+            Debugger.Break();
+
+            var value = (InputAction)fieldInfo.GetValue(__instance);
+
+            if (value == null)
+            {
+                Logger.LogError("MISSING VALUE?");
+                return;
+            }
+
+            Logger.LogWarning("Gonna log now bruh");
+            Logger.LogWarning(value);
         }
     }
 
-    [LCVRPatch(LCVRPatchTarget.Universal)]
+    //[LCVRPatch(LCVRPatchTarget.Universal)]
     [HarmonyPatch]
     internal static class XRLayoutOnFindLayout_Patches
     {
