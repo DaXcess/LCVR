@@ -96,6 +96,7 @@ namespace LCVR.Input
             XR_LeftHand_Rotation = ExperimentalActions.FindAction("Left Hand/Rotation");
             XR_LeftHand_TrackingState = ExperimentalActions.FindAction("Left Hand/Tracking State");
 
+            Logger.LogDebug(new InputAction(binding: "<XRHMD>/centerEyeRotation"));
             Logger.LogDebug(ExperimentalActions.FindAction("Head/Position"));
             Logger.LogDebug(ExperimentalActions.FindAction("Head/Rotation"));
             Logger.LogDebug(ExperimentalActions.FindAction("Left Hand/Position"));
@@ -125,6 +126,18 @@ namespace LCVR.Input
 
     [LCVRPatch(LCVRPatchTarget.Universal)]
     [HarmonyPatch]
+    internal static class IdkPatches
+    {
+        [HarmonyPatch(typeof(InputActionMap), "SetUpPerActionControlAndBindingArrays")]
+        [HarmonyPrefix]
+        private static void WhatTheHell(InputActionMap __instance)
+        {
+            Logger.LogError(__instance.actions[0].bindings[0].path);
+        }
+    }
+
+    [LCVRPatch(LCVRPatchTarget.Universal)]
+    [HarmonyPatch]
     internal static class XRLayoutOnFindLayout_Patches
     {
         private static MethodInfo TargetMethod()
@@ -135,7 +148,6 @@ namespace LCVR.Input
         private static void Postfix(ref InputDeviceDescription description, string matchedLayout)
         {
             Logger.LogDebug($"Found device for layout {matchedLayout}");
-            Logger.LogDebug(description.ToJson());
         }
     }
 }

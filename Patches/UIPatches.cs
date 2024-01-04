@@ -32,9 +32,6 @@ namespace LCVR.Patches
             {
                 if (device.displayName.ToLower().Contains("head tracking"))
                 {
-                    var layout = InputSystem.LoadLayout(device.layout);
-                    Logger.LogWarning(layout.ToJson());
-
                     var obj = device.ReadValueAsObject();
 
                     if (obj == null)
@@ -53,10 +50,6 @@ namespace LCVR.Patches
                     Logger.LogWarning($"[HMD]: {System.BitConverter.ToString(bytes).Replace("-", "")}");
                 }
             });
-
-            OpenXR.DumpOpenXRDiag();
-
-            LCVR.Player.VRPlayer.VibrateController(UnityEngine.XR.XRNode.RightHand, 1, 1);
 
             InitMenuScene();
 

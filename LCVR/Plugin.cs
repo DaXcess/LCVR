@@ -4,6 +4,7 @@ using LCVR.Assets;
 using LCVR.Patches;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -37,6 +38,8 @@ namespace LCVR
         {
             // Plugin startup logic
             LCVR.Logger.SetSource(Logger);
+
+            Logger.LogWarning(new StackTrace().ToString());
 
             Config = new Config(base.Config);
             Compatibility = new Compat([.. Chainloader.PluginInfos.Values]);
