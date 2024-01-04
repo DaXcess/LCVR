@@ -26,7 +26,7 @@ namespace LCVR
         {
             StartOfRound.Instance.StartCoroutine(Start());
         }
-    
+
         private static IEnumerator Start()
         {
             Logger.Log("Hello from VR!");

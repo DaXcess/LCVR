@@ -28,6 +28,14 @@ namespace LCVR.Patches
         private static void OnPreInitMenuShown()
         {
             InputSystem.devices.Do(device => Logger.LogDebug($"Input Device: {device.displayName}"));
+            InputSystem.devices.Do(device =>
+            {
+                if (device.displayName.ToLower().Contains("head tracking"))
+                {
+                    Logger.LogWarning($"[HMD]: {device.ReadValueAsObject()}");
+                }
+            });
+
             OpenXR.DumpOpenXRDiag();
 
             LCVR.Player.VRPlayer.VibrateController(UnityEngine.XR.XRNode.RightHand, 1, 1);
