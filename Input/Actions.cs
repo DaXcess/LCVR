@@ -1,6 +1,10 @@
-﻿using LCVR.Player;
+﻿using System.Reflection;
+using HarmonyLib;
+using LCVR.Patches;
+using LCVR.Player;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Layouts;
 
 namespace LCVR.Input
 {
@@ -116,6 +120,22 @@ namespace LCVR.Input
             player?.ResetHeight();
 
             ReloadInputBindings();
+        }
+    }
+
+    [LCVRPatch(LCVRPatchTarget.Universal)]
+    [HarmonyPatch]
+    internal static class XRLayoutOnFindLayout_Patches
+    {
+        private static MethodInfo TargetMethod()
+        {
+            return AccessTools.TypeByName("UnityEngine.InputSystem.XR.XRLayoutBuilder").GetMethod("OnFindLayoutForDevice", BindingFlags.NonPublic | BindingFlags.Static);
+        }
+
+        private static void Postfix(ref InputDeviceDescription description, string matchedLayout)
+        {
+            Logger.LogDebug($"Found device for layout {matchedLayout}");
+            Logger.LogDebug(description.ToJson());
         }
     }
 }
