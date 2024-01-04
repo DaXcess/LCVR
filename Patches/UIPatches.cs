@@ -4,6 +4,7 @@ using LCVR.Player;
 using LCVR.UI;
 using MoreCompany.Behaviors;
 using MoreCompany.Cosmetics;
+using System;
 using System.Reflection;
 using TMPro;
 using UnityEngine;
@@ -35,7 +36,22 @@ namespace LCVR.Patches
                     var layout = InputSystem.LoadLayout(device.layout);
                     Logger.LogWarning(layout.ToJson());
 
-                    Logger.LogWarning($"[HMD]: {device.ReadValueAsObject()}");
+                    var obj = device.ReadValueAsObject();
+
+                    if (obj == null)
+                    {
+                        Logger.LogError("HMD DATA RETURNED NULL FROM DEVICE");
+                        return;
+                    }
+                    else if (obj is not byte[])
+                    {
+                        Logger.LogError($"HMD DATA RETURNED UNKNOWN DATA FROM DEVICE: {obj.GetType()}");
+                        return;
+                    }
+
+                    var bytes = (byte[])obj;
+
+                    Logger.LogWarning($"[HMD]: {BitConverter.ToString(bytes).Replace("-", "")}");
                 }
             });
 
