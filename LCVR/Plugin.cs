@@ -132,6 +132,9 @@ namespace LCVR
                 return false;
             }
 
+            // OH GOD WHAT THE FUCK
+            typeof(InputSystem).GetMethod("InitializeInPlayer", BindingFlags.NonPublic | BindingFlags.Static).Invoke(null, [null, null]);
+
             return true;
         }
 
@@ -160,9 +163,6 @@ namespace LCVR
             HarmonyPatcher.PatchVR();
 
             Logger.LogDebug("Inserted VR patches using Harmony");
-
-            // OH GOD WHAT THE FUCK
-            typeof(InputSystem).GetMethod("InitializeInPlayer", BindingFlags.NonPublic | BindingFlags.Static).Invoke(null, [null, null]);
 
             return true;
         }
