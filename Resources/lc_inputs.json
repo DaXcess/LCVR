@@ -284,9 +284,9 @@
           "isPartOfComposite": false
         },
         {
-          "name": "Open menu: Left Controller Menu",
+          "name": "Open menu: X",
           "id": "b73f442d-bbd4-45ad-87d5-34cba090fa9b",
-          "path": "<XRController>{LeftHand}/menuButton",
+          "path": "<XRController>{LeftHand}/primaryButton",
           "interactions": "",
           "processors": "",
           "groups": "",

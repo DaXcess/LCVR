@@ -16,6 +16,8 @@ namespace LCVR.Player
     {
         private const int interactableObjectsMask = 832;
 
+        private InputAction grabAction;
+
         public VRPlayer player;
         public PlayerControllerB playerController;
 
@@ -50,6 +52,17 @@ namespace LCVR.Player
             }
         }
 
+        private void Awake()
+        {
+            grabAction = Actions.VRInputActions.FindAction("Controls/Grab");
+            grabAction.performed += OnGrabPerformed;
+        }
+
+        private void OnDestroy()
+        {
+            grabAction.performed -= OnGrabPerformed;
+        }
+
         public void Initialize(VRPlayer player)
         {
             this.player = player;
@@ -77,8 +90,6 @@ namespace LCVR.Player
             debugLineRenderer.maskInteraction = SpriteMaskInteraction.None;
             debugLineRenderer.SetMaterials([AssetManager.defaultRayMat]);
             debugLineRenderer.enabled = Plugin.Config.EnableInteractRay.Value;
-
-            Actions.XR_RightHand_Grip_Button.performed += OnGrabPerformed;
         }
 
         public void ShowDebugLineRenderer()
@@ -152,7 +163,7 @@ namespace LCVR.Player
 
         private void ClickHoldInteraction()
         {
-            bool pressed = Actions.XR_RightHand_Grip_Button.IsPressed();
+            bool pressed = grabAction.IsPressed();
             playerController.isHoldingInteract = pressed;
 
             if (!pressed)

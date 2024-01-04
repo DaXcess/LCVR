@@ -81,37 +81,9 @@ namespace LCVR.Properties {
         ///          &quot;name&quot;: &quot;Move&quot;,
         ///          &quot;type&quot;: &quot;Value&quot;,        /// [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string inputs {
+        internal static string lc_inputs {
             get {
-                return ResourceManager.GetString("inputs", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to {
-        ///  &quot;name&quot;: &quot;PlayerActions&quot;,
-        ///  &quot;maps&quot;: [
-        ///    {
-        ///      &quot;name&quot;: &quot;UI&quot;,
-        ///      &quot;id&quot;: &quot;433b3177-0846-4f85-945a-4a31dfbefd28&quot;,
-        ///      &quot;actions&quot;: [
-        ///        {
-        ///          &quot;name&quot;: &quot;Navigate&quot;,
-        ///          &quot;type&quot;: &quot;Value&quot;,
-        ///          &quot;id&quot;: &quot;c63a6ade-6c5a-4659-9aa5-e336e7b9970f&quot;,
-        ///          &quot;expectedControlType&quot;: &quot;Vector2&quot;,
-        ///          &quot;processors&quot;: &quot;&quot;,
-        ///          &quot;interactions&quot;: &quot;&quot;,
-        ///          &quot;initialStateCheck&quot;: false
-        ///        },
-        ///        {
-        ///          &quot;name&quot;: &quot;Submit&quot;,
-        ///          &quot;type&quot;: &quot;Value&quot;,
-        ///          &quot;id&quot;: &quot; [rest of string was truncated]&quot;;.
-        /// </summary>
-        internal static string inputs_vr_menu {
-            get {
-                return ResourceManager.GetString("inputs_vr_menu", resourceCulture);
+                return ResourceManager.GetString("lc_inputs", resourceCulture);
             }
         }
         
@@ -164,11 +136,11 @@ namespace LCVR.Properties {
         ///                    &quot;processors&quot;: &quot;&quot;,
         ///                    &quot;interactions&quot;: &quot;&quot;,
         ///                    &quot;initialStateCheck&quot;: true
-        ///    [rest of string was truncated]&quot;;.
+        ///                }, [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string VRInputs {
+        internal static string vr_inputs {
             get {
-                return ResourceManager.GetString("VRInputs", resourceCulture);
+                return ResourceManager.GetString("vr_inputs", resourceCulture);
             }
         }
     }

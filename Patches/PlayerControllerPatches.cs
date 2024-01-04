@@ -48,6 +48,33 @@ namespace LCVR.Patches
     }
 
     [LCVRPatch]
+    [HarmonyPatch(typeof(PlayerControllerB), "Update")]
+    public static class PlayerControllerB_Sprint_Patch
+    {
+        public static float sprint = 0;
+
+        static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+        {
+            var codes = new List<CodeInstruction>(instructions);
+
+            // Override sprint
+            codes[326].opcode = OpCodes.Ldsfld;
+            codes[326].operand = typeof(PlayerControllerB_Sprint_Patch).GetField("sprint", BindingFlags.Public | BindingFlags.Static);
+
+            codes[327].opcode = OpCodes.Stloc_0;
+            codes[327].operand = null;
+
+            for (int i = 328; i <= 333; i++)
+            {
+                codes[i].opcode = OpCodes.Nop;
+                codes[i].operand = null;
+            }
+
+            return codes.AsEnumerable();
+        }
+    }
+
+    [LCVRPatch]
     [HarmonyPatch(typeof(PlayerControllerB), "LateUpdate")]
     internal static class PlayerControllerB_LateUpdate_Patches
     {
@@ -74,9 +101,16 @@ namespace LCVR.Patches
     [HarmonyPatch]
     internal static class PlayerControllerPatches
     {
+        private static readonly InputAction pivotAction;
+
         private static bool isDead = false;
 
         private static readonly FieldInfo cameraUpField = typeof(PlayerControllerB).GetField("cameraUp", BindingFlags.NonPublic | BindingFlags.Instance);
+
+        static PlayerControllerPatches()
+        {
+            pivotAction = Actions.VRInputActions.FindAction("Controls/Pivot");
+        }
 
         private static void SetCameraUp(this PlayerControllerB player, float value)
         {
@@ -131,7 +165,7 @@ namespace LCVR.Patches
             // Handle spectator camera pivoting
             if (isDead)
             {
-                var movement = Actions.XR_RightHand_Thumbstick.ReadValue<Vector2>() * Plugin.Config.SpectateCameraSpeedModifier.Value;
+                var movement = pivotAction.ReadValue<Vector2>() * Plugin.Config.SpectateCameraSpeedModifier.Value;
 
                 __instance.spectateCameraPivot.Rotate(new Vector3(0, movement.x, 0));
                 __instance.SetCameraUp(__instance.GetCameraUp() - movement.y);
@@ -141,7 +175,7 @@ namespace LCVR.Patches
                 return;
             }
 
-            var rot = Actions.XR_HeadRotation.ReadValue<Quaternion>().eulerAngles.x;
+            var rot = Actions.Head_Rotation.ReadValue<Quaternion>().eulerAngles.x;
 
             if (rot > 180)
             {

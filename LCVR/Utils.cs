@@ -29,9 +29,9 @@ namespace LCVR
         {
             var driver = @object.AddComponent<TrackedPoseDriver>();
 
-            driver.positionAction = Actions.XR_HeadPosition;
-            driver.rotationAction = Actions.XR_HeadRotation;
-            driver.trackingStateInput = new InputActionProperty(Actions.XR_HeadTrackingState);
+            driver.positionAction = Actions.Head_Position;
+            driver.rotationAction = Actions.Head_Rotation;
+            driver.trackingStateInput = new InputActionProperty(Actions.Head_TrackingState);
         }
 
         public static Transform[] GetChildren(this Transform transform)

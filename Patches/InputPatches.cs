@@ -46,7 +46,7 @@ namespace LCVR.Patches
         {
             var codes = new List<CodeInstruction>(instructions);
 
-            codes[6].operand = Properties.Resources.inputs;
+            codes[6].operand = Properties.Resources.lc_inputs;
 
             return codes.AsEnumerable();
         }

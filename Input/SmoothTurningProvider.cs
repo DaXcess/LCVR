@@ -1,15 +1,23 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace LCVR.Input
 {
     internal class SmoothTurningProvider : TurningProvider
     {
+        private readonly InputAction turnAction;
+
         private float offset = 0;
+
+        internal SmoothTurningProvider()
+        {
+            turnAction = Actions.VRInputActions.FindAction("Controls/Turn");
+        }
 
         public void Update()
         {
-            var value = Actions.XR_RightHand_Thumbstick.ReadValue<Vector2>().x;
+            var value = turnAction.ReadValue<float>();
             bool shouldExecute = MathF.Abs(value) > 0.75;
 
             if (shouldExecute)

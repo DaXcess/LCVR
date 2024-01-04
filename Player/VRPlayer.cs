@@ -12,6 +12,7 @@ using LCVR.Assets;
 using GameNetcodeStuff;
 using UnityEngine.XR.Interaction.Toolkit;
 using Microsoft.MixedReality.Toolkit.Experimental.UI;
+using LCVR.Patches;
 
 namespace LCVR.Player
 {
@@ -21,11 +22,15 @@ namespace LCVR.Player
     {
         public static VRPlayer Instance { get; private set; }
 
+        private readonly InputAction resetHeightAction;
+        private readonly InputAction sprintAction;
+
         public float scaleFactor = 1.5f;
         private float cameraFloorOffset = 0f;
         private float crouchOffset = 0f;
 
         private bool isDead = false;
+        private bool isSprinting = false;
 
         private bool wasInSpecialAnimation = false;
         private Vector3 specialAnimationPositionOffset = Vector3.zero;
@@ -61,6 +66,12 @@ namespace LCVR.Player
         public Transform leftItemHolder;
         public Transform rightItemHolder;
 
+        public VRPlayer()
+        {
+            resetHeightAction = Actions.VRInputActions.FindAction("Controls/Reset Height");
+            sprintAction = Actions.VRInputActions.FindAction("Controls/Sprint");
+        }
+
         private void Awake()
         {
             Instance = this;
@@ -82,9 +93,9 @@ namespace LCVR.Player
             uiCamera.cullingMask = -1;
 
             var poseDriver = uiCamera.GetComponent<TrackedPoseDriver>() ?? uiCamera.gameObject.AddComponent<TrackedPoseDriver>();
-            poseDriver.positionAction = Actions.XR_HeadPosition;
-            poseDriver.rotationAction = Actions.XR_HeadRotation;
-            poseDriver.trackingStateInput = new InputActionProperty(Actions.XR_HeadTrackingState);
+            poseDriver.positionAction = Actions.Head_Position;
+            poseDriver.rotationAction = Actions.Head_Rotation;
+            poseDriver.trackingStateInput = new InputActionProperty(Actions.Head_TrackingState);
 
             if (Plugin.Config.EnableCustomCamera.Value)
                 customCamera = mainCamera.gameObject.Find("Custom Camera").GetComponent<Camera>();
@@ -100,9 +111,9 @@ namespace LCVR.Player
 
             // Create HMD tracker
             var cameraPoseDriver = mainCamera.gameObject.AddComponent<TrackedPoseDriver>();
-            cameraPoseDriver.positionAction = Actions.XR_HeadPosition;
-            cameraPoseDriver.rotationAction = Actions.XR_HeadRotation;
-            cameraPoseDriver.trackingStateInput = new InputActionProperty(Actions.XR_HeadTrackingState);
+            cameraPoseDriver.positionAction = Actions.Head_Position;
+            cameraPoseDriver.rotationAction = Actions.Head_Rotation;
+            cameraPoseDriver.trackingStateInput = new InputActionProperty(Actions.Head_TrackingState);
 
             // Create controller objects
             rightController = new GameObject("Right Controller");
@@ -114,15 +125,15 @@ namespace LCVR.Player
 
             // Left hand tracking
             var rightHandPoseDriver = rightController.AddComponent<TrackedPoseDriver>();
-            rightHandPoseDriver.positionAction = Actions.XR_RightHand_Position;
-            rightHandPoseDriver.rotationAction = Actions.XR_RightHand_Rotation;
-            rightHandPoseDriver.trackingStateInput = new InputActionProperty(Actions.XR_RightHand_TrackingState);
+            rightHandPoseDriver.positionAction = Actions.RightHand_Position;
+            rightHandPoseDriver.rotationAction = Actions.RightHand_Rotation;
+            rightHandPoseDriver.trackingStateInput = new InputActionProperty(Actions.RightHand_TrackingState);
 
             // Right hand tracking
             var leftHandPoseDriver = leftController.AddComponent<TrackedPoseDriver>();
-            leftHandPoseDriver.positionAction = Actions.XR_LeftHand_Position;
-            leftHandPoseDriver.rotationAction = Actions.XR_LeftHand_Rotation;
-            leftHandPoseDriver.trackingStateInput = new InputActionProperty(Actions.XR_LeftHand_TrackingState);
+            leftHandPoseDriver.positionAction = Actions.LeftHand_Position;
+            leftHandPoseDriver.rotationAction = Actions.LeftHand_Rotation;
+            leftHandPoseDriver.trackingStateInput = new InputActionProperty(Actions.LeftHand_TrackingState);
 
             // Set up IK Rig VR targets
             var headVRTarget = new GameObject("Head VR Target");
@@ -261,6 +272,10 @@ namespace LCVR.Player
 
             // Rebuild rig
             GetComponentInChildren<RigBuilder>().Build();
+
+            // Input actions
+            sprintAction.performed += Sprint_performed;
+            resetHeightAction.performed += ResetHeight_performed;
             ResetHeight();
 
             // Set up item holders
@@ -281,6 +296,26 @@ namespace LCVR.Player
             leftItemHolder.localEulerAngles = new Vector3(360f - 356.3837f, 357.6979f, 0.1453f);
 
             Logger.LogDebug("Initialized XR Rig");
+        }
+
+        private void Sprint_performed(InputAction.CallbackContext obj)
+        {
+            if (!obj.performed)
+                return;
+
+            isSprinting = !isSprinting;
+        }
+
+        private void OnDestroy()
+        {
+            sprintAction.performed -= Sprint_performed;
+            resetHeightAction.performed -= ResetHeight_performed;
+        }
+
+        private void ResetHeight_performed(InputAction.CallbackContext obj)
+        {
+            if (obj.performed)
+                ResetHeight();
         }
 
         private GameObject AddRayInteractor(Transform parent, string hand)
@@ -370,6 +405,12 @@ namespace LCVR.Player
             if (!playerController.inSpecialInteractAnimation)
                 lastFrameHMDPosition = mainCamera.transform.localPosition;
 
+            // Set sprint
+            if (Plugin.Config.ToggleSprint.Value)
+                PlayerControllerB_Sprint_Patch.sprint = isSprinting ? 1 : 0;
+            else
+                PlayerControllerB_Sprint_Patch.sprint = sprintAction.IsPressed() ? 1 : 0;
+
             DNet.BroadcastRig(new DNet.Rig()
             {
                 leftHandPosition = leftHandVRTarget.transform.position,
@@ -394,8 +435,8 @@ namespace LCVR.Player
         {
             isDead = true;
 
-            VRPlayer.VibrateController(XRNode.LeftHand, 1f, 1f);
-            VRPlayer.VibrateController(XRNode.RightHand, 1f, 1f);
+            VibrateController(XRNode.LeftHand, 1f, 1f);
+            VibrateController(XRNode.RightHand, 1f, 1f);
 
             if (Plugin.Config.EnableCustomCamera.Value)
                 customCamera.enabled = false;
