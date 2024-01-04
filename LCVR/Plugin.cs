@@ -1,5 +1,6 @@
 ﻿using BepInEx;
 using BepInEx.Bootstrap;
+using HarmonyLib;
 using LCVR.Assets;
 using LCVR.Patches;
 using System;
@@ -36,7 +37,10 @@ namespace LCVR
         public static Compat Compatibility { get; private set; }
 
         private void Awake()
-        {
+        { 
+            // OH GOD WHAT THE FUCK
+            //typeof(InputSystem).GetMethod("InitializeInPlayer", BindingFlags.NonPublic | BindingFlags.Static).Invoke(null, [null, null]);
+
             // Plugin startup logic
             LCVR.Logger.SetSource(Logger);
 
@@ -93,8 +97,13 @@ namespace LCVR
 
             asset.currentPlatformRenderPipelineSettings = settings;
 
+            typeof(InputSystem).GetMethod("PerformDefaultPluginInitialization", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, []);
+
             if (!disableVr && InitVRLoader())
                 VR_ENABLED = true;
+
+            //var manager = typeof(InputSystem).GetField("s_Manager", BindingFlags.NonPublic | BindingFlags.Static).GetValue(null);
+            //AccessTools.TypeByName("UnityEngine.InputSystem.InputManager").GetMethod("PerformDefaultPluginInitialization", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(manager, []);
 
             Logger.LogDebug("Inserted universal patches using Harmony");
         }
@@ -132,9 +141,7 @@ namespace LCVR
                 return false;
             }
 
-            // OH GOD WHAT THE FUCK
-            typeof(InputSystem).GetMethod("InitializeInPlayer", BindingFlags.NonPublic | BindingFlags.Static).Invoke(null, [null, null]);
-
+           
             return true;
         }
 
