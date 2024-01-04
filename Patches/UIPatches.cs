@@ -32,6 +32,9 @@ namespace LCVR.Patches
             {
                 if (device.displayName.ToLower().Contains("head tracking"))
                 {
+                    var layout = InputSystem.LoadLayout(device.layout);
+                    Logger.LogWarning(layout.ToJson());
+
                     Logger.LogWarning($"[HMD]: {device.ReadValueAsObject()}");
                 }
             });
