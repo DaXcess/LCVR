@@ -10,10 +10,10 @@ namespace LCVR.Items
     // The holding is insanely scuffed but I really have no clue how to do it properly I'm not /that/ good of a developer
     internal class VRShovelItem : VRItem<Shovel>
     {
-        private readonly Vector3 positionOffset = new Vector3(-0.09f, 0, 0.25f);
+        private readonly Vector3 positionOffset = new(-0.09f, 0, 0.25f);
 
         private Transform interactTransform;
-        private readonly Queue<Vector3> positions = new Queue<Vector3>();
+        private readonly Queue<Vector3> positions = new();
         private Vector3 lastPosition = Vector3.zero;
 
         private bool isHitting = false;
@@ -44,7 +44,7 @@ namespace LCVR.Items
                 return;
 
             var @object = new GameObject("Shovel Interaction Point");
-        
+
             interactTransform = @object.transform;
             interactTransform.SetParent(transform, false);
             interactTransform.localRotation = Quaternion.identity;
@@ -59,7 +59,7 @@ namespace LCVR.Items
             positions.Clear();
 
             if (item.reelingUp)
-                item.StartCoroutine(cancelShovelSwing());
+                item.StartCoroutine(CancelShovelSwing());
 
             Destroy(interactTransform.gameObject);
         }
@@ -68,7 +68,7 @@ namespace LCVR.Items
         {
             // This part is my attempt to hold an item with two hands
             // Some numbers might not make sense but that is because they probably don't
-            
+
             if (!IsLocal)
             {
                 transform.position = networkPlayer.leftItemHolder.position;
@@ -131,7 +131,7 @@ namespace LCVR.Items
                     {
                         Logger.LogDebug("Not reeled up and took too long to swing, hit cancelled");
 
-                        item.StartCoroutine(cancelShovelSwing());
+                        item.StartCoroutine(CancelShovelSwing());
                         lastActionTime = Time.realtimeSinceStartup;
                     }
                 }
@@ -172,10 +172,10 @@ namespace LCVR.Items
             isHitting = true;
             lastActionTime = Time.realtimeSinceStartup;
 
-            item.StartCoroutine(shovelSwing());
+            item.StartCoroutine(ShovelSwing());
         }
 
-        private IEnumerator shovelSwing()
+        private IEnumerator ShovelSwing()
         {
             item.HitShovel();
             yield return new WaitForSeconds(0.3f);
@@ -184,7 +184,7 @@ namespace LCVR.Items
             hasSwung = false;
         }
 
-        private IEnumerator cancelShovelSwing()
+        private IEnumerator CancelShovelSwing()
         {
             item.reelingUp = false;
             hasSwung = false;

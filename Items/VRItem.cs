@@ -5,7 +5,12 @@ using UnityEngine;
 
 namespace LCVR.Items
 {
-    internal abstract class VRItem<T> : MonoBehaviour where T: GrabbableObject
+    /// <summary>
+    /// A special script that gets added to certain items in the game.
+    /// This allows the mod to manipulate the items with custom update loops, 
+    /// and prevent some built in game code from running on them.
+    /// </summary>
+    internal abstract class VRItem<T> : MonoBehaviour where T : GrabbableObject
     {
         public static readonly Dictionary<GrabbableObject, VRItem<T>> itemCache = [];
 
@@ -13,6 +18,9 @@ namespace LCVR.Items
         protected PlayerControllerB player;
         protected VRNetPlayer networkPlayer;
 
+        /// <summary>
+        /// Keep receiving updates even when the item is pocketed
+        /// </summary>
         protected bool UpdateWhenPocketed { get; set; } = false;
 
         /// <summary>
