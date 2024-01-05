@@ -320,31 +320,13 @@ namespace Microsoft.MixedReality.Toolkit.Experimental.UI
         /// <param name="value">String value.</param>
         private void DoTextUpdated(string value) => OnTextUpdated?.Invoke(value);
 
-        /// <summary>
-        /// Makes sure the input field is always selected while the keyboard is up.
-        /// </summary>
-        private void LateUpdate()
-        {
-            return;
-
-            // Axis Slider
-            if (SliderEnabled)
-            {
-                Vector3 nearPoint = Vector3.ProjectOnPlane(Camera.main.transform.forward, transform.forward);
-                Vector3 relPos = transform.InverseTransformPoint(nearPoint);
-                InputFieldSlide.TargetPoint = relPos;
-            }
-
-            CheckForCloseOnInactivityTimeExpired();
-        }
-
         private void UpdateCaretPosition(int newPos) => InputField.caretPosition = newPos;
 
         /// <summary>
         /// Called whenever the keyboard is disabled or deactivated.
         /// </summary>
         protected void OnDisable()
-        {            
+        {
             m_LastKeyboardLayout = LayoutType.Alpha;
             Clear();
         }
@@ -422,10 +404,7 @@ namespace Microsoft.MixedReality.Toolkit.Experimental.UI
 
             OnPlacement(this, EventArgs.Empty);
 
-            // todo: if the app is built for xaml, our prefab and the system keyboard may be displayed.
             InputField.ActivateInputField();
-
-            //SetMicrophoneDefault();
         }
 
 
@@ -535,32 +514,32 @@ namespace Microsoft.MixedReality.Toolkit.Experimental.UI
             switch (keyboardType)
             {
                 case LayoutType.URL:
-                {
-                    ShowAlphaKeyboard();
-                    TryToShowURLSubkeys();
-                    break;
-                }
+                    {
+                        ShowAlphaKeyboard();
+                        TryToShowURLSubkeys();
+                        break;
+                    }
 
                 case LayoutType.Email:
-                {
-                    ShowAlphaKeyboard();
-                    TryToShowEmailSubkeys();
-                    break;
-                }
+                    {
+                        ShowAlphaKeyboard();
+                        TryToShowEmailSubkeys();
+                        break;
+                    }
 
                 case LayoutType.Symbol:
-                {
-                    ShowSymbolKeyboard();
-                    break;
-                }
+                    {
+                        ShowSymbolKeyboard();
+                        break;
+                    }
 
                 case LayoutType.Alpha:
                 default:
-                {
-                    ShowAlphaKeyboard();
-                    TryToShowAlphaSubkeys();
-                    break;
-                }
+                    {
+                        ShowAlphaKeyboard();
+                        TryToShowAlphaSubkeys();
+                        break;
+                    }
             }
         }
 

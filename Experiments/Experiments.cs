@@ -8,7 +8,7 @@ namespace LCVR.Experiments
     {
         public static void RunExperiments()
         {
-            //SpawnShotgun();
+            SpawnShotgun();
             //SpawnJetpack();
         }
 
@@ -41,7 +41,7 @@ namespace LCVR.Experiments
         }
 
         private static T SpawnObject<T>(GameObject @object)
-        where T: GrabbableObject
+        where T : GrabbableObject
         {
             var gameObject = Object.Instantiate(@object, new Vector3(-1.4374f, 3.643f, -14.1965f), Quaternion.identity, RoundManager.Instance.spawnedScrapContainer);
             var component = gameObject.GetComponent<T>();

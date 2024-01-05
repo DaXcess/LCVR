@@ -1,5 +1,5 @@
-﻿using LCVR.Player;
-using UnityEngine;
+﻿using System.IO;
+using BepInEx;
 using UnityEngine.InputSystem;
 
 namespace LCVR.Input
@@ -18,13 +18,16 @@ namespace LCVR.Input
         public static InputAction LeftHand_Rotation;
         public static InputAction LeftHand_TrackingState;
 
-        public static readonly InputActionAsset VRInputActions;
-        private static readonly InputActionAsset LCInputActions;
+        public static InputActionAsset VRInputActions;
+        private static InputActionAsset LCInputActions;
+
+        private static readonly string VRInputActionsOverrideFile = Path.Combine(Paths.ConfigPath, "lcvr_vr_inputs.json");
+        private static readonly string LCInputActionsOverrideFile = Path.Combine(Paths.ConfigPath, "lcvr_lc_inputs.json");
 
         static Actions()
         {
-            LCInputActions = InputActionAsset.FromJson(Properties.Resources.lc_inputs);
-            VRInputActions = InputActionAsset.FromJson(Properties.Resources.vr_inputs);
+            VRInputActions = ReadActionsFromFileWithFallback(VRInputActionsOverrideFile, Properties.Resources.vr_inputs);
+            LCInputActions = ReadActionsFromFileWithFallback(LCInputActionsOverrideFile, Properties.Resources.lc_inputs);
 
             Head_Position = VRInputActions.FindAction("Head/Position");
             Head_Rotation = VRInputActions.FindAction("Head/Rotation");
@@ -40,6 +43,22 @@ namespace LCVR.Input
 
             LCInputActions.Enable();
             VRInputActions.Enable();
+        }
+
+        private static InputActionAsset ReadActionsFromFileWithFallback(string file, string fallback)
+        {
+            if (!File.Exists(file))
+                return InputActionAsset.FromJson(fallback);
+
+            try
+            {
+                string data = File.ReadAllText(file);
+                return InputActionAsset.FromJson(data);
+            }
+            catch
+            {
+                return InputActionAsset.FromJson(fallback);
+            }
         }
 
         public static void ReloadInputBindings()

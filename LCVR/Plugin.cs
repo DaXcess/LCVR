@@ -89,7 +89,7 @@ namespace LCVR
             settings.dynamicResolutionSettings.maxPercentage = Config.ResolutionPercentage.Value;
 
             settings.xrSettings.singlePass = false;
-            
+
             if (Config.LODBias.Value != -1f)
                 settings.lodBias = new FloatScalableSetting([Config.LODBias.Value, Config.LODBias.Value, Config.LODBias.Value], ScalableSettingSchemaId.With3Levels);
 
@@ -134,7 +134,7 @@ namespace LCVR
                 return false;
             }
 
-           
+
             return true;
         }
 
@@ -146,10 +146,10 @@ namespace LCVR
             if (MUST_RESTART)
             {
                 Logger.LogError("You must restart the game to allow VR to function properly");
-                
+
                 return false;
             }
-            
+
             EnableControllerProfiles();
             InitializeXRRuntime();
 
@@ -272,7 +272,7 @@ namespace LCVR
 
             var manifest = Path.Combine(openXr, "UnitySubsystemsManifest.json");
             if (!File.Exists(manifest))
-            { 
+            {
                 File.WriteAllText(manifest, Properties.Resources.UnitySubsystemsManifest);
                 mustRestart = true;
             }

@@ -44,7 +44,7 @@ namespace LCVR
         public void Update()
         {
             var manager = HUDManager.Instance;
-        
+
             for (var i = 0; i < manager.scanElements.Length; i++)
             {
                 if (scanNodes.Count > 0 && scanNodes.TryGetValue(manager.scanElements[i], out var scanNodeProps) && scanNodeProps != null)
@@ -56,11 +56,12 @@ namespace LCVR
 
                     // TODO: Check how to properly calculate scale based on player position to always give the illusion
                     // of having the same size no matter the distance since it is now a 3D world positioned canvas
+                    // Dev note: Meh this is fine tbh
                     var nominalDistance = 5;
 
                     var distance = Vector3.Distance(mainCamera.transform.position, scanNodeProps.transform.position);
                     var scaleFactor = distance / nominalDistance;
-                    
+
                     scanObject.transform.rotation = Quaternion.LookRotation(scanObject.transform.position - mainCamera.transform.position);
                     scanObject.transform.position += scanObject.transform.forward * -0.2f;
                     scanObject.transform.localScale = Vector3.one * scaleFactor;

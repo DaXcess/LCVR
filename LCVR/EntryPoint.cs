@@ -108,7 +108,6 @@ namespace LCVR
 
             // Temporary: Update item offsets for certain items
             // Will eventually be replaced by VR interactions (two hand holding 'n stuff)
-            // TODO: Implement VR interactions
             Player.Items.UpdateVRControlsItemsOffsets();
 
             // Add VR keyboard to the Terminal

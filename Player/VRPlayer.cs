@@ -25,6 +25,8 @@ namespace LCVR.Player
         private readonly InputAction resetHeightAction;
         private readonly InputAction sprintAction;
 
+        private Coroutine stopSprintingCoroutine;
+
         public float scaleFactor = 1.5f;
         private float cameraFloorOffset = 0f;
         private float crouchOffset = 0f;
@@ -36,7 +38,7 @@ namespace LCVR.Player
         private Vector3 specialAnimationPositionOffset = Vector3.zero;
 
         private PlayerControllerB playerController;
-        
+
         public GameObject leftController;
         public GameObject rightController;
 
@@ -79,7 +81,7 @@ namespace LCVR.Player
             Logger.LogDebug("Going to intialize XR Rig");
 
             playerController = GetComponent<PlayerControllerB>();
-            
+
             // Create XR stuff
             xrOrigin = new GameObject("XR Origin").transform;
             mainCamera = Find("ScavengerModel/metarig/CameraContainer/MainCamera").GetComponent<Camera>();
@@ -407,7 +409,18 @@ namespace LCVR.Player
 
             // Set sprint
             if (Plugin.Config.ToggleSprint.Value)
+            {
+                if (playerController.isExhausted)
+                    isSprinting = false;
+
+                var move = IngamePlayerSettings.Instance.playerInput.actions.FindAction("Move").ReadValue<Vector2>();
+                if (move.x == 0 && move.y == 0 && stopSprintingCoroutine == null)
+                    StartCoroutine(StopSprinting());
+                else if ((move.x != 0 || move.y != 0) && stopSprintingCoroutine != null)
+                    StopCoroutine(stopSprintingCoroutine);
+
                 PlayerControllerB_Sprint_Patch.sprint = isSprinting ? 1 : 0;
+            }
             else
                 PlayerControllerB_Sprint_Patch.sprint = sprintAction.IsPressed() ? 1 : 0;
 
@@ -523,10 +536,18 @@ namespace LCVR.Player
             var realHeight = mainCamera.transform.localPosition.y * scaleFactor;
             var targetHeight = 2.3f;
 
-            cameraFloorOffset = (targetHeight - realHeight);
+            cameraFloorOffset = targetHeight - realHeight;
 
-            Logger.LogDebug($"Scaling player with real height: {MathF.Round(realHeight*100)/100}cm");
+            Logger.LogDebug($"Scaling player with real height: {MathF.Round(realHeight * 100) / 100}cm");
             Logger.Log($"Setting player height scale: {scaleFactor}");
+        }
+
+        private IEnumerator StopSprinting()
+        {
+            yield return new WaitForSeconds(Plugin.Config.MovementSprintToggleCooldown.Value);
+
+            isSprinting = false;
+            stopSprintingCoroutine = null;
         }
 
         private void SwitchToUICamera()

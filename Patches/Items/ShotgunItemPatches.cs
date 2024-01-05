@@ -1,6 +1,9 @@
 ﻿using HarmonyLib;
 using LCVR.Player;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using UnityEngine;
 
 namespace LCVR.Patches.Items
@@ -9,6 +12,9 @@ namespace LCVR.Patches.Items
     [HarmonyPatch]
     internal static class ShotgunItemPatches
     {
+        /// <summary>
+        /// Makes the shotgun shoot from your hand instead of your head
+        /// </summary>
         [HarmonyPatch(typeof(ShotgunItem), "ShootGunAndSync")]
         [HarmonyPrefix]
         private static bool OnShootGun(ShotgunItem __instance, bool heldByPlayer)
@@ -22,6 +28,23 @@ namespace LCVR.Patches.Items
             __instance.ShootGunServerRpc(rayOrigin.position, rayOrigin.forward);
 
             return false;
+        }
+    }
+
+    /// <summary>
+    /// Allows the player to shoot themselves in VR
+    /// </summary>
+    [LCVRPatch]
+    [HarmonyPatch(typeof(ShotgunItem), "ShootGun")]
+    internal static class KurtCobainPatches
+    {
+        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+        {
+            var codes = new List<CodeInstruction>(instructions);
+
+            codes[24].opcode = OpCodes.Ldc_I4_0;
+
+            return codes.AsEnumerable();
         }
     }
 }

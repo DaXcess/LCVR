@@ -22,20 +22,7 @@ namespace LCVR.Player
         {
             foreach (var item in StartOfRound.Instance.allItemsList.itemsList)
             {
-                // TODO: remove canBeGrabbedBeforeGameStart
-                Logger.LogDebug(item.itemName);
-
-                item.canBeGrabbedBeforeGameStart = true;
-
-                if (item.itemName == "Shovel" || item.itemName == "Yield sign" || item.itemName == "Stop sign")
-                {
-                    //item.positionOffset = new Vector3(-0.1f, 0.15f, 0.07f);
-                    //item.rotationOffset = new Vector3(-12.3f, -256.2f, -431.3f);
-                    //item.positionOffset = new Vector3(0, 0, 0);
-                    //item.rotationOffset = new Vector3(0, 0, 0);
-                    item.canBeGrabbedBeforeGameStart = true;
-                }
-                else if (item.itemName == "Spray paint")
+                if (item.itemName == "Spray paint")
                     item.canBeGrabbedBeforeGameStart = true;
                 else if (item.itemName == "Chemical Jug")
                 {

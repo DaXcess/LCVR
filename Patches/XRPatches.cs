@@ -3,6 +3,9 @@ using System.Reflection;
 
 namespace LCVR.Patches
 {
+    /// <summary>
+    /// Funny Non-NVIDIA BepInEx Entrypoint quick fix
+    /// </summary>
     [LCVRPatch]
     [HarmonyPatch]
     internal static class XRPatches

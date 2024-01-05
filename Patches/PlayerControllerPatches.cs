@@ -122,6 +122,10 @@ namespace LCVR.Patches
             return (float)cameraUpField.GetValue(player);
         }
 
+        /// <summary>
+        /// Adds an arbitrary deadzone since the ScrollMouse gets performed if you only even touch the joystick a little bit
+        /// </summary>
+        /// <returns></returns>
         [HarmonyPatch(typeof(PlayerControllerB), "ScrollMouse_performed")]
         [HarmonyPrefix]
         private static bool OnScroll(PlayerControllerB __instance, ref InputAction.CallbackContext context)
@@ -150,6 +154,9 @@ namespace LCVR.Patches
             }
         }
 
+        /// <summary>
+        /// Send haptic feedback on damage received
+        /// </summary>
         [HarmonyPatch(typeof(PlayerControllerB), "DamagePlayer")]
         [HarmonyPostfix]
         public static void AfterDamagePlayer()
@@ -175,6 +182,7 @@ namespace LCVR.Patches
                 return;
             }
 
+            // Handle camera up value
             var rot = Actions.Head_Rotation.ReadValue<Quaternion>().eulerAngles.x;
 
             if (rot > 180)
