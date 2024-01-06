@@ -394,7 +394,7 @@ namespace LCVR.Player
                 xrOrigin.position = transform.position + specialAnimationPositionOffset;
 
             // Apply crouch offset
-            crouchOffset = Mathf.Lerp(crouchOffset, playerController.isCrouching ? -1 : 0, 0.1f);
+            crouchOffset = Mathf.Lerp(crouchOffset, playerController.isCrouching ? -1 : 0, 0.2f);
 
             // Apply floor offset and sinking value
             xrOrigin.position += new Vector3(0, cameraFloorOffset + crouchOffset - playerController.sinkingValue * 2.5f, 0);
@@ -414,10 +414,12 @@ namespace LCVR.Player
                     isSprinting = false;
 
                 var move = IngamePlayerSettings.Instance.playerInput.actions.FindAction("Move").ReadValue<Vector2>();
-                if (move.x == 0 && move.y == 0 && stopSprintingCoroutine == null)
-                    StartCoroutine(StopSprinting());
-                else if ((move.x != 0 || move.y != 0) && stopSprintingCoroutine != null)
+                if (move.x == 0 && move.y == 0 && stopSprintingCoroutine == null && isSprinting)
+                    stopSprintingCoroutine = StartCoroutine(StopSprinting());
+                else if ((move.x != 0 || move.y != 0) && stopSprintingCoroutine != null) { 
                     StopCoroutine(stopSprintingCoroutine);
+                    stopSprintingCoroutine = null;
+                }
 
                 PlayerControllerB_Sprint_Patch.sprint = isSprinting ? 1 : 0;
             }
@@ -544,7 +546,11 @@ namespace LCVR.Player
 
         private IEnumerator StopSprinting()
         {
+            Logger.LogDebug("In StopSprinting");
             yield return new WaitForSeconds(Plugin.Config.MovementSprintToggleCooldown.Value);
+            Logger.LogDebug("StopSprinting after wait");
+            yield return null;
+            Logger.LogDebug("Stopping sprint");
 
             isSprinting = false;
             stopSprintingCoroutine = null;
