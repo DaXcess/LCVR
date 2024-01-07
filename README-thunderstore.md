@@ -17,6 +17,14 @@ The mod is powered by Unity's OpenXR plugin and is thereby compatible with a wid
 
 LCVR is compatible with multiplayer and works seamlessly with VR players and Non-VR players in the same lobby. Running this mod without having a VR headset will allow you to see the arm and head movements of any VR players in the same lobby, all while still being compatible with vanilla clients (even if the host is using no mods at all).
 
+### Verifying mod signature
+
+> If you don't care about this, skip this part.
+
+LCVR comes pre-packaged with a digital signature. You can use tools like GPG to verify the `LCVR.dll.sig` signature with the `LCVR.dll` plugin file.
+
+The public key which can be used to verify the file is [9422426F6125277B82CC477DCF78CC72F0FD5EAD (OpenPGP Key Server)](https://keys.openpgp.org/vks/v1/by-fingerprint/9422426F6125277B82CC477DCF78CC72F0FD5EAD).
+
 # Compatibility
 
 Adding VR into a game will drastically change some of the gameplay elements. This is guaranteed to cause some incompatibilities with other Lethal Company mods. You can find a [compatibility sheet here](https://docs.google.com/spreadsheets/d/1mSulrvMkQFtjF_BWDeSfGz9rm3UWKMywmUP1yhcgCGo/edit?usp=sharing) where you can find a list of mods that have been tested to see if they work well in conjunction with the VR mod.
