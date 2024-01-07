@@ -155,7 +155,10 @@ namespace LCVR
 
             if (!StartDisplay())
             {
+                OpenXR.DumpOpenXRDiag();
+
                 Logger.LogError("Failed to start in VR Mode! Only Non-VR features are available!");
+                Logger.LogError("An OpenXR log dump is displayed above to help with troubleshooting.");
 
                 return false;
             }
