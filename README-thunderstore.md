@@ -41,13 +41,13 @@ To crouch, press the right joystick button.
 
 # Main Menu
 
-<img src="https://github.com/DaXcess/LCVR/blob/main/.github/assets/main-menu.gif?raw=true" height="200" />
+<img src="https://github.com/DaXcess/LCVR/blob/main/.github/assets/main-menu.webp?raw=true" height="200" />
 
 The main menu is controlled by ray interactors. You can use any controller to point towards any UI element and click using the trigger button on the corresponding controller. The only thing that has been changed on the main menu by the mod is that the keybinds settings have been disabled, since these have been hijacked by the mod.
 
 # The Terminal
 
-<img src="https://github.com/DaXcess/LCVR/blob/main/.github/assets/terminal.gif?raw=true" height="200" />
+<img src="https://github.com/DaXcess/LCVR/blob/main/.github/assets/terminal.webp?raw=true" height="200" />
 
 Since in VR you don't have access to a keyboard (under normal circumstances), the mod displays a virtual keyboard when you enter the terminal. You can use this keyboard to interact with the terminal like you would on PC.
 
@@ -57,8 +57,8 @@ You can exit the terminal by pressing the pause button or my clicking on the clo
 
 # Special additions
 
-<img src="https://github.com/DaXcess/LCVR/blob/main/.github/assets/shovel.gif?raw=true" height="200" />
-<img src="https://github.com/DaXcess/LCVR/blob/main/.github/assets/spray.gif?raw=true" height="200" />
+<img src="https://github.com/DaXcess/LCVR/blob/main/.github/assets/shovel.webp?raw=true" height="200" />
+<img src="https://github.com/DaXcess/LCVR/blob/main/.github/assets/spray.webp?raw=true" height="200" />
 
 This mod in addition to adding VR and motion controls, also adds a few special interactions that you can perform in VR. At the time of writing, these currently are: Spray paint shaking and shovel/sign swinging.
 
