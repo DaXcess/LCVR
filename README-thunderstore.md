@@ -66,8 +66,8 @@ You can exit the terminal by pressing the pause button or my clicking on the clo
 # Special additions
 
 <div>
-  <img src="https://github.com/DaXcess/LCVR/blob/main/.github/assets/shovel.webp?raw=true" height="300" />
-  <img src="https://github.com/DaXcess/LCVR/blob/main/.github/assets/spray.webp?raw=true" height="300" />
+  <img src="https://github.com/DaXcess/LCVR/blob/main/.github/assets/shovel.webp?raw=true" height="250" />
+  <img src="https://github.com/DaXcess/LCVR/blob/main/.github/assets/spray.webp?raw=true" height="250" />
 </div>
 
 This mod in addition to adding VR and motion controls, also adds a few special interactions that you can perform in VR. At the time of writing, these currently are: Spray paint shaking and shovel/sign swinging.
