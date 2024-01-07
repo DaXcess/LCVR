@@ -49,6 +49,12 @@ namespace LCVR.Items
             interactTransform.SetParent(transform, false);
             interactTransform.localRotation = Quaternion.identity;
             interactTransform.localPosition = new Vector3(0, 0, 1.25f);
+
+            if (!Plugin.Config.ShovelTipSeen.Value)
+            {
+                HUDManager.Instance.DisplayTip("Shovel movement", "You can physically whack enemies and players with the shovel. Go ahead and try it out!");
+                Plugin.Config.ShovelTipSeen.Value = true;
+            }
         }
 
         private void OnDestroy()

@@ -8,7 +8,7 @@ namespace LCVR.Experiments
     {
         public static void RunExperiments()
         {
-            SpawnShotgun();
+            //SpawnShotgun();
             //SpawnJetpack();
         }
 

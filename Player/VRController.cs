@@ -142,7 +142,7 @@ namespace LCVR.Player
                 if (StartOfRound.Instance.suckingPlayersOutOfShip)
                     return;
 
-                // Here we try and pickup the item if that is possible
+                // Here we try and pickup the item if it's is possible
                 if (!playerController.activatingItem)
                     BeginGrabObject();
 
@@ -315,7 +315,7 @@ namespace LCVR.Player
 
                 currentlyGrabbingObject = hit.collider.transform.gameObject.GetComponent<GrabbableObject>();
 
-                if (!GameNetworkManager.Instance.gameHasStarted && !currentlyGrabbingObject.itemProperties.canBeGrabbedBeforeGameStart && !StartOfRound.Instance.testRoom.activeSelf)
+                if (!GameNetworkManager.Instance.gameHasStarted && !currentlyGrabbingObject.itemProperties.canBeGrabbedBeforeGameStart)
                     return;
 
                 SetFieldValue("grabInvalidated", false);

@@ -1,0 +1,67 @@
+# Lethal Company VR Mod
+
+> This is the first mod that I have ever built, and also the first time using Unity so this mod might not be perfect.
+
+<details>
+  <summary>Jumpscare</summary>
+
+  <img src="https://github.com/DaXcess/LCVR/blob/main/.github/assets/pino.jpg?raw=true" />
+</details>
+<br/>
+
+Ready to immersive yourself into the horrors of Lethal Company with Virtual Reality? Well wait no longer!
+
+LCVR is a mod that adds full 6DOF VR support into Lethal Company, including hand movement and motion-based controls.
+
+The mod is powered by Unity's OpenXR plugin and is thereby compatible with a wide range of headsets, controllers and runtimes, like Oculus, Virtual Desktop, SteamVR and many more!
+
+LCVR is compatible with multiplayer and works seamlessly with VR players and Non-VR players in the same lobby. Running this mod without having a VR headset will allow you to see the arm and head movements of any VR players in the same lobby, all while still being compatible with vanilla clients (even if the host is using no mods at all).
+
+# Compatibility
+
+Adding VR into a game will drastically change some of the gameplay elements. This is guaranteed to cause some incompatibilities with other Lethal Company mods. You can find a [compatibility sheet here](https://docs.google.com/spreadsheets/d/1mSulrvMkQFtjF_BWDeSfGz9rm3UWKMywmUP1yhcgCGo/edit?usp=sharing) where you can find a list of mods that have been tested to see if they work well in conjunction with the VR mod.
+
+In some rare cases, a mod will have "first class support", meaning that LCVR, the mod in question, or both mods have added official compatibility for both mods to work together seamlessly. At the time of writing, the only mod that currently has first class support is [MoreCompany](https://github.com/notnotnotswipez/MoreCompany).
+
+# Configuring the mod
+
+Before starting the game, it is recommended to check the configuration options to see if anything needs changing. Some of the settings will change how you interact with the game in VR. Another important tab to check is **performance**. Since this game is a Unity HDRP game the performance is less optimal than it should be.
+
+If you are not using a mod manager, then you can find the configuration inside `BepInEx/config/io.daxcess.lcvr.cfg`.
+
+# Basic Controls
+
+> For a list of all controls, check out the `controls` wiki page
+
+Once you are in game, you can move around by using the left joystick. You can use the right joystick (left/right) for snap/smooth turning (if enabled) and switching inventory slot (up/down).
+
+To sprint, press the left joystick button.
+
+To crouch, press the right joystick button.
+
+# Main Menu
+
+<img src="https://github.com/DaXcess/LCVR/blob/main/.github/assets/main-menu.gif?raw=true" height="200" />
+
+The main menu is controlled by ray interactors. You can use any controller to point towards any UI element and click using the trigger button on the corresponding controller. The only thing that has been changed on the main menu by the mod is that the keybinds settings have been disabled, since these have been hijacked by the mod.
+
+# The Terminal
+
+<img src="https://github.com/DaXcess/LCVR/blob/main/.github/assets/terminal.gif?raw=true" height="200" />
+
+Since in VR you don't have access to a keyboard (under normal circumstances), the mod displays a virtual keyboard when you enter the terminal. You can use this keyboard to interact with the terminal like you would on PC.
+
+This keyboard currently features two macros: A confirm and deny button. When pressed, these respectively send "CONFIRM" and "DENY" to the terminal. This makes it easier to switch moons and purchase items since you won't have to input this text every time.
+
+You can exit the terminal by pressing the pause button or my clicking on the close button on the terminal keyboard.
+
+# Special additions
+
+<img src="https://github.com/DaXcess/LCVR/blob/main/.github/assets/shovel.gif?raw=true" height="200" />
+<img src="https://github.com/DaXcess/LCVR/blob/main/.github/assets/spray.gif?raw=true" height="200" />
+
+This mod in addition to adding VR and motion controls, also adds a few special interactions that you can perform in VR. At the time of writing, these currently are: Spray paint shaking and shovel/sign swinging.
+
+The spray paint shaking is pretty simple: When holding the spray paint item, you can physically shake it to shake the can in the game. You can also still use the secondary interact button to shake the can.
+
+If you are holding a shovel or a sign, you'll notice that you are holding it in two hands. If you now swing the shovel over your shoulder, and then forward with enough force, the mod will actually damage entities (or players) that are in front of you.

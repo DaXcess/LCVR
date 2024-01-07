@@ -1,10 +1,6 @@
-# ⚠️⚠️ MALWARE WARNING ⚠️⚠️
+# ⚠️⚠️ NOT YET RELEASED ⚠️⚠️
 
-**If you come across the mod on Thunderstore, Nexus Mods or any other website you are most likely dealing with malware. The mod has not yet been released anywhere and this repository is the only official page for LCVR!**
-
-# ⚠️⚠️ NOT READY YET ⚠️⚠️
-
-> The existence of this GitHub repository does not mean a working mod already exists, it's just semi-functional source code at this time
+Be patient, the mod will release very soon! (Yes, **very** soon!)
 
 # Lethal Company VR Mod
 

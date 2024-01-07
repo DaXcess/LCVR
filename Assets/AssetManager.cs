@@ -23,6 +23,7 @@ namespace LCVR.Assets
 
         public static Sprite githubImage;
         public static Sprite kofiImage;
+        public static Sprite discordImage;
         public static Sprite warningImage;
 
         public static bool LoadAssets()
@@ -43,6 +44,7 @@ namespace LCVR.Assets
             alwaysOnTopMat = assetBundle.LoadAsset<Material>("Always On Top");
             githubImage = assetBundle.LoadAsset<Sprite>("Github");
             kofiImage = assetBundle.LoadAsset<Sprite>("Ko-Fi");
+            discordImage = assetBundle.LoadAsset<Sprite>("Discord");
             warningImage = assetBundle.LoadAsset<Sprite>("Warning");
             localVrMetarig = assetBundle.LoadAsset<RuntimeAnimatorController>("metarig");
             remoteVrMetarig = assetBundle.LoadAsset<RuntimeAnimatorController>("metarigOtherPlayers");

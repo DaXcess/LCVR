@@ -209,6 +209,22 @@ namespace LCVR
             batteryMeter.localRotation = Quaternion.identity;
             batteryMeter.localScale = Vector3.one;
 
+            // Inventory: Attach to right hand
+            var inventory = GameObject.Find("Inventory");
+
+            if (Plugin.Config.DisableArmHUD.Value)
+            {
+                inventory.transform.SetParent(transform, false);
+                inventory.transform.localPosition = new Vector3(91 + xOffset, -185 + yOffset, 0);
+                inventory.transform.localRotation = Quaternion.identity;
+            } else
+            {
+                inventory.transform.SetParent(rightHandCanvas.transform, false);
+                inventory.transform.localPosition = new Vector3(-28, 120, 40);
+                inventory.transform.localRotation = Quaternion.Euler(0, 195, 0);
+                inventory.transform.localScale = Vector3.one * 0.8f;
+            }
+
             // Special HUD: In front of eyes
             var specialHud = GameObject.Find("SpecialHUDGraphics");
 

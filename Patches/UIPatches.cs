@@ -55,7 +55,9 @@ namespace LCVR.Patches
             InitMenuScene();
 
             DisableKeybindsSetting();
-            InjectIntroScreen();
+
+            if (!Plugin.Config.IntroScreenSeen.Value)
+                InjectIntroScreen();
 
             if (Plugin.Compatibility.IsLoaded("MoreCompany"))
                 SetupMoreCompanyUI();
@@ -136,9 +138,6 @@ namespace LCVR.Patches
 
         private static void InjectIntroScreen()
         {
-            if (Plugin.Config.IntroScreenSeen.Value)
-                return;
-
             var menuContainer = GameObject.Find("MenuContainer");
 
             var keybindingsButton = menuContainer.Find("SettingsPanel/KeybindingsButton")?.GetComponent<Button>();
@@ -161,10 +160,11 @@ namespace LCVR.Patches
             var description = vrIntroPanel.Find("Panel/DemoText").GetComponent<TextMeshProUGUI>();
 
             title.text = "Welcome to LCVR!";
-            description.text = "Welcome! Thank you for downloading LCVR!\nThe mod is currently still in beta, so expect bugs, glitches or missing features for the time being.\n\nThis mod has taken a lot of time to write and is available completely for free, but if you'd like to donate to help support further development, you can do so with the button below.\n\n- DaXcess";
+            description.text = "Welcome! Thank you for downloading LCVR!\nIf you run into any issues, you can always hop on in the LCVR Discord server. Make sure to check if the mods you are using are compatible with LCVR.\n\nThis mod has taken a lot of time to write and is available completely for free, but if you'd like to donate to help support further development, you can do so with the button below.\n\n- DaXcess";
 
             var githubButtonObject = new GameObject("GithubLink");
             var kofiButtonObject = new GameObject("KofiLink");
+            var discordButtonObject = new GameObject("DiscordLink");
 
             githubButtonObject.transform.parent = vrIntroPanel.Find("Panel").transform;
             githubButtonObject.transform.localPosition = new Vector3(-60, -105, 0);
@@ -176,26 +176,42 @@ namespace LCVR.Patches
             kofiButtonObject.transform.localEulerAngles = Vector3.zero;
             kofiButtonObject.transform.localScale = Vector3.one * 0.3f;
 
+            discordButtonObject.transform.parent = vrIntroPanel.Find("Panel").transform;
+            discordButtonObject.transform.localPosition = new Vector3(-140, -105, 0);
+            discordButtonObject.transform.localEulerAngles = Vector3.zero;
+            discordButtonObject.transform.localScale = Vector3.one * 0.3f;
+
             var githubImage = githubButtonObject.AddComponent<Image>();
             var kofiImage = kofiButtonObject.AddComponent<Image>();
+            var discordImage = discordButtonObject.AddComponent<Image>();
 
             githubImage.sprite = AssetManager.githubImage;
             kofiImage.sprite = AssetManager.kofiImage;
+            discordImage.sprite = AssetManager.discordImage;
 
             var githubButton = githubButtonObject.AddComponent<Button>();
             var kofiButton = kofiButtonObject.AddComponent<Button>();
+            var discordButton = discordButtonObject.AddComponent<Button>();
 
             var githubButtonColors = githubButton.colors;
             var kofiButtonColors = kofiButton.colors;
+            var discordButtonColors = discordButton.colors;
 
-            githubButtonColors.highlightedColor = kofiButtonColors.highlightedColor = new Color(0.7f, 0.7f, 0.7f);
-            githubButtonColors.pressedColor = kofiButtonColors.pressedColor = new Color(0.6f, 0.6f, 0.6f);
+            githubButtonColors.highlightedColor = 
+                kofiButtonColors.highlightedColor = 
+                discordButtonColors.highlightedColor = new Color(0.7f, 0.7f, 0.7f);
+
+            githubButtonColors.pressedColor = 
+                kofiButtonColors.pressedColor = 
+                discordButtonColors.pressedColor = new Color(0.6f, 0.6f, 0.6f);
 
             githubButton.colors = githubButtonColors;
             kofiButton.colors = kofiButtonColors;
+            discordButton.colors = discordButtonColors;
 
             githubButton.onClick.AddListener(() => Application.OpenURL("https://github.com/DaXcess/LCVR"));
             kofiButton.onClick.AddListener(() => Application.OpenURL("https://ko-fi.com/daxcess"));
+            discordButton.onClick.AddListener(() => Application.OpenURL("https://discord.gg/XyYNtvMGT4"));
 
             var continueButton = vrIntroPanel.Find("Panel/ResponseButton").GetComponent<Button>();
             continueButton.onClick.AddListener(() =>

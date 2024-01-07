@@ -50,6 +50,12 @@ namespace LCVR
         public ConfigEntry<float> CustomCameraFOV { get; } = file.Bind("Rendering", "CustomCameraFOV", 90f, "The field of view that the custom camera should have.");
         public ConfigEntry<float> LODBias { get; } = file.Bind("Rendering", "LODBias", 2f, "The LOD bias is a multiplier that dictates when an LOD must reduce their quality. Higher values means that more detailed LODs will persist for longer. Set to -1 to disable updating the LOD bias.");
 
+        // Tips configuration
+
+        public ConfigEntry<bool> FirstTimeTipSeen { get; } = file.Bind("Tips", "FirstTimeTipSeen", false, "Whether or not the user has seen the first time playing tip");
+        public ConfigEntry<bool> ShovelTipSeen { get; } = file.Bind("Tips", "ShovelTipSeen", false, "Whether or not the user has seen the shovel tip");
+        public ConfigEntry<bool> SprayPaintTipSeen { get; } = file.Bind("Tips", "SprayPaintTipSeen", false, "Whether or not the user has seen the spray paint tip");
+
         public enum TurnProviderOption
         {
             Snap,

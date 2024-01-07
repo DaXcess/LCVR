@@ -17,6 +17,12 @@ namespace LCVR.Items
 
             hand = VRPlayer.Instance.mainHand;
             hand.motionDetector.onShake.AddListener(OnShakeMotion);
+
+            if (!Plugin.Config.SprayPaintTipSeen.Value)
+            {
+                HUDManager.Instance.DisplayTip("Shake shake shake", "You can shake the can by shaking your hand back on forth in quick succession.");
+                Plugin.Config.SprayPaintTipSeen.Value = true;
+            }
         }
 
         private void OnDestroy()

@@ -1,13 +1,14 @@
 ﻿using BepInEx;
 using BepInEx.Bootstrap;
+using GameNetcodeStuff;
 using LCVR.Assets;
 using LCVR.Patches;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
@@ -26,7 +27,12 @@ namespace LCVR
     {
         public const string PLUGIN_GUID = "io.daxcess.lcvr";
         public const string PLUGIN_NAME = "LCVR";
-        public const string PLUGIN_VERSION = "0.0.1";
+        public const string PLUGIN_VERSION = "1.0.0";
+
+        private readonly string[] GAME_ASSEMBLY_HASHES = [
+            "AAC6149C355A19865C0F67FD0C1D7111D4F418EF94D700265B591665B4CDCE73", // V45
+            "9F7F9C7F7159628992127770CA4E294F2313CD1FB0713BFC3FD9274BA018EEC7"  // V47 -Public beta
+        ];
 
         public static bool VR_ENABLED = false;
         public static bool MUST_RESTART = false;
@@ -65,6 +71,16 @@ namespace LCVR
             if (disableVr)
                 Logger.LogWarning("VR has been disabled by config or the `--disable-vr` command line flag");
 
+            var allowUnverified = Environment.GetCommandLineArgs().Contains("--lcvr-skip-shasum");
+
+            if (!allowUnverified && !VerifyGameVersion())
+            {
+                Logger.LogError("Error: Unsupported game version, or corrupted game detected!");
+                Logger.LogError("Aborting before we blow something up!");
+
+                return;
+            }
+
             if (!LoadEarlyRuntimeDependencies())
             {
                 Logger.LogError("Disabling mod because required runtime dependencies could not be loaded!");
@@ -99,6 +115,17 @@ namespace LCVR
                 VR_ENABLED = true;
 
             Logger.LogDebug("Inserted universal patches using Harmony");
+        }
+
+        private bool VerifyGameVersion()
+        {
+            var location = typeof(PlayerControllerB).Assembly.Location;
+
+            using var hash = SHA256.Create();
+            var bytes = hash.ComputeHash(File.ReadAllBytes(location));
+            var shasum = BitConverter.ToString(bytes).Replace("-", "");
+
+            return GAME_ASSEMBLY_HASHES.Contains(shasum);
         }
 
         private bool LoadEarlyRuntimeDependencies()
