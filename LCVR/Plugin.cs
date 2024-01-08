@@ -34,12 +34,9 @@ namespace LCVR
             "9F7F9C7F7159628992127770CA4E294F2313CD1FB0713BFC3FD9274BA018EEC7"  // V47 -Public beta
         ];
 
-        public static bool VR_ENABLED = false;
-        public static bool MUST_RESTART = false;
-        public static bool UE_DETECTED = false;
-
         public static new Config Config { get; private set; }
         public static Compat Compatibility { get; private set; }
+        public static Flags Flags { get; private set; } = Flags.UnityExplorerDetected | Flags.InvalidGameAssembly | Flags.RestartRequired;
 
         private void Awake()
         {
@@ -57,7 +54,7 @@ namespace LCVR
                 if (plugin.Metadata.GUID == "com.sinai.unityexplorer")
                 {
                     Logger.LogWarning("WARNING: UNITY EXPLORER DETECTED! UNITY EXPLORER *WILL* BREAK VR UI INPUTS!");
-                    UE_DETECTED = true;
+                    Flags |= Flags.UnityExplorerDetected;
                 }
 
             Logger.LogInfo($"Plugin {PLUGIN_NAME} is starting...");
@@ -71,12 +68,20 @@ namespace LCVR
 
             var allowUnverified = Environment.GetCommandLineArgs().Contains("--lcvr-skip-shasum");
 
-            if (!allowUnverified && !VerifyGameVersion())
+            if (!VerifyGameVersion())
             {
-                Logger.LogError("Error: Unsupported game version, or corrupted game detected!");
-                Logger.LogError("Aborting before we blow something up!");
+                if (allowUnverified)
+                {
+                    Logger.LogError("Warning: Unsupported game version, or corrupted game detected!");
+                    Flags |= Flags.InvalidGameAssembly;
+                }
+                else
+                {
+                    Logger.LogError("Error: Unsupported game version, or corrupted game detected!");
+                    Logger.LogError("Aborting before we blow something up!");
 
-                return;
+                    return;
+                }
             }
 
             if (!LoadEarlyRuntimeDependencies())
@@ -110,7 +115,7 @@ namespace LCVR
             asset.currentPlatformRenderPipelineSettings = settings;
 
             if (!disableVr && InitVRLoader())
-                VR_ENABLED = true;
+                Flags |= Flags.VR;
 
             HarmonyPatcher.PatchUniversal();
 
@@ -169,10 +174,10 @@ namespace LCVR
         {
             Logger.LogInfo("Loading VR...");
 
-            MUST_RESTART = SetupRuntimeAssets();
-            if (MUST_RESTART)
+            if (SetupRuntimeAssets())
             {
                 Logger.LogError("You must restart the game to allow VR to function properly");
+                Flags |= Flags.RestartRequired;
 
                 return false;
             }
@@ -327,5 +332,14 @@ namespace LCVR
 
             return mustRestart;
         }
+    }
+
+    [Flags]
+    public enum Flags
+    {
+        VR,
+        RestartRequired,
+        UnityExplorerDetected,
+        InvalidGameAssembly
     }
 }

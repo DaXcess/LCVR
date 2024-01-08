@@ -27,22 +27,39 @@ namespace LCVR.Patches
         {
             InitMenuScene();
 
-            if (!Plugin.UE_DETECTED)
-                return;
-
             var canvas = GameObject.Find("Canvas");
-            var textObject = Object.Instantiate(canvas.Find("GameObject/LANOrOnline/OnlineButton/Text (TMP) (1)"));
-            var text = textObject.GetComponent<TextMeshProUGUI>();
 
-            text.transform.parent = canvas.Find("GameObject").transform;
-            text.transform.localPosition = new Vector3(200, -170, 0);
-            text.transform.localScale = Vector3.one;
-            text.text = "Unity Explorer Detected!\nUI controls are most likely nonfunctional!";
-            text.autoSizeTextContainer = true;
-            text.color = new Color(0.9434f, 0.9434f, 0.0434f, 1);
-            text.alignment = TextAlignmentOptions.Center;
-            text.fontSize = 18;
-            text.raycastTarget = false;
+            if (Plugin.Flags.HasFlag(Flags.UnityExplorerDetected))
+            {
+                var textObject = Object.Instantiate(canvas.Find("GameObject/LANOrOnline/OnlineButton/Text (TMP) (1)"));
+                var text = textObject.GetComponent<TextMeshProUGUI>();
+
+                text.transform.parent = canvas.Find("GameObject").transform;
+                text.transform.localPosition = new Vector3(200, -100, 0);
+                text.transform.localScale = Vector3.one;
+                text.text = "Unity Explorer Detected!\nUI controls are most likely nonfunctional!";
+                text.autoSizeTextContainer = true;
+                text.color = new Color(0.9434f, 0.9434f, 0.0434f, 1);
+                text.alignment = TextAlignmentOptions.Center;
+                text.fontSize = 18;
+                text.raycastTarget = false;
+            }
+
+            if (Plugin.Flags.HasFlag(Flags.InvalidGameAssembly))
+            {
+                var textObject = Object.Instantiate(canvas.Find("GameObject/LANOrOnline/OnlineButton/Text (TMP) (1)"));
+                var text = textObject.GetComponent<TextMeshProUGUI>();
+
+                text.transform.parent = canvas.Find("GameObject").transform;
+                text.transform.localPosition = new Vector3(200, -30, 0);
+                text.transform.localScale = Vector3.one;
+                text.text = "Invalid Game Assembly Detected!\nYou are using a modified or unsupported version of the game!";
+                text.autoSizeTextContainer = true;
+                text.color = new Color(0.9434f, 0.9434f, 0.0434f, 1);
+                text.alignment = TextAlignmentOptions.Center;
+                text.fontSize = 18;
+                text.raycastTarget = false;
+            }
         }
 
         /// <summary>
@@ -197,12 +214,12 @@ namespace LCVR.Patches
             var kofiButtonColors = kofiButton.colors;
             var discordButtonColors = discordButton.colors;
 
-            githubButtonColors.highlightedColor = 
-                kofiButtonColors.highlightedColor = 
+            githubButtonColors.highlightedColor =
+                kofiButtonColors.highlightedColor =
                 discordButtonColors.highlightedColor = new Color(0.7f, 0.7f, 0.7f);
 
-            githubButtonColors.pressedColor = 
-                kofiButtonColors.pressedColor = 
+            githubButtonColors.pressedColor =
+                kofiButtonColors.pressedColor =
                 discordButtonColors.pressedColor = new Color(0.6f, 0.6f, 0.6f);
 
             githubButton.colors = githubButtonColors;
@@ -270,7 +287,7 @@ namespace LCVR.Patches
         [HarmonyPatch(typeof(PreInitSceneScript), "Start")]
         private static void OnPreInitMenuShown()
         {
-            if (!Plugin.MUST_RESTART)
+            if (!Plugin.Flags.HasFlag(Flags.RestartRequired))
                 return;
 
             var canvas = GameObject.Find("Canvas");
@@ -337,7 +354,7 @@ namespace LCVR.Patches
             picture.transform.localPosition = new Vector3(196, 59, 1);
             picture.sprite = AssetManager.warningImage;
 
-            modDebugPanel.SetActive(!Plugin.VR_ENABLED || Plugin.Config.IntroScreenSeen.Value);
+            modDebugPanel.SetActive(!Plugin.Flags.HasFlag(Flags.VR) || Plugin.Config.IntroScreenSeen.Value);
 
             var continueButton = modDebugPanel.Find("Panel/ResponseButton").GetComponent<Button>();
             continueButton.onClick.AddListener(() =>

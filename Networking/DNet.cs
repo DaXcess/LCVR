@@ -30,7 +30,7 @@ namespace LCVR.Networking
 
             room = dissonance.Rooms.Join("LCVR");
 
-            if (Plugin.VR_ENABLED)
+            if (Plugin.Flags.HasFlag(Flags.VR))
                 dissonance.Text.Send("LCVR", "HELLO");
 
             Logger.Log("Joined 'LCVR' network, ready for other VR players!");
@@ -60,7 +60,7 @@ namespace LCVR.Networking
             if (room != "LCVR")
                 return;
 
-            if (Plugin.VR_ENABLED)
+            if (Plugin.Flags.HasFlag(Flags.VR))
                 // Tell the player that joined that we are in VR
                 dissonance.Text.Whisper(player.Name, "HELLO");
         }
@@ -138,7 +138,7 @@ namespace LCVR.Networking
         {
             public Vector3 rightHandPosition;
             public Vector3 rightHandEulers;
-            
+
             public Vector3 leftHandPosition;
             public Vector3 leftHandEulers;
 
