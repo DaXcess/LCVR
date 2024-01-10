@@ -6,6 +6,7 @@ using UnityEngine.Rendering.HighDefinition;
 using System.Collections.Generic;
 using LCVR.Assets;
 using UnityEngine.XR.Interaction.Toolkit;
+using System.Security.Cryptography;
 
 namespace LCVR
 {
@@ -19,6 +20,13 @@ namespace LCVR
 
     internal static class Utils
     {
+        public static byte[] ComputeHash(byte[] input)
+        {
+            using var sha = SHA256.Create();
+
+            return sha.ComputeHash(input);
+        }
+
         public static void DisableQualitySetting(HDAdditionalCameraData camera, FrameSettingsField setting)
         {
             camera.renderingPathCustomFrameSettingsOverrideMask.mask[(uint)setting] = true;

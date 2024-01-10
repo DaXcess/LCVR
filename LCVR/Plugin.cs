@@ -125,10 +125,7 @@ namespace LCVR
         private bool VerifyGameVersion()
         {
             var location = typeof(PlayerControllerB).Assembly.Location;
-
-            using var hash = SHA256.Create();
-            var bytes = hash.ComputeHash(File.ReadAllBytes(location));
-            var shasum = BitConverter.ToString(bytes).Replace("-", "");
+            var shasum = BitConverter.ToString(Utils.ComputeHash(File.ReadAllBytes(location))).Replace("-", "");
 
             return GAME_ASSEMBLY_HASHES.Contains(shasum);
         }
@@ -299,8 +296,8 @@ namespace LCVR
 
             if (File.Exists(destinationFile))
             {
-                var sourceHash = SHA256.Create().ComputeHash(File.ReadAllBytes(sourceFile));
-                var destHash = SHA256.Create().ComputeHash(File.ReadAllBytes(destinationFile));
+                var sourceHash = Utils.ComputeHash(File.ReadAllBytes(sourceFile));
+                var destHash = Utils.ComputeHash(File.ReadAllBytes(destinationFile));
 
                 if (sourceHash.SequenceEqual(destHash))
                     return true;
