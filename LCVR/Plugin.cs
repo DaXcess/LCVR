@@ -288,6 +288,27 @@ namespace LCVR
 
             return true;
         }
+        
+        /// <summary>
+        /// Helper function for SetupRuntimeAssets() to copy resource files and return false if the source does not exist
+        /// </summary>
+        private bool CopyResourceFile(string SourceFile, string DestinationFile)
+        {
+            if (File.Exists(SourceFile))
+            {
+                var canCopy = !File.Exists(DestinationFile);
+                if (!canCopy)
+                {
+                    var SourceFileLength = new FileInfo(SourceFile).Length;
+                    var DestinationFileLength = new FileInfo(DestinationFile).Length;
+                    canCopy = SourceFileLength != DestinationFileLength;
+                }
+                if (canCopy)
+                    File.Copy(SourceFile, DestinationFile, true);
+                return true;
+            }
+            return false;
+        }
 
         /// <summary>
         /// Place required runtime libraries and configuration in the game files to allow VR to be started
@@ -320,14 +341,10 @@ namespace LCVR
             var uoxr = Path.Combine(current, "RuntimeDeps/UnityOpenXR.dll");
             var oxrLoader = Path.Combine(current, "RuntimeDeps/openxr_loader.dll");
 
-            if (File.Exists(uoxr))
-                File.Copy(uoxr, uoxrTarget, true);
-            else
+            if (!CopyResourceFile(uoxr, uoxrTarget))
                 Logger.LogWarning("Could not find UnityOpenXR.dll to copy to the game, VR might not work!");
 
-            if (File.Exists(oxrLoader))
-                File.Copy(oxrLoader, oxrLoaderTarget, true);
-            else
+            if(!CopyResourceFile(oxrLoader, oxrLoaderTarget))
                 Logger.LogWarning("Could not find openxr_loader.dll to copy to the game, VR might not work!");
 
             return mustRestart;
