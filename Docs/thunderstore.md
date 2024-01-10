@@ -25,6 +25,20 @@ LCVR comes pre-packaged with a digital signature. You can use tools like GPG to 
 
 The public key which can be used to verify the file is [9422426F6125277B82CC477DCF78CC72F0FD5EAD (OpenPGP Key Server)](https://keys.openpgp.org/vks/v1/by-fingerprint/9422426F6125277B82CC477DCF78CC72F0FD5EAD).
 
+### Bypassing integrity checks
+
+To prevent completely destroying to game, this mod scans the game assembly and tries to detect whether it's using a supported version or not.
+
+If this check fails, the mod will assume that either the game was updated, or the game files have been corrupted, and will refuse to start the mod.
+
+You can disable this behaviour by passing `--lcvr-skip-checksum` to the game's launch options in Steam.
+
+### Discord Server
+
+Facing issues, have some mod (in)compatibility to report or just want to hang out?
+
+You can join the [LCVR Discord Server](https://discord.gg/2DxNgpPZUF)!
+
 # Compatibility
 
 Adding VR into a game will drastically change some of the gameplay elements. This is guaranteed to cause some incompatibilities with other Lethal Company mods. You can find a [compatibility sheet here](https://docs.google.com/spreadsheets/d/1mSulrvMkQFtjF_BWDeSfGz9rm3UWKMywmUP1yhcgCGo/edit?usp=sharing) where you can find a list of mods that have been tested to see if they work well in conjunction with the VR mod.

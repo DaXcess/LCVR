@@ -10,6 +10,10 @@
     <Title>LethalCompanyVR</Title>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Remove="Libs\**" />
     <Compile Remove="RuntimeDeps\**" />

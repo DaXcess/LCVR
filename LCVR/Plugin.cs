@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Security.Cryptography;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
@@ -31,12 +30,12 @@ namespace LCVR
 
         private readonly string[] GAME_ASSEMBLY_HASHES = [
             "AAC6149C355A19865C0F67FD0C1D7111D4F418EF94D700265B591665B4CDCE73", // V45
-            "9F7F9C7F7159628992127770CA4E294F2313CD1FB0713BFC3FD9274BA018EEC7"  // V47 -Public beta
+            "3EE687F8586F8597BA9E750E5C75141CA353C0076A3FC3C802AE9CE35D876580"  // V49
         ];
 
         public static new Config Config { get; private set; }
         public static Compat Compatibility { get; private set; }
-        public static Flags Flags { get; private set; } = Flags.UnityExplorerDetected | Flags.InvalidGameAssembly | Flags.RestartRequired;
+        public static Flags Flags { get; private set; } = 0;
 
         private void Awake()
         {
@@ -50,13 +49,6 @@ namespace LCVR
             Config = new Config(base.Config);
             Compatibility = new Compat([.. Chainloader.PluginInfos.Values]);
 
-            foreach (var plugin in Chainloader.PluginInfos.Values)
-                if (plugin.Metadata.GUID == "com.sinai.unityexplorer")
-                {
-                    Logger.LogWarning("WARNING: UNITY EXPLORER DETECTED! UNITY EXPLORER *WILL* BREAK VR UI INPUTS!");
-                    Flags |= Flags.UnityExplorerDetected;
-                }
-
             Logger.LogInfo($"Plugin {PLUGIN_NAME} is starting...");
 
             // Allow disabling VR via config and command line
@@ -66,7 +58,8 @@ namespace LCVR
             if (disableVr)
                 Logger.LogWarning("VR has been disabled by config or the `--disable-vr` command line flag");
 
-            var allowUnverified = Environment.GetCommandLineArgs().Contains("--lcvr-skip-shasum");
+            // Verify game assembly to detect compatible version
+            var allowUnverified = Environment.GetCommandLineArgs().Contains("--lcvr-skip-checksum");
 
             if (!VerifyGameVersion())
             {
@@ -191,6 +184,13 @@ namespace LCVR
 
                 return false;
             }
+
+            foreach (var plugin in Chainloader.PluginInfos.Values)
+                if (plugin.Metadata.GUID == "com.sinai.unityexplorer")
+                {
+                    Logger.LogWarning("WARNING: UNITY EXPLORER DETECTED! UNITY EXPLORER *WILL* BREAK VR UI INPUTS!");
+                    Flags |= Flags.UnityExplorerDetected;
+                }
 
             HarmonyPatcher.PatchVR();
 
@@ -352,9 +352,9 @@ namespace LCVR
     [Flags]
     public enum Flags
     {
-        VR,
-        RestartRequired,
-        UnityExplorerDetected,
-        InvalidGameAssembly
+        VR = 1,
+        RestartRequired = 2,
+        UnityExplorerDetected = 4,
+        InvalidGameAssembly = 8
     }
 }

@@ -5,9 +5,9 @@ namespace LCVR
 {
     public class Compat
     {
-        private static readonly string[][] ModCompatibilityList =
+        private static readonly CompatibleMod[] ModCompatibilityList =
         [
-            ["MoreCompany", "me.swipez.melonloader.morecompany", "1.7.2"]
+            new("MoreCompany", "me.swipez.melonloader.morecompany", "1.7.4"),
         ];
 
         private static readonly List<string> DetectedMods = [];
@@ -16,23 +16,30 @@ namespace LCVR
         {
             foreach (var plugin in plugins)
             {
-                var mod = ModCompatibilityList.FirstOrDefault((mod) => mod[1] == plugin.Metadata.GUID);
+                var mod = ModCompatibilityList.FirstOrDefault((mod) => mod.Guid == plugin.Metadata.GUID);
 
                 if (mod == null)
                     continue;
 
-                if (mod[2] != null && plugin.Metadata.Version.ToString() != mod[2] && !Plugin.Config.OverrideCompatibilityVersionCheck.Value)
+                if (mod.Versions != null && mod.Versions.Contains(plugin.Metadata.Version.ToString()) && !Plugin.Config.OverrideCompatibilityVersionCheck.Value)
                     continue;
 
-                Logger.LogInfo($"Found compatible mod {mod[0]}");
+                Logger.LogInfo($"Found compatible mod {mod.Name}");
 
-                DetectedMods.Add(mod[0]);
+                DetectedMods.Add(mod.Name);
             }
         }
 
         public bool IsLoaded(string modName)
         {
             return DetectedMods.Contains(modName);
+        }
+
+        private class CompatibleMod(string name, string guid, params string[] versions)
+        {
+            public string Name { get; } = name;
+            public string Guid { get; } = guid;
+            public string[] Versions { get; } = versions;
         }
     }
 }

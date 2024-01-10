@@ -9,6 +9,7 @@ using Unity.Netcode;
 using LCVR.Input;
 using LCVR.Assets;
 using System.Linq;
+using System.ComponentModel;
 
 namespace LCVR.Player
 {
@@ -316,6 +317,9 @@ namespace LCVR.Player
                 currentlyGrabbingObject = hit.collider.transform.gameObject.GetComponent<GrabbableObject>();
 
                 if (!GameNetworkManager.Instance.gameHasStarted && !currentlyGrabbingObject.itemProperties.canBeGrabbedBeforeGameStart)
+                    return;
+
+                if (Items.unsupportedItems.Contains(currentlyGrabbingObject.itemProperties.itemName))
                     return;
 
                 SetFieldValue("grabInvalidated", false);

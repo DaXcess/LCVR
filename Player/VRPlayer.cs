@@ -173,9 +173,6 @@ namespace LCVR.Player
             rightHandRigTransform = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/shoulder.R/arm.R_upper/arm.R_lower/hand.R").transform;
 
             var rightArmTarget = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/RigArms/RightArm/ArmsRightArm_target");
-            var rightArmHint = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/RigArms/RightArm/RightArm_hint");
-
-            rightArmHint.transform.localPosition = new Vector3(12.5f, -2f, -1f);
 
             rigFollow.rightHand = new IKRigFollowVRRig.VRMap()
             {
@@ -190,10 +187,6 @@ namespace LCVR.Player
             leftHandRigTransform = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/shoulder.L/arm.L_upper/arm.L_lower/hand.L").transform;
 
             var leftArmTarget = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/RigArms/LeftArm/ArmsLeftArm_target");
-            var leftArmHint = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/RigArms/LeftArm/LeftArm_hint");
-
-            leftArmHint.transform.localPosition = new Vector3(-10f, -2f, -1f);
-
             rigFollow.leftHand = new IKRigFollowVRRig.VRMap()
             {
                 ikTarget = leftArmTarget.transform,
@@ -220,10 +213,6 @@ namespace LCVR.Player
             // Setting up the right arm
 
             var fullRightArmTarget = Find("ScavengerModel/metarig/spine/spine.001/spine.002/spine.003/RightArm_target");
-            var fullRightArmHint = Find("ScavengerModel/metarig/Rig 1/RightArm/RightArm_hint");
-
-            fullRightArmHint.transform.localPosition = new Vector3(12.5f, -2f, -1f);
-
             fullRigFollow.rightHand = new IKRigFollowVRRig.VRMap()
             {
                 ikTarget = fullRightArmTarget.transform,
@@ -235,10 +224,6 @@ namespace LCVR.Player
             // Setting up the left arm
 
             var fullLeftArmTarget = Find("ScavengerModel/metarig/spine/spine.001/spine.002/spine.003/LeftArm_target");
-            var fullLeftArmHint = Find("ScavengerModel/metarig/Rig 1/LeftArm/LeftArm_hint");
-
-            fullLeftArmHint.transform.localPosition = new Vector3(-10f, -2f, -1f);
-
             fullRigFollow.leftHand = new IKRigFollowVRRig.VRMap()
             {
                 ikTarget = fullLeftArmTarget.transform,
@@ -248,7 +233,7 @@ namespace LCVR.Player
             };
 
             // This one is pretty hit or miss, sometimes y needs to be 0, other times it needs to be -2.25f
-            rigFollow.headBodyPositionOffset = new Vector3(0, 0, 0);
+            fullRigFollow.headBodyPositionOffset = new Vector3(0, 0, 0);
 
             // Add controller interactor
             mainHand = rightController.AddComponent<VRController>();
