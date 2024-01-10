@@ -36,7 +36,7 @@ namespace LCVR
 
         public static new Config Config { get; private set; }
         public static Compat Compatibility { get; private set; }
-        public static Flags Flags { get; private set; } = Flags.UnityExplorerDetected | Flags.InvalidGameAssembly | Flags.RestartRequired;
+        public static Flags Flags { get; private set; }
 
         private void Awake()
         {
@@ -335,11 +335,11 @@ namespace LCVR
     }
 
     [Flags]
-    public enum Flags
+    public enum Flags : byte
     {
-        VR,
-        RestartRequired,
-        UnityExplorerDetected,
-        InvalidGameAssembly
+        VR = 1,
+        RestartRequired = 2,
+        UnityExplorerDetected = 4,
+        InvalidGameAssembly = 8
     }
 }
