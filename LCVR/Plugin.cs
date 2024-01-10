@@ -288,26 +288,27 @@ namespace LCVR
 
             return true;
         }
-        
+
         /// <summary>
         /// Helper function for SetupRuntimeAssets() to copy resource files and return false if the source does not exist
         /// </summary>
-        private bool CopyResourceFile(string SourceFile, string DestinationFile)
+        private bool CopyResourceFile(string sourceFile, string destinationFile)
         {
-            if (File.Exists(SourceFile))
+            if (!File.Exists(sourceFile))
+                return false;
+
+            if (File.Exists(destinationFile))
             {
-                var canCopy = !File.Exists(DestinationFile);
-                if (!canCopy)
-                {
-                    var SourceFileLength = new FileInfo(SourceFile).Length;
-                    var DestinationFileLength = new FileInfo(DestinationFile).Length;
-                    canCopy = SourceFileLength != DestinationFileLength;
-                }
-                if (canCopy)
-                    File.Copy(SourceFile, DestinationFile, true);
-                return true;
+                var sourceHash = SHA256.Create().ComputeHash(File.ReadAllBytes(sourceFile));
+                var destHash = SHA256.Create().ComputeHash(File.ReadAllBytes(destinationFile));
+
+                if (sourceHash.SequenceEqual(destHash))
+                    return true;
             }
-            return false;
+
+            File.Copy(sourceFile, destinationFile, true);
+
+            return true;
         }
 
         /// <summary>
@@ -344,7 +345,7 @@ namespace LCVR
             if (!CopyResourceFile(uoxr, uoxrTarget))
                 Logger.LogWarning("Could not find UnityOpenXR.dll to copy to the game, VR might not work!");
 
-            if(!CopyResourceFile(oxrLoader, oxrLoaderTarget))
+            if (!CopyResourceFile(oxrLoader, oxrLoaderTarget))
                 Logger.LogWarning("Could not find openxr_loader.dll to copy to the game, VR might not work!");
 
             return mustRestart;
