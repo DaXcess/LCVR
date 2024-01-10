@@ -290,9 +290,9 @@
         {
           "name": "",
           "id": "8ada7364-58e2-413f-83ce-0a04ce997082",
-          "path": "<XRController>{RightHand}/gripButton",
+          "path": "<XRController>{RightHand}/grip",
           "interactions": "",
-          "processors": "",
+          "processors": "AxisDeadzone(min=0.75,max=1)",
           "groups": "",
           "action": "Grab",
           "isComposite": false,
