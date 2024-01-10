@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using System.Net;
 using BepInEx;
 using UnityEngine.InputSystem;
 
@@ -18,16 +20,12 @@ namespace LCVR.Input
         public static InputAction LeftHand_Rotation;
         public static InputAction LeftHand_TrackingState;
 
-        public static InputActionAsset VRInputActions;
-        private static InputActionAsset LCInputActions;
-
-        private static readonly string VRInputActionsOverrideFile = Path.Combine(Paths.ConfigPath, "lcvr_vr_inputs.json");
-        private static readonly string LCInputActionsOverrideFile = Path.Combine(Paths.ConfigPath, "lcvr_lc_inputs.json");
+        public readonly static InputActionAsset VRInputActions = InputActionAsset.FromJson(Properties.Resources.vr_inputs);
+        public readonly static InputActionAsset LCInputActions = InputActionAsset.FromJson(Properties.Resources.lc_inputs);
 
         static Actions()
         {
-            VRInputActions = ReadActionsFromFileWithFallback(VRInputActionsOverrideFile, Properties.Resources.vr_inputs);
-            LCInputActions = ReadActionsFromFileWithFallback(LCInputActionsOverrideFile, Properties.Resources.lc_inputs);
+            (VRInputActions, LCInputActions) = DownloadControllerProfiles(Plugin.Config.ControllerBindingsOverrideProfile.Value);
 
             Head_Position = VRInputActions.FindAction("Head/Position");
             Head_Rotation = VRInputActions.FindAction("Head/Rotation");
@@ -45,19 +43,28 @@ namespace LCVR.Input
             VRInputActions.Enable();
         }
 
-        private static InputActionAsset ReadActionsFromFileWithFallback(string file, string fallback)
+        /// <summary>
+        /// Dynamically download controller profiles from GitHub, so that users won't have to
+        /// mess around with files and only need to specify a profile name inside the configuration.
+        /// </summary>
+        /// <returns></returns>
+        private static (InputActionAsset, InputActionAsset) DownloadControllerProfiles(string profile)
         {
-            if (!File.Exists(file))
-                return InputActionAsset.FromJson(fallback);
-
             try
             {
-                string data = File.ReadAllText(file);
-                return InputActionAsset.FromJson(data);
+                if (string.IsNullOrEmpty(profile))
+                    throw new Exception("Using default controller profile");
+
+                using var client = new WebClient();
+
+                var vr = client.DownloadString($"https://raw.githubusercontent.com/DaXcess/LCVR-Controller-Profiles/main/{profile}/lcvr_vr_inputs.json");
+                var lc = client.DownloadString($"https://raw.githubusercontent.com/DaXcess/LCVR-Controller-Profiles/main/{profile}/lcvr_lc_inputs.json");
+
+                return (InputActionAsset.FromJson(vr), InputActionAsset.FromJson(lc));
             }
             catch
             {
-                return InputActionAsset.FromJson(fallback);
+                return (VRInputActions, LCInputActions);
             }
         }
 
