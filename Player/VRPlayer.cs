@@ -401,7 +401,8 @@ namespace LCVR.Player
                 var move = IngamePlayerSettings.Instance.playerInput.actions.FindAction("Move").ReadValue<Vector2>();
                 if (move.x == 0 && move.y == 0 && stopSprintingCoroutine == null && isSprinting)
                     stopSprintingCoroutine = StartCoroutine(StopSprinting());
-                else if ((move.x != 0 || move.y != 0) && stopSprintingCoroutine != null) { 
+                else if ((move.x != 0 || move.y != 0) && stopSprintingCoroutine != null)
+                {
                     StopCoroutine(stopSprintingCoroutine);
                     stopSprintingCoroutine = null;
                 }
@@ -531,11 +532,7 @@ namespace LCVR.Player
 
         private IEnumerator StopSprinting()
         {
-            Logger.LogDebug("In StopSprinting");
             yield return new WaitForSeconds(Plugin.Config.MovementSprintToggleCooldown.Value);
-            Logger.LogDebug("StopSprinting after wait");
-            yield return null;
-            Logger.LogDebug("Stopping sprint");
 
             isSprinting = false;
             stopSprintingCoroutine = null;
