@@ -22,9 +22,7 @@ namespace LCVR.Player
         {
             foreach (var item in StartOfRound.Instance.allItemsList.itemsList)
             {
-                if (item.itemName == "Spray paint")
-                    item.canBeGrabbedBeforeGameStart = true;
-                else if (item.itemName == "Chemical Jug")
+                if (item.itemName == "Chemical Jug")
                 {
                     item.positionOffset = new Vector3(-0.1f, 0.18f, -0.24f);
                     item.rotationOffset = new Vector3(180, 287.52f, 0);

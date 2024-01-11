@@ -31,9 +31,6 @@ namespace LCVR
         {
             Logger.Log("Hello from VR!");
 
-            // Log input devices
-            InputSystem.devices.Do(device => Logger.LogDebug($"Input Device: {device.displayName}"));
-
             yield return new WaitUntil(() => StartOfRound.Instance.activeCamera != null);
 
             var mainCamera = StartOfRound.Instance.activeCamera;
@@ -99,8 +96,8 @@ namespace LCVR
                 children.Do(child => child.SetParent(mainCamera.transform, true));
             }
 
-            // Manually walk to the player object because in multiplayer you are not "Player" but instead one of the other player objects
-            var player = mainCamera.gameObject.transform.parent.parent.parent.parent.gameObject.AddComponent<VRPlayer>();
+            // Initialize the VR player script
+            var player = StartOfRound.Instance.localPlayerController.gameObject.AddComponent<VRPlayer>();
 
             // Initialize HUD
             player.hud = new GameObject("VR HUD Manager").AddComponent<VRHUD>();
