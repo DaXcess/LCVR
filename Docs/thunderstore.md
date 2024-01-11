@@ -27,7 +27,7 @@ The public key which can be used to verify the file is [9422426F6125277B82CC477D
 
 ### Bypassing integrity checks
 
-To prevent completely destroying to game, this mod scans the game assembly and tries to detect whether it's using a supported version or not.
+To prevent completely destroying the game, this mod scans the game assembly and tries to detect whether it's using a supported version or not.
 
 If this check fails, the mod will assume that either the game was updated, or the game files have been corrupted, and will refuse to start the mod.
 
