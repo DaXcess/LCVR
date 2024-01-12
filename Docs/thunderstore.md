@@ -1,5 +1,7 @@
 # Lethal Company VR Mod
 
+[![Adding VR to Lethal Company](https://github.com/DaXcess/LCVR/blob/main/.github/assets/thumbnail.webp?raw=true)](https://www.youtube.com/watch?v=DPH_Zqpkdvc "Adding VR to Lethal Company")
+
 > This is the first mod that I have ever built, and also the first time using Unity so this mod might not be perfect.
 
 <details>
