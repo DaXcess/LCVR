@@ -98,5 +98,10 @@ namespace LCVR
             controller.scaleToggleAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Scale Toggle"));
             controller.scaleDeltaAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Scale Delta"));
         }
+
+        public static bool BoxCast(this Ray ray, float radius, out RaycastHit hit, float maxDistance = Mathf.Infinity, int layerMask = Physics.DefaultRaycastLayers)
+        {
+            return Physics.BoxCast(ray.origin, Vector3.one * radius, ray.direction, out hit, Quaternion.identity, maxDistance, layerMask);
+        }
     }
 }

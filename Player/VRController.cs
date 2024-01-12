@@ -68,7 +68,7 @@ namespace LCVR.Player
         {
             this.player = player;
             this.playerController = player.gameObject.GetComponent<PlayerControllerB>();
-            
+
             var interactOriginObject = new GameObject("Raycast Origin");
 
             motionDetector = player.rightController.AddComponent<MotionDetector>();
@@ -219,7 +219,7 @@ namespace LCVR.Player
             {
                 var ray = new Ray(interactOrigin.position, interactOrigin.forward);
 
-                if (Physics.Raycast(ray, out var hit, playerController.grabDistance, interactableObjectsMask) && hit.collider.gameObject.layer != 8)
+                if (ray.BoxCast(0.1f, out var hit, playerController.grabDistance, interactableObjectsMask) && hit.collider.gameObject.layer != 8)
                 {
                     if (!hitInteractable)
                         VRPlayer.VibrateController(XRNode.RightHand, 0.1f, 0.2f);
@@ -310,7 +310,7 @@ namespace LCVR.Player
         private void BeginGrabObject()
         {
             var ray = new Ray(interactOrigin.position, interactOrigin.forward);
-            if (Physics.Raycast(ray, out var hit, playerController.grabDistance, interactableObjectsMask) && hit.collider.gameObject.layer != 8 && hit.collider.CompareTag("PhysicsProp"))
+            if (ray.BoxCast(0.1f, out var hit, playerController.grabDistance, interactableObjectsMask) && hit.collider.gameObject.layer != 8 && hit.collider.CompareTag("PhysicsProp"))
             {
                 if (playerController.twoHanded || playerController.sinkingValue > 0.73f) return;
 
