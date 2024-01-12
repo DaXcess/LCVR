@@ -8,8 +8,14 @@ namespace LCVR.Experiments
     {
         public static void RunExperiments()
         {
-            //SpawnShotgun();
-            //SpawnJetpack();
+            SpawnShotgun();
+            ShowMeTheMoney(10000);
+            SpawnBuyableItem<JetpackItem>("Jetpack");
+            SpawnBuyableItem<SprayPaintItem>("Spray paint");
+            SpawnBuyableItem<FlashlightItem>("Flashlight");
+            SpawnBuyableItem<FlashlightItem>("Pro-flashlight");
+
+            Logger.Log("Hello from VR!");
         }
 
         private static void SpawnShotgun()
@@ -24,20 +30,22 @@ namespace LCVR.Experiments
             shotgun.shellsLoaded = 500;
         }
 
-        private static void SpawnJetpack()
+        private static void ShowMeTheMoney(int amount)
         {
             var terminal = Object.FindObjectOfType<Terminal>();
-            var jetpack = terminal.buyableItemsList.First((item) => item.itemName == "Jetpack");
-
-            SpawnObject<JetpackItem>(jetpack.spawnPrefab);
+            terminal.groupCredits = amount;
         }
 
-        private static void SpawnFlashlight()
+        private static void SpawnBuyableItem<T>(string @itemName)
+            where T : GrabbableObject
         {
             var terminal = Object.FindObjectOfType<Terminal>();
-            var flashlight = terminal.buyableItemsList.First((item) => item.itemName == "Pro-flashlight");
+            var i = terminal.buyableItemsList.First((item) => item.itemName == @itemName);
 
-            SpawnObject<FlashlightItem>(flashlight.spawnPrefab);
+            if (i != null)
+            {
+                SpawnObject<T>(i.spawnPrefab);
+            }
         }
 
         private static T SpawnObject<T>(GameObject @object)
@@ -49,9 +57,7 @@ namespace LCVR.Experiments
             component.fallTime = 0f;
             component.scrapValue = 10;
 
-            var netComponent = gameObject.GetComponent<NetworkObject>();
-            netComponent.Spawn(false);
-
+            var netComponent = gameObject.GetComponent<NetworkObject>(); netComponent.Spawn(false); 
             return component;
         }
     }
