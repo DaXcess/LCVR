@@ -164,12 +164,17 @@ namespace LCVR.Patches
         [HarmonyPostfix]
         private static void UpdatePrefix(PlayerControllerB __instance)
         {
-            if (__instance.IsInactivePlayer() || !__instance.IsOwner)
+            if (!__instance.IsOwner || __instance.IsInactivePlayer())
                 return;
 
             __instance.localArmsMatchCamera = false;
 
-            if (__instance.isPlayerControlled)
+            var player = __instance.GetComponent<VRPlayer>();
+
+            if (player == null)
+                return;
+
+            if (__instance.isPlayerControlled && !player.RebuildingRig)
             {
                 __instance.playerBodyAnimator.runtimeAnimatorController = AssetManager.localVrMetarig;
             }
@@ -315,7 +320,7 @@ namespace LCVR.Patches
             if (!__instance.IsOwner)
             {
                 var networkPlayer = __instance.GetComponent<VRNetPlayer>();
-                if (networkPlayer != null)
+                if (networkPlayer != null && !networkPlayer.RebuildingRig)
                 {
                     __instance.playerBodyAnimator.runtimeAnimatorController = AssetManager.remoteVrMetarig;
                 }
@@ -344,8 +349,6 @@ namespace LCVR.Patches
             var remotePlayer = __instance.GetComponent<VRNetPlayer>();
             if (remotePlayer == null)
                 return;
-
-            Logger.LogDebug(item.itemProperties.itemName);
 
             // Add or enable VR item script on item if there is one for this item
             if (Player.Items.items.TryGetValue(item.itemProperties.itemName, out var type))

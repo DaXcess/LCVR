@@ -31,7 +31,7 @@ namespace LCVR.Networking
             room = dissonance.Rooms.Join("LCVR");
 
             if (Plugin.Flags.HasFlag(Flags.VR))
-                dissonance.Text.Send("LCVR", "HELLO");
+                SendHandshake();
 
             Logger.Log("Joined 'LCVR' network, ready for other VR players!");
         }
@@ -55,6 +55,26 @@ namespace LCVR.Networking
             dissonance.Text.Send("LCVR", "UPRIG" + Convert.ToBase64String(rig.Serialize()));
         }
 
+        public static void BroadcastFloorOffset(float cameraFloorOffset)
+        {
+            dissonance.Text.Send("LCVR", $"CAMFL{cameraFloorOffset}");
+        }
+
+        private static void SendHandshake(string player = null)
+        {
+            var offset = StartOfRound.Instance.localPlayerController.GetComponent<VRPlayer>().cameraFloorOffset;
+
+            if (string.IsNullOrEmpty(player))
+            {
+                dissonance.Text.Send("LCVR", "HELLO");
+                dissonance.Text.Send("LCVR", $"CAMFL{offset}");
+            } else
+            {
+                dissonance.Text.Whisper(player, "HELLO");
+                dissonance.Text.Whisper(player, $"CAMFL{offset}");
+            }
+        }
+
         private static void OnPlayerJoin(VoicePlayerState player, string room)
         {
             if (room != "LCVR")
@@ -62,7 +82,7 @@ namespace LCVR.Networking
 
             if (Plugin.Flags.HasFlag(Flags.VR))
                 // Tell the player that joined that we are in VR
-                dissonance.Text.Whisper(player.Name, "HELLO");
+                SendHandshake(player.Name);
         }
 
         private static void OnPlayerLeave(VoicePlayerState player)
@@ -85,6 +105,13 @@ namespace LCVR.Networking
 
                 case "UPRIG":
                     HandleRigUpdate(packet.Sender, packet.Message[5..]);
+                    break;
+
+                case "CAMFL":
+                    if (!float.TryParse(packet.Message[5..], out var offset))
+                        return;
+
+                    HandleCameraFloorOffset(packet.Sender, offset);
                     break;
             }
         }
@@ -134,6 +161,14 @@ namespace LCVR.Networking
             player.UpdateTargetTransforms(rig);
         }
 
+        private static void HandleCameraFloorOffset(string sender, float offset)
+        {
+            if (!vrPlayers.TryGetValue(sender, out var player))
+                return;
+
+            player.UpdateCameraFloorOffset(offset);
+        }
+
         public struct Rig
         {
             public Vector3 rightHandPosition;
@@ -143,6 +178,9 @@ namespace LCVR.Networking
             public Vector3 leftHandEulers;
 
             public Vector3 cameraEulers;
+
+            public bool isCrouching;
+            public float rotationOffset;
 
             public readonly byte[] Serialize()
             {
@@ -169,6 +207,9 @@ namespace LCVR.Networking
                 bw.Write(cameraEulers.y);
                 bw.Write(cameraEulers.z);
 
+                bw.Write(isCrouching);
+                bw.Write(rotationOffset);
+
                 return mem.ToArray();
             }
 
@@ -184,6 +225,8 @@ namespace LCVR.Networking
                     leftHandPosition = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()),
                     leftHandEulers = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()),
                     cameraEulers = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()),
+                    isCrouching = br.ReadBoolean(),
+                    rotationOffset = br.ReadSingle(),
                 };
 
                 return rig;

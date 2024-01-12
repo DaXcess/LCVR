@@ -13,6 +13,7 @@ using GameNetcodeStuff;
 using UnityEngine.XR.Interaction.Toolkit;
 using Microsoft.MixedReality.Toolkit.Experimental.UI;
 using LCVR.Patches;
+using HarmonyLib;
 
 namespace LCVR.Player
 {
@@ -28,7 +29,7 @@ namespace LCVR.Player
         private Coroutine stopSprintingCoroutine;
 
         public float scaleFactor = 1.5f;
-        private float cameraFloorOffset = 0f;
+        public float cameraFloorOffset = 0f;
         private float crouchOffset = 0f;
 
         private bool isDead = false;
@@ -67,6 +68,8 @@ namespace LCVR.Player
 
         public Transform leftItemHolder;
         public Transform rightItemHolder;
+
+        public bool RebuildingRig { get; private set; } = false;
 
         public VRPlayer()
         {
@@ -155,15 +158,78 @@ namespace LCVR.Player
             leftHandVRTarget.transform.localPosition = new Vector3(-0.0279f, 0.0353f, 0.0044f);
             leftHandVRTarget.transform.localRotation = Quaternion.Euler(0, 270, 192);
 
+            // Add controller interactor
+            mainHand = rightController.AddComponent<VRController>();
+            mainHand.Initialize(this);
+
+            // Add ray interactors for VR keyboard
+            leftControllerRayInteractor = AddRayInteractor(leftController.transform, "LeftHand");
+            rightControllerRayInteractor = AddRayInteractor(rightController.transform, "RightHand");
+
+            leftControllerRayInteractor.transform.localPosition = new Vector3(0.01f, 0, 0);
+            leftControllerRayInteractor.transform.localRotation = Quaternion.Euler(80, 0, 0);
+
+            rightControllerRayInteractor.transform.localPosition = new Vector3(-0.01f, 0, 0);
+            rightControllerRayInteractor.transform.localRotation = Quaternion.Euler(80, 0, 0);
+
+            // Add turning provider
+            turningProvider = Plugin.Config.TurnProvider switch
+            {
+                Config.TurnProviderOption.Snap => new SnapTurningProvider(),
+                Config.TurnProviderOption.Smooth => new SmoothTurningProvider(),
+                _ => new NullTurningProvider(),
+            };
+
+            // Input actions
+            sprintAction.performed += Sprint_performed;
+            resetHeightAction.performed += ResetHeight_performed;
+            ResetHeight();
+
+            // Set up item holders
+            var rightHandTarget = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/shoulder.R/arm.R_upper/arm.R_lower/hand.R");
+            var leftHandTarget = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/shoulder.L/arm.L_upper/arm.L_lower/hand.L");
+
+            var rightHolder = new GameObject("Right Hand Item Holder");
+            var leftHolder = new GameObject("Left Hand Item Holder");
+
+            rightItemHolder = rightHolder.transform;
+            rightItemHolder.SetParent(rightHandTarget, false);
+            rightItemHolder.localPosition = new Vector3(-0.002f, 0.036f, -0.042f);
+            rightItemHolder.localEulerAngles = new Vector3(356.3837f, 357.6979f, 0.1453f);
+
+            leftItemHolder = leftHolder.transform;
+            leftItemHolder.SetParent(leftHandTarget, false);
+            leftItemHolder.localPosition = new Vector3(0.018f, 0.045f, -0.042f);
+            leftItemHolder.localEulerAngles = new Vector3(360f - 356.3837f, 357.6979f, 0.1453f);
+
+            StartCoroutine(RebuildRig());
+
+            Logger.LogDebug("Initialized XR Rig");
+        }
+
+        private IEnumerator RebuildRig()
+        {
+            RebuildingRig = true;
+
+            // Temporarily disable animation controller
+            var animator = GetComponentInChildren<Animator>();
+            animator.runtimeAnimatorController = null;
+
+            // Disable target movement by IK
+            GetComponentsInChildren<IKRigFollowVRRig>().Do(follow => follow.enabled = false);
+
+            yield return null;
+
             // ARMS ONLY RIG
 
             // Set up rigging
             var model = Find("ScavengerModel/metarig/ScavengerModelArmsOnly", true).gameObject;
-            var modelMetarig = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig", true);
-
+            var modelMetarig = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig", true); 
+            
             Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/RigArms", true);
 
-            var rigFollow = model.AddComponent<IKRigFollowVRRig>();
+            var rigFollow = model.GetComponent<IKRigFollowVRRig>() ?? model.AddComponent<IKRigFollowVRRig>();
+            rigFollow.enabled = false;
 
             // Setting up the head
             rigFollow.head = mainCamera.transform;
@@ -173,6 +239,9 @@ namespace LCVR.Player
             rightHandRigTransform = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/shoulder.R/arm.R_upper/arm.R_lower/hand.R").transform;
 
             var rightArmTarget = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/RigArms/RightArm/ArmsRightArm_target");
+
+            rightArmTarget.localPosition = new Vector3(2.271f, 1.800556f, 1.008003f);
+            rightArmTarget.localEulerAngles = new Vector3(180, 0, -78.54772f);
 
             rigFollow.rightHand = new IKRigFollowVRRig.VRMap()
             {
@@ -208,7 +277,8 @@ namespace LCVR.Player
             var fullModel = Find("ScavengerModel", true).gameObject;
             var fullModelMetarig = Find("ScavengerModel/metarig", true);
 
-            var fullRigFollow = fullModel.AddComponent<IKRigFollowVRRig>();
+            var fullRigFollow = fullModel.GetComponent<IKRigFollowVRRig>() ?? fullModel.AddComponent<IKRigFollowVRRig>();
+            fullRigFollow.enabled = false;
 
             // Setting up the right arm
 
@@ -235,54 +305,23 @@ namespace LCVR.Player
             // This one is pretty hit or miss, sometimes y needs to be 0, other times it needs to be -2.25f
             fullRigFollow.headBodyPositionOffset = new Vector3(0, 0, 0);
 
-            // Add controller interactor
-            mainHand = rightController.AddComponent<VRController>();
-            mainHand.Initialize(this);
-
-            // Add ray interactors for VR keyboard
-            leftControllerRayInteractor = AddRayInteractor(leftController.transform, "LeftHand");
-            rightControllerRayInteractor = AddRayInteractor(rightController.transform, "RightHand");
-
-            leftControllerRayInteractor.transform.localPosition = new Vector3(0.01f, 0, 0);
-            leftControllerRayInteractor.transform.localRotation = Quaternion.Euler(80, 0, 0);
-
-            rightControllerRayInteractor.transform.localPosition = new Vector3(-0.01f, 0, 0);
-            rightControllerRayInteractor.transform.localRotation = Quaternion.Euler(80, 0, 0);
-
-            // Add turning provider
-            turningProvider = Plugin.Config.TurnProvider switch
-            {
-                Config.TurnProviderOption.Snap => new SnapTurningProvider(),
-                Config.TurnProviderOption.Smooth => new SmoothTurningProvider(),
-                _ => new NullTurningProvider(),
-            };
+            yield return null;
 
             // Rebuild rig
             GetComponentInChildren<RigBuilder>().Build();
 
-            // Input actions
-            sprintAction.performed += Sprint_performed;
-            resetHeightAction.performed += ResetHeight_performed;
-            ResetHeight();
+            yield return null;
 
-            // Set up item holders
-            var rightHandTarget = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/shoulder.R/arm.R_upper/arm.R_lower/hand.R");
-            var leftHandTarget = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/shoulder.L/arm.L_upper/arm.L_lower/hand.L");
+            // Disable target movement by IK
+            GetComponentsInChildren<IKRigFollowVRRig>().Do(follow => follow.enabled = true);
 
-            var rightHolder = new GameObject("Right Hand Item Holder");
-            var leftHolder = new GameObject("Left Hand Item Holder");
+            // Re-enable animation controller
+            animator.runtimeAnimatorController = AssetManager.localVrMetarig;
 
-            rightItemHolder = rightHolder.transform;
-            rightItemHolder.SetParent(rightHandTarget, false);
-            rightItemHolder.localPosition = new Vector3(-0.002f, 0.036f, -0.042f);
-            rightItemHolder.localEulerAngles = new Vector3(356.3837f, 357.6979f, 0.1453f);
+            // Initialize HUD if not done already
+            hud.Initialize(this);
 
-            leftItemHolder = leftHolder.transform;
-            leftItemHolder.SetParent(leftHandTarget, false);
-            leftItemHolder.localPosition = new Vector3(0.018f, 0.045f, -0.042f);
-            leftItemHolder.localEulerAngles = new Vector3(360f - 356.3837f, 357.6979f, 0.1453f);
-
-            Logger.LogDebug("Initialized XR Rig");
+            RebuildingRig = false;
         }
 
         private void Sprint_performed(InputAction.CallbackContext obj)
@@ -413,13 +452,16 @@ namespace LCVR.Player
 
             DNet.BroadcastRig(new DNet.Rig()
             {
-                leftHandPosition = leftHandVRTarget.transform.position,
-                leftHandEulers = leftHandVRTarget.transform.eulerAngles,
+                leftHandPosition = leftController.transform.localPosition,
+                leftHandEulers = leftController.transform.localEulerAngles,
 
-                rightHandPosition = rightHandVRTarget.transform.position,
-                rightHandEulers = rightHandVRTarget.transform.eulerAngles,
+                rightHandPosition = rightController.transform.localPosition,
+                rightHandEulers = rightController.transform.localEulerAngles,
 
                 cameraEulers = mainCamera.transform.eulerAngles,
+
+                isCrouching = playerController.isCrouching,
+                rotationOffset = rotationOffset.eulerAngles.y,
             });
         }
 
@@ -524,6 +566,8 @@ namespace LCVR.Player
             var targetHeight = 2.3f;
 
             cameraFloorOffset = targetHeight - realHeight;
+
+            DNet.BroadcastFloorOffset(cameraFloorOffset);
 
             Logger.LogDebug($"Scaling player with real height: {MathF.Round(realHeight * 100) / 100}cm");
             Logger.Log($"Setting player height scale: {scaleFactor}");
