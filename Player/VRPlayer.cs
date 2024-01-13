@@ -31,9 +31,12 @@ namespace LCVR.Player
         public float scaleFactor = 1.5f;
         public float cameraFloorOffset = 0f;
         private float crouchOffset = 0f;
+        private float realHeight = 2.3f;
 
         private bool isDead = false;
         private bool isSprinting = false;
+
+        private bool isRoomCrouching = false;
 
         private bool wasInSpecialAnimation = false;
         private Vector3 specialAnimationPositionOffset = Vector3.zero;
@@ -417,8 +420,18 @@ namespace LCVR.Player
             else
                 xrOrigin.position = transform.position + specialAnimationPositionOffset;
 
-            // Apply crouch offset
-            crouchOffset = Mathf.Lerp(crouchOffset, playerController.isCrouching ? -1 : 0, 0.2f);
+            // Check for roomscale crouching
+            float realCrouch = mainCamera.transform.localPosition.y / realHeight;
+            bool roomCrouch = realCrouch < 0.4f;
+
+            if (roomCrouch != isRoomCrouching)
+            {
+                playerController.Crouch(roomCrouch);
+                isRoomCrouching = roomCrouch;
+            }
+
+            // Apply crouch offset (don't offset if roomscale)
+            crouchOffset = Mathf.Lerp(crouchOffset, !isRoomCrouching && playerController.isCrouching ? -1 : 0, 0.2f);
 
             // Apply floor offset and sinking value
             xrOrigin.position += new Vector3(0, cameraFloorOffset + crouchOffset - playerController.sinkingValue * 2.5f, 0);
@@ -564,7 +577,7 @@ namespace LCVR.Player
         {
             yield return new WaitForSeconds(0.2f);
 
-            var realHeight = mainCamera.transform.localPosition.y * scaleFactor;
+            realHeight = mainCamera.transform.localPosition.y * scaleFactor;
             var targetHeight = 2.3f;
 
             cameraFloorOffset = targetHeight - realHeight;
