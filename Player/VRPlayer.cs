@@ -460,6 +460,7 @@ namespace LCVR.Player
                 rightHandEulers = rightController.transform.localEulerAngles,
 
                 cameraEulers = mainCamera.transform.eulerAngles,
+                cameraPosAccounted = cameraPosAccounted,
 
                 isCrouching = playerController.isCrouching,
                 rotationOffset = rotationOffset.eulerAngles.y,

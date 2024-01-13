@@ -27,6 +27,8 @@ namespace LCVR.Networking
         private float cameraFloorOffset;
         private float rotationOffset;
 
+        private Vector3 cameraPosAccounted;
+
         private bool isCrouching = false;
         private float crouchOffset;
 
@@ -108,6 +110,13 @@ namespace LCVR.Networking
 
             // Apply origin transforms
             xrOrigin.position = transform.position;
+
+            // If we are in special animation allow 6 DOF but don't update player position
+            if (!playerController.inSpecialInteractAnimation)
+                xrOrigin.position = new Vector3(transform.position.x - cameraPosAccounted.x * 1.5f, transform.position.y, transform.position.z - cameraPosAccounted.z * 1.5f);
+            else
+                xrOrigin.position = transform.position /*+ specialAnimationPositionOffset*/;
+
             xrOrigin.position += new Vector3(0, cameraFloorOffset + crouchOffset - playerController.sinkingValue * 2.5f, 0);
             xrOrigin.eulerAngles = new Vector3(0, rotationOffset, 0);
             xrOrigin.localScale = Vector3.one * 1.5f;
@@ -182,6 +191,7 @@ namespace LCVR.Networking
             rightController.localEulerAngles = rig.rightHandEulers;
 
             camera.transform.eulerAngles = rig.cameraEulers;
+            cameraPosAccounted = rig.cameraPosAccounted;
 
             isCrouching = rig.isCrouching;
             rotationOffset = rig.rotationOffset;

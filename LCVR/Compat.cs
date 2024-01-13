@@ -21,7 +21,7 @@ namespace LCVR
                 if (mod == null)
                     continue;
 
-                if (mod.Versions != null && mod.Versions.Contains(plugin.Metadata.Version.ToString()) && !Plugin.Config.OverrideCompatibilityVersionCheck.Value)
+                if ((mod.Versions == null || !mod.Versions.Contains(plugin.Metadata.Version.ToString())) && !Plugin.Config.OverrideCompatibilityVersionCheck.Value)
                     continue;
 
                 Logger.LogInfo($"Found compatible mod {mod.Name}");

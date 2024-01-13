@@ -1,9 +1,5 @@
 # Compiling
 
-# ⚠️ WARNING ⚠️
-
-The primary target audience of this document is testers and contributors. It is recommended to just wait until the mod releases to be able to play in VR.
-
 ## Initial setup
 
 We recommend using Visual Studio with the .NET development features to compile this project. You can [download Visual Studio here](https://visualstudio.microsoft.com/downloads/). You should use the Community edition as that one is free.

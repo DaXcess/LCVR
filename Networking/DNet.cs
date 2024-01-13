@@ -178,6 +178,7 @@ namespace LCVR.Networking
             public Vector3 leftHandEulers;
 
             public Vector3 cameraEulers;
+            public Vector3 cameraPosAccounted;
 
             public bool isCrouching;
             public float rotationOffset;
@@ -207,6 +208,9 @@ namespace LCVR.Networking
                 bw.Write(cameraEulers.y);
                 bw.Write(cameraEulers.z);
 
+                bw.Write(cameraPosAccounted.x);
+                bw.Write(cameraPosAccounted.z);
+
                 bw.Write(isCrouching);
                 bw.Write(rotationOffset);
 
@@ -225,6 +229,7 @@ namespace LCVR.Networking
                     leftHandPosition = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()),
                     leftHandEulers = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()),
                     cameraEulers = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()),
+                    cameraPosAccounted = new Vector3(br.ReadSingle(), 0, br.ReadSingle()),
                     isCrouching = br.ReadBoolean(),
                     rotationOffset = br.ReadSingle(),
                 };
