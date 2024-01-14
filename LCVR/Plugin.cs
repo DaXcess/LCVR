@@ -1,5 +1,6 @@
 ﻿using BepInEx;
 using BepInEx.Bootstrap;
+using Dissonance;
 using GameNetcodeStuff;
 using LCVR.Assets;
 using LCVR.Patches;

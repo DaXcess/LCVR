@@ -2,11 +2,15 @@
 using Dissonance.Integrations.Unity_NFGO;
 using Dissonance.Networking;
 using GameNetcodeStuff;
-using LCVR.Player;
+using HarmonyLib;
+using JetBrains.Annotations;
+using LCVR.Patches;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
 
 namespace LCVR.Networking
@@ -14,121 +18,191 @@ namespace LCVR.Networking
     // (Ab)using Dissonance Voice to communicate directly to players without the host needing to have mods installed
     // Keep in mind that all of this code is and should be CLIENT side!
 
-    public static class DNet
+    public class DNet
     {
-        private static readonly Dictionary<string, VRNetPlayer> vrPlayers = [];
         private static DissonanceComms dissonance;
-        private static RoomMembership room;
+        private static NfgoCommsNetwork network;
+        private static BaseClient<NfgoServer, NfgoClient, NfgoConn> client;
+        private static Peers peers;
 
-        public static void SetupDissonanceNetworking()
+        private static ushort? LocalIdSafe
         {
-            dissonance = GameObject.Find("DissonanceSetup").GetComponent<DissonanceComms>();
+            get
+            {
+                var session = AccessTools.Field(client.GetType(), "_serverNegotiator").GetValue(client);
+                var localId = (ushort?)AccessTools.Property(session.GetType(), "LocalId").GetValue(session);
 
-            dissonance.OnPlayerEnteredRoom += OnPlayerJoin;
-            dissonance.OnPlayerLeftSession += OnPlayerLeave;
-            dissonance.Text.MessageReceived += OnPacketReceived;
-
-            room = dissonance.Rooms.Join("LCVR");
-
-            if (Plugin.Flags.HasFlag(Flags.VR))
-                SendHandshake();
-
-            Logger.Log("Joined 'LCVR' network, ready for other VR players!");
+                return localId;
+            }
         }
 
-        public static void DestroyDissonanceNetworking()
-        {
-            dissonance.OnPlayerEnteredRoom -= OnPlayerJoin;
-            dissonance.OnPlayerLeftSession -= OnPlayerLeave;
-            dissonance.Text.MessageReceived -= OnPacketReceived;
+        private static ushort LocalId => LocalIdSafe.Value;
 
-            dissonance.Rooms.Leave(room);
+        // A list of all known VR clients
+        private static readonly Dictionary<ushort, ClientInfo<NfgoConn?>> clients = [];
+        private static readonly Dictionary<ushort, VRNetPlayer> players = [];
+        private static readonly Dictionary<string, ushort> clientByName = [];
+        private static readonly List<ushort> subscribers = [];
+
+        public static IEnumerator Initialize()
+        {
+            dissonance = GameObject.Find("DissonanceSetup").GetComponent<DissonanceComms>();
+            network = dissonance.GetComponent<NfgoCommsNetwork>();
+            client = (BaseClient<NfgoServer, NfgoClient, NfgoConn>)typeof(NfgoCommsNetwork).GetProperty("Client", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(network);
+            peers = new Peers(AccessTools.Field(client.GetType(), "_peers").GetValue(client));
+
+            // Wait for voicechat connection
+            yield return new WaitUntil(() => LocalIdSafe.HasValue);
+
+            Logger.LogDebug("Connected to Dissonance server");
+
+            dissonance.OnPlayerJoinedSession += OnPlayerJoinedSession;
+            dissonance.OnPlayerLeftSession += OnPlayerLeftSession;
+
+            BroadcastGlobalPacket(MessageType.VRHandshake, [Plugin.Flags.HasFlag(Flags.VR) ? (byte)1 : (byte)0]);
+        }
+
+        public static void Shutdown()
+        {
+            dissonance.OnPlayerJoinedSession -= OnPlayerJoinedSession;
+            dissonance.OnPlayerLeftSession -= OnPlayerLeftSession;
+
             dissonance = null;
 
-            vrPlayers.Clear();
-
-            Logger.Log("Left 'LCVR' network, goodbye for now!");
+            players.Clear();
+            clients.Clear();
+            clientByName.Clear();
         }
 
         public static void BroadcastRig(Rig rig)
         {
-            dissonance.Text.Send("LCVR", "UPRIG" + Convert.ToBase64String(rig.Serialize()));
+            BroadcastVRPacket(MessageType.RigData, rig.Serialize());
         }
 
-        public static void BroadcastFloorOffset(float cameraFloorOffset)
-        {
-            dissonance.Text.Send("LCVR", $"CAMFL{cameraFloorOffset}");
-        }
+        #region EVENT HANDLERS
 
-        private static void SendHandshake(string player = null)
+        private static void OnPlayerJoinedSession(VoicePlayerState player)
         {
-            var offset = StartOfRound.Instance.localPlayerController.GetComponent<VRPlayer>().cameraFloorOffset;
+            Logger.LogDebug("Player joined, trying to resolve client info");
 
-            if (string.IsNullOrEmpty(player))
+            if (!peers.TryGetClientInfoByName(player.Name, out var info))
             {
-                dissonance.Text.Send("LCVR", "HELLO");
-                dissonance.Text.Send("LCVR", $"CAMFL{offset}");
-            } else
-            {
-                dissonance.Text.Whisper(player, "HELLO");
-                dissonance.Text.Whisper(player, $"CAMFL{offset}");
+                Logger.LogError($"Failed to resolve client info for client '{player.Name}'");
+                return;
             }
+
+            clients.Add(info.PlayerId, info);
+            clientByName.Add(player.Name, info.PlayerId);
+
+            SendPacket(info, MessageType.VRHandshake, [Plugin.Flags.HasFlag(Flags.VR) ? (byte)1 : (byte)0]);
         }
 
-        private static void OnPlayerJoin(VoicePlayerState player, string room)
+        private static void OnPlayerLeftSession(VoicePlayerState player)
         {
-            if (room != "LCVR")
+            if (!clientByName.TryGetValue(player.Name, out var id))
                 return;
 
-            if (Plugin.Flags.HasFlag(Flags.VR))
-                // Tell the player that joined that we are in VR
-                SendHandshake(player.Name);
-        }
-
-        private static void OnPlayerLeave(VoicePlayerState player)
-        {
-            if (vrPlayers.TryGetValue(player.Name, out var networkPlayer))
+            if (players.TryGetValue(id, out var networkPlayer))
                 GameObject.Destroy(networkPlayer);
 
-            vrPlayers.Remove(player.Name);
+            players.Remove(id);
+            clients.Remove(id);
+            clientByName.Remove(player.Name);
         }
 
-        private static void OnPacketReceived(TextMessage packet)
+        #endregion
+
+        #region PACKET SENDING
+
+        private static void BroadcastGlobalPacket(MessageType type, byte[] payload)
         {
-            var header = packet.Message[..5];
+            var clients = peers.Clients.Values.ToList();
+            clients.RemoveAt(clients.FindIndex(client => client.PlayerId == LocalId));
 
-            switch (header)
+            client.SendReliableP2P(clients, ConstructPacket(type, payload));
+        }
+
+        private static void BroadcastVRPacket(MessageType type, byte[] payload)
+        {
+            var targets = subscribers.Where(key => clients.TryGetValue(key, out var value)).Select(value => clients[value]).ToList();
+
+            client.SendReliableP2P(targets, ConstructPacket(type, payload));
+        }
+
+        private static void SendPacket(ClientInfo<NfgoConn?> target, MessageType type, byte[] payload)
+        {
+            client.SendReliableP2P([target], ConstructPacket(type, payload));
+        }
+
+        private static byte[] ConstructPacket(MessageType type, byte[] payload)
+        {
+            using var memory = new MemoryStream();
+            using var writer = new BinaryWriter(memory);
+
+            // Magic
+            writer.Write((ushort)51083);
+
+            // Message type
+            writer.Write((byte)type);
+
+            // Sender Id
+            writer.Write(LocalId);
+
+            // Rest of payload
+            writer.Write(payload);
+
+            return memory.ToArray();
+        }
+
+        #endregion
+
+        #region PACKET HANDLING
+
+        public static void OnPacketReceived(MessageType messageType, ushort sender, byte[] data)
+        {
+            switch (messageType)
             {
-                case "HELLO":
-                    HandleVRAnnouncement(packet.Sender);
+                case MessageType.VRHandshake:
+                    HandleVRHandshake(sender, BitConverter.ToBoolean(data));        
                     break;
 
-                case "UPRIG":
-                    HandleRigUpdate(packet.Sender, packet.Message[5..]);
-                    break;
-
-                case "CAMFL":
-                    if (!float.TryParse(packet.Message[5..], out var offset))
-                        return;
-
-                    HandleCameraFloorOffset(packet.Sender, offset);
+                case MessageType.RigData:
+                    HandleRigUpdate(sender, data);
                     break;
             }
         }
 
-        // VR Announcements get sent for one of two reasons:
+        // VR Handshakes get sent for one of two reasons:
         //  - A client joins the lobby and announces themselves as VR
-        //  - Another client joins the lobby and all other VR players announce to them that they're VR players
-        private static void HandleVRAnnouncement(string sender)
+        //  - Another client joins the lobby and all other VR players send a VR handshake to this client
+        private static void HandleVRHandshake(ushort sender, bool isInVR)
         {
+            if (!isInVR)
+            {
+                // Ignore if player is already known to be subscribed
+                if (subscribers.Contains(sender))
+                    return;
+
+                subscribers.Add(sender);
+                return;
+            }
+
             // Ignore if player is already known to be VR
-            if (vrPlayers.ContainsKey(sender))
+            if (players.ContainsKey(sender))
+                return;            
+
+            if (!peers.TryGetClientInfoById(sender, out var client))
+            {
+                Logger.LogError($"Failed to resolve client for Player Id {sender}. No VR movements will be synchronized.");
                 return;
+            }
 
-            var player = dissonance.FindPlayer(sender);
-
+            var player = dissonance.FindPlayer(client.PlayerName);
             if (player == null)
+            {
+                Logger.LogError($"Failed to resolve client for Player {player}. No VR movements will be synchronized.");
                 return;
+            }
 
             var playerObject = ((NfgoPlayer)player.Tracker).gameObject;
             var networkPlayer = playerObject.AddComponent<VRNetPlayer>();
@@ -136,8 +210,8 @@ namespace LCVR.Networking
 
             Logger.LogInfo($"Found VR player {player.Name}");
 
-            vrPlayers.Add(player.Name, networkPlayer);
-
+            players.Add(sender, networkPlayer);
+            
             foreach (var item in playerController.ItemSlots.Where(val => val != null))
             {
                 // Add or enable VR item script on item if there is one for this item
@@ -152,23 +226,19 @@ namespace LCVR.Networking
             }
         }
 
-        private static void HandleRigUpdate(string sender, string packet)
+        private static void HandleRigUpdate(ushort sender, byte[] packet)
         {
-            if (!vrPlayers.TryGetValue(sender, out var player))
+            if (!players.TryGetValue(sender, out var player))
                 return;
 
-            var rig = Rig.Deserialize(Convert.FromBase64String(packet));
+            var rig = Rig.Deserialize(packet);
             player.UpdateTargetTransforms(rig);
         }
 
-        private static void HandleCameraFloorOffset(string sender, float offset)
-        {
-            if (!vrPlayers.TryGetValue(sender, out var player))
-                return;
+        #endregion
 
-            player.UpdateCameraFloorOffset(offset);
-        }
-
+        #region SERIALIZABLE STRUCTS
+        
         public struct Rig
         {
             public Vector3 rightHandPosition;
@@ -182,6 +252,7 @@ namespace LCVR.Networking
 
             public bool isCrouching;
             public float rotationOffset;
+            public float cameraFloorOffset;
 
             public readonly byte[] Serialize()
             {
@@ -213,6 +284,7 @@ namespace LCVR.Networking
 
                 bw.Write(isCrouching);
                 bw.Write(rotationOffset);
+                bw.Write(cameraFloorOffset);
 
                 return mem.ToArray();
             }
@@ -232,9 +304,70 @@ namespace LCVR.Networking
                     cameraPosAccounted = new Vector3(br.ReadSingle(), 0, br.ReadSingle()),
                     isCrouching = br.ReadBoolean(),
                     rotationOffset = br.ReadSingle(),
+                    cameraFloorOffset = br.ReadSingle(),
                 };
 
                 return rig;
+            }
+        }
+
+        public enum MessageType : byte
+        {
+            VRHandshake = 0x0C,
+            RigData,
+        }
+
+        #endregion
+    }
+
+    internal static class DissonanceExtensions
+    {
+        private static readonly MethodInfo sendReliableP2P;
+
+        static DissonanceExtensions()
+        {
+            sendReliableP2P = AccessTools.Method(typeof(BaseClient<NfgoServer, NfgoClient, NfgoConn>), "SendReliableP2P");
+        }
+
+        public static void SendReliableP2P(this BaseClient<NfgoServer, NfgoClient, NfgoConn> client, [NotNull] List<ClientInfo<NfgoConn?>> destinations, ArraySegment<byte> packet)
+        {
+            sendReliableP2P.Invoke(client, [destinations, packet]);
+        }
+    }
+
+    [LCVRPatch(LCVRPatchTarget.Universal)]
+    [HarmonyPatch]
+    internal static class DissonancePatches
+    {
+        [HarmonyPatch(typeof(BaseClient<NfgoServer, NfgoClient, NfgoConn>), "ProcessReceivedPacket")]
+        [HarmonyPostfix]
+        private static void ProcessReceivedPacket(ref ArraySegment<byte> data)
+        {
+            try
+            {
+                using var stream = new MemoryStream(data.Array, data.Offset, data.Array.Length - data.Offset);
+                using var reader = new BinaryReader(stream);
+
+                // Check magic
+                if (reader.ReadUInt16() != 51083)
+                    return;
+
+                var messageType = reader.ReadByte();
+
+                // Ignore built in messages
+                if (messageType < 12)
+                    return;
+
+                var type = (DNet.MessageType)messageType;
+                var sender = reader.ReadUInt16();
+                var payload = reader.ReadBytes(data.Array.Length - data.Offset - 5);
+
+                DNet.OnPacketReceived(type, sender, payload);
+            }
+            // Throw away invalid / corrupt packets silently
+            catch
+            {
+                return;
             }
         }
     }
