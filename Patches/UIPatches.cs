@@ -228,7 +228,7 @@ namespace LCVR.Patches
 
             githubButton.onClick.AddListener(() => Application.OpenURL("https://github.com/DaXcess/LCVR"));
             kofiButton.onClick.AddListener(() => Application.OpenURL("https://ko-fi.com/daxcess"));
-            discordButton.onClick.AddListener(() => Application.OpenURL("https://discord.gg/XyYNtvMGT4"));
+            discordButton.onClick.AddListener(() => Application.OpenURL("https://discord.gg/2DxNgpPZUF"));
 
             var continueButton = vrIntroPanel.Find("Panel/ResponseButton").GetComponent<Button>();
             continueButton.onClick.AddListener(() =>
