@@ -1,5 +1,6 @@
 ﻿using GameNetcodeStuff;
 using LCVR.Assets;
+using LCVR.Input;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Animations.Rigging;
@@ -21,6 +22,9 @@ namespace LCVR.Networking
 
         public Transform leftItemHolder;
         public Transform rightItemHolder;
+
+        public FingerCurler leftFingerCurler;
+        public FingerCurler rightFingerCurler;
 
         public Transform camera;
 
@@ -93,6 +97,10 @@ namespace LCVR.Networking
             leftItemHolder.localPosition = new Vector3(0.018f, 0.045f, -0.042f);
             leftItemHolder.localEulerAngles = new Vector3(360f - 356.3837f, 357.6979f, 0.1453f);
 
+            // Set up finger curlers
+            rightFingerCurler = new FingerCurler(rightHandParent, false);
+            leftFingerCurler = new FingerCurler(leftHandParent, true);
+
             // Store IK constraint data
             leftLegConstraint = gameObject.Find("ScavengerModel/metarig/Rig 1/LeftLeg").GetComponent<TwoBoneIKConstraint>();
             rightLegConstraint = gameObject.Find("ScavengerModel/metarig/Rig 1/RightLeg").GetComponent<TwoBoneIKConstraint>();
@@ -131,6 +139,17 @@ namespace LCVR.Networking
 
             rightHandTarget.position = rightHandVRTarget.position;
             rightHandTarget.rotation = rightHandVRTarget.rotation;
+        }
+
+        private void LateUpdate()
+        {
+            // Update tracked finger curls after animator update
+            leftFingerCurler?.Update();
+
+            if (!playerController.isHoldingObject)
+            {
+                rightFingerCurler?.Update();
+            }
         }
 
         private IEnumerator RebuildRig()
@@ -186,9 +205,11 @@ namespace LCVR.Networking
         {
             leftController.localPosition = rig.leftHandPosition;
             leftController.localEulerAngles = rig.leftHandEulers;
+            leftFingerCurler?.SetCurls(rig.leftHandFingers);
 
             rightController.localPosition = rig.rightHandPosition;
             rightController.localEulerAngles = rig.rightHandEulers;
+            rightFingerCurler?.SetCurls(rig.rightHandFingers);
 
             camera.transform.eulerAngles = rig.cameraEulers;
             cameraPosAccounted = rig.cameraPosAccounted;

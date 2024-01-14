@@ -169,13 +169,57 @@ namespace LCVR.Networking
             player.UpdateCameraFloorOffset(offset);
         }
 
+        public struct Fingers
+        {
+            public const int ByteCount = 5;
+
+            public float thumb;
+            public float index;
+            public float middle;
+            public float ring;
+            public float pinky;
+
+            public readonly byte[] Serialize()
+            {
+                using var mem = new MemoryStream();
+                using var bw = new BinaryWriter(mem);
+
+                bw.Write((byte)(thumb * 255f));
+                bw.Write((byte)(index * 255f));
+                bw.Write((byte)(middle * 255f));
+                bw.Write((byte)(ring * 255f));
+                bw.Write((byte)(pinky * 255f));
+
+                return mem.ToArray();
+            }
+
+            public static Fingers Deserialize(byte[] raw)
+            {
+                using var mem = new MemoryStream(raw);
+                using var br = new BinaryReader(mem);
+
+                var fingers = new Fingers
+                {
+                    thumb = ((float)br.ReadByte()) / 255f,
+                    index = ((float)br.ReadByte()) / 255f,
+                    middle = ((float)br.ReadByte()) / 255f,
+                    pinky = ((float)br.ReadByte()) / 255f,
+                    ring = ((float)br.ReadByte()) / 255f,
+                };
+
+                return fingers;
+            }
+        }
+
         public struct Rig
         {
             public Vector3 rightHandPosition;
             public Vector3 rightHandEulers;
+            public Fingers rightHandFingers;
 
             public Vector3 leftHandPosition;
             public Vector3 leftHandEulers;
+            public Fingers leftHandFingers;
 
             public Vector3 cameraEulers;
             public Vector3 cameraPosAccounted;
@@ -196,6 +240,8 @@ namespace LCVR.Networking
                 bw.Write(rightHandEulers.y);
                 bw.Write(rightHandEulers.z);
 
+                bw.Write(rightHandFingers.Serialize());
+
                 bw.Write(leftHandPosition.x);
                 bw.Write(leftHandPosition.y);
                 bw.Write(leftHandPosition.z);
@@ -203,6 +249,8 @@ namespace LCVR.Networking
                 bw.Write(leftHandEulers.x);
                 bw.Write(leftHandEulers.y);
                 bw.Write(leftHandEulers.z);
+
+                bw.Write(leftHandFingers.Serialize());
 
                 bw.Write(cameraEulers.x);
                 bw.Write(cameraEulers.y);
@@ -226,8 +274,10 @@ namespace LCVR.Networking
                 {
                     rightHandPosition = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()),
                     rightHandEulers = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()),
+                    rightHandFingers = Fingers.Deserialize(br.ReadBytes(Fingers.ByteCount)),
                     leftHandPosition = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()),
                     leftHandEulers = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()),
+                    leftHandFingers = Fingers.Deserialize(br.ReadBytes(Fingers.ByteCount)),
                     cameraEulers = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()),
                     cameraPosAccounted = new Vector3(br.ReadSingle(), 0, br.ReadSingle()),
                     isCrouching = br.ReadBoolean(),

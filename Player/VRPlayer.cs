@@ -66,6 +66,9 @@ namespace LCVR.Player
         public Transform leftHandRigTransform;
         public Transform rightHandRigTransform;
 
+        public VRFingerCurler leftFingerCurler;
+        public VRFingerCurler rightFingerCurler;
+
         private GameObject leftHandVRTarget;
         private GameObject rightHandVRTarget;
 
@@ -204,6 +207,10 @@ namespace LCVR.Player
             leftItemHolder.SetParent(leftHandTarget, false);
             leftItemHolder.localPosition = new Vector3(0.018f, 0.045f, -0.042f);
             leftItemHolder.localEulerAngles = new Vector3(360f - 356.3837f, 357.6979f, 0.1453f);
+
+            // Set up finger curlers
+            rightFingerCurler = new VRFingerCurler(rightHandTarget, false);
+            leftFingerCurler = new VRFingerCurler(leftHandTarget, true);
 
             StartCoroutine(RebuildRig());
 
@@ -468,9 +475,11 @@ namespace LCVR.Player
             {
                 leftHandPosition = leftController.transform.localPosition,
                 leftHandEulers = leftController.transform.localEulerAngles,
+                leftHandFingers = leftFingerCurler.GetCurls(),
 
                 rightHandPosition = rightController.transform.localPosition,
                 rightHandEulers = rightController.transform.localEulerAngles,
+                rightHandFingers = rightFingerCurler.GetCurls(),
 
                 cameraEulers = mainCamera.transform.eulerAngles,
                 cameraPosAccounted = cameraPosAccounted,
@@ -486,6 +495,14 @@ namespace LCVR.Player
             StartOfRound.Instance.playerLookMagnitudeThisFrame = (angles - lastFrameHMDRotation).magnitude * Time.deltaTime;
 
             lastFrameHMDRotation = angles;
+
+            // Update tracked finger curls after animator update
+            leftFingerCurler?.Update();
+
+            if (!playerController.isHoldingObject)
+            {
+                rightFingerCurler?.Update();
+            }
         }
 
         public void OnDeath()
