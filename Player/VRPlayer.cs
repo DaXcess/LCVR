@@ -425,6 +425,8 @@ namespace LCVR.Player
             xrOrigin.rotation = rotationOffset;
             xrOrigin.localScale = Vector3.one * scaleFactor;
 
+            //Logger.LogDebug($"{transform.position} {xrOrigin.position} {leftHandVRTarget.transform.position} {rightHandVRTarget.transform.position} {cameraFloorOffset} {cameraPosAccounted}");
+
             if (!playerController.inSpecialInteractAnimation)
                 transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles.x, mainCamera.transform.eulerAngles.y, transform.rotation.eulerAngles.z);
 
@@ -464,6 +466,7 @@ namespace LCVR.Player
 
                 isCrouching = playerController.isCrouching,
                 rotationOffset = rotationOffset.eulerAngles.y,
+                cameraFloorOffset = cameraFloorOffset,
             });
         }
 
@@ -568,8 +571,6 @@ namespace LCVR.Player
             var targetHeight = 2.3f;
 
             cameraFloorOffset = targetHeight - realHeight;
-
-            DNet.BroadcastFloorOffset(cameraFloorOffset);
 
             Logger.LogDebug($"Scaling player with real height: {MathF.Round(realHeight * 100) / 100}cm");
             Logger.Log($"Setting player height scale: {scaleFactor}");
