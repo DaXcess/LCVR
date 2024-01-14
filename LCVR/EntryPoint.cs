@@ -150,9 +150,9 @@ namespace LCVR
 
             Actions.ReloadInputBindings();
 
-            #if DEBUG
+#if DEBUG
             Experiments.Experiments.RunExperiments();
-            #endif
+#endif
 
             if (!Plugin.Config.FirstTimeTipSeen.Value)
                 HUDManager.Instance.StartCoroutine(FirstTimeTips());
