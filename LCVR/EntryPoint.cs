@@ -150,9 +150,9 @@ namespace LCVR
 
             Actions.ReloadInputBindings();
 
-#if DEBUG
+            #if DEBUG
             Experiments.Experiments.RunExperiments();
-#endif
+            #endif
 
             if (!Plugin.Config.FirstTimeTipSeen.Value)
                 HUDManager.Instance.StartCoroutine(FirstTimeTips());
@@ -169,11 +169,11 @@ namespace LCVR
             HUDManager.Instance.DisplayTip("Resetting height", "If your height is incorrect, you can recalibrate by pressing the Y button.");
             yield return new WaitForSeconds(5);
 
-            HUDManager.Instance.DisplayTip("Too scared?", "Press the X button to open up the pause menu.");
+            HUDManager.Instance.DisplayTip("Too scared?", "Press the X/Left B button to open up the pause menu.");
             yield return new WaitForSeconds(5);
 
             HUDManager.Instance.DisplayTip("Switching items", "You can use the right joystick up/down to swap your items. Going left/right with the joystick will turn your player unless disabled.");
-            yield return new WaitForSeconds(5);
+            yield return new WaitForSeconds(6);
 
             HUDManager.Instance.DisplayTip("Have fun!", "Good luck and have fun on your journey to the hellscapes of Lethal Company!");
             Plugin.Config.FirstTimeTipSeen.Value = true;
