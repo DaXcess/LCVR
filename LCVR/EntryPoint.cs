@@ -161,16 +161,19 @@ namespace LCVR
         private static IEnumerator FirstTimeTips()
         {
             HUDManager.Instance.DisplayTip("Welcome to VR!", "Now you can experience the horrors of Lethal Company in an immersive VR experience.");
-            yield return new WaitForSeconds(5);
+            yield return new WaitForSeconds(4);
 
             HUDManager.Instance.DisplayTip("Basic movement", "To move, use your left joystick. You can sprint by pressing or holding down the left joystick.");
-            yield return new WaitForSeconds(5);
+            yield return new WaitForSeconds(4);
 
             HUDManager.Instance.DisplayTip("Resetting height", "If your height is incorrect, you can recalibrate by pressing the Y button.");
-            yield return new WaitForSeconds(5);
+            yield return new WaitForSeconds(4);
 
             HUDManager.Instance.DisplayTip("Too scared?", "Press the X/Left B button to open up the pause menu.");
-            yield return new WaitForSeconds(5);
+            yield return new WaitForSeconds(4);
+
+            HUDManager.Instance.DisplayTip("Scanning", "Press the left trigger to scan");
+            yield return new WaitForSeconds(3);
 
             HUDManager.Instance.DisplayTip("Switching items", "You can use the right joystick up/down to swap your items. Going left/right with the joystick will turn your player unless disabled.");
             yield return new WaitForSeconds(6);
