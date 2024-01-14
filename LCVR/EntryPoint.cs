@@ -101,7 +101,6 @@ namespace LCVR
 
             // Initialize HUD
             player.hud = new GameObject("VR HUD Manager").AddComponent<VRHUD>();
-            player.hud.Initialize(player);
 
             // Temporary: Update item offsets for certain items
             // Will eventually be replaced by VR interactions (two hand holding 'n stuff)

@@ -10,6 +10,8 @@ namespace LCVR
 {
     internal class VRHUD : MonoBehaviour
     {
+        public bool Initialized { get; private set; } = false;
+
         private Canvas worldInteractionCanvas;
         private Canvas leftHandCanvas;
         private Canvas rightHandCanvas;
@@ -22,6 +24,9 @@ namespace LCVR
 
         public void Initialize(VRPlayer player)
         {
+            if (Initialized)
+                return;
+
             // Set up local variables
             this.player = player;
 
@@ -35,7 +40,7 @@ namespace LCVR
             var xOffset = Plugin.Config.HUDOffsetX.Value;
             var yOffset = Plugin.Config.HUDOffsetY.Value;
 
-            if (!Plugin.Config.DisableArmHUD.Value) { 
+            if (!Plugin.Config.DisableArmHUD.Value) {
                 leftHandCanvas = new GameObject("Left Hand Canvas").AddComponent<Canvas>();
                 leftHandCanvas.worldCamera = player.mainCamera;
                 leftHandCanvas.renderMode = RenderMode.WorldSpace;
@@ -317,6 +322,8 @@ namespace LCVR
             follow.targetTransform = player.uiCamera.transform;
 
             transform.localScale = Vector3.one * 0.0007f;
+
+            Initialized = true;
         }
 
         public void UpdateInteractCanvasPosition(Vector3 position)
@@ -326,6 +333,9 @@ namespace LCVR
 
         private void LateUpdate()
         {
+            if (!Initialized)
+                return;
+
             transform.position = player.mainCamera.transform.position + player.mainCamera.transform.forward * 0.5f;
             transform.rotation = player.mainCamera.transform.rotation;
 

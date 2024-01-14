@@ -235,16 +235,6 @@ namespace Microsoft.MixedReality.Toolkit.Experimental.UI
         private Vector3 m_ObjectBounds;
 
         /// <summary>
-        /// The default color of the mike key.
-        /// </summary>        
-        private Color _defaultColor;
-
-        /// <summary>
-        /// The image on the mike key.
-        /// </summary>
-        private Image _recordImage;
-
-        /// <summary>
         /// User can add an audio source to the keyboard to have a click be heard on tapping a key 
         /// </summary>
         private AudioSource _audioSource;
@@ -544,51 +534,6 @@ namespace Microsoft.MixedReality.Toolkit.Experimental.UI
         }
 
         #region Keyboard Functions
-
-        #region Dictation
-
-        /// <summary>
-        /// Initialize dictation mode.
-        /// </summary>
-        //private void BeginDictation()
-        //{
-        //    ResetClosingTime();
-        //    dictationSystem.StartRecording(gameObject);
-        //    SetMicrophoneRecording();
-        //}
-
-        private bool IsMicrophoneActive()
-        {
-            var result = _recordImage.color != _defaultColor;
-            return result;
-        }
-
-        /// <summary>
-        /// Set mike default look
-        /// </summary>
-        //private void SetMicrophoneDefault()
-        //{
-        //    _recordImage.color = _defaultColor;
-        //}
-
-        /// <summary>
-        /// Set mike recording look (red)
-        /// </summary>
-        //private void SetMicrophoneRecording()
-        //{
-        //    _recordImage.color = Color.red;
-        //}
-
-        /// <summary>
-        /// Terminate dictation mode.
-        /// </summary>
-        //public void EndDictation()
-        //{
-        //    dictationSystem.StopRecording();
-        //    SetMicrophoneDefault();
-        //}
-
-        #endregion Dictation
 
         /// <summary>
         /// Primary method for typing individual characters to a text field.

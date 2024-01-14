@@ -1,5 +1,7 @@
 # Lethal Company VR Mod
 
+[![Adding VR to Lethal Company](https://github.com/DaXcess/LCVR/blob/main/.github/assets/thumbnail.webp?raw=true)](https://www.youtube.com/watch?v=DPH_Zqpkdvc "Adding VR to Lethal Company")
+
 > This is the first mod that I have ever built, and also the first time using Unity so this mod might not be perfect.
 
 <details>
@@ -16,6 +18,10 @@ LCVR is a mod that adds full 6DOF VR support into Lethal Company, including hand
 The mod is powered by Unity's OpenXR plugin and is thereby compatible with a wide range of headsets, controllers and runtimes, like Oculus, Virtual Desktop, SteamVR and many more!
 
 LCVR is compatible with multiplayer and works seamlessly with VR players and Non-VR players in the same lobby. Running this mod without having a VR headset will allow you to see the arm and head movements of any VR players in the same lobby, all while still being compatible with vanilla clients (even if the host is using no mods at all).
+
+### License
+
+This mod is licensed under the GNU General Public License version 3 (GPL-3.0). For more info check [LICENSE](https://github.com/DaXcess/LCVR/blob/main/LICENSE).
 
 ### Verifying mod signature
 
