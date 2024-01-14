@@ -121,7 +121,7 @@ namespace LCVR.Networking
             xrOrigin.eulerAngles = new Vector3(0, rotationOffset, 0);
             xrOrigin.localScale = Vector3.one * 1.5f;
 
-            Logger.LogDebug($"{transform.position} {xrOrigin.position} {leftHandVRTarget.position} {rightHandVRTarget.position} {cameraFloorOffset} {cameraPosAccounted}");
+            //Logger.LogDebug($"{transform.position} {xrOrigin.position} {leftHandVRTarget.position} {rightHandVRTarget.position} {cameraFloorOffset} {cameraPosAccounted}");
 
             // Arms need to be moved forward when crouched
             if (isCrouching)

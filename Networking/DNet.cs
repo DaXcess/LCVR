@@ -59,7 +59,13 @@ namespace LCVR.Networking
             dissonance.OnPlayerJoinedSession += OnPlayerJoinedSession;
             dissonance.OnPlayerLeftSession += OnPlayerLeftSession;
 
-            BroadcastGlobalPacket(MessageType.VRHandshake, [Plugin.Flags.HasFlag(Flags.VR) ? (byte)1 : (byte)0]);
+            foreach (var player in dissonance.Players)
+                if (peers.TryGetClientInfoByName(player.Name, out var client)) {
+                    clients.Add(client.PlayerId, client);
+                    clientByName.Add(player.Name, client.PlayerId);
+                }
+
+            dissonance.StartCoroutine(SendHandshakeCoroutine());
         }
 
         public static void Shutdown()
@@ -79,6 +85,16 @@ namespace LCVR.Networking
             BroadcastVRPacket(MessageType.RigData, rig.Serialize());
         }
 
+        private static IEnumerator SendHandshakeCoroutine()
+        {
+            while (true)
+            {
+                BroadcastGlobalPacket(MessageType.VRHandshake, [Plugin.Flags.HasFlag(Flags.VR) ? (byte)1 : (byte)0]);
+                
+                yield return new WaitForSeconds(StartOfRound.Instance.inShipPhase ? 1 : 30);
+            }
+        }
+
         #region EVENT HANDLERS
 
         private static void OnPlayerJoinedSession(VoicePlayerState player)
@@ -91,10 +107,12 @@ namespace LCVR.Networking
                 return;
             }
 
+            Logger.LogDebug($"Resolved client info");
+            Logger.LogDebug($"Player Name = {player.Name}");
+            Logger.LogDebug($"Player Id = {info.PlayerId}");
+
             clients.Add(info.PlayerId, info);
             clientByName.Add(player.Name, info.PlayerId);
-
-            SendPacket(info, MessageType.VRHandshake, [Plugin.Flags.HasFlag(Flags.VR) ? (byte)1 : (byte)0]);
         }
 
         private static void OnPlayerLeftSession(VoicePlayerState player)
@@ -105,9 +123,13 @@ namespace LCVR.Networking
             if (players.TryGetValue(id, out var networkPlayer))
                 GameObject.Destroy(networkPlayer);
 
+            subscribers.Remove(id);
             players.Remove(id);
             clients.Remove(id);
             clientByName.Remove(player.Name);
+
+            Logger.LogDebug($"Player {player.Name} left the game");
+            Logger.LogDebug($"subscribers = {subscribers.Count}, players = {players.Count}, clients = {clients.Count} ({string.Join(", ", clients.Keys)}), clientByNames = {clientByName.Count} ({string.Join(", ", clientByName.Keys)})");
         }
 
         #endregion
@@ -163,7 +185,7 @@ namespace LCVR.Networking
             switch (messageType)
             {
                 case MessageType.VRHandshake:
-                    HandleVRHandshake(sender, BitConverter.ToBoolean(data));        
+                    dissonance.StartCoroutine(HandleVRHandshake(sender, BitConverter.ToBoolean(data)));        
                     break;
 
                 case MessageType.RigData:
@@ -175,34 +197,42 @@ namespace LCVR.Networking
         // VR Handshakes get sent for one of two reasons:
         //  - A client joins the lobby and announces themselves as VR
         //  - Another client joins the lobby and all other VR players send a VR handshake to this client
-        private static void HandleVRHandshake(ushort sender, bool isInVR)
+        private static IEnumerator HandleVRHandshake(ushort sender, bool isInVR)
         {
             if (!isInVR)
             {
                 // Ignore if player is already known to be subscribed
                 if (subscribers.Contains(sender))
-                    return;
+                    yield break;
 
                 subscribers.Add(sender);
-                return;
+                yield break;
             }
+
+            if (!subscribers.Contains(sender))
+                subscribers.Add(sender);
 
             // Ignore if player is already known to be VR
             if (players.ContainsKey(sender))
-                return;            
+                yield break;
+
+            yield return new WaitUntil(() => peers.TryGetClientInfoById(sender, out var client));
 
             if (!peers.TryGetClientInfoById(sender, out var client))
             {
                 Logger.LogError($"Failed to resolve client for Player Id {sender}. No VR movements will be synchronized.");
-                return;
+
+                yield break;
             }
 
             var player = dissonance.FindPlayer(client.PlayerName);
             if (player == null)
             {
                 Logger.LogError($"Failed to resolve client for Player {player}. No VR movements will be synchronized.");
-                return;
+                yield break;
             }
+
+            yield return new WaitUntil(() => player.Tracker != null);
 
             var playerObject = ((NfgoPlayer)player.Tracker).gameObject;
             var networkPlayer = playerObject.AddComponent<VRNetPlayer>();
@@ -211,7 +241,7 @@ namespace LCVR.Networking
             Logger.LogInfo($"Found VR player {player.Name}");
 
             players.Add(sender, networkPlayer);
-            
+
             foreach (var item in playerController.ItemSlots.Where(val => val != null))
             {
                 // Add or enable VR item script on item if there is one for this item
@@ -364,9 +394,11 @@ namespace LCVR.Networking
 
                 DNet.OnPacketReceived(type, sender, payload);
             }
-            // Throw away invalid / corrupt packets silently
-            catch
+            catch (Exception ex)
             {
+                Logger.LogError(ex.Message);
+                Logger.LogError(ex.StackTrace);
+
                 return;
             }
         }

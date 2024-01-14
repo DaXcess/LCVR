@@ -425,7 +425,7 @@ namespace LCVR.Player
             xrOrigin.rotation = rotationOffset;
             xrOrigin.localScale = Vector3.one * scaleFactor;
 
-            Logger.LogDebug($"{transform.position} {xrOrigin.position} {leftHandVRTarget.transform.position} {rightHandVRTarget.transform.position} {cameraFloorOffset} {cameraPosAccounted}");
+            //Logger.LogDebug($"{transform.position} {xrOrigin.position} {leftHandVRTarget.transform.position} {rightHandVRTarget.transform.position} {cameraFloorOffset} {cameraPosAccounted}");
 
             if (!playerController.inSpecialInteractAnimation)
                 transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles.x, mainCamera.transform.eulerAngles.y, transform.rotation.eulerAngles.z);
