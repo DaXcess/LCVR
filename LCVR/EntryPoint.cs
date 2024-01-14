@@ -169,7 +169,7 @@ namespace LCVR
             HUDManager.Instance.DisplayTip("Resetting height", "If your height is incorrect, you can recalibrate by pressing the Y/Left B(valve index) button.");
             yield return new WaitForSeconds(4);
 
-            HUDManager.Instance.DisplayTip("Scanning", "Press the left trigger to scan");
+            HUDManager.Instance.DisplayTip("Scanning", "Press the left trigger to scan.");
             yield return new WaitForSeconds(3);
 
             HUDManager.Instance.DisplayTip("Switching items", "You can use the right joystick up/down to swap your items. Going left/right with the joystick will turn your player unless disabled.");
