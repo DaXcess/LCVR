@@ -166,10 +166,10 @@ namespace LCVR
             HUDManager.Instance.DisplayTip("Basic movement", "To move, use your left joystick. You can sprint by pressing or holding down the left joystick.");
             yield return new WaitForSeconds(4);
 
-            HUDManager.Instance.DisplayTip("Resetting height", "If your height is incorrect, you can recalibrate by pressing the Y button.");
+            HUDManager.Instance.DisplayTip("Resetting height", "If your height is incorrect, you can recalibrate by pressing the Y/Left B button.");
             yield return new WaitForSeconds(4);
 
-            HUDManager.Instance.DisplayTip("Too scared?", "Press the X/Left B button to open up the pause menu.");
+            HUDManager.Instance.DisplayTip("Too scared?", "Press the X/Left A button to open up the pause menu.");
             yield return new WaitForSeconds(4);
 
             HUDManager.Instance.DisplayTip("Scanning", "Press the left trigger to scan");
