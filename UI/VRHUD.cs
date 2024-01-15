@@ -183,7 +183,7 @@ namespace LCVR
                 clock.transform.localScale = Vector3.one * 0.7f;
             }
 
-            // Battery: Attach to right hand
+            // Battery: Attach to right hand (next to knuckles)
             var battery = GameObject.Find("Batteries");
 
             if (Plugin.Config.DisableArmHUD.Value)
@@ -202,8 +202,8 @@ namespace LCVR
             else
             {
                 battery.transform.SetParent(rightHandCanvas.transform, false);
-                battery.transform.localPosition = new Vector3(123, 60, -37);
-                battery.transform.localRotation = Quaternion.Euler(356, 0, 229);
+                battery.transform.localPosition = new Vector3(12, 130, 40);
+                battery.transform.localRotation = Quaternion.Euler(0, 195, -35);
                 battery.transform.localScale = Vector3.one * 2;
 
                 battery.transform.Find("BatteryIcon").gameObject.SetActive(false);
@@ -214,7 +214,7 @@ namespace LCVR
             batteryMeter.localRotation = Quaternion.identity;
             batteryMeter.localScale = Vector3.one;
 
-            // Inventory: Attach to right hand
+            // Inventory: Attach to right hand (below knuckles)
             var inventory = GameObject.Find("Inventory");
 
             if (Plugin.Config.DisableArmHUD.Value)
