@@ -36,7 +36,7 @@ namespace LCVR.Player
         private bool isDead = false;
         private bool isSprinting = false;
 
-        private bool isRoomCrouching = false;
+        public bool isRoomCrouching = false;
 
         private bool wasInSpecialAnimation = false;
         private Vector3 specialAnimationPositionOffset = Vector3.zero;
@@ -429,7 +429,7 @@ namespace LCVR.Player
 
             // Check for roomscale crouching
             float realCrouch = mainCamera.transform.localPosition.y / realHeight;
-            bool roomCrouch = realCrouch < 0.4f;
+            bool roomCrouch = realCrouch < 0.5f;
 
             if (roomCrouch != isRoomCrouching)
             {
@@ -468,10 +468,10 @@ namespace LCVR.Player
                     stopSprintingCoroutine = null;
                 }
 
-                PlayerControllerB_Sprint_Patch.sprint = isSprinting ? 1 : 0;
+                PlayerControllerB_Sprint_Patch.sprint = !isRoomCrouching && isSprinting ? 1 : 0;
             }
             else
-                PlayerControllerB_Sprint_Patch.sprint = sprintAction.IsPressed() ? 1 : 0;
+                PlayerControllerB_Sprint_Patch.sprint = !isRoomCrouching && sprintAction.IsPressed() ? 1 : 0;
 
             DNet.BroadcastRig(new DNet.Rig()
             {
