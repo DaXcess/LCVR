@@ -313,7 +313,7 @@ namespace LCVR
             firedScreen.transform.Find("DarkenScreen (2)").localScale = Vector3.one * 5;
 
             // Player screen (Render texture): World space
-            spectateCanvas = GameObject.Find("Systems").transform.Find("UI/Canvas").GetComponent<Canvas>();
+            spectateCanvas = GameObject.Find("Systems/UI/Canvas").GetComponent<Canvas>();
             spectateCanvas.worldCamera = GameObject.Find("UICamera").GetComponent<Camera>();
             spectateCanvas.renderMode = RenderMode.WorldSpace;
             spectateCanvas.transform.position = new Vector3(0, -999, 0);
@@ -361,6 +361,9 @@ namespace LCVR
             dialogueBox.localPosition = new Vector3(-0.6f, 42, 0);
             dialogueBox.localRotation = Quaternion.identity;
             dialogueBox.localScale = Vector3.one * 0.9308f;
+
+            // Fix pause menu order
+            GameObject.Find("Systems/UI/Canvas/QuickMenu").transform.SetAsLastSibling();
         }
 
         public void RevertHUDFromSpectatorCam()

@@ -1,12 +1,9 @@
 ﻿using HarmonyLib;
 using LCVR.Assets;
+using LCVR.Input;
 using LCVR.UI;
-using MoreCompany.Behaviors;
-using MoreCompany.Cosmetics;
-using System.Reflection;
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
 using UnityEngine.XR.Interaction.Toolkit;
@@ -70,7 +67,6 @@ namespace LCVR.Patches
         private static void OnMainMenuShown()
         {
             InitMenuScene();
-
             DisableKeybindsSetting();
 
             if (!Plugin.Config.IntroScreenSeen.Value)
@@ -78,6 +74,8 @@ namespace LCVR.Patches
 
             if (Plugin.Compatibility.IsLoaded("MoreCompany"))
                 Compatibility.MoreCompany.SetupMoreCompanyUI();
+
+            InitializeKeyboard();
         }
 
         private static void InitMenuScene()
@@ -151,6 +149,32 @@ namespace LCVR.Patches
             keybindingsButton.enabled = false;
             keybindingsText.color = new Color(0.5f, 0.5f, 0.5f);
             keybindingsText.text = "> Change keybinds (Disabled in VR)";
+        }
+
+        private static void InitializeKeyboard()
+        {
+            var menuContainer = GameObject.Find("MenuContainer");
+
+            var keybindingsButton = menuContainer.Find("SettingsPanel/KeybindingsButton")?.GetComponent<Button>();
+
+            if (keybindingsButton == null)
+                // Not the actual main menu, ignore
+                return;
+
+            // Add keyboard to the scene
+
+            var canvas = GameObject.Find("Canvas")?.GetComponent<Canvas>();
+            var keyboard = Object.Instantiate(AssetManager.keyboard);
+
+            keyboard.transform.SetParent(canvas.transform, false);
+            keyboard.transform.localPosition = new Vector3(0, -470, -40);
+            keyboard.transform.localEulerAngles = new Vector3(13, 0, 0);
+            keyboard.transform.localScale = Vector3.one * 0.8f;
+
+            keyboard.Find("keyboard_Alpha/Deny_Button").SetActive(false);
+            keyboard.Find("keyboard_Alpha/Confirm_Button").SetActive(false);
+
+            canvas.gameObject.AddComponent<MainMenuKeyboard>();
         }
 
         private static void InjectIntroScreen()

@@ -119,6 +119,7 @@ namespace LCVR
 
             var keyboard = keyboardObject.GetComponent<NonNativeKeyboard>();
             keyboard.InputField = terminal.screenText;
+            keyboard.CloseOnEnter = false;
 
             keyboard.OnKeyboardValueKeyPressed += (_) =>
             {

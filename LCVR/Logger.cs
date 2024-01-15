@@ -36,4 +36,34 @@ namespace LCVR
             logSource.LogDebug(message);
         }
     }
+
+    public class NamedLogger(string name)
+    {
+        private readonly string name = name;
+
+        public void Log(string message)
+        {
+            Logger.LogInfo($"[{name}] {message}");
+        }
+
+        public void LogInfo(string message)
+        {
+            Logger.LogInfo($"[{name}] {message}");
+        }
+
+        public void LogWarning(string message)
+        {
+            Logger.LogInfo($"[{name}] {message}");
+        }
+
+        public void LogError(string message)
+        {
+            Logger.LogInfo($"[{name}] {message}");
+        }
+
+        public void LogDebug(string message)
+        {
+            Logger.LogInfo($"[{name}] {message}");
+        }
+    }
 }
