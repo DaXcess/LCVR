@@ -30,7 +30,6 @@ namespace LCVR.Networking
             tryGetClientInfoById = AccessTools.Method(slaveClientConnectionType, "TryGetClientInfoById");
         }
 
-
         public bool TryGetClientInfoByName(string name, out ClientInfo<NfgoConn?> clientInfo)
         {
             clientInfo = null;
