@@ -14,6 +14,7 @@ using UnityEngine.XR.Interaction.Toolkit;
 using Microsoft.MixedReality.Toolkit.Experimental.UI;
 using LCVR.Patches;
 using HarmonyLib;
+using System.Linq;
 
 namespace LCVR.Player
 {
@@ -184,6 +185,7 @@ namespace LCVR.Player
             sprintAction.performed += Sprint_performed;
             resetHeightAction.performed += ResetHeight_performed;
             ResetHeight();
+
 
             // Set up item holders
             var rightHandTarget = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/shoulder.R/arm.R_upper/arm.R_lower/hand.R");
@@ -453,6 +455,68 @@ namespace LCVR.Player
             else
                 PlayerControllerB_Sprint_Patch.sprint = sprintAction.IsPressed() ? 1 : 0;
 
+
+            // Enable/Disable bindings groups of bindings based on modifiers states
+            if (Plugin.Config.EnableModifierBindings.Value)
+            {
+                try
+                {
+                    // Check if the left modifier is defined
+                    if (Actions.Left_Modifier != null)
+                    {
+                        var leftModifier = Actions.Left_Modifier.IsPressed();
+
+                        // Enable/Disable actions listed in the config file based on modifiers states
+                        if (leftModifier)
+                        {
+                            DisableActionsInActionMap(Actions.LCInputActions.FindActionMap("Movement"), Plugin.Config.LeftModifierDisableActionsList);
+                            DisableActionsInActionMap(Actions.VRInputActions.FindActionMap("Controls"), Plugin.Config.LeftModifierDisableActionsList);
+
+                            EnableActionsInActionMap(Actions.VRInputActions.FindActionMap("Controls"), Plugin.Config.LeftModifierEnableActionsList);
+                            EnableActionsInActionMap(Actions.LCInputActions.FindActionMap("Movement"), Plugin.Config.LeftModifierEnableActionsList);
+                        }
+                        else
+                        {
+                            EnableActionsInActionMap(Actions.LCInputActions.FindActionMap("Movement"), Plugin.Config.LeftModifierDisableActionsList);
+                            EnableActionsInActionMap(Actions.VRInputActions.FindActionMap("Controls"), Plugin.Config.LeftModifierDisableActionsList);
+
+                            DisableActionsInActionMap(Actions.VRInputActions.FindActionMap("Controls"), Plugin.Config.LeftModifierEnableActionsList);
+                            DisableActionsInActionMap(Actions.LCInputActions.FindActionMap("Movement"), Plugin.Config.LeftModifierEnableActionsList);
+                        }
+                    }
+
+                    // Check if the right modifier is defined
+                    if (Actions.Right_Modifier != null)
+                    {
+                        var rightModifier = Actions.Right_Modifier.IsPressed();
+
+                        // Enable/Disable actions listed in the config file based on modifiers states
+                        if (rightModifier)
+                        {
+                            DisableActionsInActionMap(Actions.LCInputActions.FindActionMap("Movement"), Plugin.Config.RightModifierDisableActionsList);
+                            DisableActionsInActionMap(Actions.VRInputActions.FindActionMap("Controls"), Plugin.Config.RightModifierDisableActionsList);
+
+                            EnableActionsInActionMap(Actions.VRInputActions.FindActionMap("Controls"), Plugin.Config.RightModifierEnableActionsList);
+                            EnableActionsInActionMap(Actions.LCInputActions.FindActionMap("Movement"), Plugin.Config.RightModifierEnableActionsList);
+                        }
+                        else
+                        {
+                            EnableActionsInActionMap(Actions.LCInputActions.FindActionMap("Movement"), Plugin.Config.RightModifierDisableActionsList);
+                            EnableActionsInActionMap(Actions.VRInputActions.FindActionMap("Controls"), Plugin.Config.RightModifierDisableActionsList);
+
+                            DisableActionsInActionMap(Actions.VRInputActions.FindActionMap("Controls"), Plugin.Config.RightModifierEnableActionsList);
+                            DisableActionsInActionMap(Actions.LCInputActions.FindActionMap("Movement"), Plugin.Config.RightModifierEnableActionsList);
+                        }
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    Logger.LogError($"Error while enabling/disabling modifier action maps: {e}");
+                }
+            }
+
+
             DNet.BroadcastRig(new DNet.Rig()
             {
                 leftHandPosition = leftController.transform.localPosition,
@@ -635,6 +699,26 @@ namespace LCVR.Player
             {
                 device.SendHapticImpulse(0, amplitude, duration);
             }
+        }
+
+
+        public static void DisableActionsInActionMap(InputActionMap actionMap, string[] actionsToDisable)
+        {
+            actionMap.actions.Do(action =>
+            {
+                if (actionsToDisable.Contains<string>(action.name))
+                    action.Disable();
+            });
+        }
+
+
+        public static void EnableActionsInActionMap(InputActionMap actionMap, string[] actionsToDisable)
+        {
+            actionMap.actions.Do(action =>
+            {
+                if (actionsToDisable.Contains<string>(action.name))
+                    action.Enable();
+            });
         }
     }
 

@@ -27,6 +27,29 @@ namespace LCVR
         public ConfigEntry<float> MovementSprintToggleCooldown { get; } = file.Bind("Input", "MovementSprintToggleCooldown", 1f, new ConfigDescription("The amount of seconds that you need to stand still for sprint to be toggled off automatically. Requires sprint toggle to be enabled.", new AcceptableValueRange<float>(0, 60)));
         public ConfigEntry<string> ControllerBindingsOverrideProfile { get; } = file.Bind("Input", "ControllerBindingsOverrideProfile", "", "Specify the name of a controler profile you would like to use. Keep empty to use the built-in controller profiles. You can find a list of available controller profiles on https://github.com/DaXcess/LCVR-Controller-Profiles");
 
+
+        // Advanced input configuration
+
+        public ConfigEntry<bool> EnableModifierBindings { get; } = file.Bind("Advanced Input", "EnableModifierBindings", false, "Enable or disable modifiers groups in the input");
+
+        // A config entry to let the user list all actions names to disable if the left modifier is pressed, separated by a comma
+        public ConfigEntry<string> LeftModifierDisableActions { get; } = file.Bind("Advanced Input", "LeftModifierDisableActions", "", "A comma separated list of actions to disable when the left modifier is pressed. Requires modifier bindings to be enabled.");
+        public string[] LeftModifierDisableActionsList => LeftModifierDisableActions.Value.Split(',');
+
+        // A config entry to let the user list all actions names to enable if the left modifier is pressed, separated by a comma
+        public ConfigEntry<string> LeftModifierEnableActions { get; } = file.Bind("Advanced Input", "LeftModifierEnableActions", "", "A comma separated list of actions to enable when the left modifier is pressed. Requires modifier bindings to be enabled.");
+        public string[] LeftModifierEnableActionsList => LeftModifierEnableActions.Value.Split(',');
+
+
+        // A config entry to let the user list all actions names to disable if the right modifier is pressed, separated by a comma
+        public ConfigEntry<string> RightModifierDisableActions { get; } = file.Bind("Advanced Input", "RightModifierDisableActions", "", "A comma separated list of actions to disable when the right modifier is pressed. Requires modifier bindings to be enabled.");
+        public string[] RightModifierDisableActionsList => RightModifierDisableActions.Value.Split(',');
+
+        // A config entry to let the user list all actions names to enable if the right modifier is pressed, separated by a comma
+        public ConfigEntry<string> RightModifierEnableActions { get; } = file.Bind("Advanced Input", "RightModifierEnableActions", "", "A comma separated list of actions to enable when the right modifier is pressed. Requires modifier bindings to be enabled.");
+        public string[] RightModifierEnableActionsList => RightModifierEnableActions.Value.Split(',');
+
+
         public TurnProviderOption TurnProvider
         {
             get

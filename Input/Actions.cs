@@ -20,6 +20,10 @@ namespace LCVR.Input
         public static InputAction LeftHand_Rotation;
         public static InputAction LeftHand_TrackingState;
 
+        public static InputAction Left_Modifier;
+        public static InputAction Right_Modifier;
+
+
         public readonly static InputActionAsset VRInputActions = InputActionAsset.FromJson(Properties.Resources.vr_inputs);
         public readonly static InputActionAsset LCInputActions = InputActionAsset.FromJson(Properties.Resources.lc_inputs);
 
@@ -38,6 +42,10 @@ namespace LCVR.Input
             LeftHand_Position = VRInputActions.FindAction("Left Hand/Position");
             LeftHand_Rotation = VRInputActions.FindAction("Left Hand/Rotation");
             LeftHand_TrackingState = VRInputActions.FindAction("Left Hand/Tracking State");
+
+            // Find input bindings for modifiers in the VR Input Actions
+            Left_Modifier = VRInputActions.FindAction("Left Hand/Modifier");
+            Right_Modifier = VRInputActions.FindAction("Right Hand/Modifier");
 
             LCInputActions.Enable();
             VRInputActions.Enable();
@@ -59,6 +67,9 @@ namespace LCVR.Input
 
                 var vr = client.DownloadString($"https://raw.githubusercontent.com/DaXcess/LCVR-Controller-Profiles/main/{profile}/lcvr_vr_inputs.json");
                 var lc = client.DownloadString($"https://raw.githubusercontent.com/DaXcess/LCVR-Controller-Profiles/main/{profile}/lcvr_lc_inputs.json");
+
+                // Log success to load the profile
+                Logger.LogInfo($"Loaded controller profile: {profile}");
 
                 return (InputActionAsset.FromJson(vr), InputActionAsset.FromJson(lc));
             }
