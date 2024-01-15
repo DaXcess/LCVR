@@ -73,7 +73,8 @@ namespace LCVR.Experiments
             component.fallTime = 0f;
             component.scrapValue = 10;
 
-            var netComponent = gameObject.GetComponent<NetworkObject>(); netComponent.Spawn(false); 
+            var netComponent = gameObject.GetComponent<NetworkObject>(); 
+            netComponent.Spawn(false); 
             return component;
         }
     }
