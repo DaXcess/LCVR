@@ -21,6 +21,8 @@ namespace LCVR.Player
 
     internal class VRPlayer : MonoBehaviour
     {
+        private const float SCALE_FACTOR = 1.5f;
+
         public static VRPlayer Instance { get; private set; }
 
         private readonly InputAction resetHeightAction;
@@ -28,7 +30,6 @@ namespace LCVR.Player
 
         private Coroutine stopSprintingCoroutine;
 
-        public float scaleFactor = 1.5f;
         public float cameraFloorOffset = 0f;
         private float crouchOffset = 0f;
 
@@ -43,8 +44,8 @@ namespace LCVR.Player
         public GameObject leftController;
         public GameObject rightController;
 
-        private GameObject leftControllerRayInteractor;
-        private GameObject rightControllerRayInteractor;
+        private XRRayInteractor leftControllerRayInteractor;
+        private XRRayInteractor rightControllerRayInteractor;
 
         private Transform xrOrigin;
 
@@ -312,7 +313,7 @@ namespace LCVR.Player
 
             yield return null;
 
-            // Disable target movement by IK
+            // Enable target movement by IK
             GetComponentsInChildren<IKRigFollowVRRig>().Do(follow => follow.enabled = true);
 
             // Re-enable animation controller
@@ -344,7 +345,7 @@ namespace LCVR.Player
                 ResetHeight();
         }
 
-        private GameObject AddRayInteractor(Transform parent, string hand)
+        private XRRayInteractor AddRayInteractor(Transform parent, string hand)
         {
             var @object = new GameObject($"{hand} Ray Interactor");
             @object.transform.SetParent(parent, false);
@@ -386,7 +387,7 @@ namespace LCVR.Player
             controller.scaleToggleAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Scale Toggle"));
             controller.scaleDeltaAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Scale Delta"));
 
-            return @object;
+            return interactor;
         }
 
         private void Update()
@@ -400,20 +401,20 @@ namespace LCVR.Player
             var cameraPosAccounted = rotationOffset * new Vector3(mainCamera.transform.localPosition.x, 0, mainCamera.transform.localPosition.z);
 
             if (!wasInSpecialAnimation && playerController.inSpecialInteractAnimation)
-                specialAnimationPositionOffset = new Vector3(-cameraPosAccounted.x * scaleFactor, 0, -cameraPosAccounted.z * scaleFactor);
+                specialAnimationPositionOffset = new Vector3(-cameraPosAccounted.x * SCALE_FACTOR, 0, -cameraPosAccounted.z * SCALE_FACTOR);
 
             wasInSpecialAnimation = playerController.inSpecialInteractAnimation;
 
             // Move player if we're not in special interact animation
             if (!playerController.inSpecialInteractAnimation)
-                transform.position += new Vector3(movementAccounted.x * scaleFactor, 0, movementAccounted.z * scaleFactor);
+                transform.position += new Vector3(movementAccounted.x * SCALE_FACTOR, 0, movementAccounted.z * SCALE_FACTOR);
 
             // Update rotation offset after adding movement from frame
             turningProvider.Update();
 
             // If we are in special animation allow 6 DOF but don't update player position
             if (!playerController.inSpecialInteractAnimation)
-                xrOrigin.position = new Vector3(transform.position.x - cameraPosAccounted.x * scaleFactor, transform.position.y, transform.position.z - cameraPosAccounted.z * scaleFactor);
+                xrOrigin.position = new Vector3(transform.position.x - cameraPosAccounted.x * SCALE_FACTOR, transform.position.y, transform.position.z - cameraPosAccounted.z * SCALE_FACTOR);
             else
                 xrOrigin.position = transform.position + specialAnimationPositionOffset;
 
@@ -423,7 +424,7 @@ namespace LCVR.Player
             // Apply floor offset and sinking value
             xrOrigin.position += new Vector3(0, cameraFloorOffset + crouchOffset - playerController.sinkingValue * 2.5f, 0);
             xrOrigin.rotation = rotationOffset;
-            xrOrigin.localScale = Vector3.one * scaleFactor;
+            xrOrigin.localScale = Vector3.one * SCALE_FACTOR;
 
             //Logger.LogDebug($"{transform.position} {xrOrigin.position} {leftHandVRTarget.transform.position} {rightHandVRTarget.transform.position} {cameraFloorOffset} {cameraPosAccounted}");
 
@@ -567,13 +568,10 @@ namespace LCVR.Player
         {
             yield return new WaitForSeconds(0.2f);
 
-            var realHeight = mainCamera.transform.localPosition.y * scaleFactor;
+            var realHeight = mainCamera.transform.localPosition.y * SCALE_FACTOR;
             var targetHeight = 2.3f;
 
             cameraFloorOffset = targetHeight - realHeight;
-
-            Logger.LogDebug($"Scaling player with real height: {MathF.Round(realHeight * 100) / 100}cm");
-            Logger.Log($"Setting player height scale: {scaleFactor}");
         }
 
         private IEnumerator StopSprinting()

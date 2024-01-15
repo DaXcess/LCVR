@@ -125,7 +125,7 @@ namespace LCVR.Networking
 
             // Arms need to be moved forward when crouched
             if (isCrouching)
-                xrOrigin.position += xrOrigin.forward * 0.55f;
+                xrOrigin.position += transform.forward * 0.55f;
 
             // Apply controller transforms
             leftHandTarget.position = leftHandVRTarget.position;

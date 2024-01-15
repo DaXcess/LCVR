@@ -114,6 +114,9 @@ namespace LCVR
             HarmonyPatcher.PatchUniversal();
 
             Logger.LogDebug("Inserted universal patches using Harmony");
+
+            // Bring game window to front
+            Native.BringGameWindowToFront();
         }
 
         private bool VerifyGameVersion()
