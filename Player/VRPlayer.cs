@@ -32,6 +32,9 @@ namespace LCVR.Player
         public float cameraFloorOffset = 0f;
         private float crouchOffset = 0f;
 
+        private readonly float sqrMoveThreshold = 1E-5f;
+        private readonly float turnAngleThreshold = 120.0f;
+
         private bool isDead = false;
         private bool isSprinting = false;
 
@@ -411,6 +414,8 @@ namespace LCVR.Player
             // Update rotation offset after adding movement from frame
             turningProvider.Update();
 
+            var lastOriginPos = xrOrigin.position;
+
             // If we are in special animation allow 6 DOF but don't update player position
             if (!playerController.inSpecialInteractAnimation)
                 xrOrigin.position = new Vector3(transform.position.x - cameraPosAccounted.x * scaleFactor, transform.position.y, transform.position.z - cameraPosAccounted.z * scaleFactor);
@@ -425,9 +430,12 @@ namespace LCVR.Player
             xrOrigin.rotation = rotationOffset;
             xrOrigin.localScale = Vector3.one * scaleFactor;
 
+            var hasMoved = (xrOrigin.position - lastOriginPos).sqrMagnitude > sqrMoveThreshold;
+            var turnAngleDelta = Quaternion.Angle(Quaternion.Euler(0, transform.eulerAngles.y, 0), Quaternion.Euler(0, mainCamera.transform.eulerAngles.y, 0));
+
             //Logger.LogDebug($"{transform.position} {xrOrigin.position} {leftHandVRTarget.transform.position} {rightHandVRTarget.transform.position} {cameraFloorOffset} {cameraPosAccounted}");
 
-            if (!playerController.inSpecialInteractAnimation)
+            if (hasMoved || (turnAngleDelta > turnAngleThreshold && !playerController.inSpecialInteractAnimation))
                 transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles.x, mainCamera.transform.eulerAngles.y, transform.rotation.eulerAngles.z);
 
             if (!playerController.inSpecialInteractAnimation)
