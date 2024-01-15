@@ -198,14 +198,14 @@ namespace LCVR
             yield return new WaitUntil(() => StartOfRound.Instance.activeCamera != null);
 
             // Setup Dissonance for VR movement comms
-            DNet.SetupDissonanceNetworking();
+            yield return DNet.Initialize();
         }
 
         [HarmonyPatch(typeof(StartOfRound), "OnDestroy")]
         [HarmonyPostfix]
         private static void OnGameLeave()
         {
-            DNet.DestroyDissonanceNetworking();
+            DNet.Shutdown();
         }
     }
 }
