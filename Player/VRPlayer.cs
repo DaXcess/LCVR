@@ -434,12 +434,12 @@ namespace LCVR.Player
             //Logger.LogDebug($"{transform.position} {xrOrigin.position} {leftHandVRTarget.transform.position} {rightHandVRTarget.transform.position} {cameraFloorOffset} {cameraPosAccounted}");
 
             if ((xrOrigin.position - lastOriginPos).sqrMagnitude > sqrMoveThreshold) // player moved
-                // Rotate player sharply but still smoothly
-                RotatePlayer(turnWeightSharp);
+                // Rotate body sharply but still smoothly
+                TurnBodyToCamera(turnWeightSharp);
 
             else if (!playerController.inSpecialInteractAnimation && GetBodyToCameraAngle() is var angle && angle > turnAngleThreshold)
-                // Rotate player as smoothly as possible but prevent 180 deg head twists on quick rotations
-                RotatePlayer(turnWeightSharp * Mathf.InverseLerp(turnAngleThreshold, 170f, angle));
+                // Rotate body as smoothly as possible but prevent 360 deg head twists on quick rotations
+                TurnBodyToCamera(turnWeightSharp * Mathf.InverseLerp(turnAngleThreshold, 170f, angle));
 
             if (!playerController.inSpecialInteractAnimation)
                 lastFrameHMDPosition = mainCamera.transform.localPosition;
@@ -627,7 +627,7 @@ namespace LCVR.Player
             mainCamera.enabled = true;
         }
 
-        private void RotatePlayer(float turnWeight)
+        private void TurnBodyToCamera(float turnWeight)
         {
             var newRotation = Quaternion.Euler(transform.rotation.eulerAngles.x, mainCamera.transform.eulerAngles.y, transform.rotation.eulerAngles.z);
             transform.rotation = Quaternion.Lerp(transform.rotation, newRotation, Time.deltaTime * turnWeight);
