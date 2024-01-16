@@ -161,7 +161,6 @@ namespace LCVR.Input
             var grip = othersAction.ReadValue<float>();
 
             var thumbsUp = index > 0.8f && grip > 0.8f && thumb == 0.5f;
-            thumbFinger.inverse = thumbsUp;
 
             thumbFinger.curl = Mathf.Lerp(thumbFinger.curl, thumbsUp ? 0f : thumb, 0.5f);
             indexFinger.curl = index;
