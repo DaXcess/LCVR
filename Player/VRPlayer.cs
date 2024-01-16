@@ -34,6 +34,7 @@ namespace LCVR.Player
 
         private readonly float sqrMoveThreshold = 1E-5f;
         private readonly float turnAngleThreshold = 120.0f;
+        private readonly float turnWeightSharp = 15.0f;
 
         private bool isDead = false;
         private bool isSprinting = false;
@@ -430,13 +431,15 @@ namespace LCVR.Player
             xrOrigin.rotation = rotationOffset;
             xrOrigin.localScale = Vector3.one * scaleFactor;
 
-            var hasMoved = (xrOrigin.position - lastOriginPos).sqrMagnitude > sqrMoveThreshold;
-            var turnAngleDelta = Quaternion.Angle(Quaternion.Euler(0, transform.eulerAngles.y, 0), Quaternion.Euler(0, mainCamera.transform.eulerAngles.y, 0));
-
             //Logger.LogDebug($"{transform.position} {xrOrigin.position} {leftHandVRTarget.transform.position} {rightHandVRTarget.transform.position} {cameraFloorOffset} {cameraPosAccounted}");
 
-            if (hasMoved || (turnAngleDelta > turnAngleThreshold && !playerController.inSpecialInteractAnimation))
-                transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles.x, mainCamera.transform.eulerAngles.y, transform.rotation.eulerAngles.z);
+            if ((xrOrigin.position - lastOriginPos).sqrMagnitude > sqrMoveThreshold) // player moved
+                // Rotate player sharply but still smoothly
+                RotatePlayer(turnWeightSharp);
+
+            else if (!playerController.inSpecialInteractAnimation && GetBodyToCameraAngle() is var angle && angle > turnAngleThreshold)
+                // Rotate player as smoothly as possible but prevent 180 deg head twists on quick rotations
+                RotatePlayer(turnWeightSharp * Mathf.InverseLerp(turnAngleThreshold, 170f, angle));
 
             if (!playerController.inSpecialInteractAnimation)
                 lastFrameHMDPosition = mainCamera.transform.localPosition;
@@ -622,6 +625,17 @@ namespace LCVR.Player
             mainCamera.stereoTargetEye = StereoTargetEyeMask.Both;
             mainCamera.depth = uiCamera.depth + 1;
             mainCamera.enabled = true;
+        }
+
+        private void RotatePlayer(float turnWeight)
+        {
+            var newRotation = Quaternion.Euler(transform.rotation.eulerAngles.x, mainCamera.transform.eulerAngles.y, transform.rotation.eulerAngles.z);
+            transform.rotation = Quaternion.Lerp(transform.rotation, newRotation, Time.deltaTime * turnWeight);
+        }
+
+        private float GetBodyToCameraAngle()
+        {
+            return Quaternion.Angle(Quaternion.Euler(0, transform.eulerAngles.y, 0), Quaternion.Euler(0, mainCamera.transform.eulerAngles.y, 0));
         }
 
         private Transform Find(string name, bool resetLocalPosition = false)
