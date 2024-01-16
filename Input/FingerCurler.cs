@@ -1,16 +1,6 @@
 ﻿using LCVR.Networking;
-
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.XR;
-using UnityEngine.XR;
-
-using CommonUsages = UnityEngine.XR.CommonUsages;
-using InputDevice = UnityEngine.XR.InputDevice;
 
 namespace LCVR.Input
 {
@@ -141,13 +131,17 @@ namespace LCVR.Input
 
     public class VRFingerCurler : FingerCurler
     {
-        public InputDevice device;
+        private readonly InputAction thumbAction;
+        private readonly InputAction indexAction;
+        private readonly InputAction othersAction;
 
         public VRFingerCurler(Transform hand, bool isLeft) : base(hand, isLeft)
         {
-            XRNode node = isLeft ? XRNode.LeftHand : XRNode.RightHand;
+            var map = isLeft ? "Left Hand Fingers" : "Right Hand Fingers";
 
-            device = InputDevices.GetDeviceAtXRNode(node);
+            thumbAction = Actions.VRInputActions.FindAction($"{map}/Thumb");
+            indexAction = Actions.VRInputActions.FindAction($"{map}/Index");
+            othersAction = Actions.VRInputActions.FindAction($"{map}/Others");
         }
 
         public override void Update()
@@ -159,22 +153,14 @@ namespace LCVR.Input
 
         private void UpdateCurls()
         {
-            device.TryGetFeatureValue(CommonUsages.primaryTouch, out bool primaryTouch);
-            device.TryGetFeatureValue(CommonUsages.secondaryTouch, out bool secondaryTouch);
+            // Add smooth thumb movement
+            thumbFinger.curl = Mathf.Lerp(thumbFinger.curl, thumbAction.ReadValue<float>(), 0.5f);
+            indexFinger.curl = indexAction.ReadValue<float>();
 
-            thumbFinger.curl = primaryTouch || secondaryTouch ? 1f : 0f;
-
-            if (device.TryGetFeatureValue(CommonUsages.trigger, out float trigger))
-            {
-                 indexFinger.curl = trigger;
-            }
-
-            if (device.TryGetFeatureValue(CommonUsages.grip, out float grip))
-            {
-                middleFinger.curl = grip;
-                ringFinger.curl = grip;
-                pinkyFinger.curl = grip;
-            }
+            var grip = othersAction.ReadValue<float>();
+            middleFinger.curl = grip;
+            ringFinger.curl = grip;
+            pinkyFinger.curl = grip;
         }
     }
 }

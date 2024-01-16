@@ -1,7 +1,5 @@
 ﻿using System;
-using System.IO;
 using System.Net;
-using BepInEx;
 using UnityEngine.InputSystem;
 
 namespace LCVR.Input
