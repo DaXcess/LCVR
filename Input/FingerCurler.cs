@@ -44,6 +44,7 @@ namespace LCVR.Input
             public Transform bone02;
 
             public float curl;
+            public bool inverse;
 
             private readonly Quaternion bone01Rotation;
             private readonly Quaternion bone02Rotation;
@@ -65,7 +66,7 @@ namespace LCVR.Input
 
             public void Update()
             {
-                float angle = Mathf.Lerp(0f, 80f, curl);
+                float angle = Mathf.Lerp(-80f, 80f, curl);
 
                 bone01.localRotation = bone01Rotation;
                 bone02.localRotation = Quaternion.AngleAxis(-angle, Vector3.right) * bone02Rotation;
@@ -153,11 +154,18 @@ namespace LCVR.Input
 
         private void UpdateCurls()
         {
-            // Add smooth thumb movement
-            thumbFinger.curl = Mathf.Lerp(thumbFinger.curl, thumbAction.ReadValue<float>(), 0.5f);
-            indexFinger.curl = indexAction.ReadValue<float>();
-
+            // Thumb Up = 0f
+            // Thumb Default = 0.5f
+            // Thumb Down = 1f
+            var thumb = thumbAction.ReadValue<float>() != 0f ? 1f : 0.5f;
+            var index = indexAction.ReadValue<float>();
             var grip = othersAction.ReadValue<float>();
+
+            var thumbsUp = index > 0.8f && grip > 0.8f && thumb == 0.5f;
+            thumbFinger.inverse = thumbsUp;
+
+            thumbFinger.curl = Mathf.Lerp(thumbFinger.curl, thumbsUp ? 0f : thumb, 0.5f);
+            indexFinger.curl = index;
             middleFinger.curl = grip;
             ringFinger.curl = grip;
             pinkyFinger.curl = grip;
