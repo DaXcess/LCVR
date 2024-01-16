@@ -48,19 +48,15 @@ namespace LCVR.Input
             private readonly Quaternion bone01Rotation;
             private readonly Quaternion bone02Rotation;
 
-            private readonly float sign;
-
-            public Thumb(Transform root, bool isLeft, Vector3 firstRotation, Vector3 secondRotation)
+            public Thumb(Transform root, Vector3 firstRotation, Vector3 secondRotation)
             {
                 bone01 = root;
                 bone02 = root.GetChild(0);
 
-                var offset = Quaternion.AngleAxis(30f * sign, Vector3.up) * Quaternion.AngleAxis(-30f, Vector3.right);
+                var offset = Quaternion.AngleAxis(-30f, Vector3.right);
 
                 bone01Rotation = offset * Quaternion.Euler(firstRotation);
                 bone02Rotation = Quaternion.Euler(secondRotation);
-
-                sign = isLeft ? 1f : -1f;
             }
 
             public void Update()
@@ -82,7 +78,7 @@ namespace LCVR.Input
         {
             if (isLeft)
             {
-                thumbFinger = new Thumb(hand.Find($"finger1.L"), isLeft, new Vector3(35f, -90f, 0f), new Vector3(-25f, 0f, 3f));
+                thumbFinger = new Thumb(hand.Find($"finger1.L"), new Vector3(35f, -90f, 0f), new Vector3(-25f, 0f, 3f));
                 indexFinger = new Finger(hand.Find($"finger2.L"), isLeft, new Vector3(5f, -90f, 0f), new Vector3(3f, -3f, 33f));
                 middleFinger = new Finger(hand.Find($"finger3.L"), isLeft, new Vector3(-182f, 90f, -176f), new Vector3(1f, -5f, 22f));
                 ringFinger = new Finger(hand.Find($"finger4.L"), isLeft, new Vector3(186f, 90f, 177f), new Vector3(6f, -3f, 29f));
@@ -90,7 +86,7 @@ namespace LCVR.Input
             }
             else
             {
-                thumbFinger = new Thumb(hand.Find($"finger1.R"), isLeft, new Vector3(143f, -90f, -180f), new Vector3(-26f, 0f, -5f));
+                thumbFinger = new Thumb(hand.Find($"finger1.R"), new Vector3(143f, -90f, -180f), new Vector3(-26f, 0f, -5f));
                 indexFinger = new Finger(hand.Find($"finger2.R"), isLeft, new Vector3(-193f, -90f, 176f), new Vector3(-9f, 0f, -21f));
                 middleFinger = new Finger(hand.Find($"finger3.R"), isLeft, new Vector3(-186f, -90f, 180f), new Vector3(-6f, 0f, -24f));
                 ringFinger = new Finger(hand.Find($"finger4.R"), isLeft, new Vector3(180f, -90f, -177f), new Vector3(-9f, 0f, -25f));
