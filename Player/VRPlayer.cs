@@ -436,7 +436,6 @@ namespace LCVR.Player
             if ((xrOrigin.position - lastOriginPos).sqrMagnitude > sqrMoveThreshold) // player moved
                 // Rotate body sharply but still smoothly
                 TurnBodyToCamera(turnWeightSharp);
-
             else if (!playerController.inSpecialInteractAnimation && GetBodyToCameraAngle() is var angle && angle > turnAngleThreshold)
                 // Rotate body as smoothly as possible but prevent 360 deg head twists on quick rotations
                 TurnBodyToCamera(turnWeightSharp * Mathf.InverseLerp(turnAngleThreshold, 170f, angle));
