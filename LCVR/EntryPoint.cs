@@ -10,6 +10,9 @@ using Microsoft.MixedReality.Toolkit.Experimental.UI;
 using UnityEngine.InputSystem.UI;
 using LCVR.Input;
 using UnityEngine.InputSystem;
+using System.Collections.Generic;
+using UnityEngine.Rendering;
+using System.Linq;
 
 namespace LCVR
 {
@@ -155,8 +158,33 @@ namespace LCVR
             Experiments.Experiments.RunExperiments();
 #endif
 
+            DisableLensDistortion(Plugin.Config.DisableLensDistortion.Value);
+
             if (!Plugin.Config.FirstTimeTipSeen.Value)
                 HUDManager.Instance.StartCoroutine(FirstTimeTips());
+        }
+
+        private static void DisableLensDistortion(bool includeExtended = false)
+        {
+            // Disable insanity lens distortion by default
+            var profiles = new VolumeProfile[] {
+                HUDManager.Instance.insanityScreenFilter.profile,
+            };
+
+            var extendedProfiles = new VolumeProfile[] {
+                HUDManager.Instance.drunknessFilter.profile,
+                HUDManager.Instance.flashbangScreenFilter.profile,
+                HUDManager.Instance.underwaterScreenFilter.profile,
+            };
+
+            var distortionFilters = new List<LensDistortion>();
+
+            distortionFilters.AddRange(profiles.SelectMany(profile => profile.components.FindAll(component => component is LensDistortion).Select(component => component as LensDistortion)));
+
+            if (includeExtended)
+                distortionFilters.AddRange(extendedProfiles.SelectMany(profile => profile.components.FindAll(component => component is LensDistortion).Select(component => component as LensDistortion)));
+
+            distortionFilters.ForEach(filter => filter.active = false);
         }
 
         private static IEnumerator FirstTimeTips()
