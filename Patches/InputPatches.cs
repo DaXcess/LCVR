@@ -19,7 +19,7 @@ namespace LCVR.Patches
     }
 
     [LCVRPatch]
-    [HarmonyPatch(typeof(IngamePlayerSettings), "DiscardChangedSettings")]
+    [HarmonyPatch(typeof(IngamePlayerSettings), nameof(IngamePlayerSettings.DiscardChangedSettings))]
     internal static class InputPatches_DiscardChangedSettings
     {
         static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
@@ -37,13 +37,12 @@ namespace LCVR.Patches
     }
 
     [LCVRPatch]
-    [HarmonyPatch(typeof(PlayerActions))]
-    [HarmonyPatch(MethodType.Constructor)]
+    [HarmonyPatch(typeof(PlayerActions), MethodType.Constructor)]
     internal static class PlayerActionsPatches
     {
         static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
-            var codes = new List<CodeInstruction>(instructions);
+            List<CodeInstruction> codes = new(instructions);
 
             codes[6].operand = Properties.Resources.lc_inputs;
 

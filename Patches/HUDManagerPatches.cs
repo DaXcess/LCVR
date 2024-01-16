@@ -3,15 +3,13 @@
 namespace LCVR.Patches
 {
     [LCVRPatch]
-    [HarmonyPatch]
+    [HarmonyPatch(typeof(HUDManager), "CanPlayerScan")]
     internal static class HUDManagerPatches
     {
         /// <summary>
         /// Disables the ping scan if you are in the pause menu
         /// </summary>
-        [HarmonyPatch(typeof(HUDManager), "CanPlayerScan")]
-        [HarmonyPrefix]
-        private static bool CanPlayerScan(ref bool __result)
+        private static bool Prefix(ref bool __result)
         {
             if (GameNetworkManager.Instance.localPlayerController.quickMenuManager.isMenuOpen)
             {

@@ -12,7 +12,7 @@ namespace LCVR.Patches.Items
         /// <summary>
         /// Makes the spray paint item spray from your hand instead of your head
         /// </summary>
-        [HarmonyPatch(typeof(SprayPaintItem), "TrySpraying")]
+        [HarmonyPatch(typeof(SprayPaintItem), nameof(SprayPaintItem.TrySpraying))]
         [HarmonyPrefix]
         private static bool SprayPaintFromHand(SprayPaintItem __instance, ref bool __result)
         {

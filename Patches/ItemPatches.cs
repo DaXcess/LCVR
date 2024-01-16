@@ -4,15 +4,13 @@ using LCVR.Items;
 namespace LCVR.Patches
 {
     [LCVRPatch(LCVRPatchTarget.Universal)]
-    [HarmonyPatch]
+    [HarmonyPatch(typeof(GrabbableObject), nameof(GrabbableObject.LateUpdate))]
     internal static class UniversalItemPatches
     {
         /// <summary>
         /// Prevents the built in LateUpdate if a VR item disables it
         /// </summary>
-        [HarmonyPatch(typeof(GrabbableObject), "LateUpdate")]
-        [HarmonyPrefix]
-        private static bool LateUpdatePrefix(GrabbableObject __instance)
+        private static bool Prefix(GrabbableObject __instance)
         {
             if (VRItem<GrabbableObject>.itemCache.TryGetValue(__instance, out var item))
                 return !item.CancelGameUpdate;
@@ -23,9 +21,7 @@ namespace LCVR.Patches
         /// <summary>
         /// Updates radar position of the item if the original LateUpdate function got blocked
         /// </summary>
-        [HarmonyPatch(typeof(GrabbableObject), "LateUpdate")]
-        [HarmonyPostfix]
-        private static void LateUpdatePostfix(GrabbableObject __instance, bool __runOriginal)
+        private static void Postfix(GrabbableObject __instance, bool __runOriginal)
         {
             if (!__runOriginal && __instance.radarIcon != null)
                 __instance.radarIcon.position = __instance.transform.position;

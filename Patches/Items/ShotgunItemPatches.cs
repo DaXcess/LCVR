@@ -15,7 +15,7 @@ namespace LCVR.Patches.Items
         /// <summary>
         /// Makes the shotgun shoot from your hand instead of your head
         /// </summary>
-        [HarmonyPatch(typeof(ShotgunItem), "ShootGunAndSync")]
+        [HarmonyPatch(typeof(ShotgunItem), nameof(ShotgunItem.ShootGunAndSync))]
         [HarmonyPrefix]
         private static bool OnShootGun(ShotgunItem __instance, bool heldByPlayer)
         {

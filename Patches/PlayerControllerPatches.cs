@@ -20,7 +20,7 @@ namespace LCVR.Patches
     {
         static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
-            var codes = new List<CodeInstruction>(instructions);
+            List<CodeInstruction> codes = new(instructions);
 
             // Remove HUD rotating
             for (int i = 111; i <= 123; i++)
@@ -59,7 +59,7 @@ namespace LCVR.Patches
 
             // Override sprint
             codes[326].opcode = OpCodes.Ldsfld;
-            codes[326].operand = typeof(PlayerControllerB_Sprint_Patch).GetField("sprint", BindingFlags.Public | BindingFlags.Static);
+            codes[326].operand = AccessTools.Field(typeof(PlayerControllerB_Sprint_Patch), nameof(sprint));
 
             codes[327].opcode = OpCodes.Stloc_0;
             codes[327].operand = null;

@@ -13,11 +13,11 @@ namespace LCVR.Compatibility
     [HarmonyPatch]
     internal static class MoreCompanyUIPatches
     {
-        [HarmonyPatch(typeof(CosmeticRegistry), "UpdateCosmeticsOnDisplayGuy")]
+        [HarmonyPatch(typeof(CosmeticRegistry), nameof(CosmeticRegistry.UpdateCosmeticsOnDisplayGuy))]
         [HarmonyPostfix]
         private static void AfterUpdateCosmetics()
         {
-            var cosmeticApplication = (CosmeticApplication)typeof(CosmeticRegistry).GetField("cosmeticApplication", BindingFlags.NonPublic | BindingFlags.Static).GetValue(null);
+            CosmeticApplication cosmeticApplication = (CosmeticApplication)typeof(CosmeticRegistry).GetField("cosmeticApplication", BindingFlags.NonPublic | BindingFlags.Static).GetValue(null);
 
             cosmeticApplication.spawnedCosmetics.Do(cosmetic => cosmetic.transform.localScale *= 0.5f);
         }
@@ -53,7 +53,7 @@ namespace LCVR.Compatibility
             return false;
         }
 
-        [HarmonyPatch(typeof(SpinDragger), "OnPointerDown")]
+        [HarmonyPatch(typeof(SpinDragger), nameof(SpinDragger.OnPointerDown))]
         [HarmonyPrefix]
         private static bool OnPointerDown(SpinDragger __instance, PointerEventData eventData)
         {
@@ -79,7 +79,7 @@ namespace LCVR.Compatibility
             return false;
         }
 
-        [HarmonyPatch(typeof(SpinDragger), "OnPointerUp")]
+        [HarmonyPatch(typeof(SpinDragger), nameof(SpinDragger.OnPointerUp))]
         [HarmonyPrefix]
         private static bool OnPointerUp()
         {
