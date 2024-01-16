@@ -44,7 +44,6 @@ namespace LCVR.Input
             public Transform bone02;
 
             public float curl;
-            public bool inverse;
 
             private readonly Quaternion bone01Rotation;
             private readonly Quaternion bone02Rotation;
