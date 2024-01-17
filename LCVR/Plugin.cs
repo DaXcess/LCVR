@@ -182,12 +182,43 @@ namespace LCVR
             EnableControllerProfiles();
             InitializeXRRuntime();
 
+
             if (!StartDisplay())
             {
-                OpenXR.DumpOpenXRDiag();
-
                 Logger.LogError("Failed to start in VR Mode! Only Non-VR features are available!");
-                Logger.LogError("An OpenXR log dump is displayed above to help with troubleshooting.");
+
+                if (OpenXR.GetDiagnosticReport(out var report))
+                {
+                    Logger.LogWarning($"Runtime Name:    {report.RuntimeName}");
+                    Logger.LogWarning($"Runtime Version: {report.RuntimeVersion}");
+                    Logger.LogWarning($"Last Error:      {report.Error}");
+                    Logger.LogWarning("");
+
+                    switch (report.Error)
+                    {
+                        case "XR_ERROR_RUNTIME_UNAVAILABLE":
+                            Logger.LogWarning("It appears that no OpenXR runtime is currently active. Please go to the dedicated application for your VR headset and make sure that it is running, and set as default OpenXR runtime.");
+                            break;
+
+                        case "XR_ERROR_FORM_FACTOR_UNAVAILABLE":
+                            Logger.LogWarning("This generally means that your headset is not connected, or that your headset is connected to a different runtime. Please make sure your headset is active and connected, and that you are using the correct OpenXR runtime.");
+                            break;
+
+                        default:
+                            Logger.LogWarning("Unknown reason for OpenXR failure!");
+                            break;
+                    }
+                }
+                else Logger.LogError("Failed to generate OpenXR diagnostics report!");
+
+                var runtimes = OpenXR.DetectOpenXRRuntimes();
+                if (runtimes != null)
+                {
+                    Logger.LogWarning("List of registered OpenXR runtimes on this device:");
+
+                    for (var i = 0; i < runtimes.Length; i++)
+                        Logger.LogWarning($"{(i == 0 ?  ">>> " : "    ")}{runtimes[i]}");
+                }                
 
                 return false;
             }
@@ -198,6 +229,12 @@ namespace LCVR
                     Logger.LogWarning("WARNING: UNITY EXPLORER DETECTED! UNITY EXPLORER *WILL* BREAK VR UI INPUTS!");
                     Flags |= Flags.UnityExplorerDetected;
                 }
+
+
+            if (OpenXR.GetRuntimeName(out var name) && OpenXR.GetRuntimeVersion(out var major, out var minor, out var patch))
+                Logger.LogInfo($"OpenXR runtime being used: {name} ({major}.{minor}.{patch})");
+            else
+                Logger.LogError("Could not get runtime OpenXR name?");
 
             HarmonyPatcher.PatchVR();
 
