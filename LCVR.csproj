@@ -44,6 +44,9 @@
     <Reference Include="MoreCompany">
       <HintPath>Libs\MoreCompany.dll</HintPath>
     </Reference>
+    <Reference Include="Mimics">
+      <HintPath>Libs\Mimics.dll</HintPath>
+    </Reference>
     <Reference Include="Unity.Animation.Rigging">
       <HintPath>Libs\Unity.Animation.Rigging.dll</HintPath>
     </Reference>
