@@ -59,6 +59,9 @@ namespace LCVR
         public ConfigEntry<bool> ShovelTipSeen { get; } = file.Bind("Tips", "ShovelTipSeen", false, "Whether or not the user has seen the shovel tip");
         public ConfigEntry<bool> SprayPaintTipSeen { get; } = file.Bind("Tips", "SprayPaintTipSeen", false, "Whether or not the user has seen the spray paint tip");
 
+        // Internal configuration
+        public ConfigEntry<string> LastInternalControllerProfile { get; } = file.Bind("Internal", "LastInternalControllerProfile", "", "FOR INTERNAL USE ONLY, DO NOT EDIT");
+
         public enum TurnProviderOption
         {
             Snap,
