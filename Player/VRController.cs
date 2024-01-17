@@ -10,6 +10,7 @@ using LCVR.Input;
 using LCVR.Assets;
 using System.Linq;
 using System.ComponentModel;
+using LCVR.UI;
 
 namespace LCVR.Player
 {
@@ -227,7 +228,14 @@ namespace LCVR.Player
                     hitInteractable = true;
 
                     // Place interaction hud on object
-                    player.hud.UpdateInteractCanvasPosition(hit.transform.position);
+                    var position = hit.transform.position;
+                    var offsetComponent = hit.transform.gameObject.GetComponent<InteractCanvasPositionOffset>();
+                    if (offsetComponent != null)
+                    {
+                        position = hit.transform.TransformPoint(offsetComponent.offset);
+                    }
+                    
+                    player.hud.UpdateInteractCanvasPosition(position);
 
                     if (hit.collider.gameObject.CompareTag("InteractTrigger"))
                     {
