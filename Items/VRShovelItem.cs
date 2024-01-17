@@ -98,8 +98,6 @@ namespace LCVR.Items
             transform.eulerAngles = new Vector3(transform.eulerAngles.x, transform.eulerAngles.y, 360 - player.leftItemHolder.eulerAngles.z);
             transform.position += rotation * positionOffset;
 
-
-
             // Good enough failsafe to detect teleports, which could cause the shovel to swing
             if (Vector3.Distance(interactTransform.position, lastPosition) > 5)
                 positions.Clear();
@@ -157,6 +155,9 @@ namespace LCVR.Items
 
         private void ReelUpShovel()
         {
+            if (!CanUseItem())
+                return;
+
             if (Time.realtimeSinceStartup - lastActionTime < 0.5f)
                 return;
 
@@ -175,6 +176,9 @@ namespace LCVR.Items
 
         private void HitShovel()
         {
+            if (!CanUseItem())
+                return;
+
             isHitting = true;
             lastActionTime = Time.realtimeSinceStartup;
 
