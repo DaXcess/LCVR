@@ -32,6 +32,7 @@ namespace LCVR.Player
 
         public float cameraFloorOffset = 0f;
         private float crouchOffset = 0f;
+        private float realHeight = 2.3f;
 
         private readonly float sqrMoveThreshold = 1E-5f;
         private readonly float turnAngleThreshold = 120.0f;
@@ -39,6 +40,8 @@ namespace LCVR.Player
 
         private bool isDead = false;
         private bool isSprinting = false;
+
+        public bool isRoomCrouching = false;
 
         private bool wasInSpecialAnimation = false;
         private Vector3 specialAnimationPositionOffset = Vector3.zero;
@@ -67,6 +70,9 @@ namespace LCVR.Player
 
         public Transform leftHandRigTransform;
         public Transform rightHandRigTransform;
+
+        public VRFingerCurler leftFingerCurler;
+        public VRFingerCurler rightFingerCurler;
 
         private GameObject leftHandVRTarget;
         private GameObject rightHandVRTarget;
@@ -206,6 +212,10 @@ namespace LCVR.Player
             leftItemHolder.SetParent(leftHandTarget, false);
             leftItemHolder.localPosition = new Vector3(0.018f, 0.045f, -0.042f);
             leftItemHolder.localEulerAngles = new Vector3(360f - 356.3837f, 357.6979f, 0.1453f);
+
+            // Set up finger curlers
+            rightFingerCurler = new VRFingerCurler(rightHandTarget, false);
+            leftFingerCurler = new VRFingerCurler(leftHandTarget, true);
 
             StartCoroutine(RebuildRig());
 
@@ -424,8 +434,18 @@ namespace LCVR.Player
             else
                 xrOrigin.position = transform.position + specialAnimationPositionOffset;
 
-            // Apply crouch offset
-            crouchOffset = Mathf.Lerp(crouchOffset, playerController.isCrouching ? -1 : 0, 0.2f);
+            // Check for roomscale crouching
+            float realCrouch = mainCamera.transform.localPosition.y / realHeight;
+            bool roomCrouch = realCrouch < 0.5f;
+
+            if (roomCrouch != isRoomCrouching)
+            {
+                playerController.Crouch(roomCrouch);
+                isRoomCrouching = roomCrouch;
+            }
+
+            // Apply crouch offset (don't offset if roomscale)
+            crouchOffset = Mathf.Lerp(crouchOffset, !isRoomCrouching && playerController.isCrouching ? -1 : 0, 0.2f);
 
             // Apply floor offset and sinking value
             xrOrigin.position += new Vector3(0, cameraFloorOffset + crouchOffset - playerController.sinkingValue * 2.5f, 0);
@@ -459,18 +479,20 @@ namespace LCVR.Player
                     stopSprintingCoroutine = null;
                 }
 
-                PlayerControllerB_Sprint_Patch.sprint = isSprinting ? 1 : 0;
+                PlayerControllerB_Sprint_Patch.sprint = !isRoomCrouching && isSprinting ? 1 : 0;
             }
             else
-                PlayerControllerB_Sprint_Patch.sprint = sprintAction.IsPressed() ? 1 : 0;
+                PlayerControllerB_Sprint_Patch.sprint = !isRoomCrouching && sprintAction.IsPressed() ? 1 : 0;
 
             DNet.BroadcastRig(new DNet.Rig()
             {
                 leftHandPosition = leftController.transform.localPosition,
                 leftHandEulers = leftController.transform.localEulerAngles,
+                leftHandFingers = leftFingerCurler.GetCurls(),
 
                 rightHandPosition = rightController.transform.localPosition,
                 rightHandEulers = rightController.transform.localEulerAngles,
+                rightHandFingers = rightFingerCurler.GetCurls(),
 
                 cameraEulers = mainCamera.transform.eulerAngles,
                 cameraPosAccounted = cameraPosAccounted,
@@ -487,6 +509,14 @@ namespace LCVR.Player
             StartOfRound.Instance.playerLookMagnitudeThisFrame = (angles - lastFrameHMDRotation).magnitude * Time.deltaTime;
 
             lastFrameHMDRotation = angles;
+
+            // Update tracked finger curls after animator update
+            leftFingerCurler?.Update();
+
+            if (!playerController.isHoldingObject)
+            {
+                rightFingerCurler?.Update();
+            }
         }
 
         public void OnDeath()
@@ -578,7 +608,7 @@ namespace LCVR.Player
         {
             yield return new WaitForSeconds(0.2f);
 
-            var realHeight = mainCamera.transform.localPosition.y * SCALE_FACTOR;
+            realHeight = mainCamera.transform.localPosition.y * SCALE_FACTOR;
             var targetHeight = 2.3f;
 
             cameraFloorOffset = targetHeight - realHeight;
