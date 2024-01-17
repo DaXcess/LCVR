@@ -140,7 +140,8 @@ namespace LCVR.Patches
 
         private static void DisableKeybindsSetting()
         {
-            var keybindingsButton = GameObject.Find("MenuContainer/SettingsPanel/KeybindingsButton")?.GetComponent<Button>();
+            var menuContainer = GameObject.Find("MenuContainer");
+            var keybindingsButton = menuContainer.Find("SettingsPanel/KeybindingsButton")?.GetComponent<Button>();
             var keybindingsText = keybindingsButton.GetComponentInChildren<TextMeshProUGUI>();
 
             keybindingsButton.enabled = false;
