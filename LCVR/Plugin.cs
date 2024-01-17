@@ -22,8 +22,10 @@ using UnityEngine.XR.OpenXR.Features.Interactions;
 namespace LCVR
 {
     [BepInPlugin(PLUGIN_GUID, PLUGIN_NAME, PLUGIN_VERSION)]
+    #region Compatibility Dependencies
     [BepInDependency("me.swipez.melonloader.morecompany", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("x753.Mimics", BepInDependency.DependencyFlags.SoftDependency)]
+    #endregion
     public class Plugin : BaseUnityPlugin
     {
         public const string PLUGIN_GUID = "io.daxcess.lcvr";
