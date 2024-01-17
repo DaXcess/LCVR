@@ -40,7 +40,8 @@ namespace LCVR
             var xOffset = Plugin.Config.HUDOffsetX.Value;
             var yOffset = Plugin.Config.HUDOffsetY.Value;
 
-            if (!Plugin.Config.DisableArmHUD.Value) {
+            if (!Plugin.Config.DisableArmHUD.Value)
+            {
                 leftHandCanvas = new GameObject("Left Hand Canvas").AddComponent<Canvas>();
                 leftHandCanvas.worldCamera = player.mainCamera;
                 leftHandCanvas.renderMode = RenderMode.WorldSpace;
@@ -194,7 +195,7 @@ namespace LCVR
                 battery.transform.localScale = Vector3.one * 2;
 
                 var icon = battery.transform.Find("BatteryIcon");
-                
+
                 icon.localPosition = new Vector3(-16, 16, 0);
                 icon.localRotation = Quaternion.identity;
                 icon.localScale = Vector3.one * 0.5f;
@@ -222,7 +223,8 @@ namespace LCVR
                 inventory.transform.SetParent(transform, false);
                 inventory.transform.localPosition = new Vector3(91 + xOffset, -185 + yOffset, 0);
                 inventory.transform.localRotation = Quaternion.identity;
-            } else
+            }
+            else
             {
                 inventory.transform.SetParent(rightHandCanvas.transform, false);
                 inventory.transform.localPosition = new Vector3(-28, 120, 40);
@@ -319,7 +321,7 @@ namespace LCVR
             spectateCanvas.transform.position = new Vector3(0, -999, 0);
 
             var follow = spectateCanvas.gameObject.AddComponent<CanvasTransformFollow>();
-            follow.targetTransform = player.uiCamera.transform;
+            follow.sourceTransform = player.uiCamera.transform;
 
             transform.localScale = Vector3.one * 0.0007f;
 

@@ -27,7 +27,13 @@ namespace LCVR
             return sha.ComputeHash(input);
         }
 
-        public static void DisableQualitySetting(HDAdditionalCameraData camera, FrameSettingsField setting)
+        public static void EnableQualitySetting(this HDAdditionalCameraData camera, FrameSettingsField setting)
+        {
+            camera.renderingPathCustomFrameSettingsOverrideMask.mask[(uint)setting] = false;
+            camera.renderingPathCustomFrameSettings.SetEnabled(setting, true);
+        }
+
+        public static void DisableQualitySetting(this HDAdditionalCameraData camera, FrameSettingsField setting)
         {
             camera.renderingPathCustomFrameSettingsOverrideMask.mask[(uint)setting] = true;
             camera.renderingPathCustomFrameSettings.SetEnabled(setting, false);

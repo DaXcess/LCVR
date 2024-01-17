@@ -118,7 +118,7 @@ namespace LCVR.Patches
             canvas.worldCamera = uiCamera;
 
             var canvasFollow = canvas.gameObject.AddComponent<CanvasTransformFollow>();
-            canvasFollow.targetTransform = uiCamera.transform;
+            canvasFollow.sourceTransform = uiCamera.transform;
 
             // Allow canvas interactions using XR raycaster
 

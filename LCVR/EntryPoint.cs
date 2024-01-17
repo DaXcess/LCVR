@@ -65,15 +65,17 @@ namespace LCVR
 
             mainCamera.depth = uiCamera.depth + 1;
 
+            Logger.LogInfo("VR Cameras have been set up");
+
             // Apply optimization configuration
             var hdCamera = mainCamera.GetComponent<HDAdditionalCameraData>();
             hdCamera.allowDynamicResolution = Plugin.Config.EnableUpscaling.Value;
             hdCamera.allowDeepLearningSuperSampling = Plugin.Config.EnableDLSS.Value;
 
-            Utils.DisableQualitySetting(hdCamera, FrameSettingsField.DepthOfField);
+            hdCamera.DisableQualitySetting(FrameSettingsField.DepthOfField);
 
             if (Plugin.Config.DisableVolumetrics.Value)
-                Utils.DisableQualitySetting(hdCamera, FrameSettingsField.Volumetrics);
+                hdCamera.DisableQualitySetting(FrameSettingsField.Volumetrics);
 
             // Create desktop camera
             if (Plugin.Config.EnableCustomCamera.Value)
