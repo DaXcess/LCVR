@@ -20,12 +20,16 @@ namespace LCVR.Networking
 
     public class DNet
     {
+        public const ushort PROTOCOL_VERSION = 2;
+
+        private static readonly NamedLogger Logger = new("Networking");
+
         private static DissonanceComms dissonance;
         private static NfgoCommsNetwork network;
         private static BaseClient<NfgoServer, NfgoClient, NfgoConn> client;
         private static Peers peers;
 
-        private static ushort? LocalIdSafe
+        private static ushort? LocalId
         {
             get
             {
@@ -35,8 +39,6 @@ namespace LCVR.Networking
                 return localId;
             }
         }
-
-        private static ushort LocalId => LocalIdSafe.Value;
 
         // A list of all known VR clients
         private static readonly Dictionary<ushort, ClientInfo<NfgoConn?>> clients = [];
@@ -52,7 +54,7 @@ namespace LCVR.Networking
             peers = new Peers(AccessTools.Field(client.GetType(), "_peers").GetValue(client));
 
             // Wait for voicechat connection
-            yield return new WaitUntil(() => LocalIdSafe.HasValue);
+            yield return new WaitUntil(() => LocalId.HasValue);
 
             Logger.LogDebug("Connected to Dissonance server");
 
@@ -60,7 +62,8 @@ namespace LCVR.Networking
             dissonance.OnPlayerLeftSession += OnPlayerLeftSession;
 
             foreach (var player in dissonance.Players)
-                if (peers.TryGetClientInfoByName(player.Name, out var client)) {
+                if (!player.IsLocalPlayer && peers.TryGetClientInfoByName(player.Name, out var client))
+                {
                     clients.Add(client.PlayerId, client);
                     clientByName.Add(player.Name, client.PlayerId);
                 }
@@ -82,16 +85,34 @@ namespace LCVR.Networking
 
         public static void BroadcastRig(Rig rig)
         {
-            BroadcastVRPacket(MessageType.RigData, rig.Serialize());
+            BroadcastPacket(MessageType.RigData, rig.Serialize());
         }
 
+        private static void SendHandshakeResponse(ushort client)
+        {
+            if (!clients.TryGetValue(client, out var target))
+            {
+                Logger.LogError($"Cannot send handshake response to {client}: Client info is missing!");
+                return;
+            }
+
+            SendPacket(MessageType.HandshakeResponse, [Plugin.Flags.HasFlag(Flags.VR) ? (byte)1 : (byte)0], target);
+        }
+
+        /// <summary>
+        /// Continously send handshake requests to clients that have not been negotiated with yet
+        /// </summary>
         private static IEnumerator SendHandshakeCoroutine()
         {
             while (true)
             {
-                BroadcastGlobalPacket(MessageType.VRHandshake, [Plugin.Flags.HasFlag(Flags.VR) ? (byte)1 : (byte)0]);
-                
-                yield return new WaitForSeconds(StartOfRound.Instance.inShipPhase ? 1 : 30);
+                // Grab a list of clients that are not subscribed
+                var targets = clients.Where(client => !subscribers.Contains(client.Key)).Select(client => client.Value);
+
+                // Send handshake request
+                SendPacket(MessageType.HandshakeRequest, BitConverter.GetBytes(PROTOCOL_VERSION), targets.ToArray());
+
+                yield return new WaitForSeconds(StartOfRound.Instance.inShipPhase ? 1 : 10);
             }
         }
 
@@ -136,24 +157,16 @@ namespace LCVR.Networking
 
         #region PACKET SENDING
 
-        private static void BroadcastGlobalPacket(MessageType type, byte[] payload)
-        {
-            var clients = peers.Clients.Values.ToList();
-            clients.RemoveAt(clients.FindIndex(client => client.PlayerId == LocalId));
-
-            client.SendReliableP2P(clients, ConstructPacket(type, payload));
-        }
-
-        private static void BroadcastVRPacket(MessageType type, byte[] payload)
+        private static void BroadcastPacket(MessageType type, byte[] payload)
         {
             var targets = subscribers.Where(key => clients.TryGetValue(key, out var value)).Select(value => clients[value]).ToList();
 
             client.SendReliableP2P(targets, ConstructPacket(type, payload));
         }
 
-        private static void SendPacket(ClientInfo<NfgoConn?> target, MessageType type, byte[] payload)
+        private static void SendPacket(MessageType type, byte[] payload, params ClientInfo<NfgoConn?>[] targets)
         {
-            client.SendReliableP2P([target], ConstructPacket(type, payload));
+            client.SendReliableP2P([.. targets], ConstructPacket(type, payload));
         }
 
         private static byte[] ConstructPacket(MessageType type, byte[] payload)
@@ -168,7 +181,7 @@ namespace LCVR.Networking
             writer.Write((byte)type);
 
             // Sender Id
-            writer.Write(LocalId);
+            writer.Write(LocalId.Value);
 
             // Rest of payload
             writer.Write(payload);
@@ -184,8 +197,12 @@ namespace LCVR.Networking
         {
             switch (messageType)
             {
-                case MessageType.VRHandshake:
-                    dissonance.StartCoroutine(HandleVRHandshake(sender, BitConverter.ToBoolean(data)));        
+                case MessageType.HandshakeRequest:
+                    HandleHandshakeRequest(sender, BitConverter.ToUInt16(data, 0));
+                    break;
+
+                case MessageType.HandshakeResponse:
+                    dissonance.StartCoroutine(HandleHandshakeResponse(sender, BitConverter.ToBoolean(data)));
                     break;
 
                 case MessageType.RigData:
@@ -194,23 +211,23 @@ namespace LCVR.Networking
             }
         }
 
-        // VR Handshakes get sent for one of two reasons:
-        //  - A client joins the lobby and announces themselves as VR
-        //  - Another client joins the lobby and all other VR players send a VR handshake to this client
-        private static IEnumerator HandleVRHandshake(ushort sender, bool isInVR)
+        private static void HandleHandshakeRequest(ushort sender, ushort protocol)
         {
-            if (!isInVR)
-            {
-                // Ignore if player is already known to be subscribed
-                if (subscribers.Contains(sender))
-                    yield break;
+            if (protocol != PROTOCOL_VERSION)
+                return;
 
-                subscribers.Add(sender);
-                yield break;
-            }
+            Logger.LogDebug($"Player {sender} has initiated a handshake");
 
+            SendHandshakeResponse(sender);
+        }
+
+        private static IEnumerator HandleHandshakeResponse(ushort sender, bool isInVR)
+        {
             if (!subscribers.Contains(sender))
                 subscribers.Add(sender);
+
+            if (!isInVR)
+                yield break;
 
             // Ignore if player is already known to be VR
             if (players.ContainsKey(sender))
@@ -228,7 +245,7 @@ namespace LCVR.Networking
             var player = dissonance.FindPlayer(client.PlayerName);
             if (player == null)
             {
-                Logger.LogError($"Failed to resolve client for Player {player}. No VR movements will be synchronized.");
+                Logger.LogError($"Failed to resolve client for Player {player.Name}. No VR movements will be synchronized.");
                 yield break;
             }
 
@@ -268,14 +285,16 @@ namespace LCVR.Networking
         #endregion
 
         #region SERIALIZABLE STRUCTS
-        
+
         public struct Rig
         {
             public Vector3 rightHandPosition;
             public Vector3 rightHandEulers;
+            public Fingers rightHandFingers;
 
             public Vector3 leftHandPosition;
             public Vector3 leftHandEulers;
+            public Fingers leftHandFingers;
 
             public Vector3 cameraEulers;
             public Vector3 cameraPosAccounted;
@@ -297,6 +316,8 @@ namespace LCVR.Networking
                 bw.Write(rightHandEulers.y);
                 bw.Write(rightHandEulers.z);
 
+                bw.Write(rightHandFingers.Serialize());
+
                 bw.Write(leftHandPosition.x);
                 bw.Write(leftHandPosition.y);
                 bw.Write(leftHandPosition.z);
@@ -304,6 +325,8 @@ namespace LCVR.Networking
                 bw.Write(leftHandEulers.x);
                 bw.Write(leftHandEulers.y);
                 bw.Write(leftHandEulers.z);
+
+                bw.Write(leftHandFingers.Serialize());
 
                 bw.Write(cameraEulers.x);
                 bw.Write(cameraEulers.y);
@@ -328,8 +351,10 @@ namespace LCVR.Networking
                 {
                     rightHandPosition = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()),
                     rightHandEulers = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()),
+                    rightHandFingers = Fingers.Deserialize(br.ReadBytes(Fingers.ByteCount)),
                     leftHandPosition = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()),
                     leftHandEulers = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()),
+                    leftHandFingers = Fingers.Deserialize(br.ReadBytes(Fingers.ByteCount)),
                     cameraEulers = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()),
                     cameraPosAccounted = new Vector3(br.ReadSingle(), 0, br.ReadSingle()),
                     isCrouching = br.ReadBoolean(),
@@ -341,9 +366,52 @@ namespace LCVR.Networking
             }
         }
 
+        public struct Fingers
+        {
+            public const int ByteCount = 5;
+
+            public float thumb;
+            public float index;
+            public float middle;
+            public float ring;
+            public float pinky;
+
+            public readonly byte[] Serialize()
+            {
+                using var mem = new MemoryStream();
+                using var bw = new BinaryWriter(mem);
+
+                bw.Write((byte)(thumb * 255f));
+                bw.Write((byte)(index * 255f));
+                bw.Write((byte)(middle * 255f));
+                bw.Write((byte)(ring * 255f));
+                bw.Write((byte)(pinky * 255f));
+
+                return mem.ToArray();
+            }
+
+            public static Fingers Deserialize(byte[] raw)
+            {
+                using var mem = new MemoryStream(raw);
+                using var br = new BinaryReader(mem);
+
+                var fingers = new Fingers
+                {
+                    thumb = ((float)br.ReadByte()) / 255f,
+                    index = ((float)br.ReadByte()) / 255f,
+                    middle = ((float)br.ReadByte()) / 255f,
+                    pinky = ((float)br.ReadByte()) / 255f,
+                    ring = ((float)br.ReadByte()) / 255f,
+                };
+
+                return fingers;
+            }
+        }
+
         public enum MessageType : byte
         {
-            VRHandshake = 0x0C,
+            HandshakeRequest = 16,
+            HandshakeResponse,
             RigData,
         }
 
@@ -385,7 +453,7 @@ namespace LCVR.Networking
                 var messageType = reader.ReadByte();
 
                 // Ignore built in messages
-                if (messageType < 12)
+                if (messageType < 16)
                     return;
 
                 var type = (DNet.MessageType)messageType;

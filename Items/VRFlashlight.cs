@@ -20,8 +20,8 @@ namespace LCVR.Items
                 return;
 
             bool isHoldingActiveFlashlight = (player.currentlyHeldObjectServer?.itemProperties.itemId == 1 || player.currentlyHeldObjectServer?.itemProperties.itemId == 6)
-                                                && player.currentlyHeldObjectServer.isBeingUsed; 
-                                                       // currentlyHeldObjectServer is guaranteed to not be null at this point
+                                                && player.currentlyHeldObjectServer.isBeingUsed;
+            // currentlyHeldObjectServer is guaranteed to not be null at this point
 
             if (!item.isPocketed)
             {

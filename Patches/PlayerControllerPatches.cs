@@ -160,6 +160,16 @@ namespace LCVR.Patches
             return context.ReadValue<float>() != 0;
         }
 
+        [HarmonyPatch(typeof(PlayerControllerB), "Crouch_performed")]
+        [HarmonyPrefix]
+        private static bool OnCrouchPerformed(PlayerControllerB __instance)
+        {
+            if (!__instance.IsOwner)
+                return true;
+
+            return !__instance.GetComponent<VRPlayer>().isRoomCrouching;
+        }
+
         [HarmonyPatch(typeof(PlayerControllerB), "Update")]
         [HarmonyPostfix]
         private static void UpdatePrefix(PlayerControllerB __instance)

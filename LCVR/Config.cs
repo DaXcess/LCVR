@@ -21,7 +21,8 @@ namespace LCVR
         // Input configuration
 
         private ConfigEntry<string> _turnProvider = file.Bind("Input", "TurnProvider", "Snap", new ConfigDescription("Specify which turning provider your player uses, if any.", new AcceptableValueList<string>("Snap", "Smooth", "Disabled")));
-        public ConfigEntry<float> SmoothTurnSpeedModifier { get; } = file.Bind("Input", "SmoothTurnSpeedModifier", 1f, "A multiplier that is added to the smooth turning speed. Requires turn provider to be set to smooth");
+        public ConfigEntry<float> SmoothTurnSpeedModifier { get; } = file.Bind("Input", "SmoothTurnSpeedModifier", 1f, "A multiplier that is added to the smooth turning speed. Requires turn provider to be set to smooth.");
+        public ConfigEntry<float> SnapTurnSize { get; } = file.Bind("Input", "SnapTurnSize", 45f, "The amount of rotation that is applied when performing a snap turn. Requires turn provider to be set to snap.");
         public ConfigEntry<float> SpectateCameraSpeedModifier { get; } = file.Bind("Input", "SpectateCameraSpeedModifier", 2f, "Specifies how fast the camera should pivot around a spectated player.");
         public ConfigEntry<bool> ToggleSprint { get; } = file.Bind("Input", "ToggleSprint", false, "Whether the sprint button should toggle sprint instead of having to hold it down.");
         public ConfigEntry<float> MovementSprintToggleCooldown { get; } = file.Bind("Input", "MovementSprintToggleCooldown", 1f, new ConfigDescription("The amount of seconds that you need to stand still for sprint to be toggled off automatically. Requires sprint toggle to be enabled.", new AcceptableValueRange<float>(0, 60)));
@@ -50,6 +51,7 @@ namespace LCVR
         public ConfigEntry<bool> EnableCustomCamera { get; } = file.Bind("Rendering", "EnableCustomCamera", false, "Adds a second camera mounted on top of the VR camera that will render seperately from the VR camera to the monitor. This requires quite a bit of extra GPU power!");
         public ConfigEntry<float> CustomCameraFOV { get; } = file.Bind("Rendering", "CustomCameraFOV", 90f, "The field of view that the custom camera should have.");
         public ConfigEntry<float> LODBias { get; } = file.Bind("Rendering", "LODBias", 2f, "The LOD bias is a multiplier that dictates when an LOD must reduce their quality. Higher values means that more detailed LODs will persist for longer. Set to -1 to disable updating the LOD bias.");
+        public ConfigEntry<bool> DisableLensDistortion { get; } = file.Bind("Rendering", "DisableLensDistortion", false, "Disables the warping effects that you experience when you are under water, use the TZP-inhalant and more.");
 
         // Tips configuration
 

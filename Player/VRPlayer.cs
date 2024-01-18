@@ -21,6 +21,8 @@ namespace LCVR.Player
 
     internal class VRPlayer : MonoBehaviour
     {
+        private const float SCALE_FACTOR = 1.5f;
+
         public static VRPlayer Instance { get; private set; }
 
         private readonly InputAction resetHeightAction;
@@ -28,12 +30,18 @@ namespace LCVR.Player
 
         private Coroutine stopSprintingCoroutine;
 
-        public float scaleFactor = 1.5f;
         public float cameraFloorOffset = 0f;
         private float crouchOffset = 0f;
+        private float realHeight = 2.3f;
+
+        private readonly float sqrMoveThreshold = 1E-5f;
+        private readonly float turnAngleThreshold = 120.0f;
+        private readonly float turnWeightSharp = 15.0f;
 
         private bool isDead = false;
         private bool isSprinting = false;
+
+        public bool isRoomCrouching = false;
 
         private bool wasInSpecialAnimation = false;
         private Vector3 specialAnimationPositionOffset = Vector3.zero;
@@ -43,8 +51,8 @@ namespace LCVR.Player
         public GameObject leftController;
         public GameObject rightController;
 
-        private GameObject leftControllerRayInteractor;
-        private GameObject rightControllerRayInteractor;
+        private XRRayInteractor leftControllerRayInteractor;
+        private XRRayInteractor rightControllerRayInteractor;
 
         private Transform xrOrigin;
 
@@ -62,6 +70,9 @@ namespace LCVR.Player
 
         public Transform leftHandRigTransform;
         public Transform rightHandRigTransform;
+
+        public VRFingerCurler leftFingerCurler;
+        public VRFingerCurler rightFingerCurler;
 
         private GameObject leftHandVRTarget;
         private GameObject rightHandVRTarget;
@@ -202,6 +213,10 @@ namespace LCVR.Player
             leftItemHolder.localPosition = new Vector3(0.018f, 0.045f, -0.042f);
             leftItemHolder.localEulerAngles = new Vector3(360f - 356.3837f, 357.6979f, 0.1453f);
 
+            // Set up finger curlers
+            rightFingerCurler = new VRFingerCurler(rightHandTarget, false);
+            leftFingerCurler = new VRFingerCurler(leftHandTarget, true);
+
             StartCoroutine(RebuildRig());
 
             Logger.LogDebug("Initialized XR Rig");
@@ -312,7 +327,7 @@ namespace LCVR.Player
 
             yield return null;
 
-            // Disable target movement by IK
+            // Enable target movement by IK
             GetComponentsInChildren<IKRigFollowVRRig>().Do(follow => follow.enabled = true);
 
             // Re-enable animation controller
@@ -344,7 +359,7 @@ namespace LCVR.Player
                 ResetHeight();
         }
 
-        private GameObject AddRayInteractor(Transform parent, string hand)
+        private XRRayInteractor AddRayInteractor(Transform parent, string hand)
         {
             var @object = new GameObject($"{hand} Ray Interactor");
             @object.transform.SetParent(parent, false);
@@ -386,7 +401,7 @@ namespace LCVR.Player
             controller.scaleToggleAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Scale Toggle"));
             controller.scaleDeltaAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Scale Delta"));
 
-            return @object;
+            return interactor;
         }
 
         private void Update()
@@ -400,35 +415,51 @@ namespace LCVR.Player
             var cameraPosAccounted = rotationOffset * new Vector3(mainCamera.transform.localPosition.x, 0, mainCamera.transform.localPosition.z);
 
             if (!wasInSpecialAnimation && playerController.inSpecialInteractAnimation)
-                specialAnimationPositionOffset = new Vector3(-cameraPosAccounted.x * scaleFactor, 0, -cameraPosAccounted.z * scaleFactor);
+                specialAnimationPositionOffset = new Vector3(-cameraPosAccounted.x * SCALE_FACTOR, 0, -cameraPosAccounted.z * SCALE_FACTOR);
 
             wasInSpecialAnimation = playerController.inSpecialInteractAnimation;
 
             // Move player if we're not in special interact animation
             if (!playerController.inSpecialInteractAnimation)
-                transform.position += new Vector3(movementAccounted.x * scaleFactor, 0, movementAccounted.z * scaleFactor);
+                transform.position += new Vector3(movementAccounted.x * SCALE_FACTOR, 0, movementAccounted.z * SCALE_FACTOR);
 
             // Update rotation offset after adding movement from frame
             turningProvider.Update();
 
+            var lastOriginPos = xrOrigin.position;
+
             // If we are in special animation allow 6 DOF but don't update player position
             if (!playerController.inSpecialInteractAnimation)
-                xrOrigin.position = new Vector3(transform.position.x - cameraPosAccounted.x * scaleFactor, transform.position.y, transform.position.z - cameraPosAccounted.z * scaleFactor);
+                xrOrigin.position = new Vector3(transform.position.x - cameraPosAccounted.x * SCALE_FACTOR, transform.position.y, transform.position.z - cameraPosAccounted.z * SCALE_FACTOR);
             else
                 xrOrigin.position = transform.position + specialAnimationPositionOffset;
 
-            // Apply crouch offset
-            crouchOffset = Mathf.Lerp(crouchOffset, playerController.isCrouching ? -1 : 0, 0.2f);
+            // Check for roomscale crouching
+            float realCrouch = mainCamera.transform.localPosition.y / realHeight;
+            bool roomCrouch = realCrouch < 0.5f;
+
+            if (roomCrouch != isRoomCrouching)
+            {
+                playerController.Crouch(roomCrouch);
+                isRoomCrouching = roomCrouch;
+            }
+
+            // Apply crouch offset (don't offset if roomscale)
+            crouchOffset = Mathf.Lerp(crouchOffset, !isRoomCrouching && playerController.isCrouching ? -1 : 0, 0.2f);
 
             // Apply floor offset and sinking value
             xrOrigin.position += new Vector3(0, cameraFloorOffset + crouchOffset - playerController.sinkingValue * 2.5f, 0);
             xrOrigin.rotation = rotationOffset;
-            xrOrigin.localScale = Vector3.one * scaleFactor;
+            xrOrigin.localScale = Vector3.one * SCALE_FACTOR;
 
             //Logger.LogDebug($"{transform.position} {xrOrigin.position} {leftHandVRTarget.transform.position} {rightHandVRTarget.transform.position} {cameraFloorOffset} {cameraPosAccounted}");
 
-            if (!playerController.inSpecialInteractAnimation)
-                transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles.x, mainCamera.transform.eulerAngles.y, transform.rotation.eulerAngles.z);
+            if ((xrOrigin.position - lastOriginPos).sqrMagnitude > sqrMoveThreshold) // player moved
+                // Rotate body sharply but still smoothly
+                TurnBodyToCamera(turnWeightSharp);
+            else if (!playerController.inSpecialInteractAnimation && GetBodyToCameraAngle() is var angle && angle > turnAngleThreshold)
+                // Rotate body as smoothly as possible but prevent 360 deg head twists on quick rotations
+                TurnBodyToCamera(turnWeightSharp * Mathf.InverseLerp(turnAngleThreshold, 170f, angle));
 
             if (!playerController.inSpecialInteractAnimation)
                 lastFrameHMDPosition = mainCamera.transform.localPosition;
@@ -448,18 +479,20 @@ namespace LCVR.Player
                     stopSprintingCoroutine = null;
                 }
 
-                PlayerControllerB_Sprint_Patch.sprint = isSprinting ? 1 : 0;
+                PlayerControllerB_Sprint_Patch.sprint = !isRoomCrouching && isSprinting ? 1 : 0;
             }
             else
-                PlayerControllerB_Sprint_Patch.sprint = sprintAction.IsPressed() ? 1 : 0;
+                PlayerControllerB_Sprint_Patch.sprint = !isRoomCrouching && sprintAction.IsPressed() ? 1 : 0;
 
             DNet.BroadcastRig(new DNet.Rig()
             {
                 leftHandPosition = leftController.transform.localPosition,
                 leftHandEulers = leftController.transform.localEulerAngles,
+                leftHandFingers = leftFingerCurler.GetCurls(),
 
                 rightHandPosition = rightController.transform.localPosition,
                 rightHandEulers = rightController.transform.localEulerAngles,
+                rightHandFingers = rightFingerCurler.GetCurls(),
 
                 cameraEulers = mainCamera.transform.eulerAngles,
                 cameraPosAccounted = cameraPosAccounted,
@@ -476,6 +509,14 @@ namespace LCVR.Player
             StartOfRound.Instance.playerLookMagnitudeThisFrame = (angles - lastFrameHMDRotation).magnitude * Time.deltaTime;
 
             lastFrameHMDRotation = angles;
+
+            // Update tracked finger curls after animator update
+            leftFingerCurler?.Update();
+
+            if (!playerController.isHoldingObject)
+            {
+                rightFingerCurler?.Update();
+            }
         }
 
         public void OnDeath()
@@ -567,13 +608,10 @@ namespace LCVR.Player
         {
             yield return new WaitForSeconds(0.2f);
 
-            var realHeight = mainCamera.transform.localPosition.y * scaleFactor;
+            realHeight = mainCamera.transform.localPosition.y * SCALE_FACTOR;
             var targetHeight = 2.3f;
 
             cameraFloorOffset = targetHeight - realHeight;
-
-            Logger.LogDebug($"Scaling player with real height: {MathF.Round(realHeight * 100) / 100}cm");
-            Logger.Log($"Setting player height scale: {scaleFactor}");
         }
 
         private IEnumerator StopSprinting()
@@ -614,6 +652,17 @@ namespace LCVR.Player
             mainCamera.stereoTargetEye = StereoTargetEyeMask.Both;
             mainCamera.depth = uiCamera.depth + 1;
             mainCamera.enabled = true;
+        }
+
+        private void TurnBodyToCamera(float turnWeight)
+        {
+            var newRotation = Quaternion.Euler(transform.rotation.eulerAngles.x, mainCamera.transform.eulerAngles.y, transform.rotation.eulerAngles.z);
+            transform.rotation = Quaternion.Lerp(transform.rotation, newRotation, Time.deltaTime * turnWeight);
+        }
+
+        private float GetBodyToCameraAngle()
+        {
+            return Quaternion.Angle(Quaternion.Euler(0, transform.eulerAngles.y, 0), Quaternion.Euler(0, mainCamera.transform.eulerAngles.y, 0));
         }
 
         private Transform Find(string name, bool resetLocalPosition = false)

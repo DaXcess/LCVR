@@ -19,6 +19,10 @@ The mod is powered by Unity's OpenXR plugin and is thereby compatible with a wid
 
 LCVR is compatible with multiplayer and works seamlessly with VR players and Non-VR players in the same lobby. Running this mod without having a VR headset will allow you to see the arm and head movements of any VR players in the same lobby, all while still being compatible with vanilla clients (even if the host is using no mods at all).
 
+### Open Source
+
+The source code for this mod is available on GitHub! Check it out: [DaXcess/LCVR](https://github.com/DaXcess/LCVR).
+
 ### License
 
 This mod is licensed under the GNU General Public License version 3 (GPL-3.0). For more info check [LICENSE](https://github.com/DaXcess/LCVR/blob/main/LICENSE).
@@ -77,17 +81,18 @@ Since in VR you don't have access to a keyboard (under normal circumstances), th
 
 This keyboard currently features two macros: A confirm and deny button. When pressed, these respectively send "CONFIRM" and "DENY" to the terminal. This makes it easier to switch moons and purchase items since you won't have to input this text every time.
 
-You can exit the terminal by pressing the pause button or my clicking on the close button on the terminal keyboard.
+You can exit the terminal by pressing the pause button or by clicking on the close button on the terminal keyboard.
 
-# Special additions
+# VR additions
 
 <div>
   <img src="https://github.com/DaXcess/LCVR/blob/main/.github/assets/shovel.webp?raw=true" height="250" />
   <img src="https://github.com/DaXcess/LCVR/blob/main/.github/assets/spray.webp?raw=true" height="250" />
 </div>
 
-This mod in addition to adding VR and motion controls, also adds a few special interactions that you can perform in VR. At the time of writing, these currently are: Spray paint shaking and shovel/sign swinging.
+This mod, in addition to adding VR and motion controls, also adds a few special interactions that you can perform in VR. At the time of writing, these currently are:
 
-The spray paint shaking is pretty simple: When holding the spray paint item, you can physically shake it to shake the can in the game. You can also still use the secondary interact button to shake the can.
-
-If you are holding a shovel or a sign, you'll notice that you are holding it in two hands. If you now swing the shovel over your shoulder, and then forward with enough force, the mod will actually damage entities (or players) that are in front of you.
+- Spray Paint Shaking
+  - When holding the spray paint item, you can physically shake it to shake the can in the game. You can also still use the secondary interact button to shake the can.
+- Shovel/Sign Swinging
+  - If you are holding a shovel or a sign, you'll notice that you are holding it in two hands. If you hold your controllers over your shoulder and bring them down with enough force, the mod will swing the shovel for you, dealing damage to players/entities in front of you.
