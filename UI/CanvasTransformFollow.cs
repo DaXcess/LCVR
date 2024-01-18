@@ -1,4 +1,5 @@
 ﻿using LCVR.Input;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -18,10 +19,10 @@ namespace LCVR.UI
 
         void Awake()
         {
-            ResetPosition(true);
-
             resetPositionAction = Actions.VRInputActions.FindAction("Controls/Reset Height");
             resetPositionAction.performed += OnResetHeight;
+
+            StartCoroutine(Init());
         }
 
         void OnDestroy()
@@ -49,6 +50,13 @@ namespace LCVR.UI
                 transform.rotation = targetRotation;
                 transform.position = targetPosition;
             }
+        }
+
+        private IEnumerator Init()
+        {
+            yield return null;
+
+            ResetPosition(true);
         }
 
         private void OnResetHeight(InputAction.CallbackContext context)

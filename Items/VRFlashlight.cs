@@ -20,8 +20,8 @@ namespace LCVR.Items
                 return;
 
             var isHoldingActiveFlashlight = (player.currentlyHeldObjectServer?.itemProperties.itemId == 1 || player.currentlyHeldObjectServer?.itemProperties.itemId == 6)
-                                                && player.currentlyHeldObjectServer.isBeingUsed; 
-                                                       // currentlyHeldObjectServer is guaranteed to not be null at this point
+                                                && player.currentlyHeldObjectServer.isBeingUsed;
+            // currentlyHeldObjectServer is guaranteed to not be null at this point
 
             if (!item.isPocketed)
             {
@@ -29,7 +29,8 @@ namespace LCVR.Items
 
                 player.allHelmetLights[0].transform.ApplyOffsetTransform(networkPlayer.rightHandTarget, positionOffset, rotationOffset);
                 player.allHelmetLights[1].transform.ApplyOffsetTransform(networkPlayer.rightHandTarget, positionOffset, rotationOffset);
-            } else if (!isHoldingActiveFlashlight)
+            }
+            else if (!isHoldingActiveFlashlight)
             {
                 // We don't want to run this code if the player is holding another flashlight
 
