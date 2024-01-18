@@ -13,6 +13,7 @@ namespace LCVR.UI
         private InputAction resetPositionAction;
 
         public Transform sourceTransform;
+        public float heightOffset;
 
         private Quaternion targetRotation;
         private Vector3 targetPosition;
@@ -38,16 +39,11 @@ namespace LCVR.UI
 
         public void ResetPosition(bool force = false)
         {
-            Logger.LogDebug($"Source transform has an angle of {sourceTransform.eulerAngles.y}");
-            Logger.LogDebug($"Source transform is positioned at {sourceTransform.position}");
-
             var rotation = Quaternion.Euler(0, sourceTransform.eulerAngles.y, 0);
             var forward = rotation * Vector3.forward;
             var position = forward * CANVAS_DISTANCE;
 
-            Logger.LogDebug($"Calculated forward position is {position}");
-
-            targetPosition = new Vector3(position.x + sourceTransform.position.x, transform.position.y, position.z + sourceTransform.position.z);
+            targetPosition = new Vector3(position.x + sourceTransform.position.x, heightOffset, position.z + sourceTransform.position.z);
             targetRotation = Quaternion.Euler(0, sourceTransform.eulerAngles.y, 0);
 
             if (force)
