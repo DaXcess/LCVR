@@ -335,7 +335,7 @@ namespace LCVR.Patches
                     __instance.playerBodyAnimator.runtimeAnimatorController = AssetManager.remoteVrMetarig;
                 }
                 // Used to restore the original metarig if a VR player leaves and a non-vr players join in their place
-                else
+                else if (__instance.playerBodyAnimator.runtimeAnimatorController == AssetManager.remoteVrMetarig)
                 {
                     __instance.playerBodyAnimator.runtimeAnimatorController = __instance.playersManager.otherClientsAnimatorController;
                 }

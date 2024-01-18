@@ -114,7 +114,7 @@ namespace LCVR.Compatibility
             return false;
         }
 
-        [HarmonyPatch(typeof(PlayerPatcher), "OnUpdateCustomEmote")]
+        [HarmonyPatch(typeof(PlayerPatcher), "OnUpdateCustomEmote", [typeof(int), typeof(PlayerData), typeof(PlayerData)])]
         [HarmonyPrefix]
         private static bool OnUpdateCustomEmote(PlayerData playerData)
         {
