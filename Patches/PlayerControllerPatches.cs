@@ -139,27 +139,6 @@ namespace LCVR.Patches
             return true;
         }
 
-        [HarmonyPatch(typeof(PlayerControllerB), "Interact_performed")]
-        [HarmonyPrefix]
-        private static bool OnInteractPerformed(ref InputAction.CallbackContext context)
-        {
-            return context.ReadValue<float>() != 0;
-        }
-
-        [HarmonyPatch(typeof(PlayerControllerB), "ItemSecondaryUse_performed")]
-        [HarmonyPrefix]
-        private static bool OnItemSecondaryUsePerformed(ref InputAction.CallbackContext context)
-        {
-            return context.ReadValue<float>() != 0;
-        }
-
-        [HarmonyPatch(typeof(PlayerControllerB), "ItemTertiaryUse_performed")]
-        [HarmonyPrefix]
-        private static bool OnItemTertiaryUsePerformed(ref InputAction.CallbackContext context)
-        {
-            return context.ReadValue<float>() != 0;
-        }
-
         [HarmonyPatch(typeof(PlayerControllerB), "Crouch_performed")]
         [HarmonyPrefix]
         private static bool OnCrouchPerformed(PlayerControllerB __instance)
