@@ -1,6 +1,5 @@
 ﻿using BepInEx;
 using BepInEx.Bootstrap;
-using Dissonance;
 using GameNetcodeStuff;
 using LCVR.Assets;
 using LCVR.Patches;
@@ -20,12 +19,15 @@ using UnityEngine.XR.OpenXR;
 using UnityEngine.XR.OpenXR.Features;
 using UnityEngine.XR.OpenXR.Features.Interactions;
 
+using DependencyFlags = BepInEx.BepInDependency.DependencyFlags;
+
 namespace LCVR
 {
     [BepInPlugin(PLUGIN_GUID, PLUGIN_NAME, PLUGIN_VERSION)]
     #region Compatibility Dependencies
-    [BepInDependency("me.swipez.melonloader.morecompany", BepInDependency.DependencyFlags.SoftDependency)]
-    [BepInDependency("x753.Mimics", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("me.swipez.melonloader.morecompany", DependencyFlags.SoftDependency)]
+    [BepInDependency("x753.Mimics", DependencyFlags.SoftDependency)]
+    [BepInDependency("FlipMods.TooManyEmotes", DependencyFlags.SoftDependency)]
     #endregion
     public class Plugin : BaseUnityPlugin
     {
@@ -222,8 +224,8 @@ namespace LCVR
                     Logger.LogWarning("List of registered OpenXR runtimes on this device:");
 
                     for (var i = 0; i < runtimes.Length; i++)
-                        Logger.LogWarning($"{(i == 0 ?  ">>> " : "    ")}{runtimes[i]}");
-                }                
+                        Logger.LogWarning($"{(i == 0 ? ">>> " : "    ")}{runtimes[i]}");
+                }
 
                 return false;
             }

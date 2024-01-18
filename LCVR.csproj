@@ -31,21 +31,25 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2"
+      PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="MoreCompany">
+      <HintPath>Libs\Mods\MoreCompany.dll</HintPath>
+    </Reference>
+    <Reference Include="Mimics">
+      <HintPath>Libs\Mods\Mimics.dll</HintPath>
+    </Reference>
+    <Reference Include="TooManyEmotes">
+      <HintPath>Libs\Mods\TooManyEmotes.dll</HintPath>
+    </Reference>
     <Reference Include="Assembly-CSharp">
       <HintPath>Libs\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="DissonanceVoip">
       <HintPath>Libs\DissonanceVoip.dll</HintPath>
-    </Reference>
-    <Reference Include="MoreCompany">
-      <HintPath>Libs\MoreCompany.dll</HintPath>
-    </Reference>
-    <Reference Include="Mimics">
-      <HintPath>Libs\Mimics.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>Libs\Newtonsoft.Json.dll</HintPath>
