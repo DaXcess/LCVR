@@ -2,7 +2,7 @@
 
 This VR mod divides the controls into two categories: **Lethal Company Controls** and **VR Controls**. The reason behind this is how they are implemented. **LC Controls** are replacing the built in controls of the game, by overriding the player input controller with them. The **VR Controls** however are exclusively used within the mod, and are not injected into the game's built in controls.
 
-## Default Lethal Company Inputs
+## Default LC Controls
 
 |      Action      | PC               | VR                | Notes                                                               |
 | :--------------: | ---------------- | ----------------- | ------------------------------------------------------------------- |

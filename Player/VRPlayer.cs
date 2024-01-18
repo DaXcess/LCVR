@@ -14,6 +14,7 @@ using UnityEngine.XR.Interaction.Toolkit;
 using Microsoft.MixedReality.Toolkit.Experimental.UI;
 using LCVR.Patches;
 using HarmonyLib;
+using LCVR.UI;
 
 namespace LCVR.Player
 {
@@ -239,8 +240,8 @@ namespace LCVR.Player
 
             // Set up rigging
             var model = Find("ScavengerModel/metarig/ScavengerModelArmsOnly", true).gameObject;
-            var modelMetarig = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig", true); 
-            
+            var modelMetarig = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig", true);
+
             Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/RigArms", true);
 
             var rigFollow = model.GetComponent<IKRigFollowVRRig>() ?? model.AddComponent<IKRigFollowVRRig>();
@@ -637,6 +638,8 @@ namespace LCVR.Player
             uiCamera.nearClipPlane = 0.01f;
             uiCamera.farClipPlane = 15f;
             uiCamera.enabled = true;
+
+            FindObjectsOfType<CanvasTransformFollow>().Do(follow => follow.ResetPosition(true));
         }
 
         private void SwitchToGameCamera()
