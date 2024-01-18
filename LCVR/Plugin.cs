@@ -6,6 +6,7 @@ using LCVR.Assets;
 using LCVR.Patches;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -43,6 +44,10 @@ namespace LCVR
 
         private void Awake()
         {
+            // Fix XR not working with non-english PC languages
+            // Again, Unity, why the fuck do we need another hack to make shit just work normally?
+            CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+
             // Reload Unity's Input System plugins since BepInEx in some
             // configurations runs after the Input System has already been initialized
             typeof(InputSystem).GetMethod("PerformDefaultPluginInitialization", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, []);
