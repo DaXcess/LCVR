@@ -13,6 +13,7 @@ namespace LCVR.UI
         private InputAction resetPositionAction;
 
         public Transform sourceTransform;
+        public float heightOffset;
 
         private Quaternion targetRotation;
         private Vector3 targetPosition;
@@ -42,7 +43,7 @@ namespace LCVR.UI
             var forward = rotation * Vector3.forward;
             var position = forward * CANVAS_DISTANCE;
 
-            targetPosition = new Vector3(position.x + sourceTransform.position.x, transform.position.y, position.z + sourceTransform.position.z);
+            targetPosition = new Vector3(position.x + sourceTransform.position.x, heightOffset, position.z + sourceTransform.position.z);
             targetRotation = Quaternion.Euler(0, sourceTransform.eulerAngles.y, 0);
 
             if (force)
