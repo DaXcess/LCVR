@@ -109,7 +109,7 @@ namespace LCVR.Patches
 
         static PlayerControllerPatches()
         {
-            pivotAction = Actions.VRInputActions.FindAction("Controls/Pivot");
+            pivotAction = Actions.FindAction("Controls/Pivot");
         }
 
         private static void SetCameraUp(this PlayerControllerB player, float value)
@@ -143,7 +143,7 @@ namespace LCVR.Patches
         [HarmonyPrefix]
         private static bool OnCrouchPerformed(PlayerControllerB __instance)
         {
-            if (!__instance.IsOwner)
+            if (!__instance.IsOwner || __instance.IsInactivePlayer())
                 return true;
 
             return !__instance.GetComponent<VRPlayer>().isRoomCrouching;
@@ -240,7 +240,7 @@ namespace LCVR.Patches
         [HarmonyPostfix]
         private static void OnPlayerDeath(PlayerControllerB __instance)
         {
-            if (!__instance.IsOwner)
+            if (!__instance.IsOwner || __instance.IsInactivePlayer())
                 return;
 
             isDead = true;
@@ -270,7 +270,7 @@ namespace LCVR.Patches
         private static void SwitchedToItemSlot(PlayerControllerB __instance)
         {
             // Ignore if it's someone else, that is handled by the universal patch
-            if (!__instance.IsOwner)
+            if (!__instance.IsOwner || __instance.IsInactivePlayer())
                 return;
 
             // Find held item

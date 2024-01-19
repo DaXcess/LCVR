@@ -2,12 +2,16 @@
 using LCVR.Assets;
 using LCVR.Input;
 using LCVR.UI;
+using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
+using UnityEngine.XR;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.UI;
+using UnityEngine.XR.OpenXR.Features.Interactions;
 
 namespace LCVR.Patches
 {
@@ -80,6 +84,7 @@ namespace LCVR.Patches
                 Compatibility.MoreCompany.SetupMoreCompanyUI();
 
             InitializeKeyboard();
+            __instance.StartCoroutine(DetectControllers());
         }
 
         private static void InitMenuScene()
@@ -254,6 +259,61 @@ namespace LCVR.Patches
             });
 
             vrIntroPanel.SetActive(true);
+        }
+
+        /// <summary>
+        /// Detect the type of controllers that are being used
+        /// </summary>
+        private static IEnumerator DetectControllers()
+        {
+            var profile = "";
+
+            // We can do infinite loop, because it will stop if the Coroutine gets destroyed
+            while (true)
+            {
+                foreach (var device in InputSystem.devices)
+                {
+                    if (device is OculusTouchControllerProfile.OculusTouchController || device is KHRSimpleControllerProfile.KHRSimpleController || device is MetaQuestTouchProControllerProfile.QuestProTouchController)
+                    {
+                        // Apply default profile
+                        profile = "default";
+                        break;
+                    }
+                    else if (device is ValveIndexControllerProfile.ValveIndexController)
+                    {
+                        // Apply valve index profile
+                        profile = "index";
+                        break;
+                    }
+                    else if (device is HTCViveControllerProfile.ViveController)
+                    {
+                        // Apply HTC vive controller profile
+                        profile = "htc_vive";
+                        break;
+                    }
+                    else if (device is HPReverbG2ControllerProfile.ReverbG2Controller)
+                    {
+                        // Apply HP Reverb G2 controller profile
+                        profile = "hp_reverb";
+                        break;
+                    }
+                    else if (device is MicrosoftMotionControllerProfile.WMRSpatialController)
+                    {
+                        // Apply WMR controller profile
+                        profile = "wmr";
+                        break;
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(profile))
+                    break;
+
+                yield return new WaitForSeconds(1);
+            }
+
+            Logger.Log($"Detected controllers, applying controller profile '{profile}'...");
+
+            Actions.ApplyInternalControllerProfile(profile);
         }
 
         [HarmonyPrefix]

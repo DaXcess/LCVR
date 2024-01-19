@@ -12,7 +12,7 @@ namespace LCVR.Input
 
         internal SmoothTurningProvider()
         {
-            turnAction = Actions.VRInputActions.FindAction("Controls/Turn");
+            turnAction = Actions.FindAction("Controls/Turn");
         }
 
         public void Update()

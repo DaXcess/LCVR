@@ -20,7 +20,7 @@ namespace LCVR.UI
 
         void Awake()
         {
-            resetPositionAction = Actions.VRInputActions.FindAction("Controls/Reset Height");
+            resetPositionAction = Actions.FindAction("Controls/Reset Height");
             resetPositionAction.performed += OnResetHeight;
 
             StartCoroutine(Init());

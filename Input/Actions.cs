@@ -1,4 +1,6 @@
-﻿using System;
+﻿using LCVR.Assets;
+using System;
+using System.Collections.Generic;
 using System.Net;
 using UnityEngine.InputSystem;
 
@@ -6,6 +8,11 @@ namespace LCVR.Input
 {
     public class Actions
     {
+        private static readonly Dictionary<string, InputActionAsset> profiles = new()
+        {
+            { "default", AssetManager.Input("DefaultInputs") }
+        };
+
         public static InputAction Head_Position;
         public static InputAction Head_Rotation;
         public static InputAction Head_TrackingState;
@@ -18,36 +25,39 @@ namespace LCVR.Input
         public static InputAction LeftHand_Rotation;
         public static InputAction LeftHand_TrackingState;
 
-        public readonly static InputActionAsset VRInputActions = InputActionAsset.FromJson(Properties.Resources.vr_inputs);
-        public readonly static InputActionAsset LCInputActions = InputActionAsset.FromJson(Properties.Resources.lc_inputs);
+        private static InputActionAsset internalActions;
+        private static readonly InputActionAsset allActions;
 
         static Actions()
         {
-            (VRInputActions, LCInputActions) = DownloadControllerProfiles(Plugin.Config.ControllerBindingsOverrideProfile.Value);
+            allActions = internalActions = GetProfile("default");
+            allActions.Enable();
 
-            Head_Position = VRInputActions.FindAction("Head/Position");
-            Head_Rotation = VRInputActions.FindAction("Head/Rotation");
-            Head_TrackingState = VRInputActions.FindAction("Head/Tracking State");
+            Head_Position = allActions.FindAction("Head/Position");
+            Head_Rotation = allActions.FindAction("Head/Rotation");
+            Head_TrackingState = allActions.FindAction("Head/Tracking State");
 
-            RightHand_Position = VRInputActions.FindAction("Right Hand/Position");
-            RightHand_Rotation = VRInputActions.FindAction("Right Hand/Rotation");
-            RightHand_TrackingState = VRInputActions.FindAction("Right Hand/Tracking State");
+            RightHand_Position = allActions.FindAction("Right Hand/Position");
+            RightHand_Rotation = allActions.FindAction("Right Hand/Rotation");
+            RightHand_TrackingState = allActions.FindAction("Right Hand/Tracking State");
 
-            LeftHand_Position = VRInputActions.FindAction("Left Hand/Position");
-            LeftHand_Rotation = VRInputActions.FindAction("Left Hand/Rotation");
-            LeftHand_TrackingState = VRInputActions.FindAction("Left Hand/Tracking State");
-
-            LCInputActions.Enable();
-            VRInputActions.Enable();
+            LeftHand_Position = allActions.FindAction("Left Hand/Position");
+            LeftHand_Rotation = allActions.FindAction("Left Hand/Rotation");
+            LeftHand_TrackingState = allActions.FindAction("Left Hand/Tracking State");
         }
+
+        private static readonly Dictionary<string, InputActionAsset> cache = [];
 
         /// <summary>
         /// Dynamically download controller profiles from GitHub, so that users won't have to
         /// mess around with files and only need to specify a profile name inside the configuration.
         /// </summary>
         /// <returns></returns>
-        private static (InputActionAsset, InputActionAsset) DownloadControllerProfiles(string profile)
+        private static InputActionAsset DownloadControllerProfile(string profile)
         {
+            if (cache.TryGetValue(profile, out var asset)) 
+                return asset;
+
             try
             {
                 if (string.IsNullOrEmpty(profile))
@@ -55,22 +65,58 @@ namespace LCVR.Input
 
                 using var client = new WebClient();
 
-                var vr = client.DownloadString($"https://raw.githubusercontent.com/DaXcess/LCVR-Controller-Profiles/main/{profile}/lcvr_vr_inputs.json");
-                var lc = client.DownloadString($"https://raw.githubusercontent.com/DaXcess/LCVR-Controller-Profiles/main/{profile}/lcvr_lc_inputs.json");
+                var actions = client.DownloadString($"https://raw.githubusercontent.com/DaXcess/LCVR-Controller-Profiles/main/{profile}/profile.inputactions");
+                asset = InputActionAsset.FromJson(actions);
 
-                return (InputActionAsset.FromJson(vr), InputActionAsset.FromJson(lc));
+                cache.Add(profile, asset);
+
+                return asset;
             }
             catch
             {
-                return (VRInputActions, LCInputActions);
+                return internalActions;
             }
+        }
+
+        private static InputActionAsset GetProfile(string profile)
+        {
+            if (!profiles.TryGetValue(profile, out var inputAsset))
+            {
+                Logger.LogWarning($"Tried to load unknown controller profile: {profile}, falling back to default");
+                inputAsset = profiles["default"];
+            }
+
+            internalActions = inputAsset;
+
+            // Download external profile if configured
+            var actions = string.IsNullOrEmpty(Plugin.Config.ControllerBindingsOverrideProfile.Value) switch
+            {
+                true => internalActions,
+                false => DownloadControllerProfile(Plugin.Config.ControllerBindingsOverrideProfile.Value)
+            };
+
+            return actions;
+        }
+
+        public static void ApplyInternalControllerProfile(string profile)
+        {
+            var actions = GetProfile(profile);
+            allActions.LoadFromJson(actions.ToJson());
+            allActions.Enable();
+            
+            ReloadInputBindings();
         }
 
         public static void ReloadInputBindings()
         {
-            IngamePlayerSettings.Instance.playerInput.actions = LCInputActions;
+            IngamePlayerSettings.Instance.playerInput.actions = allActions;
 
             Logger.LogDebug("Loaded XR input binding overrides");
+        }
+
+        public static InputAction FindAction(string name)
+        {
+            return allActions.FindAction(name);
         }
     }
 }

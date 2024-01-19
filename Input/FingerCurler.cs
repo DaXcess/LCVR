@@ -135,9 +135,9 @@ namespace LCVR.Input
         {
             var map = isLeft ? "Left Hand Fingers" : "Right Hand Fingers";
 
-            thumbAction = Actions.VRInputActions.FindAction($"{map}/Thumb");
-            indexAction = Actions.VRInputActions.FindAction($"{map}/Index");
-            othersAction = Actions.VRInputActions.FindAction($"{map}/Others");
+            thumbAction = Actions.FindAction($"{map}/Thumb");
+            indexAction = Actions.FindAction($"{map}/Index");
+            othersAction = Actions.FindAction($"{map}/Others");
         }
 
         public override void Update()
