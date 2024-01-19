@@ -1,11 +1,11 @@
 ﻿using BepInEx;
 using BepInEx.Bootstrap;
-using Dissonance;
 using GameNetcodeStuff;
 using LCVR.Assets;
 using LCVR.Patches;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -19,10 +19,16 @@ using UnityEngine.XR.OpenXR;
 using UnityEngine.XR.OpenXR.Features;
 using UnityEngine.XR.OpenXR.Features.Interactions;
 
+using DependencyFlags = BepInEx.BepInDependency.DependencyFlags;
+
 namespace LCVR
 {
     [BepInPlugin(PLUGIN_GUID, PLUGIN_NAME, PLUGIN_VERSION)]
-    [BepInDependency("me.swipez.melonloader.morecompany", BepInDependency.DependencyFlags.SoftDependency)]
+    #region Compatibility Dependencies
+    [BepInDependency("me.swipez.melonloader.morecompany", DependencyFlags.SoftDependency)]
+    [BepInDependency("x753.Mimics", DependencyFlags.SoftDependency)]
+    [BepInDependency("FlipMods.TooManyEmotes", DependencyFlags.SoftDependency)]
+    #endregion
     public class Plugin : BaseUnityPlugin
     {
         public const string PLUGIN_GUID = "io.daxcess.lcvr";
@@ -40,6 +46,10 @@ namespace LCVR
 
         private void Awake()
         {
+            // Fix XR not working with non-english PC languages
+            // Again, Unity, why the fuck do we need another hack to make shit just work normally?
+            CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+
             // Reload Unity's Input System plugins since BepInEx in some
             // configurations runs after the Input System has already been initialized
             typeof(InputSystem).GetMethod("PerformDefaultPluginInitialization", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, []);
@@ -179,12 +189,43 @@ namespace LCVR
             EnableControllerProfiles();
             InitializeXRRuntime();
 
+
             if (!StartDisplay())
             {
-                OpenXR.DumpOpenXRDiag();
-
                 Logger.LogError("Failed to start in VR Mode! Only Non-VR features are available!");
-                Logger.LogError("An OpenXR log dump is displayed above to help with troubleshooting.");
+
+                if (OpenXR.GetDiagnosticReport(out var report))
+                {
+                    Logger.LogWarning($"Runtime Name:    {report.RuntimeName}");
+                    Logger.LogWarning($"Runtime Version: {report.RuntimeVersion}");
+                    Logger.LogWarning($"Last Error:      {report.Error}");
+                    Logger.LogWarning("");
+
+                    switch (report.Error)
+                    {
+                        case "XR_ERROR_RUNTIME_UNAVAILABLE":
+                            Logger.LogWarning("It appears that no OpenXR runtime is currently active. Please go to the dedicated application for your VR headset and make sure that it is running, and set as default OpenXR runtime.");
+                            break;
+
+                        case "XR_ERROR_FORM_FACTOR_UNAVAILABLE":
+                            Logger.LogWarning("This generally means that your headset is not connected, or that your headset is connected to a different runtime. Please make sure your headset is active and connected, and that you are using the correct OpenXR runtime.");
+                            break;
+
+                        default:
+                            Logger.LogWarning("Unknown reason for OpenXR failure!");
+                            break;
+                    }
+                }
+                else Logger.LogError("Failed to generate OpenXR diagnostics report!");
+
+                var runtimes = OpenXR.DetectOpenXRRuntimes();
+                if (runtimes != null)
+                {
+                    Logger.LogWarning("List of registered OpenXR runtimes on this device:");
+
+                    for (var i = 0; i < runtimes.Length; i++)
+                        Logger.LogWarning($"{(i == 0 ? ">>> " : "    ")}{runtimes[i]}");
+                }
 
                 return false;
             }
@@ -195,6 +236,12 @@ namespace LCVR
                     Logger.LogWarning("WARNING: UNITY EXPLORER DETECTED! UNITY EXPLORER *WILL* BREAK VR UI INPUTS!");
                     Flags |= Flags.UnityExplorerDetected;
                 }
+
+
+            if (OpenXR.GetRuntimeName(out var name) && OpenXR.GetRuntimeVersion(out var major, out var minor, out var patch))
+                Logger.LogInfo($"OpenXR runtime being used: {name} ({major}.{minor}.{patch})");
+            else
+                Logger.LogError("Could not get runtime OpenXR name?");
 
             HarmonyPatcher.PatchVR();
 

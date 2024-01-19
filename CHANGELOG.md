@@ -1,3 +1,16 @@
+# 1.0.1
+
+## What's Changed
+
+- New discord invite link on startup by @J-Emil-P in https://github.com/DaXcess/LCVR/pull/88
+- Revamped networking by @DaXcess in https://github.com/DaXcess/LCVR/pull/99
+
+## New Contributors
+
+- @J-Emil-P made their first contribution in https://github.com/DaXcess/LCVR/pull/88
+
+**Full Changelog**: https://github.com/DaXcess/LCVR/compare/v1.0.0...v1.0.1
+
 # 1.0.0
 
 **The VR mod has finally released!!**

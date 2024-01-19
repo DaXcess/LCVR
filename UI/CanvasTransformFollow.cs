@@ -1,4 +1,5 @@
 ﻿using LCVR.Input;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -12,16 +13,17 @@ namespace LCVR.UI
         private InputAction resetPositionAction;
 
         public Transform sourceTransform;
+        public float heightOffset;
 
         private Quaternion targetRotation;
         private Vector3 targetPosition;
 
         void Awake()
         {
-            ResetPosition(true);
-
             resetPositionAction = Actions.VRInputActions.FindAction("Controls/Reset Height");
             resetPositionAction.performed += OnResetHeight;
+
+            StartCoroutine(Init());
         }
 
         void OnDestroy()
@@ -41,7 +43,7 @@ namespace LCVR.UI
             var forward = rotation * Vector3.forward;
             var position = forward * CANVAS_DISTANCE;
 
-            targetPosition = new Vector3(position.x + sourceTransform.position.x, transform.position.y, position.z + sourceTransform.position.z);
+            targetPosition = new Vector3(position.x + sourceTransform.position.x, heightOffset, position.z + sourceTransform.position.z);
             targetRotation = Quaternion.Euler(0, sourceTransform.eulerAngles.y, 0);
 
             if (force)
@@ -49,6 +51,13 @@ namespace LCVR.UI
                 transform.rotation = targetRotation;
                 transform.position = targetPosition;
             }
+        }
+
+        private IEnumerator Init()
+        {
+            yield return null;
+
+            ResetPosition(true);
         }
 
         private void OnResetHeight(InputAction.CallbackContext context)

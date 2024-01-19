@@ -2,6 +2,7 @@
 *.user
 
 /.vs
+/.idea
 /obj
 /bin
 /Libs/Assembly-CSharp.dll
