@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using UnityEngine.InputSystem;
+using UnityEngine.XR.OpenXR.Features.Interactions;
 
 namespace LCVR.Input
 {
@@ -25,12 +26,25 @@ namespace LCVR.Input
         public static InputAction LeftHand_Rotation;
         public static InputAction LeftHand_TrackingState;
 
-        private static InputActionAsset internalActions;
         private static readonly InputActionAsset allActions;
 
         static Actions()
         {
-            allActions = internalActions = GetProfile("default");
+            if (!DetectControllerProfile(out var profile))
+            {
+                Logger.LogWarning("Failed to detect controllers (not yet connected?). Using last controller profile as fallback.");
+
+                var lastProfile = Plugin.Config.LastInternalControllerProfile.Value;
+
+                if (string.IsNullOrEmpty(lastProfile))
+                    profile = "default";
+                else
+                    profile = lastProfile;
+            }
+
+            Plugin.Config.LastInternalControllerProfile.Value = profile;
+
+            allActions = GetProfile(profile);
             allActions.Enable();
 
             Head_Position = allActions.FindAction("Head/Position");
@@ -46,6 +60,55 @@ namespace LCVR.Input
             LeftHand_TrackingState = allActions.FindAction("Left Hand/Tracking State");
         }
 
+        /// <summary>
+        /// Detect the type of controllers that are being used
+        /// </summary>
+        private static bool DetectControllerProfile(out string profile)
+        {
+            profile = "";
+
+            foreach (var device in InputSystem.devices)
+            {
+                if (device is OculusTouchControllerProfile.OculusTouchController || device is KHRSimpleControllerProfile.KHRSimpleController || device is MetaQuestTouchProControllerProfile.QuestProTouchController)
+                {
+                    // Apply default profile
+                    profile = "default";
+                    break;
+                }
+                else if (device is ValveIndexControllerProfile.ValveIndexController)
+                {
+                    // Apply valve index profile
+                    profile = "index";
+                    break;
+                }
+                else if (device is HTCViveControllerProfile.ViveController)
+                {
+                    // Apply HTC vive controller profile
+                    profile = "htc_vive";
+                    break;
+                }
+                else if (device is HPReverbG2ControllerProfile.ReverbG2Controller)
+                {
+                    // Apply HP Reverb G2 controller profile
+                    profile = "hp_reverb";
+                    break;
+                }
+                else if (device is MicrosoftMotionControllerProfile.WMRSpatialController)
+                {
+                    // Apply WMR controller profile
+                    profile = "wmr";
+                    break;
+                }
+            }
+
+            if (string.IsNullOrEmpty(profile))
+                return false;
+
+            Logger.Log($"Detected controllers, applying controller profile '{profile}'...");
+
+            return true;
+        }
+
         private static readonly Dictionary<string, InputActionAsset> cache = [];
 
         /// <summary>
@@ -53,10 +116,10 @@ namespace LCVR.Input
         /// mess around with files and only need to specify a profile name inside the configuration.
         /// </summary>
         /// <returns></returns>
-        private static InputActionAsset DownloadControllerProfile(string profile)
+        private static bool DownloadControllerProfile(string profile, out InputActionAsset asset)
         {
-            if (cache.TryGetValue(profile, out var asset)) 
-                return asset;
+            if (cache.TryGetValue(profile, out asset)) 
+                return true;
 
             try
             {
@@ -74,7 +137,7 @@ namespace LCVR.Input
             }
             catch
             {
-                return internalActions;
+                return false;
             }
         }
 
@@ -86,25 +149,18 @@ namespace LCVR.Input
                 inputAsset = profiles["default"];
             }
 
-            internalActions = inputAsset;
-
             // Download external profile if configured
             var actions = string.IsNullOrEmpty(Plugin.Config.ControllerBindingsOverrideProfile.Value) switch
             {
-                true => internalActions,
-                false => DownloadControllerProfile(Plugin.Config.ControllerBindingsOverrideProfile.Value)
+                true => inputAsset,
+                false => DownloadControllerProfile(Plugin.Config.ControllerBindingsOverrideProfile.Value, out var downloadedAsset) switch
+                {
+                    true => downloadedAsset,
+                    false => inputAsset
+                }
             };
 
             return actions;
-        }
-
-        public static void ApplyInternalControllerProfile(string profile)
-        {
-            var actions = GetProfile(profile);
-            allActions.LoadFromJson(actions.ToJson());
-            allActions.Enable();
-            
-            ReloadInputBindings();
         }
 
         public static void ReloadInputBindings()
