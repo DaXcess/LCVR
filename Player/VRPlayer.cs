@@ -85,8 +85,8 @@ namespace LCVR.Player
 
         public VRPlayer()
         {
-            resetHeightAction = Actions.VRInputActions.FindAction("Controls/Reset Height");
-            sprintAction = Actions.VRInputActions.FindAction("Controls/Sprint");
+            resetHeightAction = Actions.FindAction("Controls/Reset Height");
+            sprintAction = Actions.FindAction("Controls/Sprint");
         }
 
         private void Awake()
@@ -389,18 +389,7 @@ namespace LCVR.Player
 
             renderer.material = AssetManager.defaultRayMat;
 
-            controller.enableInputTracking = false;
-            controller.selectAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Select"));
-            controller.selectActionValue = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Select Value"));
-            controller.activateAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Activate"));
-            controller.activateActionValue = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Activate Value"));
-            controller.uiPressAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/UI Press"));
-            controller.uiPressActionValue = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/UI Press Value"));
-            controller.uiScrollAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/UI Scroll"));
-            controller.rotateAnchorAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Rotate Anchor"));
-            controller.translateAnchorAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Translate Anchor"));
-            controller.scaleToggleAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Scale Toggle"));
-            controller.scaleDeltaAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Scale Delta"));
+            controller.AddActionBasedControllerBinds(hand, false);
 
             return interactor;
         }
@@ -424,8 +413,9 @@ namespace LCVR.Player
             if (!playerController.inSpecialInteractAnimation)
                 transform.position += new Vector3(movementAccounted.x * SCALE_FACTOR, 0, movementAccounted.z * SCALE_FACTOR);
 
-            // Update rotation offset after adding movement from frame
-            turningProvider.Update();
+            // Update rotation offset after adding movement from frame (if not in build mode)
+            if (!ShipBuildModeManager.Instance.InBuildMode)
+                turningProvider.Update();
 
             var lastOriginPos = xrOrigin.position;
 

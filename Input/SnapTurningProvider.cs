@@ -13,7 +13,7 @@ namespace LCVR.Input
 
         internal SnapTurningProvider()
         {
-            turnAction = Actions.VRInputActions.FindAction("Controls/Turn");
+            turnAction = Actions.FindAction("Controls/Turn");
             turnAmount = Plugin.Config.SnapTurnSize.Value;
         }
 

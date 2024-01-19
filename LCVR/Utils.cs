@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using LCVR.Assets;
 using UnityEngine.XR.Interaction.Toolkit;
 using System.Security.Cryptography;
+using UnityEngine.XR;
 
 namespace LCVR
 {
@@ -88,10 +89,17 @@ namespace LCVR
 
             renderer.material = AssetManager.defaultRayMat;
 
+            controller.AddActionBasedControllerBinds(hand);
+        }
+
+        public static void AddActionBasedControllerBinds(this ActionBasedController controller, string hand, bool trackingEnabled = true, bool actionsEnabled = true)
+        {
+            controller.enableInputTracking = trackingEnabled;
             controller.positionAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Position"));
             controller.rotationAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Rotation"));
             controller.trackingStateAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Tracking State"));
 
+            controller.enableInputActions = actionsEnabled;
             controller.selectAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Select"));
             controller.selectActionValue = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Select Value"));
             controller.activateAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Activate"));

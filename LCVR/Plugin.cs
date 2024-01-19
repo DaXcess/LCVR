@@ -189,7 +189,6 @@ namespace LCVR
             EnableControllerProfiles();
             InitializeXRRuntime();
 
-
             if (!StartDisplay())
             {
                 Logger.LogError("Failed to start in VR Mode! Only Non-VR features are available!");

@@ -2,12 +2,16 @@
 using LCVR.Assets;
 using LCVR.Input;
 using LCVR.UI;
+using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
+using UnityEngine.XR;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.UI;
+using UnityEngine.XR.OpenXR.Features.Interactions;
 
 namespace LCVR.Patches
 {
