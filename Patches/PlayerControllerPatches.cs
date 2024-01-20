@@ -66,6 +66,7 @@ namespace LCVR.Patches
 
             // Override sprint
             int index = codes.FindLastIndex(x => x.operand == (object)"Move") + 5;
+
             codes[index++] = new(OpCodes.Ldsfld, Field(typeof(PlayerControllerB_Sprint_Patch), nameof(sprint)));
             codes[index] = new(OpCodes.Stloc_0);
 

@@ -51,7 +51,7 @@ namespace LCVR.Patches
         {
             var codes = new List<CodeInstruction>(instructions);
 
-            int index = codes.FindLastIndex(x => x.opcode == OpCodes.Ldstr);
+            int index = codes.FindIndex(x => x.opcode == OpCodes.Ldstr);
 
             codes[index].operand = Properties.Resources.lc_inputs;
 
