@@ -12,7 +12,6 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.XR;
 
-using static HarmonyLib.AccessTools;
 namespace LCVR.Patches
 {
     [LCVRPatch]
@@ -23,21 +22,15 @@ namespace LCVR.Patches
         {
             var codes = new List<CodeInstruction>(instructions);
 
-            int startIndex = codes.FindIndex(x => x.operand == (object)Field(typeof(PlayerControllerB), nameof(PlayerControllerB.hasBegunSpectating))) + 1;
-            int endIndex = codes.FindIndex(x => x.operand == (object)Method(typeof(PlayerControllerB), "SetNightVisionEnabled")) - 3;
-
             // Remove HUD rotating
-            for (int i = startIndex; i <= endIndex; i++)
+            for (int i = 111; i <= 123; i++)
             {
                 codes[i].opcode = OpCodes.Nop;
                 codes[i].operand = null;
             }
 
-            startIndex = codes.FindIndex(x => x.operand == (object)PropertyGetter(typeof(Camera), nameof(Camera.fieldOfView))) - 4;
-            endIndex = codes.FindLastIndex(x => x.operand == (object)PropertySetter(typeof(Camera), nameof(Camera.fieldOfView)));
-
             // Remove FOV updating
-            for (int i = startIndex; i <= endIndex; i++)
+            for (int i = 305; i <= 316; i++)
             {
                 codes[i].opcode = OpCodes.Nop;
                 codes[i].operand = null;
@@ -65,17 +58,13 @@ namespace LCVR.Patches
             var codes = new List<CodeInstruction>(instructions);
 
             // Override sprint
-            int index = codes.FindLastIndex(x => x.operand == (object)"Move") + 5;
+            codes[326].opcode = OpCodes.Ldsfld;
+            codes[326].operand = typeof(PlayerControllerB_Sprint_Patch).GetField("sprint", BindingFlags.Public | BindingFlags.Static);
 
-            codes[index++] = new(OpCodes.Ldsfld, Field(typeof(PlayerControllerB_Sprint_Patch), nameof(sprint)));
-            codes[index] = new(OpCodes.Stloc_0);
+            codes[327].opcode = OpCodes.Stloc_0;
+            codes[327].operand = null;
 
-            index = codes.FindLastIndex(x => x.operand == (object)"Sprint");
-            
-            int startIndex = index - 1;
-            int endIndex = index + 4;
-
-            for (int i = startIndex; i <= endIndex; i++)
+            for (int i = 328; i <= 333; i++)
             {
                 codes[i].opcode = OpCodes.Nop;
                 codes[i].operand = null;
@@ -101,11 +90,8 @@ namespace LCVR.Patches
             //}
 
             // Make it so player sends position updates more frequently (Multiplayer 6 DOF looks better with this)
-
-            int index = codes.FindLastIndex(x => x.operand == (object)Method(typeof(PlayerControllerB), "NearOtherPlayers"));
-
-            codes[index + 2].operand = 0.025f;
-            codes[index + 5].operand = 0.025f;
+            codes[138].operand = 0.025f;
+            codes[141].operand = 0.025f;
 
             return codes.AsEnumerable();
         }

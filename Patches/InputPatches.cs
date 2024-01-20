@@ -1,11 +1,8 @@
 ﻿using HarmonyLib;
 using LCVR.Input;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
-using UnityEngine.InputSystem;
-using static HarmonyLib.AccessTools;
 
 namespace LCVR.Patches
 {
@@ -29,10 +26,7 @@ namespace LCVR.Patches
         {
             var codes = new List<CodeInstruction>(instructions);
 
-            int startIndex = codes.FindIndex(x => x.opcode == OpCodes.Brtrue);
-            int endIndex = codes.FindIndex(x => x.operand == (object)Method(typeof(InputActionRebindingExtensions), nameof(InputActionRebindingExtensions.LoadBindingOverridesFromJson), [typeof(IInputActionCollection2), typeof(string), typeof(bool)]));
-
-            for (var i = startIndex; i <= endIndex; i++)
+            for (var i = 15; i <= 27; i++)
             {
                 codes[i].opcode = OpCodes.Nop;
                 codes[i].operand = null;
@@ -51,9 +45,7 @@ namespace LCVR.Patches
         {
             var codes = new List<CodeInstruction>(instructions);
 
-            int index = codes.FindIndex(x => x.opcode == OpCodes.Ldstr);
-
-            codes[index].operand = Properties.Resources.lc_inputs;
+            codes[6].operand = Properties.Resources.lc_inputs;
 
             return codes.AsEnumerable();
         }
