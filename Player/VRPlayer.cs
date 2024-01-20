@@ -323,11 +323,6 @@ namespace LCVR.Player
 
             yield return null;
 
-            // Rebuild rig
-            GetComponentInChildren<RigBuilder>().Build();
-
-            yield return null;
-
             // Enable target movement by IK
             GetComponentsInChildren<IKRigFollowVRRig>().Do(follow => follow.enabled = true);
 
