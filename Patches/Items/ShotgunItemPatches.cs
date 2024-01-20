@@ -44,7 +44,7 @@ namespace LCVR.Patches.Items
         {
             var codes = new List<CodeInstruction>(instructions);
 
-            int index = codes.FindLastIndex(x => x.operand == (object)Field(typeof(GrabbableObject), nameof(GrabbableObject.playerHeldBy)));
+            int index = codes.FindIndex(x => x.operand == (object)Method(typeof(Animator), nameof(Animator.SetTrigger), [typeof(string)])) + 1;
             
             codes[index].opcode = OpCodes.Ldc_I4_0;
 
