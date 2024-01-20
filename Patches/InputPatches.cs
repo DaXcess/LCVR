@@ -29,8 +29,8 @@ namespace LCVR.Patches
         {
             var codes = new List<CodeInstruction>(instructions);
 
-            int startIndex = codes.FindIndex(x => x.opcode == OpCodes.Brtrue);
-            int endIndex = codes.FindIndex(x => x.operand == (object)Method(typeof(InputActionRebindingExtensions), nameof(InputActionRebindingExtensions.LoadBindingOverridesFromJson), [typeof(IInputActionCollection2), typeof(string), typeof(bool)]));
+            int startIndex = codes.FindIndex(x => x.opcode == OpCodes.Brtrue) + 1;
+            int endIndex = codes.FindIndex(x => x.operand == (object)Method(typeof(InputActionRebindingExtensions), nameof(InputActionRebindingExtensions.LoadBindingOverridesFromJson), [typeof(IInputActionCollection2), typeof(string), typeof(bool)])) + 5;
 
             for (var i = startIndex; i <= endIndex; i++)
             {
