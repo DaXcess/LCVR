@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using LCVR.Input;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
@@ -28,9 +29,8 @@ namespace LCVR.Patches
         {
             var codes = new List<CodeInstruction>(instructions);
 
-
-            int startIndex = codes.FindIndex(x => x.opcode == OpCodes.Brtrue_S);
-            int endIndex = codes.FindIndex(x => x.operand == (object)Method(typeof(InputActionRebindingExtensions), nameof(InputActionRebindingExtensions.LoadBindingOverridesFromJson)));
+            int startIndex = codes.FindIndex(x => x.opcode == OpCodes.Brtrue);
+            int endIndex = codes.FindIndex(x => x.operand == (object)Method(typeof(InputActionRebindingExtensions), nameof(InputActionRebindingExtensions.LoadBindingOverridesFromJson), [typeof(IInputActionCollection2), typeof(string), typeof(bool)]));
 
             for (var i = startIndex; i <= endIndex; i++)
             {

@@ -23,8 +23,8 @@ namespace LCVR.Patches
         {
             var codes = new List<CodeInstruction>(instructions);
 
-            int startIndex = codes.FindLastIndex(x => x.operand == (object)Field(typeof(PlayerControllerB), nameof(PlayerControllerB.hasBegunSpectating))) + 1;
-            int endIndex = codes.FindLastIndex(x => x.operand == (object)Method(typeof(PlayerControllerB), "SetNightVisionEnabled")) - 3;
+            int startIndex = codes.FindIndex(x => x.operand == (object)Field(typeof(PlayerControllerB), nameof(PlayerControllerB.hasBegunSpectating))) + 1;
+            int endIndex = codes.FindIndex(x => x.operand == (object)Method(typeof(PlayerControllerB), "SetNightVisionEnabled")) - 3;
 
             // Remove HUD rotating
             for (int i = startIndex; i <= endIndex; i++)
@@ -33,7 +33,7 @@ namespace LCVR.Patches
                 codes[i].operand = null;
             }
 
-            startIndex = codes.FindLastIndex(x => x.operand == (object)Field(typeof(PlayerControllerB), nameof(PlayerControllerB.targetFOV))) + 1;
+            startIndex = codes.FindIndex(x => x.operand == (object)PropertyGetter(typeof(Camera), nameof(Camera.fieldOfView))) - 4;
             endIndex = codes.FindLastIndex(x => x.operand == (object)PropertySetter(typeof(Camera), nameof(Camera.fieldOfView)));
 
             // Remove FOV updating
