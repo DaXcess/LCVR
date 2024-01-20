@@ -299,7 +299,7 @@ namespace LCVR.Networking
             public Vector3 cameraEulers;
             public Vector3 cameraPosAccounted;
 
-            public bool isCrouching;
+            public CrouchState crouchState;
             public float rotationOffset;
             public float cameraFloorOffset;
 
@@ -335,7 +335,7 @@ namespace LCVR.Networking
                 bw.Write(cameraPosAccounted.x);
                 bw.Write(cameraPosAccounted.z);
 
-                bw.Write(isCrouching);
+                bw.Write((byte)crouchState);
                 bw.Write(rotationOffset);
                 bw.Write(cameraFloorOffset);
 
@@ -357,12 +357,19 @@ namespace LCVR.Networking
                     leftHandFingers = Fingers.Deserialize(br.ReadBytes(Fingers.ByteCount)),
                     cameraEulers = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()),
                     cameraPosAccounted = new Vector3(br.ReadSingle(), 0, br.ReadSingle()),
-                    isCrouching = br.ReadBoolean(),
+                    crouchState = (CrouchState)br.ReadByte(),
                     rotationOffset = br.ReadSingle(),
                     cameraFloorOffset = br.ReadSingle(),
                 };
 
                 return rig;
+            }
+
+            public enum CrouchState : byte
+            {
+                None,
+                Roomscale,
+                Button
             }
         }
 

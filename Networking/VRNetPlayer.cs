@@ -2,6 +2,8 @@
 using LCVR.Input;
 using UnityEngine;
 
+using CrouchState = LCVR.Networking.DNet.Rig.CrouchState;
+
 namespace LCVR.Networking
 {
     public class VRNetPlayer : MonoBehaviour
@@ -30,7 +32,7 @@ namespace LCVR.Networking
 
         private Vector3 cameraPosAccounted;
 
-        private bool isCrouching = false;
+        private CrouchState crouchState = CrouchState.None;
         private float crouchOffset;
 
         public bool RebuildingRig { get; private set; } = false;
@@ -93,7 +95,11 @@ namespace LCVR.Networking
         private void Update()
         {
             // Apply crouch offset
-            crouchOffset = Mathf.Lerp(crouchOffset, isCrouching ? -1 : 0, 0.2f);
+            crouchOffset = Mathf.Lerp(crouchOffset, crouchState switch
+            {
+                CrouchState.Button => -1,
+                _ => 0,
+            }, 0.2f);
 
             // Apply origin transforms
             xrOrigin.position = transform.position;
@@ -111,17 +117,23 @@ namespace LCVR.Networking
             //Logger.LogDebug($"{transform.position} {xrOrigin.position} {leftHandVRTarget.position} {rightHandVRTarget.position} {cameraFloorOffset} {cameraPosAccounted}");
 
             // Arms need to be moved forward when crouched
-            if (isCrouching)
+            if (crouchState != CrouchState.None)
                 xrOrigin.position += transform.forward * 0.55f;
         }
 
         private void LateUpdate()
         {
+            var positionOffset = new Vector3(0, crouchState switch
+            {
+                CrouchState.Roomscale => 0.1f,
+                _ => 0,
+            }, 0);
+
             // Apply controller transforms
-            leftHandTarget.position = leftHandVRTarget.position;
+            leftHandTarget.position = leftHandVRTarget.position + positionOffset;
             leftHandTarget.rotation = leftHandVRTarget.rotation;
 
-            rightHandTarget.position = rightHandVRTarget.position;
+            rightHandTarget.position = rightHandVRTarget.position + positionOffset;
             rightHandTarget.rotation = rightHandVRTarget.rotation;
 
             // Update tracked finger curls after animator update
@@ -146,7 +158,7 @@ namespace LCVR.Networking
             camera.transform.eulerAngles = rig.cameraEulers;
             cameraPosAccounted = rig.cameraPosAccounted;
 
-            isCrouching = rig.isCrouching;
+            crouchState = rig.crouchState;
             rotationOffset = rig.rotationOffset;
             cameraFloorOffset = rig.cameraFloorOffset;
         }

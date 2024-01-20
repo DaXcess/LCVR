@@ -15,6 +15,8 @@ using LCVR.Patches;
 using HarmonyLib;
 using LCVR.UI;
 
+using CrouchState = LCVR.Networking.DNet.Rig.CrouchState;
+
 namespace LCVR.Player
 {
     // Attach this to the main Player
@@ -124,6 +126,10 @@ namespace LCVR.Player
             xrOrigin.localPosition = Vector3.zero;
             xrOrigin.localRotation = Quaternion.Euler(0, 0, 0);
             xrOrigin.localScale = Vector3.one;
+
+            // Get references to arms
+            leftHandRigTransform = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/shoulder.L/arm.L_upper/arm.L_lower/hand.L").transform;
+            rightHandRigTransform = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/shoulder.R/arm.R_upper/arm.R_lower/hand.R").transform;
 
             // Initialize HUD
             hud = new GameObject("VR HUD Manager").AddComponent<VRHUD>();
@@ -255,8 +261,6 @@ namespace LCVR.Player
 
             // Setting up the right arm
 
-            rightHandRigTransform = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/shoulder.R/arm.R_upper/arm.R_lower/hand.R").transform;
-
             var rightArmTarget = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/RigArms/RightArm/ArmsRightArm_target");
 
             rightArmTarget.localPosition = new Vector3(2.271f, 1.800556f, 1.008003f);
@@ -271,8 +275,6 @@ namespace LCVR.Player
             };
 
             // Setting up the left arm
-
-            leftHandRigTransform = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/shoulder.L/arm.L_upper/arm.L_lower/hand.L").transform;
 
             var leftArmTarget = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/RigArms/LeftArm/ArmsLeftArm_target");
             rigFollow.leftHand = new IKRigFollowVRRig.VRMap()
@@ -483,7 +485,12 @@ namespace LCVR.Player
                 cameraEulers = mainCamera.transform.eulerAngles,
                 cameraPosAccounted = cameraPosAccounted,
 
-                isCrouching = playerController.isCrouching,
+                crouchState = (playerController.isCrouching, isRoomCrouching) switch
+                {
+                    (true, true) => CrouchState.Roomscale,
+                    (true, false) => CrouchState.Button,
+                    (false, _) => CrouchState.None
+                },
                 rotationOffset = rotationOffset.eulerAngles.y,
                 cameraFloorOffset = cameraFloorOffset,
             });
