@@ -9,7 +9,6 @@ using LCVR.Assets;
 using Microsoft.MixedReality.Toolkit.Experimental.UI;
 using UnityEngine.InputSystem.UI;
 using LCVR.Input;
-using UnityEngine.InputSystem;
 using System.Collections.Generic;
 using UnityEngine.Rendering;
 using System.Linq;

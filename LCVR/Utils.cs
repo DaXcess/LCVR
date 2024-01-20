@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using LCVR.Assets;
 using UnityEngine.XR.Interaction.Toolkit;
 using System.Security.Cryptography;
-using UnityEngine.XR;
 
 namespace LCVR
 {

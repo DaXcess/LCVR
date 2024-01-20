@@ -6,28 +6,17 @@ namespace LCVR.Input
 {
     public class FingerCurler
     {
-        public class Finger
+        public class Finger(Transform root, bool isLeft, Vector3 firstRotation, Vector3 secondRotation)
         {
-            public Transform bone01;
-            public Transform bone02;
+            private readonly Transform bone01 = root;
+            private readonly Transform bone02 = root.GetChild(0);
 
+            private readonly Quaternion bone01Rotation = Quaternion.Euler(firstRotation);
+            private readonly Quaternion bone02Rotation = Quaternion.Euler(secondRotation);
+
+            private readonly float sign = isLeft ? 1f : -1f;
+            
             public float curl;
-
-            private readonly Quaternion bone01Rotation;
-            private readonly Quaternion bone02Rotation;
-
-            private readonly float sign;
-
-            public Finger(Transform root, bool isLeft, Vector3 firstRotation, Vector3 secondRotation)
-            {
-                bone01 = root;
-                bone02 = root.GetChild(0);
-
-                bone01Rotation = Quaternion.Euler(firstRotation);
-                bone02Rotation = Quaternion.Euler(secondRotation);
-
-                sign = isLeft ? 1f : -1f;
-            }
 
             public void Update()
             {

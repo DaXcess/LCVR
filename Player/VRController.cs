@@ -9,7 +9,6 @@ using Unity.Netcode;
 using LCVR.Input;
 using LCVR.Assets;
 using System.Linq;
-using System.ComponentModel;
 using LCVR.UI;
 
 namespace LCVR.Player
