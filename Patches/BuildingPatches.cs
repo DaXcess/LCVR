@@ -14,7 +14,14 @@ namespace LCVR.Patches
     [HarmonyPatch]
     internal static class ShipBuildModeManagerPatches
     {
-        private static InputAction pivotAction = Actions.FindAction("Pivot");
+        private static InputAction pivotAction;
+
+        [HarmonyPatch(typeof(ShipBuildModeManager), "OnEnable")]
+        [HarmonyPostfix]
+        private static void OnStart()
+        {
+            pivotAction = Actions.FindAction("Pivot");
+        }
 
         [HarmonyPatch(typeof(ShipBuildModeManager), "Update")]
         [HarmonyPostfix]

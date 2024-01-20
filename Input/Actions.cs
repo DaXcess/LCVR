@@ -11,7 +11,8 @@ namespace LCVR.Input
     {
         private static readonly Dictionary<string, InputActionAsset> profiles = new()
         {
-            { "default", AssetManager.Input("DefaultInputs") }
+            { "default", AssetManager.Input("DefaultInputs") },
+            { "htc_vive", AssetManager.Input("HtcViveInputs") }
         };
 
         public static InputAction Head_Position;
@@ -27,6 +28,8 @@ namespace LCVR.Input
         public static InputAction LeftHand_TrackingState;
 
         private static readonly InputActionAsset allActions;
+
+        public static string AllActionsString => allActions.ToJson();
 
         static Actions()
         {

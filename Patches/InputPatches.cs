@@ -1,6 +1,5 @@
 ﻿using HarmonyLib;
 using LCVR.Input;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
@@ -15,7 +14,7 @@ namespace LCVR.Patches
     {
         [HarmonyPatch(typeof(IngamePlayerSettings), nameof(IngamePlayerSettings.LoadSettingsFromPrefs))]
         [HarmonyPostfix]
-        private static void OnLoadSettings(IngamePlayerSettings __instance)
+        private static void OnLoadSettings()
         {
             Actions.ReloadInputBindings();
         }
@@ -37,23 +36,6 @@ namespace LCVR.Patches
                 codes[i].opcode = OpCodes.Nop;
                 codes[i].operand = null;
             }
-
-            return codes.AsEnumerable();
-        }
-    }
-
-    [LCVRPatch]
-    [HarmonyPatch(typeof(PlayerActions))]
-    [HarmonyPatch(MethodType.Constructor)]
-    internal static class PlayerActionsPatches
-    {
-        static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
-        {
-            var codes = new List<CodeInstruction>(instructions);
-
-            int index = codes.FindIndex(x => x.opcode == OpCodes.Ldstr);
-
-            codes[index].operand = Properties.Resources.lc_inputs;
 
             return codes.AsEnumerable();
         }
