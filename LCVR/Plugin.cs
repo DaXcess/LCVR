@@ -33,7 +33,7 @@ namespace LCVR
     {
         public const string PLUGIN_GUID = "io.daxcess.lcvr";
         public const string PLUGIN_NAME = "LCVR";
-        public const string PLUGIN_VERSION = "1.0.1";
+        public const string PLUGIN_VERSION = "1.1.0";
 
         private readonly string[] GAME_ASSEMBLY_HASHES = [
             "AAC6149C355A19865C0F67FD0C1D7111D4F418EF94D700265B591665B4CDCE73", // V45
@@ -47,7 +47,7 @@ namespace LCVR
         private void Awake()
         {
             // Fix XR not working with non-english PC languages
-            // Again, Unity, why the fuck do we need another hack to make shit just work normally?
+            // Again, why the fuck do we need another hack to make shit just work normally?
             CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
 
             // Reload Unity's Input System plugins since BepInEx in some
