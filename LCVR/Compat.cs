@@ -7,7 +7,7 @@ namespace LCVR
     {
         private static readonly CompatibleMod[] ModCompatibilityList =
         [
-            new("MoreCompany", "me.swipez.melonloader.morecompany", "1.7.4"),
+            new("MoreCompany", "me.swipez.melonloader.morecompany", "1.7.4", "1.7.5", "1.7.6"),
             new("Mimics", "x753.Mimics", "2.3.2"),
             new("TooManyEmotes", "FlipMods.TooManyEmotes", "1.7.19")
         ];
