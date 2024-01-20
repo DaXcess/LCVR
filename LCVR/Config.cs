@@ -20,7 +20,7 @@ namespace LCVR
 
         // Input configuration
 
-        public ConfigEntry<TurnProviderOption> TurnProvider = file.Bind("Input", "TurnProvider", TurnProviderOption.Snap, new ConfigDescription($"Specify which turning provider your player uses, if any.\n# Acceptable values: {string.Join(", ", Enum.GetNames(typeof(TurnProviderOption)))}"));
+        public ConfigEntry<TurnProviderOption> TurnProvider = file.Bind("Input", "TurnProvider", TurnProviderOption.Snap, new ConfigDescription($"Specify which turning provider your player uses, if any.", new AcceptableValueEnum<TurnProviderOption>()));
         public ConfigEntry<float> SmoothTurnSpeedModifier { get; } = file.Bind("Input", "SmoothTurnSpeedModifier", 1f, "A multiplier that is added to the smooth turning speed. Requires turn provider to be set to smooth.");
         public ConfigEntry<float> SnapTurnSize { get; } = file.Bind("Input", "SnapTurnSize", 45f, "The amount of rotation that is applied when performing a snap turn. Requires turn provider to be set to snap.");
         public ConfigEntry<float> SpectateCameraSpeedModifier { get; } = file.Bind("Input", "SpectateCameraSpeedModifier", 2f, "Specifies how fast the camera should pivot around a spectated player.");
@@ -57,5 +57,20 @@ namespace LCVR
             Smooth,
             Disabled
         }
+    }
+
+    internal class AcceptableValueEnum<T> : AcceptableValueBase where T : notnull, Enum
+    {
+        private readonly string[] names;
+
+        public AcceptableValueEnum() : base(typeof(T))
+        {
+            names = Enum.GetNames(typeof(T));
+        }
+
+        public override object Clamp(object value) => value;
+        public override bool IsValid(object value) => true;
+        public override string ToDescriptionString() => $"# Acceptable values: {string.Join(", ", names)}";
+        
     }
 }
