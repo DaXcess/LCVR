@@ -5,7 +5,6 @@ using UnityEngine.XR;
 using System;
 using UnityEngine.Rendering.HighDefinition;
 using LCVR.Input;
-using UnityEngine.Animations.Rigging;
 using System.Collections;
 using LCVR.Networking;
 using LCVR.Assets;
@@ -121,6 +120,10 @@ namespace LCVR.Player
             xrOrigin.localPosition = Vector3.zero;
             xrOrigin.localRotation = Quaternion.Euler(0, 0, 0);
             xrOrigin.localScale = Vector3.one;
+
+            // Initialize HUD
+            hud = new GameObject("VR HUD Manager").AddComponent<VRHUD>();
+            hud.Initialize(this);
 
             // Create HMD tracker
             var cameraPoseDriver = mainCamera.gameObject.AddComponent<TrackedPoseDriver>();
@@ -324,9 +327,6 @@ namespace LCVR.Player
 
             // Re-enable animation controller
             animator.runtimeAnimatorController = AssetManager.localVrMetarig;
-
-            // Initialize HUD if not done already
-            hud.Initialize(this);
 
             RebuildingRig = false;
         }
