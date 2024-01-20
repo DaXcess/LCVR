@@ -5,7 +5,6 @@ using UnityEngine.XR;
 using System;
 using UnityEngine.Rendering.HighDefinition;
 using LCVR.Input;
-using UnityEngine.Animations.Rigging;
 using System.Collections;
 using LCVR.Networking;
 using LCVR.Assets;
@@ -15,6 +14,8 @@ using Microsoft.MixedReality.Toolkit.Experimental.UI;
 using LCVR.Patches;
 using HarmonyLib;
 using LCVR.UI;
+
+using CrouchState = LCVR.Networking.DNet.Rig.CrouchState;
 
 namespace LCVR.Player
 {
@@ -126,6 +127,14 @@ namespace LCVR.Player
             xrOrigin.localRotation = Quaternion.Euler(0, 0, 0);
             xrOrigin.localScale = Vector3.one;
 
+            // Get references to arms
+            leftHandRigTransform = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/shoulder.L/arm.L_upper/arm.L_lower/hand.L").transform;
+            rightHandRigTransform = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/shoulder.R/arm.R_upper/arm.R_lower/hand.R").transform;
+
+            // Initialize HUD
+            hud = new GameObject("VR HUD Manager").AddComponent<VRHUD>();
+            hud.Initialize(this);
+
             // Create HMD tracker
             var cameraPoseDriver = mainCamera.gameObject.AddComponent<TrackedPoseDriver>();
             cameraPoseDriver.positionAction = Actions.Head_Position;
@@ -185,7 +194,7 @@ namespace LCVR.Player
             rightControllerRayInteractor.transform.localRotation = Quaternion.Euler(80, 0, 0);
 
             // Add turning provider
-            turningProvider = Plugin.Config.TurnProvider switch
+            turningProvider = Plugin.Config.TurnProvider.Value switch
             {
                 Config.TurnProviderOption.Snap => new SnapTurningProvider(),
                 Config.TurnProviderOption.Smooth => new SmoothTurningProvider(),
@@ -252,8 +261,6 @@ namespace LCVR.Player
 
             // Setting up the right arm
 
-            rightHandRigTransform = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/shoulder.R/arm.R_upper/arm.R_lower/hand.R").transform;
-
             var rightArmTarget = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/RigArms/RightArm/ArmsRightArm_target");
 
             rightArmTarget.localPosition = new Vector3(2.271f, 1.800556f, 1.008003f);
@@ -268,8 +275,6 @@ namespace LCVR.Player
             };
 
             // Setting up the left arm
-
-            leftHandRigTransform = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/shoulder.L/arm.L_upper/arm.L_lower/hand.L").transform;
 
             var leftArmTarget = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/RigArms/LeftArm/ArmsLeftArm_target");
             rigFollow.leftHand = new IKRigFollowVRRig.VRMap()
@@ -323,19 +328,11 @@ namespace LCVR.Player
 
             yield return null;
 
-            // Rebuild rig
-            GetComponentInChildren<RigBuilder>().Build();
-
-            yield return null;
-
             // Enable target movement by IK
             GetComponentsInChildren<IKRigFollowVRRig>().Do(follow => follow.enabled = true);
 
             // Re-enable animation controller
             animator.runtimeAnimatorController = AssetManager.localVrMetarig;
-
-            // Initialize HUD if not done already
-            hud.Initialize(this);
 
             RebuildingRig = false;
         }
@@ -488,7 +485,12 @@ namespace LCVR.Player
                 cameraEulers = mainCamera.transform.eulerAngles,
                 cameraPosAccounted = cameraPosAccounted,
 
-                isCrouching = playerController.isCrouching,
+                crouchState = (playerController.isCrouching, isRoomCrouching) switch
+                {
+                    (true, true) => CrouchState.Roomscale,
+                    (true, false) => CrouchState.Button,
+                    (false, _) => CrouchState.None
+                },
                 rotationOffset = rotationOffset.eulerAngles.y,
                 cameraFloorOffset = cameraFloorOffset,
             });

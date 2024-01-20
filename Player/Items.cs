@@ -16,6 +16,7 @@ namespace LCVR.Player
             { "Spray paint", typeof(VRSprayPaintItem) },
             { "Pro-flashlight", typeof(VRFlashlight) },
             { "Flashlight", typeof(VRFlashlight) },
+            { "Laser pointer", typeof(VRFlashlight) },
         };
 
         public static void UpdateVRControlsItemsOffsets()
