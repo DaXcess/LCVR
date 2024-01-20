@@ -35,10 +35,6 @@ namespace LCVR.Player
         private float crouchOffset = 0f;
         private float realHeight = 2.3f;
 
-        private readonly float sqrMoveThreshold = 1E-5f;
-        private readonly float turnAngleThreshold = 120.0f;
-        private readonly float turnWeightSharp = 15.0f;
-
         private bool isDead = false;
         private bool isSprinting = false;
 
@@ -185,7 +181,7 @@ namespace LCVR.Player
             rightControllerRayInteractor.transform.localRotation = Quaternion.Euler(80, 0, 0);
 
             // Add turning provider
-            turningProvider = Plugin.Config.TurnProvider switch
+            turningProvider = Plugin.Config.TurnProvider.Value switch
             {
                 Config.TurnProviderOption.Snap => new SnapTurningProvider(),
                 Config.TurnProviderOption.Smooth => new SmoothTurningProvider(),
@@ -412,8 +408,6 @@ namespace LCVR.Player
             if (!ShipBuildModeManager.Instance.InBuildMode)
                 turningProvider.Update();
 
-            var lastOriginPos = xrOrigin.position;
-
             // If we are in special animation allow 6 DOF but don't update player position
             if (!playerController.inSpecialInteractAnimation)
                 xrOrigin.position = new Vector3(transform.position.x - cameraPosAccounted.x * SCALE_FACTOR, transform.position.y, transform.position.z - cameraPosAccounted.z * SCALE_FACTOR);
@@ -440,12 +434,8 @@ namespace LCVR.Player
 
             //Logger.LogDebug($"{transform.position} {xrOrigin.position} {leftHandVRTarget.transform.position} {rightHandVRTarget.transform.position} {cameraFloorOffset} {cameraPosAccounted}");
 
-            if ((xrOrigin.position - lastOriginPos).sqrMagnitude > sqrMoveThreshold) // player moved
-                // Rotate body sharply but still smoothly
-                TurnBodyToCamera(turnWeightSharp);
-            else if (!playerController.inSpecialInteractAnimation && GetBodyToCameraAngle() is var angle && angle > turnAngleThreshold)
-                // Rotate body as smoothly as possible but prevent 360 deg head twists on quick rotations
-                TurnBodyToCamera(turnWeightSharp * Mathf.InverseLerp(turnAngleThreshold, 170f, angle));
+            if (!playerController.inSpecialInteractAnimation)
+                transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles.x, mainCamera.transform.eulerAngles.y, transform.rotation.eulerAngles.z);
 
             if (!playerController.inSpecialInteractAnimation)
                 lastFrameHMDPosition = mainCamera.transform.localPosition;
@@ -640,17 +630,6 @@ namespace LCVR.Player
             mainCamera.stereoTargetEye = StereoTargetEyeMask.Both;
             mainCamera.depth = uiCamera.depth + 1;
             mainCamera.enabled = true;
-        }
-
-        private void TurnBodyToCamera(float turnWeight)
-        {
-            var newRotation = Quaternion.Euler(transform.rotation.eulerAngles.x, mainCamera.transform.eulerAngles.y, transform.rotation.eulerAngles.z);
-            transform.rotation = Quaternion.Lerp(transform.rotation, newRotation, Time.deltaTime * turnWeight);
-        }
-
-        private float GetBodyToCameraAngle()
-        {
-            return Quaternion.Angle(Quaternion.Euler(0, transform.eulerAngles.y, 0), Quaternion.Euler(0, mainCamera.transform.eulerAngles.y, 0));
         }
 
         private Transform Find(string name, bool resetLocalPosition = false)
