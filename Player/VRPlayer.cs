@@ -181,7 +181,7 @@ namespace LCVR.Player
             rightControllerRayInteractor.transform.localRotation = Quaternion.Euler(80, 0, 0);
 
             // Add turning provider
-            turningProvider = Plugin.Config.TurnProvider switch
+            turningProvider = Plugin.Config.TurnProvider.Value switch
             {
                 Config.TurnProviderOption.Snap => new SnapTurningProvider(),
                 Config.TurnProviderOption.Smooth => new SmoothTurningProvider(),
