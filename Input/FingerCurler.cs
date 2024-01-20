@@ -116,6 +116,11 @@ namespace LCVR.Input
 
     public class VRFingerCurler : FingerCurler
     {
+        private const float THUMBS_UP_TRESHOLD = 0.8f;
+        private const float THUMB_STATE_UP = 0f;
+        private const float THUMB_STATE_DEFAULT = 0.5f;
+        private const float THUMB_STATE_DOWN = 1f;
+
         private readonly InputAction thumbAction;
         private readonly InputAction indexAction;
         private readonly InputAction othersAction;
@@ -141,13 +146,13 @@ namespace LCVR.Input
             // Thumb Up = 0f
             // Thumb Default = 0.5f
             // Thumb Down = 1f
-            var thumb = thumbAction.ReadValue<float>() != 0f ? 1f : 0.5f;
+            var thumb = thumbAction.ReadValue<float>() != 0f ? THUMB_STATE_DOWN : THUMB_STATE_DEFAULT;
             var index = indexAction.ReadValue<float>();
             var grip = othersAction.ReadValue<float>();
 
-            var thumbsUp = index > 0.8f && grip > 0.8f && thumb == 0.5f;
+            var thumbsUp = index > THUMBS_UP_TRESHOLD && grip > THUMBS_UP_TRESHOLD && thumb == THUMB_STATE_DEFAULT;
 
-            thumbFinger.curl = Mathf.Lerp(thumbFinger.curl, thumbsUp ? 0f : thumb, 0.5f);
+            thumbFinger.curl = Mathf.Lerp(thumbFinger.curl, thumbsUp ? THUMB_STATE_UP : thumb, 0.5f);
             indexFinger.curl = index;
             middleFinger.curl = grip;
             ringFinger.curl = grip;
