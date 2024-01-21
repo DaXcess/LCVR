@@ -1,6 +1,5 @@
 ﻿using HarmonyLib;
 using LCVR.Assets;
-using System;
 using System.Collections.Generic;
 using System.Reflection;
 using TMPro;
@@ -11,7 +10,7 @@ namespace LCVR
 {
     internal class ObjectScanner
     {
-        private Camera mainCamera;
+        private readonly Camera mainCamera;
 
         internal ObjectScanner(Camera mainCamera)
         {

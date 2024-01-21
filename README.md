@@ -1,5 +1,9 @@
 # Lethal Company VR Mod
 
+<!-- Shields idea shamelessly stolen from Evaisa's LethalLib -->
+[![Thunderstore Version](https://img.shields.io/thunderstore/v/DaXcess/LethalCompanyVR?style=for-the-badge&logo=thunderstore&logoColor=white)](https://thunderstore.io/c/lethal-company/p/DaXcess/LethalCompanyVR)
+[![Thunderstore Downloads](https://img.shields.io/thunderstore/dt/DaXcess/LethalCompanyVR?style=for-the-badge&logo=thunderstore&logoColor=white)](https://thunderstore.io/c/lethal-company/p/DaXcess/LethalCompanyVR)
+
 [<img src="https://github.com/DaXcess/LCVR/blob/main/.github/assets/thunderstore-btn.png" height="80" />](https://thunderstore.io/c/lethal-company/p/DaXcess/LethalCompanyVR)
 [<img src="https://github.com/DaXcess/LCVR/blob/main/.github/assets/github-btn.png" height="80" />](https://github.com/DaXcess/LCVR/releases/latest)
 <br/>

@@ -12,7 +12,7 @@ namespace LCVR.Patches
     {
         private static MethodInfo TargetMethod()
         {
-            return AccessTools.TypeByName("UnityEngine.InputSystem.XR.XRSupport").GetMethod("Initialize", BindingFlags.Public | BindingFlags.Static);
+            return AccessTools.Method(AccessTools.TypeByName("UnityEngine.InputSystem.XR.XRSupport"), "Initialize");
         }
 
         private static bool Prefix()

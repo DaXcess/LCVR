@@ -6,6 +6,8 @@ using System.Reflection;
 using System.Reflection.Emit;
 using UnityEngine;
 
+using static HarmonyLib.AccessTools;
+
 namespace LCVR.Patches.Items
 {
     [LCVRPatch]
@@ -42,7 +44,9 @@ namespace LCVR.Patches.Items
         {
             var codes = new List<CodeInstruction>(instructions);
 
-            codes[24].opcode = OpCodes.Ldc_I4_0;
+            int index = codes.FindIndex(x => x.operand == (object)Method(typeof(Animator), nameof(Animator.SetTrigger), [typeof(string)])) + 1;
+            
+            codes[index].opcode = OpCodes.Ldc_I4_0;
 
             return codes.AsEnumerable();
         }

@@ -119,6 +119,7 @@ namespace LCVR.Patches
 
             var canvasFollow = canvas.gameObject.AddComponent<CanvasTransformFollow>();
             canvasFollow.sourceTransform = uiCamera.transform;
+            canvasFollow.heightOffset = 1;
 
             // Allow canvas interactions using XR raycaster
 

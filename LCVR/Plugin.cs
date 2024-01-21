@@ -1,11 +1,11 @@
 ﻿using BepInEx;
 using BepInEx.Bootstrap;
-using Dissonance;
 using GameNetcodeStuff;
 using LCVR.Assets;
 using LCVR.Patches;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -19,18 +19,21 @@ using UnityEngine.XR.OpenXR;
 using UnityEngine.XR.OpenXR.Features;
 using UnityEngine.XR.OpenXR.Features.Interactions;
 
+using DependencyFlags = BepInEx.BepInDependency.DependencyFlags;
+
 namespace LCVR
 {
     [BepInPlugin(PLUGIN_GUID, PLUGIN_NAME, PLUGIN_VERSION)]
     #region Compatibility Dependencies
-    [BepInDependency("me.swipez.melonloader.morecompany", BepInDependency.DependencyFlags.SoftDependency)]
-    [BepInDependency("x753.Mimics", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("me.swipez.melonloader.morecompany", DependencyFlags.SoftDependency)]
+    [BepInDependency("x753.Mimics", DependencyFlags.SoftDependency)]
+    [BepInDependency("FlipMods.TooManyEmotes", DependencyFlags.SoftDependency)]
     #endregion
     public class Plugin : BaseUnityPlugin
     {
         public const string PLUGIN_GUID = "io.daxcess.lcvr";
         public const string PLUGIN_NAME = "LCVR";
-        public const string PLUGIN_VERSION = "1.0.1";
+        public const string PLUGIN_VERSION = "1.1.0";
 
         private readonly string[] GAME_ASSEMBLY_HASHES = [
             "AAC6149C355A19865C0F67FD0C1D7111D4F418EF94D700265B591665B4CDCE73", // V45
@@ -43,6 +46,10 @@ namespace LCVR
 
         private void Awake()
         {
+            // Fix XR not working with non-english PC languages
+            // Again, why the fuck do we need another hack to make shit just work normally?
+            CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+
             // Reload Unity's Input System plugins since BepInEx in some
             // configurations runs after the Input System has already been initialized
             typeof(InputSystem).GetMethod("PerformDefaultPluginInitialization", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, []);
@@ -182,7 +189,6 @@ namespace LCVR
             EnableControllerProfiles();
             InitializeXRRuntime();
 
-
             if (!StartDisplay())
             {
                 Logger.LogError("Failed to start in VR Mode! Only Non-VR features are available!");
@@ -217,8 +223,8 @@ namespace LCVR
                     Logger.LogWarning("List of registered OpenXR runtimes on this device:");
 
                     for (var i = 0; i < runtimes.Length; i++)
-                        Logger.LogWarning($"{(i == 0 ?  ">>> " : "    ")}{runtimes[i]}");
-                }                
+                        Logger.LogWarning($"{(i == 0 ? ">>> " : "    ")}{runtimes[i]}");
+                }
 
                 return false;
             }

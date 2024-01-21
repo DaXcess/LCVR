@@ -18,7 +18,6 @@ namespace LCVR.Patches
         public static void PatchVR()
         {
             Patch(vrPatcher, LCVRPatchTarget.VROnly);
-
         }
 
         private static void Patch(Harmony patcher, LCVRPatchTarget target)

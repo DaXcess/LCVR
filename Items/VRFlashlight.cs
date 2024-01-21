@@ -29,6 +29,7 @@ namespace LCVR.Items
 
                 player.allHelmetLights[0].transform.ApplyOffsetTransform(networkPlayer.rightHandTarget, positionOffset, rotationOffset);
                 player.allHelmetLights[1].transform.ApplyOffsetTransform(networkPlayer.rightHandTarget, positionOffset, rotationOffset);
+                player.allHelmetLights[2].transform.ApplyOffsetTransform(networkPlayer.rightHandTarget, positionOffset, rotationOffset);
             }
             else if (!isHoldingActiveFlashlight)
             {
@@ -39,6 +40,9 @@ namespace LCVR.Items
 
                 player.allHelmetLights[1].transform.localPosition = new Vector3(0.207f, -0.526f, 0.475f);
                 player.allHelmetLights[1].transform.localEulerAngles = new Vector3(0, 357.6089f, 0);
+
+                player.allHelmetLights[2].transform.localPosition = new Vector3(0.207f, -0.526f, 0.475f);
+                player.allHelmetLights[2].transform.localEulerAngles = new Vector3(0, 357.6089f, 0);
             }
         }
     }

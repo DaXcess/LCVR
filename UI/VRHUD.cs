@@ -322,6 +322,7 @@ namespace LCVR
 
             var follow = spectateCanvas.gameObject.AddComponent<CanvasTransformFollow>();
             follow.sourceTransform = player.uiCamera.transform;
+            follow.heightOffset = -999;
 
             transform.localScale = Vector3.one * 0.0007f;
 

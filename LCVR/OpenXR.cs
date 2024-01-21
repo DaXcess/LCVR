@@ -42,7 +42,7 @@ namespace LCVR
 
             var sectionRegex = new Regex("^==== ([A-z0-9-_ ]+) ====$", RegexOptions.Multiline);
             var errorRegex = new Regex("^\\[FAILURE\\] [A-z]+: ([A-Z_]+) \\(\\d+x\\)$");
-            
+
             string raw = GenerateReport();
 
             var rawSections = sectionRegex.Split(raw).Skip(1).Select(v => v.Trim()).ToArray();
@@ -76,7 +76,7 @@ namespace LCVR
             var match = errorRegex.Match(section.Split('\n')[0].Trim());
             if (match == null)
                 return false;
-            
+
             var error = match.Groups[1].Value;
 
             report = new OpenXRReport(runtimeName, runtimeVersion, error);
@@ -119,7 +119,7 @@ namespace LCVR
                     var cbValueName = maxValueNameLength + 1;
 
                     int result = Native.RegEnumValue(hKey, i, valueName, ref cbValueName, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
-                    
+
                     if (result != 0)
                         return null;
 
@@ -171,6 +171,7 @@ namespace LCVR
             public string Error { get; } = error;
         }
 
+#pragma warning disable 0649
         [Serializable]
         private struct OpenXRRuntime
         {
@@ -182,5 +183,6 @@ namespace LCVR
         {
             public string name;
         }
+#pragma warning restore 0649
     }
 }

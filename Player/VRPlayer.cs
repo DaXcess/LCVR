@@ -5,7 +5,6 @@ using UnityEngine.XR;
 using System;
 using UnityEngine.Rendering.HighDefinition;
 using LCVR.Input;
-using UnityEngine.Animations.Rigging;
 using System.Collections;
 using LCVR.Networking;
 using LCVR.Assets;
@@ -14,6 +13,9 @@ using UnityEngine.XR.Interaction.Toolkit;
 using Microsoft.MixedReality.Toolkit.Experimental.UI;
 using LCVR.Patches;
 using HarmonyLib;
+using LCVR.UI;
+
+using CrouchState = LCVR.Networking.DNet.Rig.CrouchState;
 
 namespace LCVR.Player
 {
@@ -84,8 +86,8 @@ namespace LCVR.Player
 
         public VRPlayer()
         {
-            resetHeightAction = Actions.VRInputActions.FindAction("Controls/Reset Height");
-            sprintAction = Actions.VRInputActions.FindAction("Controls/Sprint");
+            resetHeightAction = Actions.FindAction("Controls/Reset Height");
+            sprintAction = Actions.FindAction("Controls/Sprint");
         }
 
         private void Awake()
@@ -124,6 +126,14 @@ namespace LCVR.Player
             xrOrigin.localPosition = Vector3.zero;
             xrOrigin.localRotation = Quaternion.Euler(0, 0, 0);
             xrOrigin.localScale = Vector3.one;
+
+            // Get references to arms
+            leftHandRigTransform = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/shoulder.L/arm.L_upper/arm.L_lower/hand.L").transform;
+            rightHandRigTransform = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/shoulder.R/arm.R_upper/arm.R_lower/hand.R").transform;
+
+            // Initialize HUD
+            hud = new GameObject("VR HUD Manager").AddComponent<VRHUD>();
+            hud.Initialize(this);
 
             // Create HMD tracker
             var cameraPoseDriver = mainCamera.gameObject.AddComponent<TrackedPoseDriver>();
@@ -184,7 +194,7 @@ namespace LCVR.Player
             rightControllerRayInteractor.transform.localRotation = Quaternion.Euler(80, 0, 0);
 
             // Add turning provider
-            turningProvider = Plugin.Config.TurnProvider switch
+            turningProvider = Plugin.Config.TurnProvider.Value switch
             {
                 Config.TurnProviderOption.Snap => new SnapTurningProvider(),
                 Config.TurnProviderOption.Smooth => new SmoothTurningProvider(),
@@ -239,8 +249,8 @@ namespace LCVR.Player
 
             // Set up rigging
             var model = Find("ScavengerModel/metarig/ScavengerModelArmsOnly", true).gameObject;
-            var modelMetarig = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig", true); 
-            
+            var modelMetarig = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig", true);
+
             Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/RigArms", true);
 
             var rigFollow = model.GetComponent<IKRigFollowVRRig>() ?? model.AddComponent<IKRigFollowVRRig>();
@@ -250,8 +260,6 @@ namespace LCVR.Player
             rigFollow.head = mainCamera.transform;
 
             // Setting up the right arm
-
-            rightHandRigTransform = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/shoulder.R/arm.R_upper/arm.R_lower/hand.R").transform;
 
             var rightArmTarget = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/RigArms/RightArm/ArmsRightArm_target");
 
@@ -267,8 +275,6 @@ namespace LCVR.Player
             };
 
             // Setting up the left arm
-
-            leftHandRigTransform = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/shoulder.L/arm.L_upper/arm.L_lower/hand.L").transform;
 
             var leftArmTarget = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/RigArms/LeftArm/ArmsLeftArm_target");
             rigFollow.leftHand = new IKRigFollowVRRig.VRMap()
@@ -322,19 +328,11 @@ namespace LCVR.Player
 
             yield return null;
 
-            // Rebuild rig
-            GetComponentInChildren<RigBuilder>().Build();
-
-            yield return null;
-
             // Enable target movement by IK
             GetComponentsInChildren<IKRigFollowVRRig>().Do(follow => follow.enabled = true);
 
             // Re-enable animation controller
             animator.runtimeAnimatorController = AssetManager.localVrMetarig;
-
-            // Initialize HUD if not done already
-            hud.Initialize(this);
 
             RebuildingRig = false;
         }
@@ -388,18 +386,7 @@ namespace LCVR.Player
 
             renderer.material = AssetManager.defaultRayMat;
 
-            controller.enableInputTracking = false;
-            controller.selectAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Select"));
-            controller.selectActionValue = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Select Value"));
-            controller.activateAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Activate"));
-            controller.activateActionValue = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Activate Value"));
-            controller.uiPressAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/UI Press"));
-            controller.uiPressActionValue = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/UI Press Value"));
-            controller.uiScrollAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/UI Scroll"));
-            controller.rotateAnchorAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Rotate Anchor"));
-            controller.translateAnchorAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Translate Anchor"));
-            controller.scaleToggleAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Scale Toggle"));
-            controller.scaleDeltaAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Scale Delta"));
+            controller.AddActionBasedControllerBinds(hand, false);
 
             return interactor;
         }
@@ -423,8 +410,9 @@ namespace LCVR.Player
             if (!playerController.inSpecialInteractAnimation)
                 transform.position += new Vector3(movementAccounted.x * SCALE_FACTOR, 0, movementAccounted.z * SCALE_FACTOR);
 
-            // Update rotation offset after adding movement from frame
-            turningProvider.Update();
+            // Update rotation offset after adding movement from frame (if not in build mode)
+            if (!ShipBuildModeManager.Instance.InBuildMode)
+                turningProvider.Update();
 
             var lastOriginPos = xrOrigin.position;
 
@@ -497,7 +485,12 @@ namespace LCVR.Player
                 cameraEulers = mainCamera.transform.eulerAngles,
                 cameraPosAccounted = cameraPosAccounted,
 
-                isCrouching = playerController.isCrouching,
+                crouchState = (playerController.isCrouching, isRoomCrouching) switch
+                {
+                    (true, true) => CrouchState.Roomscale,
+                    (true, false) => CrouchState.Button,
+                    (false, _) => CrouchState.None
+                },
                 rotationOffset = rotationOffset.eulerAngles.y,
                 cameraFloorOffset = cameraFloorOffset,
             });
@@ -637,6 +630,8 @@ namespace LCVR.Player
             uiCamera.nearClipPlane = 0.01f;
             uiCamera.farClipPlane = 15f;
             uiCamera.enabled = true;
+
+            FindObjectsOfType<CanvasTransformFollow>().Do(follow => follow.ResetPosition(true));
         }
 
         private void SwitchToGameCamera()

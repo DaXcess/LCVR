@@ -9,7 +9,6 @@ using Unity.Netcode;
 using LCVR.Input;
 using LCVR.Assets;
 using System.Linq;
-using System.ComponentModel;
 using LCVR.UI;
 
 namespace LCVR.Player
@@ -56,13 +55,13 @@ namespace LCVR.Player
 
         private void Awake()
         {
-            grabAction = Actions.VRInputActions.FindAction("Controls/Grab");
-            grabAction.performed += OnGrabPerformed;
+            grabAction = Actions.FindAction("Controls/Interact");
+            grabAction.performed += OnInteractPerformed;
         }
 
         private void OnDestroy()
         {
-            grabAction.performed -= OnGrabPerformed;
+            grabAction.performed -= OnInteractPerformed;
         }
 
         public void Initialize(VRPlayer player)
@@ -104,8 +103,11 @@ namespace LCVR.Player
             debugLineRenderer.enabled = false;
         }
 
-        private void OnGrabPerformed(InputAction.CallbackContext context)
+        private void OnInteractPerformed(InputAction.CallbackContext context)
         {
+            if (ShipBuildModeManager.Instance.InBuildMode)
+                return;
+
             try
             {
                 // Ignore server player controller
@@ -165,7 +167,7 @@ namespace LCVR.Player
 
         private void ClickHoldInteraction()
         {
-            bool pressed = grabAction.IsPressed();
+            bool pressed = grabAction.IsPressed() && !ShipBuildModeManager.Instance.InBuildMode;
             playerController.isHoldingInteract = pressed;
 
             if (!pressed)

@@ -6,28 +6,17 @@ namespace LCVR.Input
 {
     public class FingerCurler
     {
-        public class Finger
+        public class Finger(Transform root, bool isLeft, Vector3 firstRotation, Vector3 secondRotation)
         {
-            public Transform bone01;
-            public Transform bone02;
+            private readonly Transform bone01 = root;
+            private readonly Transform bone02 = root.GetChild(0);
 
+            private readonly Quaternion bone01Rotation = Quaternion.Euler(firstRotation);
+            private readonly Quaternion bone02Rotation = Quaternion.Euler(secondRotation);
+
+            private readonly float sign = isLeft ? 1f : -1f;
+            
             public float curl;
-
-            private readonly Quaternion bone01Rotation;
-            private readonly Quaternion bone02Rotation;
-
-            private readonly float sign;
-
-            public Finger(Transform root, bool isLeft, Vector3 firstRotation, Vector3 secondRotation)
-            {
-                bone01 = root;
-                bone02 = root.GetChild(0);
-
-                bone01Rotation = Quaternion.Euler(firstRotation);
-                bone02Rotation = Quaternion.Euler(secondRotation);
-
-                sign = isLeft ? 1f : -1f;
-            }
 
             public void Update()
             {
@@ -127,6 +116,11 @@ namespace LCVR.Input
 
     public class VRFingerCurler : FingerCurler
     {
+        private const float THUMBS_UP_TRESHOLD = 0.8f;
+        private const float THUMB_STATE_UP = 0f;
+        private const float THUMB_STATE_DEFAULT = 0.5f;
+        private const float THUMB_STATE_DOWN = 1f;
+
         private readonly InputAction thumbAction;
         private readonly InputAction indexAction;
         private readonly InputAction othersAction;
@@ -135,9 +129,9 @@ namespace LCVR.Input
         {
             var map = isLeft ? "Left Hand Fingers" : "Right Hand Fingers";
 
-            thumbAction = Actions.VRInputActions.FindAction($"{map}/Thumb");
-            indexAction = Actions.VRInputActions.FindAction($"{map}/Index");
-            othersAction = Actions.VRInputActions.FindAction($"{map}/Others");
+            thumbAction = Actions.FindAction($"{map}/Thumb");
+            indexAction = Actions.FindAction($"{map}/Index");
+            othersAction = Actions.FindAction($"{map}/Others");
         }
 
         public override void Update()
@@ -152,13 +146,13 @@ namespace LCVR.Input
             // Thumb Up = 0f
             // Thumb Default = 0.5f
             // Thumb Down = 1f
-            var thumb = thumbAction.ReadValue<float>() != 0f ? 1f : 0.5f;
+            var thumb = thumbAction.ReadValue<float>() != 0f ? THUMB_STATE_DOWN : THUMB_STATE_DEFAULT;
             var index = indexAction.ReadValue<float>();
             var grip = othersAction.ReadValue<float>();
 
-            var thumbsUp = index > 0.8f && grip > 0.8f && thumb == 0.5f;
+            var thumbsUp = index > THUMBS_UP_TRESHOLD && grip > THUMBS_UP_TRESHOLD && thumb == THUMB_STATE_DEFAULT;
 
-            thumbFinger.curl = Mathf.Lerp(thumbFinger.curl, thumbsUp ? 0f : thumb, 0.5f);
+            thumbFinger.curl = Mathf.Lerp(thumbFinger.curl, thumbsUp ? THUMB_STATE_UP : thumb, 0.5f);
             indexFinger.curl = index;
             middleFinger.curl = grip;
             ringFinger.curl = grip;
