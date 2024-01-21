@@ -27,7 +27,13 @@ namespace LCVR
             return sha.ComputeHash(input);
         }
 
-        public static void DisableQualitySetting(HDAdditionalCameraData camera, FrameSettingsField setting)
+        public static void EnableQualitySetting(this HDAdditionalCameraData camera, FrameSettingsField setting)
+        {
+            camera.renderingPathCustomFrameSettingsOverrideMask.mask[(uint)setting] = false;
+            camera.renderingPathCustomFrameSettings.SetEnabled(setting, true);
+        }
+
+        public static void DisableQualitySetting(this HDAdditionalCameraData camera, FrameSettingsField setting)
         {
             camera.renderingPathCustomFrameSettingsOverrideMask.mask[(uint)setting] = true;
             camera.renderingPathCustomFrameSettings.SetEnabled(setting, false);
@@ -82,10 +88,17 @@ namespace LCVR
 
             renderer.material = AssetManager.defaultRayMat;
 
+            controller.AddActionBasedControllerBinds(hand);
+        }
+
+        public static void AddActionBasedControllerBinds(this ActionBasedController controller, string hand, bool trackingEnabled = true, bool actionsEnabled = true)
+        {
+            controller.enableInputTracking = trackingEnabled;
             controller.positionAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Position"));
             controller.rotationAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Rotation"));
             controller.trackingStateAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Tracking State"));
 
+            controller.enableInputActions = actionsEnabled;
             controller.selectAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Select"));
             controller.selectActionValue = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Select Value"));
             controller.activateAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Activate"));

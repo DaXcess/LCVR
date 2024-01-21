@@ -40,7 +40,8 @@ namespace LCVR
             var xOffset = Plugin.Config.HUDOffsetX.Value;
             var yOffset = Plugin.Config.HUDOffsetY.Value;
 
-            if (!Plugin.Config.DisableArmHUD.Value) {
+            if (!Plugin.Config.DisableArmHUD.Value)
+            {
                 leftHandCanvas = new GameObject("Left Hand Canvas").AddComponent<Canvas>();
                 leftHandCanvas.worldCamera = player.mainCamera;
                 leftHandCanvas.renderMode = RenderMode.WorldSpace;
@@ -183,7 +184,7 @@ namespace LCVR
                 clock.transform.localScale = Vector3.one * 0.7f;
             }
 
-            // Battery: Attach to right hand
+            // Battery: Attach to right hand (next to knuckles)
             var battery = GameObject.Find("Batteries");
 
             if (Plugin.Config.DisableArmHUD.Value)
@@ -194,7 +195,7 @@ namespace LCVR
                 battery.transform.localScale = Vector3.one * 2;
 
                 var icon = battery.transform.Find("BatteryIcon");
-                
+
                 icon.localPosition = new Vector3(-16, 16, 0);
                 icon.localRotation = Quaternion.identity;
                 icon.localScale = Vector3.one * 0.5f;
@@ -202,8 +203,8 @@ namespace LCVR
             else
             {
                 battery.transform.SetParent(rightHandCanvas.transform, false);
-                battery.transform.localPosition = new Vector3(123, 60, -37);
-                battery.transform.localRotation = Quaternion.Euler(356, 0, 229);
+                battery.transform.localPosition = new Vector3(12, 130, 40);
+                battery.transform.localRotation = Quaternion.Euler(0, 195, -35);
                 battery.transform.localScale = Vector3.one * 2;
 
                 battery.transform.Find("BatteryIcon").gameObject.SetActive(false);
@@ -214,7 +215,7 @@ namespace LCVR
             batteryMeter.localRotation = Quaternion.identity;
             batteryMeter.localScale = Vector3.one;
 
-            // Inventory: Attach to right hand
+            // Inventory: Attach to right hand (below knuckles)
             var inventory = GameObject.Find("Inventory");
 
             if (Plugin.Config.DisableArmHUD.Value)
@@ -222,7 +223,8 @@ namespace LCVR
                 inventory.transform.SetParent(transform, false);
                 inventory.transform.localPosition = new Vector3(91 + xOffset, -185 + yOffset, 0);
                 inventory.transform.localRotation = Quaternion.identity;
-            } else
+            }
+            else
             {
                 inventory.transform.SetParent(rightHandCanvas.transform, false);
                 inventory.transform.localPosition = new Vector3(-28, 120, 40);
@@ -313,13 +315,14 @@ namespace LCVR
             firedScreen.transform.Find("DarkenScreen (2)").localScale = Vector3.one * 5;
 
             // Player screen (Render texture): World space
-            spectateCanvas = GameObject.Find("Systems").transform.Find("UI/Canvas").GetComponent<Canvas>();
+            spectateCanvas = GameObject.Find("Systems/UI/Canvas").GetComponent<Canvas>();
             spectateCanvas.worldCamera = GameObject.Find("UICamera").GetComponent<Camera>();
             spectateCanvas.renderMode = RenderMode.WorldSpace;
             spectateCanvas.transform.position = new Vector3(0, -999, 0);
 
             var follow = spectateCanvas.gameObject.AddComponent<CanvasTransformFollow>();
-            follow.targetTransform = player.uiCamera.transform;
+            follow.sourceTransform = player.uiCamera.transform;
+            follow.heightOffset = -999;
 
             transform.localScale = Vector3.one * 0.0007f;
 
@@ -361,6 +364,9 @@ namespace LCVR
             dialogueBox.localPosition = new Vector3(-0.6f, 42, 0);
             dialogueBox.localRotation = Quaternion.identity;
             dialogueBox.localScale = Vector3.one * 0.9308f;
+
+            // Fix pause menu order
+            GameObject.Find("Systems/UI/Canvas/QuickMenu").transform.SetAsLastSibling();
         }
 
         public void RevertHUDFromSpectatorCam()

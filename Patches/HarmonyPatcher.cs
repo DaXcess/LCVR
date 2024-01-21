@@ -6,8 +6,9 @@ namespace LCVR.Patches
 {
     internal static class HarmonyPatcher
     {
-        private static readonly Harmony vrPatcher = new("LCVR-VROnly");
-        private static readonly Harmony universalPatcher = new("LCVR-Universal");
+
+        private static readonly Harmony vrPatcher = new("io.daxcess.lcvr");
+        private static readonly Harmony universalPatcher = new("io.daxcess.lcvr-universal");
 
         public static void PatchUniversal()
         {
@@ -17,7 +18,6 @@ namespace LCVR.Patches
         public static void PatchVR()
         {
             Patch(vrPatcher, LCVRPatchTarget.VROnly);
-
         }
 
         private static void Patch(Harmony patcher, LCVRPatchTarget target)

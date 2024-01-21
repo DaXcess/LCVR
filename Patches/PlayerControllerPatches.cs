@@ -12,6 +12,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.XR;
 
+using static HarmonyLib.AccessTools;
 namespace LCVR.Patches
 {
     [LCVRPatch]
@@ -22,15 +23,21 @@ namespace LCVR.Patches
         {
             var codes = new List<CodeInstruction>(instructions);
 
+            int startIndex = codes.FindIndex(x => x.operand == (object)Field(typeof(PlayerControllerB), nameof(PlayerControllerB.hasBegunSpectating))) + 1;
+            int endIndex = codes.FindIndex(x => x.operand == (object)Method(typeof(PlayerControllerB), "SetNightVisionEnabled")) - 3;
+
             // Remove HUD rotating
-            for (int i = 111; i <= 123; i++)
+            for (int i = startIndex; i <= endIndex; i++)
             {
                 codes[i].opcode = OpCodes.Nop;
                 codes[i].operand = null;
             }
 
+            startIndex = codes.FindIndex(x => x.operand == (object)PropertyGetter(typeof(Camera), nameof(Camera.fieldOfView))) - 4;
+            endIndex = codes.FindLastIndex(x => x.operand == (object)PropertySetter(typeof(Camera), nameof(Camera.fieldOfView)));
+
             // Remove FOV updating
-            for (int i = 305; i <= 316; i++)
+            for (int i = startIndex; i <= endIndex; i++)
             {
                 codes[i].opcode = OpCodes.Nop;
                 codes[i].operand = null;
@@ -58,13 +65,17 @@ namespace LCVR.Patches
             var codes = new List<CodeInstruction>(instructions);
 
             // Override sprint
-            codes[326].opcode = OpCodes.Ldsfld;
-            codes[326].operand = typeof(PlayerControllerB_Sprint_Patch).GetField("sprint", BindingFlags.Public | BindingFlags.Static);
+            int index = codes.FindLastIndex(x => x.operand == (object)"Move") + 5;
 
-            codes[327].opcode = OpCodes.Stloc_0;
-            codes[327].operand = null;
+            codes[index++] = new(OpCodes.Ldsfld, Field(typeof(PlayerControllerB_Sprint_Patch), nameof(sprint)));
+            codes[index] = new(OpCodes.Stloc_0);
 
-            for (int i = 328; i <= 333; i++)
+            index = codes.FindLastIndex(x => x.operand == (object)"Sprint");
+            
+            int startIndex = index - 1;
+            int endIndex = index + 4;
+
+            for (int i = startIndex; i <= endIndex; i++)
             {
                 codes[i].opcode = OpCodes.Nop;
                 codes[i].operand = null;
@@ -90,8 +101,11 @@ namespace LCVR.Patches
             //}
 
             // Make it so player sends position updates more frequently (Multiplayer 6 DOF looks better with this)
-            codes[138].operand = 0.025f;
-            codes[141].operand = 0.025f;
+
+            int index = codes.FindLastIndex(x => x.operand == (object)Method(typeof(PlayerControllerB), "NearOtherPlayers"));
+
+            codes[index + 2].operand = 0.025f;
+            codes[index + 5].operand = 0.025f;
 
             return codes.AsEnumerable();
         }
@@ -109,7 +123,7 @@ namespace LCVR.Patches
 
         static PlayerControllerPatches()
         {
-            pivotAction = Actions.VRInputActions.FindAction("Controls/Pivot");
+            pivotAction = Actions.FindAction("Controls/Pivot");
         }
 
         private static void SetCameraUp(this PlayerControllerB player, float value)
@@ -139,25 +153,14 @@ namespace LCVR.Patches
             return true;
         }
 
-        [HarmonyPatch(typeof(PlayerControllerB), "Interact_performed")]
+        [HarmonyPatch(typeof(PlayerControllerB), "Crouch_performed")]
         [HarmonyPrefix]
-        private static bool OnInteractPerformed(ref InputAction.CallbackContext context)
+        private static bool OnCrouchPerformed(PlayerControllerB __instance)
         {
-            return context.ReadValue<float>() != 0;
-        }
+            if (!__instance.IsOwner || __instance.IsInactivePlayer())
+                return true;
 
-        [HarmonyPatch(typeof(PlayerControllerB), "ItemSecondaryUse_performed")]
-        [HarmonyPrefix]
-        private static bool OnItemSecondaryUsePerformed(ref InputAction.CallbackContext context)
-        {
-            return context.ReadValue<float>() != 0;
-        }
-
-        [HarmonyPatch(typeof(PlayerControllerB), "ItemTertiaryUse_performed")]
-        [HarmonyPrefix]
-        private static bool OnItemTertiaryUsePerformed(ref InputAction.CallbackContext context)
-        {
-            return context.ReadValue<float>() != 0;
+            return !__instance.GetComponent<VRPlayer>().isRoomCrouching;
         }
 
         [HarmonyPatch(typeof(PlayerControllerB), "Update")]
@@ -251,7 +254,7 @@ namespace LCVR.Patches
         [HarmonyPostfix]
         private static void OnPlayerDeath(PlayerControllerB __instance)
         {
-            if (!__instance.IsOwner)
+            if (!__instance.IsOwner || __instance.IsInactivePlayer())
                 return;
 
             isDead = true;
@@ -281,7 +284,7 @@ namespace LCVR.Patches
         private static void SwitchedToItemSlot(PlayerControllerB __instance)
         {
             // Ignore if it's someone else, that is handled by the universal patch
-            if (!__instance.IsOwner)
+            if (!__instance.IsOwner || __instance.IsInactivePlayer())
                 return;
 
             // Find held item
@@ -325,7 +328,7 @@ namespace LCVR.Patches
                     __instance.playerBodyAnimator.runtimeAnimatorController = AssetManager.remoteVrMetarig;
                 }
                 // Used to restore the original metarig if a VR player leaves and a non-vr players join in their place
-                else
+                else if (__instance.playerBodyAnimator.runtimeAnimatorController == AssetManager.remoteVrMetarig)
                 {
                     __instance.playerBodyAnimator.runtimeAnimatorController = __instance.playersManager.otherClientsAnimatorController;
                 }

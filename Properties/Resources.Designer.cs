@@ -61,33 +61,6 @@ namespace LCVR.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {
-        ///  &quot;name&quot;: &quot;PlayerActions&quot;,
-        ///  &quot;maps&quot;: [
-        ///    {
-        ///      &quot;name&quot;: &quot;Movement&quot;,
-        ///      &quot;id&quot;: &quot;1560e87b-23aa-4005-bf8b-264f6a3c3736&quot;,
-        ///      &quot;actions&quot;: [
-        ///        {
-        ///          &quot;name&quot;: &quot;Look&quot;,
-        ///          &quot;type&quot;: &quot;Value&quot;,
-        ///          &quot;id&quot;: &quot;c63a6ade-6c5a-4659-9aa5-e336e7b9970f&quot;,
-        ///          &quot;expectedControlType&quot;: &quot;Vector2&quot;,
-        ///          &quot;processors&quot;: &quot;AxisDeadzone(max=1)&quot;,
-        ///          &quot;interactions&quot;: &quot;&quot;,
-        ///          &quot;initialStateCheck&quot;: true
-        ///        },
-        ///        {
-        ///          &quot;name&quot;: &quot;Move&quot;,
-        ///          &quot;type&quot;: &quot;Value&quot;,        /// [rest of string was truncated]&quot;;.
-        /// </summary>
-        internal static string lc_inputs {
-            get {
-                return ResourceManager.GetString("lc_inputs", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
         internal static byte[] lethalcompanyvr {
@@ -117,30 +90,6 @@ namespace LCVR.Properties {
         internal static string UnitySubsystemsManifest {
             get {
                 return ResourceManager.GetString("UnitySubsystemsManifest", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to {
-        ///    &quot;name&quot;: &quot;VR&quot;,
-        ///    &quot;maps&quot;: [
-        ///        {
-        ///            &quot;name&quot;: &quot;Head&quot;,
-        ///            &quot;id&quot;: &quot;7f3d9a5f-aadc-4a0b-9b79-b32e1b5afa1c&quot;,
-        ///            &quot;actions&quot;: [
-        ///                {
-        ///                    &quot;name&quot;: &quot;Position&quot;,
-        ///                    &quot;type&quot;: &quot;Value&quot;,
-        ///                    &quot;id&quot;: &quot;3bbc2aad-20de-4984-9d68-83cb6f68ce5b&quot;,
-        ///                    &quot;expectedControlType&quot;: &quot;Vector3&quot;,
-        ///                    &quot;processors&quot;: &quot;&quot;,
-        ///                    &quot;interactions&quot;: &quot;&quot;,
-        ///                    &quot;initialStateCheck&quot;: true
-        ///                }, [rest of string was truncated]&quot;;.
-        /// </summary>
-        internal static string vr_inputs {
-            get {
-                return ResourceManager.GetString("vr_inputs", resourceCulture);
             }
         }
     }

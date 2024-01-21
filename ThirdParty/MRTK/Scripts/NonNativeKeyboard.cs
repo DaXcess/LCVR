@@ -101,9 +101,9 @@ namespace Microsoft.MixedReality.Toolkit.Experimental.UI
         public bool SliderEnabled = false;
 
         /// <summary>
-        /// Bool to flag submitting on enter
+        /// Bool for closing keyboard on enter
         /// </summary>
-        public bool SubmitOnEnter = true;
+        public bool CloseOnEnter = true;
 
         /// <summary>
         /// The panel that contains the numbers, backspace and close button.
@@ -318,7 +318,6 @@ namespace Microsoft.MixedReality.Toolkit.Experimental.UI
         protected void OnDisable()
         {
             m_LastKeyboardLayout = LayoutType.Alpha;
-            Clear();
         }
 
 
@@ -735,22 +734,11 @@ namespace Microsoft.MixedReality.Toolkit.Experimental.UI
         /// </summary>
         public void Enter()
         {
-            if (SubmitOnEnter)
-            {
-                // Send text entered event and close the keyboard
-                OnTextSubmitted?.Invoke(this, EventArgs.Empty);
-            }
-            else
-            {
-                string enterString = "\n";
+            // Send text entered event and close the keyboard
+            OnTextSubmitted?.Invoke(this, EventArgs.Empty);
 
-                m_CaretPosition = InputField.caretPosition;
-
-                InputField.text = InputField.text.Insert(m_CaretPosition, enterString);
-                m_CaretPosition += enterString.Length;
-
-                UpdateCaretPosition(m_CaretPosition);
-            }
+            if (CloseOnEnter)
+                Close();
         }
 
         /// <summary>

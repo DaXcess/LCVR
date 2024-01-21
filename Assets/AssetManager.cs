@@ -51,5 +51,10 @@ namespace LCVR.Assets
 
             return true;
         }
+
+        public static InputActionAsset Input(string name)
+        {
+            return assetBundle.LoadAsset<InputActionAsset>(name);
+        }
     }
 }

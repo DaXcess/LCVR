@@ -1,12 +1,9 @@
 ﻿using HarmonyLib;
 using LCVR.Assets;
+using LCVR.Input;
 using LCVR.UI;
-using MoreCompany.Behaviors;
-using MoreCompany.Cosmetics;
-using System.Reflection;
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
 using UnityEngine.XR.Interaction.Toolkit;
@@ -53,7 +50,7 @@ namespace LCVR.Patches
                 text.transform.parent = canvas.Find("GameObject").transform;
                 text.transform.localPosition = new Vector3(200, -30, 0);
                 text.transform.localScale = Vector3.one;
-                text.text = "Invalid Game Assembly Detected!\nYou are using a modified or unsupported version of the game!";
+                text.text = "Invalid Game Assembly Detected!\nYou are using an unsupported version of the game!";
                 text.autoSizeTextContainer = true;
                 text.color = new Color(0.9434f, 0.9434f, 0.0434f, 1);
                 text.alignment = TextAlignmentOptions.Center;
@@ -65,11 +62,14 @@ namespace LCVR.Patches
         /// <summary>
         /// This function runs when the main menu is shown
         /// </summary>
-        [HarmonyPostfix]
+        [HarmonyPrefix]
         [HarmonyPatch(typeof(MenuManager), "Start")]
-        private static void OnMainMenuShown()
+        private static void OnMainMenuShown(MenuManager __instance)
         {
             InitMenuScene();
+
+            if (__instance.isInitScene)
+                return;
 
             DisableKeybindsSetting();
 
@@ -78,6 +78,8 @@ namespace LCVR.Patches
 
             if (Plugin.Compatibility.IsLoaded("MoreCompany"))
                 Compatibility.MoreCompany.SetupMoreCompanyUI();
+
+            InitializeKeyboard();
         }
 
         private static void InitMenuScene()
@@ -116,7 +118,8 @@ namespace LCVR.Patches
             canvas.worldCamera = uiCamera;
 
             var canvasFollow = canvas.gameObject.AddComponent<CanvasTransformFollow>();
-            canvasFollow.targetTransform = uiCamera.transform;
+            canvasFollow.sourceTransform = uiCamera.transform;
+            canvasFollow.heightOffset = 1;
 
             // Allow canvas interactions using XR raycaster
 
@@ -139,13 +142,7 @@ namespace LCVR.Patches
         private static void DisableKeybindsSetting()
         {
             var menuContainer = GameObject.Find("MenuContainer");
-
             var keybindingsButton = menuContainer.Find("SettingsPanel/KeybindingsButton")?.GetComponent<Button>();
-
-            if (keybindingsButton == null)
-                // Not the actual main menu, ignore
-                return;
-
             var keybindingsText = keybindingsButton.GetComponentInChildren<TextMeshProUGUI>();
 
             keybindingsButton.enabled = false;
@@ -153,15 +150,29 @@ namespace LCVR.Patches
             keybindingsText.text = "> Change keybinds (Disabled in VR)";
         }
 
+        /// <summary>
+        /// Add a keyboard to the main menu
+        /// </summary>
+        private static void InitializeKeyboard()
+        {
+
+            var canvas = GameObject.Find("Canvas")?.GetComponent<Canvas>();
+            var keyboard = Object.Instantiate(AssetManager.keyboard);
+
+            keyboard.transform.SetParent(canvas.transform, false);
+            keyboard.transform.localPosition = new Vector3(0, -470, -40);
+            keyboard.transform.localEulerAngles = new Vector3(13, 0, 0);
+            keyboard.transform.localScale = Vector3.one * 0.8f;
+
+            keyboard.Find("keyboard_Alpha/Deny_Button").SetActive(false);
+            keyboard.Find("keyboard_Alpha/Confirm_Button").SetActive(false);
+
+            canvas.gameObject.AddComponent<MainMenuKeyboard>();
+        }
+
         private static void InjectIntroScreen()
         {
             var menuContainer = GameObject.Find("MenuContainer");
-
-            var keybindingsButton = menuContainer.Find("SettingsPanel/KeybindingsButton")?.GetComponent<Button>();
-
-            if (keybindingsButton == null)
-                // Not the actual main menu, ignore
-                return;
 
             var vrIntroPanel = Object.Instantiate(menuContainer.Find("NewsPanel"));
             vrIntroPanel.name = "VRIntoPanel";
@@ -277,7 +288,7 @@ namespace LCVR.Patches
             text.transform.parent = canvas.Find("GameObject").transform;
             text.transform.localPosition = new Vector3(200, -170, 0);
             text.transform.localScale = Vector3.one;
-            text.text = "VR Setup Complete!\nYou must restart your game to go into VR!";
+            text.text = "VR Setup Complete!\nYou must restart your game to go into VR!\nYou can continue if you want to play without VR.";
             text.autoSizeTextContainer = true;
             text.color = new Color(0.9434f, 0.0434f, 0.0434f, 1);
             text.alignment = TextAlignmentOptions.Center;
@@ -292,10 +303,13 @@ namespace LCVR.Patches
         /// <summary>
         /// This function runs when the main menu is shown
         /// </summary>
-        [HarmonyPostfix]
+        [HarmonyPrefix]
         [HarmonyPatch(typeof(MenuManager), "Start")]
-        private static void OnMainMenuShown()
+        private static void OnMainMenuShown(MenuManager __instance)
         {
+            if (__instance.isInitScene)
+                return;
+
             InjectDebugScreen();
         }
 
@@ -305,13 +319,6 @@ namespace LCVR.Patches
                 return;
 
             var menuContainer = GameObject.Find("MenuContainer");
-
-            var keybindingsButton = menuContainer.Find("SettingsPanel/KeybindingsButton")?.GetComponent<Button>();
-
-            if (keybindingsButton == null)
-                // Not the actual main menu, ignore
-                return;
-
             var modDebugPanel = Object.Instantiate(menuContainer.Find("NewsPanel"));
             modDebugPanel.name = "ModDebugPanel";
             modDebugPanel.transform.parent = menuContainer.transform;

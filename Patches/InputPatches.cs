@@ -3,6 +3,8 @@ using LCVR.Input;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
+using UnityEngine.InputSystem;
+using static HarmonyLib.AccessTools;
 
 namespace LCVR.Patches
 {
@@ -12,7 +14,7 @@ namespace LCVR.Patches
     {
         [HarmonyPatch(typeof(IngamePlayerSettings), nameof(IngamePlayerSettings.LoadSettingsFromPrefs))]
         [HarmonyPostfix]
-        private static void OnLoadSettings(IngamePlayerSettings __instance)
+        private static void OnLoadSettings()
         {
             Actions.ReloadInputBindings();
         }
@@ -26,26 +28,14 @@ namespace LCVR.Patches
         {
             var codes = new List<CodeInstruction>(instructions);
 
-            for (var i = 15; i <= 27; i++)
+            int startIndex = codes.FindIndex(x => x.opcode == OpCodes.Brtrue) + 1;
+            int endIndex = codes.FindIndex(x => x.operand == (object)Method(typeof(InputActionRebindingExtensions), nameof(InputActionRebindingExtensions.LoadBindingOverridesFromJson), [typeof(IInputActionCollection2), typeof(string), typeof(bool)])) + 5;
+
+            for (var i = startIndex; i <= endIndex; i++)
             {
                 codes[i].opcode = OpCodes.Nop;
                 codes[i].operand = null;
             }
-
-            return codes.AsEnumerable();
-        }
-    }
-
-    [LCVRPatch]
-    [HarmonyPatch(typeof(PlayerActions))]
-    [HarmonyPatch(MethodType.Constructor)]
-    internal static class PlayerActionsPatches
-    {
-        static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
-        {
-            var codes = new List<CodeInstruction>(instructions);
-
-            codes[6].operand = Properties.Resources.lc_inputs;
 
             return codes.AsEnumerable();
         }

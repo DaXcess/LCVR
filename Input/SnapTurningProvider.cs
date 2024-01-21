@@ -6,13 +6,15 @@ namespace LCVR.Input
     internal class SnapTurningProvider : TurningProvider
     {
         private readonly InputAction turnAction;
+        private readonly float turnAmount;
 
         private bool turnedLastInput = false;
         private float offset = 0;
 
         internal SnapTurningProvider()
         {
-            turnAction = Actions.VRInputActions.FindAction("Controls/Turn");
+            turnAction = Actions.FindAction("Controls/Turn");
+            turnAmount = Plugin.Config.SnapTurnSize.Value;
         }
 
         public void Update()
@@ -25,7 +27,7 @@ namespace LCVR.Input
                 if (turnedLastInput) return;
 
                 turnedLastInput = true;
-                offset += value > 0 ? 45 : -45;
+                offset += value > 0 ? turnAmount : -turnAmount;
             } else
             {
                 turnedLastInput = false;

@@ -9,7 +9,9 @@ using LCVR.Assets;
 using Microsoft.MixedReality.Toolkit.Experimental.UI;
 using UnityEngine.InputSystem.UI;
 using LCVR.Input;
-using UnityEngine.InputSystem;
+using System.Collections.Generic;
+using UnityEngine.Rendering;
+using System.Linq;
 
 namespace LCVR
 {
@@ -62,15 +64,17 @@ namespace LCVR
 
             mainCamera.depth = uiCamera.depth + 1;
 
+            Logger.LogInfo("VR Cameras have been set up");
+
             // Apply optimization configuration
             var hdCamera = mainCamera.GetComponent<HDAdditionalCameraData>();
             hdCamera.allowDynamicResolution = Plugin.Config.EnableUpscaling.Value;
             hdCamera.allowDeepLearningSuperSampling = Plugin.Config.EnableDLSS.Value;
 
-            Utils.DisableQualitySetting(hdCamera, FrameSettingsField.DepthOfField);
+            hdCamera.DisableQualitySetting(FrameSettingsField.DepthOfField);
 
             if (Plugin.Config.DisableVolumetrics.Value)
-                Utils.DisableQualitySetting(hdCamera, FrameSettingsField.Volumetrics);
+                hdCamera.DisableQualitySetting(FrameSettingsField.Volumetrics);
 
             // Create desktop camera
             if (Plugin.Config.EnableCustomCamera.Value)
@@ -99,9 +103,6 @@ namespace LCVR
             // Initialize the VR player script
             var player = StartOfRound.Instance.localPlayerController.gameObject.AddComponent<VRPlayer>();
 
-            // Initialize HUD
-            player.hud = new GameObject("VR HUD Manager").AddComponent<VRHUD>();
-
             // Temporary: Update item offsets for certain items
             // Will eventually be replaced by VR interactions (two hand holding 'n stuff)
             Player.Items.UpdateVRControlsItemsOffsets();
@@ -119,6 +120,7 @@ namespace LCVR
 
             var keyboard = keyboardObject.GetComponent<NonNativeKeyboard>();
             keyboard.InputField = terminal.screenText;
+            keyboard.CloseOnEnter = false;
 
             keyboard.OnKeyboardValueKeyPressed += (_) =>
             {
@@ -154,8 +156,33 @@ namespace LCVR
             Experiments.Experiments.RunExperiments();
 #endif
 
+            DisableLensDistortion(Plugin.Config.DisableLensDistortion.Value);
+
             if (!Plugin.Config.FirstTimeTipSeen.Value)
                 HUDManager.Instance.StartCoroutine(FirstTimeTips());
+        }
+
+        private static void DisableLensDistortion(bool includeExtended = false)
+        {
+            // Disable insanity lens distortion by default
+            var profiles = new VolumeProfile[] {
+                HUDManager.Instance.insanityScreenFilter.profile,
+            };
+
+            var extendedProfiles = new VolumeProfile[] {
+                HUDManager.Instance.drunknessFilter.profile,
+                HUDManager.Instance.flashbangScreenFilter.profile,
+                HUDManager.Instance.underwaterScreenFilter.profile,
+            };
+
+            var distortionFilters = new List<LensDistortion>();
+
+            distortionFilters.AddRange(profiles.SelectMany(profile => profile.components.FindAll(component => component is LensDistortion).Select(component => component as LensDistortion)));
+
+            if (includeExtended)
+                distortionFilters.AddRange(extendedProfiles.SelectMany(profile => profile.components.FindAll(component => component is LensDistortion).Select(component => component as LensDistortion)));
+
+            distortionFilters.ForEach(filter => filter.active = false);
         }
 
         private static IEnumerator FirstTimeTips()

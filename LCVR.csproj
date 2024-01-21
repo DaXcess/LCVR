@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>LCVR</AssemblyName>
     <Description>Collecting Scrap in VR</Description>
-    <Version>1.0.1</Version>
+    <Version>1.1.0</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>12.0</LangVersion>
     <Title>LethalCompanyVR</Title>
@@ -35,14 +35,23 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="MoreCompany">
+      <HintPath>Libs\Mods\MoreCompany.dll</HintPath>
+    </Reference>
+    <Reference Include="Mimics">
+      <HintPath>Libs\Mods\Mimics.dll</HintPath>
+    </Reference>
+    <Reference Include="TooManyEmotes">
+      <HintPath>Libs\Mods\TooManyEmotes.dll</HintPath>
+    </Reference>
     <Reference Include="Assembly-CSharp">
       <HintPath>Libs\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="DissonanceVoip">
       <HintPath>Libs\DissonanceVoip.dll</HintPath>
     </Reference>
-    <Reference Include="MoreCompany">
-      <HintPath>Libs\MoreCompany.dll</HintPath>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>Libs\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="Unity.Animation.Rigging">
       <HintPath>Libs\Unity.Animation.Rigging.dll</HintPath>
