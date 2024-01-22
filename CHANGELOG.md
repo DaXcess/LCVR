@@ -1,3 +1,12 @@
+# 1.1.1
+
+**Adjustments:**
+- Removed HDRP XR occlusion mesh shader
+
+**Bug fixes:**
+- Fixed charging items with secondary use not working
+- Fixed not being able to cast a vote to leave early
+
 # 1.1.0
 
 **New Features:**
