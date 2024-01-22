@@ -110,7 +110,8 @@ namespace LCVR
             settings.dynamicResolutionSettings.upsampleFilter = DynamicResUpscaleFilter.CatmullRom;
             settings.dynamicResolutionSettings.minPercentage = Config.ResolutionPercentage.Value;
             settings.dynamicResolutionSettings.maxPercentage = Config.ResolutionPercentage.Value;
-
+            
+            settings.xrSettings.occlusionMesh = false;
             settings.xrSettings.singlePass = false;
 
             if (Config.LODBias.Value != -1f)
