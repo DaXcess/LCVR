@@ -12,6 +12,7 @@ using LCVR.Input;
 using System.Collections.Generic;
 using UnityEngine.Rendering;
 using System.Linq;
+using UnityEngine.XR;
 
 namespace LCVR
 {
@@ -68,13 +69,20 @@ namespace LCVR
 
             // Apply optimization configuration
             var hdCamera = mainCamera.GetComponent<HDAdditionalCameraData>();
-            hdCamera.allowDynamicResolution = Plugin.Config.EnableUpscaling.Value;
-            hdCamera.allowDeepLearningSuperSampling = Plugin.Config.EnableDLSS.Value;
+
+            if (Plugin.Config.EnableDLSS.Value)
+            {
+                hdCamera.allowDynamicResolution = true;
+                hdCamera.allowDeepLearningSuperSampling = true;
+            }
 
             hdCamera.DisableQualitySetting(FrameSettingsField.DepthOfField);
 
             if (Plugin.Config.DisableVolumetrics.Value)
                 hdCamera.DisableQualitySetting(FrameSettingsField.Volumetrics);
+
+            if (!Plugin.Config.CameraResolutionGlobal.Value)
+                XRSettings.eyeTextureResolutionScale = Plugin.Config.CameraResolution.Value;
 
             // Create desktop camera
             if (Plugin.Config.EnableCustomCamera.Value)

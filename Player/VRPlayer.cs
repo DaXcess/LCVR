@@ -632,6 +632,9 @@ namespace LCVR.Player
             uiCamera.enabled = true;
 
             FindObjectsOfType<CanvasTransformFollow>().Do(follow => follow.ResetPosition(true));
+
+            if (!Plugin.Config.CameraResolutionGlobal.Value)
+                XRSettings.eyeTextureResolutionScale = 1;
         }
 
         private void SwitchToGameCamera()
@@ -647,6 +650,9 @@ namespace LCVR.Player
             mainCamera.stereoTargetEye = StereoTargetEyeMask.Both;
             mainCamera.depth = uiCamera.depth + 1;
             mainCamera.enabled = true;
+
+            if (!Plugin.Config.CameraResolutionGlobal.Value)
+                XRSettings.eyeTextureResolutionScale = Plugin.Config.CameraResolution.Value;
         }
 
         private void TurnBodyToCamera(float turnWeight)

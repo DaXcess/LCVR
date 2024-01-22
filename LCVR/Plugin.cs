@@ -100,17 +100,17 @@ namespace LCVR
                 return;
             }
 
-            // Enable dynamic resolution (if enabled in config)
+            // Change HDRP settings
             var asset = QualitySettings.renderPipeline as HDRenderPipelineAsset;
             var settings = asset.currentPlatformRenderPipelineSettings;
 
-            settings.dynamicResolutionSettings.enabled = Config.EnableUpscaling.Value;
-            settings.dynamicResolutionSettings.enableDLSS = Config.EnableDLSS.Value;
-            settings.dynamicResolutionSettings.dynResType = DynamicResolutionType.Hardware;
-            settings.dynamicResolutionSettings.upsampleFilter = DynamicResUpscaleFilter.CatmullRom;
-            settings.dynamicResolutionSettings.minPercentage = Config.ResolutionPercentage.Value;
-            settings.dynamicResolutionSettings.maxPercentage = Config.ResolutionPercentage.Value;
-            
+            if (Config.EnableDLSS.Value)
+            {
+                settings.dynamicResolutionSettings.enabled = true;
+                settings.dynamicResolutionSettings.enableDLSS = true;
+                settings.supportMotionVectors = true;
+            }
+
             settings.xrSettings.occlusionMesh = false;
             settings.xrSettings.singlePass = false;
 
@@ -312,6 +312,9 @@ namespace LCVR
 
             typeof(XRGeneralSettings).GetMethod("InitXRSDK", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(generalSettings, []);
             typeof(XRGeneralSettings).GetMethod("Start", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(generalSettings, []);
+
+            if (Config.CameraResolutionGlobal.Value)
+                XRSettings.eyeTextureResolutionScale = Config.CameraResolution.Value;
 
             Logger.LogInfo("Initialized OpenXR Runtime");
         }

@@ -13,9 +13,9 @@ namespace LCVR
 
         // Performance configuration
 
-        public ConfigEntry<bool> EnableUpscaling { get; } = file.Bind("Performance", "EnableUpscaling", false, "This setting enables 'Dynamic Resolution' in the HDRP pipeline, which is required for upscaling.");
-        public ConfigEntry<bool> EnableDLSS { get; } = file.Bind("Performance", "EnableDLSS", false, "Enable DLSS support for the game. Requires upscaling to be enabled.");
-        public ConfigEntry<int> ResolutionPercentage { get; } = file.Bind("Performance", "ResolutionPercentage", 80, new ConfigDescription("The resolution to render the game on, which will then be upsampled. Requires upscaling to be enabled.", new AcceptableValueRange<int>(0, 100)));
+        public ConfigEntry<float> CameraResolution { get; } = file.Bind("Performance", "CameraResolution", 0.75f, new ConfigDescription("This setting configures the resolution scale of the game, lower values are more performant, but will make the game look worse. From around 0.8 the difference is negligible (on a Quest 2).", new AcceptableValueRange<float>(0.05f, 1f)));
+        public ConfigEntry<bool> CameraResolutionGlobal { get; } = file.Bind("Performance", "CameraResolutionGlobal", false, "Whether the camera resolution scale applies to all cameras. If disabled, it is only applied on the in-game FPV camera.");
+        public ConfigEntry<bool> EnableDLSS { get; } = file.Bind("Performance", "EnableDLSS", false, "Enable DLSS support for the game.");
         public ConfigEntry<bool> DisableVolumetrics { get; } = file.Bind("Performance", "DisableVolumetrics", false, "Disables volumetrics in the game, which significantly improves performance, but removes all fog and may be considered cheating.");
 
         // Input configuration
