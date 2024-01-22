@@ -158,7 +158,7 @@ namespace LCVR.Items
             if (!CanUseItem())
                 return;
 
-            if (Time.realtimeSinceStartup - lastActionTime < 0.5f)
+            if (Time.realtimeSinceStartup - lastActionTime < 1f)
                 return;
 
             lastActionTime = Time.realtimeSinceStartup;

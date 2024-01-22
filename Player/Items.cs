@@ -23,6 +23,10 @@ namespace LCVR.Player
         {
             foreach (var item in StartOfRound.Instance.allItemsList.itemsList)
             {
+#if DEBUG
+                item.canBeGrabbedBeforeGameStart = true;
+#endif
+
                 if (item.itemName == "Chemical Jug")
                 {
                     item.positionOffset = new Vector3(-0.1f, 0.18f, -0.24f);

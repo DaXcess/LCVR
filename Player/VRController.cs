@@ -67,7 +67,7 @@ namespace LCVR.Player
         public void Initialize(VRPlayer player)
         {
             this.player = player;
-            this.playerController = player.gameObject.GetComponent<PlayerControllerB>();
+            playerController = player.gameObject.GetComponent<PlayerControllerB>();
 
             var interactOriginObject = new GameObject("Raycast Origin");
 
@@ -117,14 +117,10 @@ namespace LCVR.Player
                 if (playerController.isPlayerDead)
                 {
                     if (StartOfRound.Instance.overrideSpectateCamera)
-                    {
                         return;
-                    }
 
                     if (playerController.spectatedPlayerScript != null && !playerController.spectatedPlayerScript.isPlayerDead)
-                    {
                         InvokeAction("SpectateNextPlayer");
-                    }
 
                     return;
                 }

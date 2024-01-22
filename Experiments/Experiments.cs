@@ -13,12 +13,13 @@ namespace LCVR.Experiments
             ShowMeTheMoney(10000);
             // SpawnBuyableItem<JetpackItem>("Jetpack");
             // SpawnBuyableItem<SprayPaintItem>("Spray paint");
-            SpawnBuyableItem<FlashlightItem>("Flashlight");
-            SpawnBuyableItem<FlashlightItem>("Pro-flashlight");
+            // SpawnBuyableItem<FlashlightItem>("Flashlight");
+            // SpawnBuyableItem<FlashlightItem>("Pro-flashlight");
             // SpawnBuyableItem<StunGrenadeItem>("Stun grenade");
-            SpawnBuyableItem<PatcherTool>("Zap gun");
+            // SpawnBuyableItem<PatcherTool>("Zap gun");
+            SpawnBuyableItem<WalkieTalkie>("Walkie-talkie");
 
-            SpawnNonBuyableItem(["Laser pointer"]);
+            // SpawnNonBuyableItem(["Laser pointer"]);
         }
 
         private static void SpawnShotgun()

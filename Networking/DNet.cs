@@ -404,11 +404,11 @@ namespace LCVR.Networking
 
                 var fingers = new Fingers
                 {
-                    thumb = ((float)br.ReadByte()) / 255f,
-                    index = ((float)br.ReadByte()) / 255f,
-                    middle = ((float)br.ReadByte()) / 255f,
-                    pinky = ((float)br.ReadByte()) / 255f,
-                    ring = ((float)br.ReadByte()) / 255f,
+                    thumb = br.ReadByte() / 255f,
+                    index = br.ReadByte() / 255f,
+                    middle = br.ReadByte() / 255f,
+                    pinky = br.ReadByte() / 255f,
+                    ring = br.ReadByte() / 255f,
                 };
 
                 return fingers;
