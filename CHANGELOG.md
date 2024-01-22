@@ -1,3 +1,11 @@
+# 1.1.2
+
+**Adjustments:**
+
+- Removed the option `Dynamic Resolution`
+- Enabled motion vector support, making DLSS look much better
+- Added camera resolution scale option, defaulting to 0.75x normal (headset) resolution
+
 # 1.1.1
 
 **Adjustments:**
