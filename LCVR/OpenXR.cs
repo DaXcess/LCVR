@@ -23,7 +23,7 @@ namespace LCVR
         [DllImport("UnityOpenXR", EntryPoint = "NativeConfig_GetRuntimeVersion")]
         private static extern bool Internal_GetRuntimeVersion(out ushort major, out ushort minor, out ushort patch);
 
-        private static string GenerateReport()
+        public static string GenerateReport()
         {
             string result = "";
             IntPtr intPtr = Internal_GenerateReport();
@@ -136,6 +136,11 @@ namespace LCVR
                 });
 
                 return runtimes;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning($"Failed to query runtimes: {ex.Message}");
+                return null;
             }
             finally
             {

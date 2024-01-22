@@ -212,6 +212,7 @@ namespace LCVR
 
                         default:
                             Logger.LogWarning("Unknown reason for OpenXR failure!");
+                            Logger.LogWarning($"\n{OpenXR.GenerateReport()}");
                             break;
                     }
                 }
