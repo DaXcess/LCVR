@@ -1,3 +1,11 @@
+# 1.1.4
+
+**Bug fixes:**
+
+- Input not working (lol)
+- Expanded performance options a bit
+- Dynamic resolution filter is set to FSR by default
+
 # 1.1.3
 
 **Adjustments:**
