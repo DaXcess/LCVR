@@ -1,10 +1,11 @@
 # Lethal Company VR Mod
 
-[![Adding VR to Lethal Company](https://github.com/DaXcess/LCVR/blob/main/.github/assets/thumbnail.webp?raw=true)](https://www.youtube.com/watch?v=DPH_Zqpkdvc "Adding VR to Lethal Company")
-
 <!-- Shields idea shamelessly stolen from Evaisa's LethalLib -->
+
 [![Thunderstore Version](https://img.shields.io/thunderstore/v/DaXcess/LethalCompanyVR?style=for-the-badge&logo=thunderstore&logoColor=white)](https://thunderstore.io/c/lethal-company/p/DaXcess/LethalCompanyVR)
+[![GitHub Version](https://img.shields.io/github/v/release/DaXcess/LCVR?style=for-the-badge&logo=github)](https://github.com/DaXcess/LCVR/releases/latest)
 [![Thunderstore Downloads](https://img.shields.io/thunderstore/dt/DaXcess/LethalCompanyVR?style=for-the-badge&logo=thunderstore&logoColor=white)](https://thunderstore.io/c/lethal-company/p/DaXcess/LethalCompanyVR)
+[![GitHub Downloads](https://img.shields.io/github/downloads/DaXcess/LCVR/total?style=for-the-badge&logo=github)](https://github.com/DaXcess/LCVR/releases/latest)
 
 > This is the first mod that I have ever built, and also the first time using Unity so this mod might not be perfect.
 

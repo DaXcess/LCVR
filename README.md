@@ -1,12 +1,11 @@
 # Lethal Company VR Mod
 
 <!-- Shields idea shamelessly stolen from Evaisa's LethalLib -->
-[![Thunderstore Version](https://img.shields.io/thunderstore/v/DaXcess/LethalCompanyVR?style=for-the-badge&logo=thunderstore&logoColor=white)](https://thunderstore.io/c/lethal-company/p/DaXcess/LethalCompanyVR)
-[![Thunderstore Downloads](https://img.shields.io/thunderstore/dt/DaXcess/LethalCompanyVR?style=for-the-badge&logo=thunderstore&logoColor=white)](https://thunderstore.io/c/lethal-company/p/DaXcess/LethalCompanyVR)
 
-[<img src="https://github.com/DaXcess/LCVR/blob/main/.github/assets/thunderstore-btn.png" height="80" />](https://thunderstore.io/c/lethal-company/p/DaXcess/LethalCompanyVR)
-[<img src="https://github.com/DaXcess/LCVR/blob/main/.github/assets/github-btn.png" height="80" />](https://github.com/DaXcess/LCVR/releases/latest)
-<br/>
+[![Thunderstore Version](https://img.shields.io/thunderstore/v/DaXcess/LethalCompanyVR?style=for-the-badge&logo=thunderstore&logoColor=white)](https://thunderstore.io/c/lethal-company/p/DaXcess/LethalCompanyVR)
+[![GitHub Version](https://img.shields.io/github/v/release/DaXcess/LCVR?style=for-the-badge&logo=github)](https://github.com/DaXcess/LCVR/releases/latest)
+[![Thunderstore Downloads](https://img.shields.io/thunderstore/dt/DaXcess/LethalCompanyVR?style=for-the-badge&logo=thunderstore&logoColor=white)](https://thunderstore.io/c/lethal-company/p/DaXcess/LethalCompanyVR)
+[![GitHub Downloads](https://img.shields.io/github/downloads/DaXcess/LCVR/total?style=for-the-badge&logo=github)](https://github.com/DaXcess/LCVR/releases/latest)
 
 LCVR is a [BepInEx](https://docs.bepinex.dev/) mod that adds full 6DOF VR support into Lethal Company, including hand movement and motion-based controls.
 
@@ -64,11 +63,12 @@ To spectate the next player, you can utilise the right trigger button. To vote t
 
 ## VR additions
 
-This mod, in addition to adding VR and motion controls, also adds a few special interactions that you can perform in VR. At the time of writing, these currently are: 
-* Spray Paint Shaking
-  * When holding the spray paint item, you can physically shake it to shake the can in the game. You can also still use the secondary interact button to shake the can.
-* Shovel/Sign Swinging
-  * If you are holding a shovel or a sign, you'll notice that you are holding it in two hands. If you hold your controllers over your shoulder and bring them down with enough force, the mod will swing the shovel for you, dealing damage to players/entities in front of you.
+This mod, in addition to adding VR and motion controls, also adds a few special interactions that you can perform in VR. At the time of writing, these currently are:
+
+- Spray Paint Shaking
+  - When holding the spray paint item, you can physically shake it to shake the can in the game. You can also still use the secondary interact button to shake the can.
+- Shovel/Sign Swinging
+  - If you are holding a shovel or a sign, you'll notice that you are holding it in two hands. If you hold your controllers over your shoulder and bring them down with enough force, the mod will swing the shovel for you, dealing damage to players/entities in front of you.
 
 # Install from source
 
