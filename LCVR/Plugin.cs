@@ -104,12 +104,12 @@ namespace LCVR
             var asset = QualitySettings.renderPipeline as HDRenderPipelineAsset;
             var settings = asset.currentPlatformRenderPipelineSettings;
 
-            if (Config.EnableDLSS.Value)
-            {
-                settings.dynamicResolutionSettings.enabled = true;
-                settings.dynamicResolutionSettings.enableDLSS = true;
-                settings.supportMotionVectors = true;
-            }
+            settings.dynamicResolutionSettings.enabled = Config.EnableDynamicResolution.Value;
+            settings.dynamicResolutionSettings.enableDLSS = Config.EnableDLSS.Value;
+            settings.dynamicResolutionSettings.dynResType = UnityEngine.Rendering.DynamicResolutionType.Hardware;
+            settings.dynamicResolutionSettings.upsampleFilter = Config.DynamicResolutionUpscaleFilter.Value;
+            settings.dynamicResolutionSettings.minPercentage = settings.dynamicResolutionSettings.maxPercentage = Config.DynamicResolutionPercentage.Value;
+            settings.supportMotionVectors = true;
 
             settings.xrSettings.occlusionMesh = false;
             settings.xrSettings.singlePass = false;
