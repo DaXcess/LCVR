@@ -6,6 +6,8 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using UnityEngine.InputSystem.EnhancedTouch;
+using UnityEngine.XR.OpenXR.Features;
 
 namespace LCVR
 {
@@ -189,5 +191,22 @@ namespace LCVR
             public string name;
         }
 #pragma warning restore 0649
+    }
+
+    internal class ResetViewFeature : OpenXRFeature
+    {
+        public static ResetViewFeature Instance { get; private set; }
+
+        public event Action OnViewReset;
+
+        public ResetViewFeature()
+        {
+            Instance = this;
+        }
+
+        protected override void OnAppSpaceChange(ulong xrSpace)
+        {
+            OnViewReset?.Invoke();
+        }
     }
 }

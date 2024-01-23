@@ -1,6 +1,7 @@
 ﻿using BepInEx;
 using BepInEx.Bootstrap;
 using GameNetcodeStuff;
+using HarmonyLib;
 using LCVR.Assets;
 using LCVR.Patches;
 using System;
@@ -309,6 +310,14 @@ namespace LCVR
             OpenXRSettings.Instance.renderMode = OpenXRSettings.RenderMode.MultiPass;
             OpenXRSettings.Instance.depthSubmissionMode = OpenXRSettings.DepthSubmissionMode.Depth24Bit;
 
+            // Insert features
+            var featuresField = AccessTools.Field(typeof(OpenXRSettings), "features");
+            var features = (OpenXRFeature[])featuresField.GetValue(OpenXRSettings.Instance);
+
+            OpenXRFeature[] newFeatures = [.. features, new ResetViewFeature()];
+            featuresField.SetValue(OpenXRSettings.Instance, newFeatures);
+
+            // Initialize XR
             typeof(XRGeneralSettings).GetMethod("InitXRSDK", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(generalSettings, []);
             typeof(XRGeneralSettings).GetMethod("Start", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(generalSettings, []);
 
