@@ -15,6 +15,7 @@ namespace LCVR.Input
             { "default", AssetManager.Input("DefaultInputs") },
             { "htc_vive", AssetManager.Input("HtcViveInputs") },
             { "index", AssetManager.Input("ValveIndexInputs") },
+            { "wmr", AssetManager.Input("WmrInputs") },
         };
 
         public static InputAction Head_Position;

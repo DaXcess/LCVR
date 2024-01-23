@@ -4,6 +4,9 @@
 
 - Added support for loading local files as controller binding overrides
 - Added `index` as an official binding
+- Added `wmr` as an official binding
+- Fixed not being able to confirm builds
+- Removed Herobrine
 
 # 1.1.2
 
