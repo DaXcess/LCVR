@@ -136,6 +136,32 @@ namespace LCVR.Patches
             return (float)cameraUpField.GetValue(player);
         }
 
+        [HarmonyPatch(typeof(PlayerControllerB), "OnEnable")]
+        [HarmonyTranspiler]
+        private static IEnumerable<CodeInstruction> PatchOnEnable(IEnumerable<CodeInstruction> instructions)
+        {
+            var codes = new List<CodeInstruction>(instructions);
+            var firstIndex = codes.FindIndex(code => code.opcode == OpCodes.Ldstr);
+
+            for (var i = 0; i < 14; i++)
+                codes[firstIndex + i * 8].operand = $"Movement/{codes[firstIndex + i * 8]}";
+
+            return codes.AsEnumerable();
+        }
+
+        [HarmonyPatch(typeof(PlayerControllerB), "OnDisable")]
+        [HarmonyTranspiler]
+        private static IEnumerable<CodeInstruction> PatchOnDisable(IEnumerable<CodeInstruction> instructions)
+        {
+            var codes = new List<CodeInstruction>(instructions);
+            var firstIndex = codes.FindIndex(code => code.opcode == OpCodes.Ldstr);
+
+            for (var i = 0; i < 14; i++)
+                codes[firstIndex + i * 8].operand = $"Movement/{codes[firstIndex + i * 8]}";
+
+            return codes.AsEnumerable();
+        }
+
         /// <summary>
         /// Adds an arbitrary deadzone since the ScrollMouse gets performed if you only even touch the joystick a little bit
         /// </summary>

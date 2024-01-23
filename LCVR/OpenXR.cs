@@ -192,21 +192,4 @@ namespace LCVR
         }
 #pragma warning restore 0649
     }
-
-    internal class ResetViewFeature : OpenXRFeature
-    {
-        public static ResetViewFeature Instance { get; private set; }
-
-        public event Action OnViewReset;
-
-        public ResetViewFeature()
-        {
-            Instance = this;
-        }
-
-        protected override void OnAppSpaceChange(ulong xrSpace)
-        {
-            OnViewReset?.Invoke();
-        }
-    }
 }
