@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>LCVR</AssemblyName>
     <Description>Collecting Scrap in VR</Description>
-    <Version>1.1.2</Version>
+    <Version>1.1.3</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>12.0</LangVersion>
     <Title>LethalCompanyVR</Title>
@@ -31,7 +31,8 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2"
+      PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,3 +1,10 @@
+# 1.1.3
+
+**Adjustments:**
+
+- Added support for loading local files as controller binding overrides
+- Added `index` as an official binding
+
 # 1.1.2
 
 **Adjustments:**

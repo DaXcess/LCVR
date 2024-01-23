@@ -1,6 +1,7 @@
 ﻿using LCVR.Assets;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using UnityEngine.InputSystem;
 using UnityEngine.XR.OpenXR.Features.Interactions;
@@ -12,7 +13,8 @@ namespace LCVR.Input
         private static readonly Dictionary<string, InputActionAsset> profiles = new()
         {
             { "default", AssetManager.Input("DefaultInputs") },
-            { "htc_vive", AssetManager.Input("HtcViveInputs") }
+            { "htc_vive", AssetManager.Input("HtcViveInputs") },
+            { "index", AssetManager.Input("ValveIndexInputs") },
         };
 
         public static InputAction Head_Position;
@@ -117,17 +119,31 @@ namespace LCVR.Input
         /// <summary>
         /// Dynamically download controller profiles from GitHub, so that users won't have to
         /// mess around with files and only need to specify a profile name inside the configuration.
+        /// 
+        /// To use a local profile file, use a file:/// path as the profile name, that points to the
+        /// location of the local file.
         /// </summary>
         /// <returns></returns>
         private static bool DownloadControllerProfile(string profile, out InputActionAsset asset)
         {
-            if (cache.TryGetValue(profile, out asset)) 
+            if (cache.TryGetValue(profile, out asset))
                 return true;
 
             try
             {
                 if (string.IsNullOrEmpty(profile))
                     throw new Exception("Using default controller profile");
+
+                if (Uri.TryCreate(profile, UriKind.Absolute, out var uri) && uri.Scheme == Uri.UriSchemeFile)
+                {
+                    var path = Uri.UnescapeDataString(uri.LocalPath);
+                    var data = File.ReadAllText(path);
+                    var localAsset = InputActionAsset.FromJson(data);
+
+                    cache.Add(profile, localAsset);
+
+                    return localAsset;
+                }
 
                 using var client = new WebClient();
 
@@ -138,8 +154,9 @@ namespace LCVR.Input
 
                 return asset;
             }
-            catch
+            catch (Exception ex)
             {
+                Logger.LogWarning($"Failed to load override binding profile: {ex.Message}");
                 return false;
             }
         }
