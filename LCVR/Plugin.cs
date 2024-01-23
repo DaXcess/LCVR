@@ -1,7 +1,6 @@
 ﻿using BepInEx;
 using BepInEx.Bootstrap;
 using GameNetcodeStuff;
-using HarmonyLib;
 using LCVR.Assets;
 using LCVR.Patches;
 using System;
@@ -33,7 +32,7 @@ namespace LCVR
     {
         public const string PLUGIN_GUID = "io.daxcess.lcvr";
         public const string PLUGIN_NAME = "LCVR";
-        public const string PLUGIN_VERSION = "1.1.3";
+        public const string PLUGIN_VERSION = "1.1.4";
 
         private readonly string[] GAME_ASSEMBLY_HASHES = [
             "AAC6149C355A19865C0F67FD0C1D7111D4F418EF94D700265B591665B4CDCE73", // V45

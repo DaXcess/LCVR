@@ -137,6 +137,7 @@ namespace LCVR.Patches
         }
 
         [HarmonyPatch(typeof(PlayerControllerB), "OnEnable")]
+        [HarmonyDebug]
         [HarmonyTranspiler]
         private static IEnumerable<CodeInstruction> PatchOnEnable(IEnumerable<CodeInstruction> instructions)
         {
@@ -144,7 +145,7 @@ namespace LCVR.Patches
             var firstIndex = codes.FindIndex(code => code.opcode == OpCodes.Ldstr);
 
             for (var i = 0; i < 14; i++)
-                codes[firstIndex + i * 8].operand = $"Movement/{codes[firstIndex + i * 8]}";
+                codes[firstIndex + i * 8].operand = $"Movement/{codes[firstIndex + i * 8].operand}";
 
             return codes.AsEnumerable();
         }
@@ -157,7 +158,7 @@ namespace LCVR.Patches
             var firstIndex = codes.FindIndex(code => code.opcode == OpCodes.Ldstr);
 
             for (var i = 0; i < 14; i++)
-                codes[firstIndex + i * 8].operand = $"Movement/{codes[firstIndex + i * 8]}";
+                codes[firstIndex + i * 8].operand = $"Movement/{codes[firstIndex + i * 8].operand}";
 
             return codes.AsEnumerable();
         }
