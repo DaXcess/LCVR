@@ -39,14 +39,14 @@ namespace LCVR.Experiments
         {
             var terminal = Object.FindObjectOfType<Terminal>();
             terminal.groupCredits = amount;
+            terminal.SyncGroupCreditsServerRpc(terminal.groupCredits, terminal.numberOfItemsInDropship);
         }
 
         private static void SpawnNonBuyableItem(List<string> @itemNames)
         {
-            foreach (var item in StartOfRound.Instance.allItemsList.itemsList) 
+            foreach (var item in StartOfRound.Instance.allItemsList.itemsList)
             {
-                Logger.LogInfo("itemId:" + item.itemId + "-" + item.itemName);
-                if (itemNames.Contains(item.itemName)) 
+                if (itemNames.Contains(item.itemName))
                 {
                     SpawnObject<GrabbableObject>(item.spawnPrefab);
                 }
@@ -73,8 +73,8 @@ namespace LCVR.Experiments
             component.fallTime = 0f;
             component.scrapValue = 10;
 
-            var netComponent = gameObject.GetComponent<NetworkObject>(); 
-            netComponent.Spawn(false); 
+            var netComponent = gameObject.GetComponent<NetworkObject>();
+            netComponent.Spawn(false);
             return component;
         }
     }
