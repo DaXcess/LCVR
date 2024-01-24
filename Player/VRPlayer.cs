@@ -573,7 +573,7 @@ namespace LCVR.Player
 
         public void OnEnterTerminal()
         {
-            NonNativeKeyboard.Instance.PresentKeyboard();
+            hud.terminalKeyboard.PresentKeyboard();
 
             leftControllerRayInteractor.GetComponent<XRInteractorLineVisual>().enabled = true;
             rightControllerRayInteractor.GetComponent<XRInteractorLineVisual>().enabled = true;
@@ -583,8 +583,8 @@ namespace LCVR.Player
 
         public void OnExitTerminal()
         {
-            if (NonNativeKeyboard.Instance.isActiveAndEnabled)
-                NonNativeKeyboard.Instance.Close();
+            if (hud.terminalKeyboard.isActiveAndEnabled)
+                hud.terminalKeyboard.Close();
 
             leftControllerRayInteractor.GetComponent<XRInteractorLineVisual>().enabled = false;
             rightControllerRayInteractor.GetComponent<XRInteractorLineVisual>().enabled = false;

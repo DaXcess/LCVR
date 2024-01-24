@@ -2,6 +2,7 @@
 using LCVR.Assets;
 using LCVR.Input;
 using LCVR.UI;
+using Microsoft.MixedReality.Toolkit.Experimental.UI;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem.UI;
@@ -155,19 +156,19 @@ namespace LCVR.Patches
         /// </summary>
         private static void InitializeKeyboard()
         {
-
             var canvas = GameObject.Find("Canvas")?.GetComponent<Canvas>();
-            var keyboard = Object.Instantiate(AssetManager.keyboard);
+            var keyboard = Object.Instantiate(AssetManager.keyboard).GetComponent<NonNativeKeyboard>();
 
             keyboard.transform.SetParent(canvas.transform, false);
             keyboard.transform.localPosition = new Vector3(0, -470, -40);
             keyboard.transform.localEulerAngles = new Vector3(13, 0, 0);
             keyboard.transform.localScale = Vector3.one * 0.8f;
 
-            keyboard.Find("keyboard_Alpha/Deny_Button").SetActive(false);
-            keyboard.Find("keyboard_Alpha/Confirm_Button").SetActive(false);
+            keyboard.gameObject.Find("keyboard_Alpha/Deny_Button").SetActive(false);
+            keyboard.gameObject.Find("keyboard_Alpha/Confirm_Button").SetActive(false);
 
-            canvas.gameObject.AddComponent<MainMenuKeyboard>();
+            var component = canvas.gameObject.AddComponent<Keyboard>();
+            component.keyboard = keyboard;
         }
 
         private static void InjectIntroScreen()
