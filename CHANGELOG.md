@@ -1,3 +1,9 @@
+# 1.1.5
+
+**Bug fixes:**
+
+- Fixed local profile paths not working
+
 # 1.1.4
 
 **Bug fixes:**
