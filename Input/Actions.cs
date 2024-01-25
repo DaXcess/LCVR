@@ -139,11 +139,11 @@ namespace LCVR.Input
                 {
                     var path = Uri.UnescapeDataString(uri.LocalPath);
                     var data = File.ReadAllText(path);
-                    var localAsset = InputActionAsset.FromJson(data) ?? throw new InvalidDataException("Failed to load input asset from file (invalid data?)");
+                    asset = InputActionAsset.FromJson(data);
 
-                    cache.Add(profile, localAsset);
+                    cache.Add(profile, asset);
 
-                    return localAsset;
+                    return true;
                 }
 
                 using var client = new WebClient();
@@ -153,7 +153,7 @@ namespace LCVR.Input
 
                 cache.Add(profile, asset);
 
-                return asset;
+                return true;
             }
             catch (Exception ex)
             {

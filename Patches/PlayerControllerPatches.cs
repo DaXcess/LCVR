@@ -137,7 +137,6 @@ namespace LCVR.Patches
         }
 
         [HarmonyPatch(typeof(PlayerControllerB), "OnEnable")]
-        [HarmonyDebug]
         [HarmonyTranspiler]
         private static IEnumerable<CodeInstruction> PatchOnEnable(IEnumerable<CodeInstruction> instructions)
         {
