@@ -38,9 +38,11 @@ namespace LCVR.Input
         {
             if (!DetectControllerProfile(out var profile))
             {
-                Logger.LogWarning("Failed to detect controllers (not yet connected?). Using last controller profile as fallback.");
-
                 var lastProfile = Plugin.Config.LastInternalControllerProfile.Value;
+
+                Logger.LogWarning($"Failed to detect controllers (not yet connected?). Using last controller profile ({lastProfile}) as fallback.");
+                Logger.LogWarning("It is recommended to use the ControllerBindingsOverrideProfile configuration option (even when using officially supported controllers), as controller detection happens too early and doesn't allow reloading.");
+                Logger.LogWarning("(This does not apply if you're using standard oculus controllers)");
 
                 if (string.IsNullOrEmpty(lastProfile))
                     profile = "default";
