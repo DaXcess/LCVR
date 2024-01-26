@@ -6,6 +6,7 @@ using UnityEngine.Rendering.HighDefinition;
 using System.Collections.Generic;
 using LCVR.Assets;
 using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.OpenXR.Features.Interactions;
 using System.Security.Cryptography;
 
 namespace LCVR
@@ -110,6 +111,39 @@ namespace LCVR
             controller.translateAnchorAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Translate Anchor"));
             controller.scaleToggleAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Scale Toggle"));
             controller.scaleDeltaAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Scale Delta"));
+        }
+
+        public static bool ToControllerProfile(InputDevice device, out string profile)
+        {
+            profile = "";
+
+            if (device is OculusTouchControllerProfile.OculusTouchController || device is KHRSimpleControllerProfile.KHRSimpleController || device is MetaQuestTouchProControllerProfile.QuestProTouchController)
+            {
+                // Apply default profile
+                profile = "default";
+            }
+            else if (device is ValveIndexControllerProfile.ValveIndexController)
+            {
+                // Apply valve index profile
+                profile = "index";
+            }
+            else if (device is HTCViveControllerProfile.ViveController)
+            {
+                // Apply HTC vive controller profile
+                profile = "htc_vive";
+            }
+            else if (device is HPReverbG2ControllerProfile.ReverbG2Controller)
+            {
+                // Apply HP Reverb G2 controller profile
+                profile = "hp_reverb";
+            }
+            else if (device is MicrosoftMotionControllerProfile.WMRSpatialController)
+            {
+                // Apply WMR controller profile
+                profile = "wmr";
+            }
+
+            return !string.IsNullOrEmpty(profile);
         }
 
         public static bool BoxCast(this Ray ray, float radius, out RaycastHit hit, float maxDistance = Mathf.Infinity, int layerMask = Physics.DefaultRaycastLayers)

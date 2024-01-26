@@ -4,6 +4,7 @@ using GameNetcodeStuff;
 using LCVR.Assets;
 using LCVR.Patches;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -243,11 +244,44 @@ namespace LCVR
             else
                 Logger.LogError("Could not get runtime OpenXR name?");
 
-            HarmonyPatcher.PatchVR();
+            // Halt patching to await for detection of known device
+            StartCoroutine(DeferPatchVr());
 
-            Logger.LogDebug("Inserted VR patches using Harmony");
+            InputSystem.onDeviceChange += OnDeviceChange;
 
             return true;
+        }
+
+        private IEnumerator DeferPatchVr()
+        {
+            // TODO: !RACE CONDITION! If this is too long, PatchVR() will never be called. Not sure why,
+            //                        but there must be some event which destroys this coroutine.
+            yield return new WaitForSeconds(2);
+
+            ContinuePatchVR();
+        }
+
+        private void OnDeviceChange(UnityEngine.InputSystem.InputDevice device, InputDeviceChange change)
+        {
+            if (change != InputDeviceChange.Added)
+                return;
+
+            // We cannot continue here, devices get added, removed, then added again and there's no
+            // way of telling when to actually continue with the patching.
+
+            /*if (Utils.ToControllerProfile(device, out var _))
+                // ~~A known device is detected, we can continue patching early~~
+                ContinuePatchVR();*/
+        }
+
+        private void ContinuePatchVR()
+        {
+            InputSystem.onDeviceChange -= OnDeviceChange;
+
+            StopCoroutine(DeferPatchVr());
+
+            HarmonyPatcher.PatchVR();
+            Logger.LogDebug("Inserted VR patches using Harmony");
         }
 
         /// <summary>
