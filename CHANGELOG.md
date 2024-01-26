@@ -3,6 +3,7 @@
 **Bug fixes:**
 
 - Fixed local profile paths not working
+- Fixed jitter in SteamVR
 
 # 1.1.4
 
