@@ -307,7 +307,7 @@ namespace LCVR
             ((List<XRLoader>)managerSettings.activeLoaders).Add(xrLoader);
 
             OpenXRSettings.Instance.renderMode = OpenXRSettings.RenderMode.MultiPass;
-            OpenXRSettings.Instance.depthSubmissionMode = OpenXRSettings.DepthSubmissionMode.Depth24Bit;
+            OpenXRSettings.Instance.depthSubmissionMode = OpenXRSettings.DepthSubmissionMode.None;
 
             // Initialize XR
             typeof(XRGeneralSettings).GetMethod("InitXRSDK", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(generalSettings, []);
