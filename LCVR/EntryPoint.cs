@@ -93,8 +93,9 @@ namespace LCVR
 
                 var customCamera = Object.Instantiate(mainCamera);
                 customCamera.name = "Custom Camera";
-                customCamera.transform.SetParent(mainCamera.transform, false);
+                customCamera.transform.SetParent(mainCamera.transform.parent, false);
                 customCamera.transform.localEulerAngles = Vector3.zero;
+                customCamera.transform.localPosition = Vector3.zero;
                 customCamera.transform.localScale = Vector3.one;
 
                 customCamera.fieldOfView = Plugin.Config.CustomCameraFOV.Value;
@@ -165,6 +166,11 @@ namespace LCVR
 #endif
 
             DisableLensDistortion(Plugin.Config.DisableLensDistortion.Value);
+
+            if (Plugin.Config.CameraResolutionGlobal.Value)
+                XRSettings.eyeTextureResolutionScale = Plugin.Config.CameraResolution.Value;
+
+            XRSettings.useOcclusionMesh = false;
 
             if (!Plugin.Config.FirstTimeTipSeen.Value)
                 HUDManager.Instance.StartCoroutine(FirstTimeTips());

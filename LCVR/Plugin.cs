@@ -313,11 +313,6 @@ namespace LCVR
             typeof(XRGeneralSettings).GetMethod("InitXRSDK", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(generalSettings, []);
             typeof(XRGeneralSettings).GetMethod("Start", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(generalSettings, []);
 
-            if (Config.CameraResolutionGlobal.Value)
-                XRSettings.eyeTextureResolutionScale = Config.CameraResolution.Value;
-
-            XRSettings.useOcclusionMesh = false;
-
             Logger.LogInfo("Initialized OpenXR Runtime");
         }
 

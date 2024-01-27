@@ -116,7 +116,7 @@ namespace LCVR.Player
             poseDriver.trackingStateInput = new InputActionProperty(Actions.Head_TrackingState);
 
             if (Plugin.Config.EnableCustomCamera.Value)
-                customCamera = mainCamera.gameObject.Find("Custom Camera").GetComponent<Camera>();
+                customCamera = mainCamera.transform.parent.Find("Custom Camera").GetComponent<Camera>();
 
             // Fool the animator (this removes console error spam)
             new GameObject("MainCamera").transform.parent = Find("ScavengerModel/metarig/CameraContainer").transform;
@@ -471,6 +471,12 @@ namespace LCVR.Player
             }
             else
                 PlayerControllerB_Sprint_Patch.sprint = !isRoomCrouching && sprintAction.IsPressed() ? 1 : 0;
+
+            if (Plugin.Config.EnableCustomCamera.Value)
+            {
+                customCamera.transform.position = mainCamera.transform.position;
+                customCamera.transform.rotation = Quaternion.Lerp(customCamera.transform.rotation, mainCamera.transform.rotation, Mathf.Clamp(Plugin.Config.CustomCameraLerpFactor.Value, 0.01f, 1f));
+            }
 
             DNet.BroadcastRig(new DNet.Rig()
             {

@@ -26,6 +26,8 @@ namespace LCVR.Assets
         public static Sprite discordImage;
         public static Sprite warningImage;
 
+        public static GameObject springMan;
+
         public static bool LoadAssets()
         {
             assetBundle = AssetBundle.LoadFromMemory(Properties.Resources.lethalcompanyvr);
@@ -48,6 +50,8 @@ namespace LCVR.Assets
             warningImage = assetBundle.LoadAsset<Sprite>("Warning");
             localVrMetarig = assetBundle.LoadAsset<RuntimeAnimatorController>("metarig");
             remoteVrMetarig = assetBundle.LoadAsset<RuntimeAnimatorController>("metarigOtherPlayers");
+
+            springMan = assetBundle.LoadAsset<GameObject>("SpringMan");
 
             return true;
         }

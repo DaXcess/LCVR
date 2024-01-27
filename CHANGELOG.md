@@ -4,6 +4,9 @@
 
 - Fixed local profile paths not working
 - Fixed jitter in SteamVR
+- Added HP Reverb as autodetected controller profile
+- Added smooth rotation on the custom camera
+- *Turn around...*
 
 # 1.1.4
 

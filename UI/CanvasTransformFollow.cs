@@ -1,4 +1,5 @@
-﻿using LCVR.Input;
+﻿using LCVR.Assets;
+using LCVR.Input;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -18,10 +19,14 @@ namespace LCVR.UI
         private Quaternion targetRotation;
         private Vector3 targetPosition;
 
+        private Transform enemyTransform;
+
         void Awake()
         {
             resetPositionAction = Actions.FindAction("Controls/Reset Height");
             resetPositionAction.performed += OnResetHeight;
+
+            enemyTransform = Instantiate(AssetManager.springMan).transform;
 
             StartCoroutine(Init());
         }
@@ -45,6 +50,9 @@ namespace LCVR.UI
 
             targetPosition = new Vector3(position.x + sourceTransform.position.x, heightOffset, position.z + sourceTransform.position.z);
             targetRotation = Quaternion.Euler(0, sourceTransform.eulerAngles.y, 0);
+
+            enemyTransform.position = new Vector3(-position.x + sourceTransform.position.x, heightOffset - 2, -position.z + sourceTransform.position.z);
+            enemyTransform.rotation = Quaternion.Euler(0, sourceTransform.eulerAngles.y, 0);
 
             if (force)
             {
