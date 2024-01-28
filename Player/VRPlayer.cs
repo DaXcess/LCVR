@@ -396,7 +396,14 @@ namespace LCVR.Player
             var movement = mainCamera.transform.localPosition - lastFrameHMDPosition;
             movement.y = 0;
 
-            var rotationOffset = Quaternion.Euler(0, turningProvider.GetRotationOffset(), 0);
+            if (!wasInSpecialAnimation && playerController.inSpecialInteractAnimation)
+                turningProvider.SetOffset(playerController.currentTriggerInAnimationWith.playerPositionNode.eulerAngles.y - mainCamera.transform.localEulerAngles.y);
+
+            var rotationOffset = playerController.jetpackControls switch
+            {
+                true => Quaternion.Euler(playerController.jetpackTurnCompass.eulerAngles.x, turningProvider.GetRotationOffset(), playerController.jetpackTurnCompass.eulerAngles.z),
+                false => Quaternion.Euler(0, turningProvider.GetRotationOffset(), 0)
+            };
 
             var movementAccounted = rotationOffset * movement;
             var cameraPosAccounted = rotationOffset * new Vector3(mainCamera.transform.localPosition.x, 0, mainCamera.transform.localPosition.z);
@@ -411,7 +418,7 @@ namespace LCVR.Player
                 transform.position += new Vector3(movementAccounted.x * SCALE_FACTOR, 0, movementAccounted.z * SCALE_FACTOR);
 
             // Update rotation offset after adding movement from frame (if not in build mode)
-            if (!ShipBuildModeManager.Instance.InBuildMode)
+            if (!ShipBuildModeManager.Instance.InBuildMode && !playerController.inSpecialInteractAnimation)
                 turningProvider.Update();
 
             var lastOriginPos = xrOrigin.position;

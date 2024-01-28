@@ -8,7 +8,6 @@ using UnityEngine.XR;
 using Unity.Netcode;
 using LCVR.Input;
 using LCVR.Assets;
-using System.Linq;
 using LCVR.UI;
 
 namespace LCVR.Player
@@ -286,12 +285,6 @@ namespace LCVR.Player
                                 return;
                             }
 
-                            if (Items.unsupportedItems.Contains(component.itemProperties.itemName))
-                            {
-                                cursorTip = "(This item cannot be used in VR)";
-                                return;
-                            }
-
                             if (component != null && !string.IsNullOrEmpty(component.customGrabTooltip))
                                 cursorTip = component.customGrabTooltip;
                             else
@@ -324,10 +317,7 @@ namespace LCVR.Player
 
                 if (!GameNetworkManager.Instance.gameHasStarted && !currentlyGrabbingObject.itemProperties.canBeGrabbedBeforeGameStart)
                     return;
-
-                if (Items.unsupportedItems.Contains(currentlyGrabbingObject.itemProperties.itemName))
-                    return;
-
+                
                 SetFieldValue("grabInvalidated", false);
 
                 if (currentlyGrabbingObject == null || playerController.inSpecialInteractAnimation || currentlyGrabbingObject.isHeld || currentlyGrabbingObject.isPocketed)

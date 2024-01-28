@@ -229,9 +229,12 @@ namespace LCVR.Networking
             if (!isInVR)
                 yield break;
 
-            // Ignore if player is already known to be VR
-            if (players.ContainsKey(sender))
-                yield break;
+            // Re-initialize player if already present
+            if (players.TryGetValue(sender, out var networkPlayer))
+            {
+                GameObject.Destroy(networkPlayer);
+                players.Remove(sender);
+            }
 
             yield return new WaitUntil(() => peers.TryGetClientInfoById(sender, out var client));
 
@@ -252,10 +255,10 @@ namespace LCVR.Networking
             yield return new WaitUntil(() => player.Tracker != null);
 
             var playerObject = ((NfgoPlayer)player.Tracker).gameObject;
-            var networkPlayer = playerObject.AddComponent<VRNetPlayer>();
             var playerController = playerObject.GetComponent<PlayerControllerB>();
+            networkPlayer = playerObject.AddComponent<VRNetPlayer>();
 
-            Logger.LogInfo($"Found VR player {player.Name}");
+            Logger.LogInfo($"Found VR player {playerController.playerUsername}");
 
             players.Add(sender, networkPlayer);
 

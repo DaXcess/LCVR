@@ -34,6 +34,11 @@ namespace LCVR.Input
             }
         }
 
+        public void SetOffset(float offset)
+        {
+            this.offset = offset;
+        }
+
         public float GetRotationOffset()
         {
             return offset;

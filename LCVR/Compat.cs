@@ -7,9 +7,9 @@ namespace LCVR
     {
         private static readonly CompatibleMod[] ModCompatibilityList =
         [
-            new("MoreCompany", "me.swipez.melonloader.morecompany", "1.7.4", "1.7.5", "1.7.6"),
-            new("Mimics", "x753.Mimics", "2.3.2"),
-            new("TooManyEmotes", "FlipMods.TooManyEmotes", "1.8.0")
+            new("MoreCompany", "me.swipez.melonloader.morecompany"),
+            new("Mimics", "x753.Mimics"),
+            new("TooManyEmotes", "FlipMods.TooManyEmotes")
         ];
 
         private static readonly List<string> DetectedMods = [];
@@ -23,9 +23,6 @@ namespace LCVR
                 if (mod == null)
                     continue;
 
-                if ((mod.Versions == null || !mod.Versions.Contains(plugin.Metadata.Version.ToString())) && !Plugin.Config.OverrideCompatibilityVersionCheck.Value)
-                    continue;
-
                 Logger.LogInfo($"Found compatible mod {mod.Name}");
 
                 DetectedMods.Add(mod.Name);
@@ -37,11 +34,10 @@ namespace LCVR
             return DetectedMods.Contains(modName);
         }
 
-        private class CompatibleMod(string name, string guid, params string[] versions)
+        private class CompatibleMod(string name, string guid)
         {
             public string Name { get; } = name;
             public string Guid { get; } = guid;
-            public string[] Versions { get; } = versions;
         }
     }
 }

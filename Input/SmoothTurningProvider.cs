@@ -24,6 +24,11 @@ namespace LCVR.Input
                 offset += (value > 0 ? 90 : -90) * Time.deltaTime * Plugin.Config.SmoothTurnSpeedModifier.Value;
         }
 
+        public void SetOffset(float offset)
+        {
+            this.offset = offset;
+        }
+
         public float GetRotationOffset()
         {
             return offset;
