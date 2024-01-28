@@ -26,7 +26,7 @@ namespace LCVR.Assets
         public static Sprite discordImage;
         public static Sprite warningImage;
 
-        public static GameObject springMan;
+        public static GameObject enemyPrefab;
 
         public static bool LoadAssets()
         {
@@ -51,7 +51,7 @@ namespace LCVR.Assets
             localVrMetarig = assetBundle.LoadAsset<RuntimeAnimatorController>("metarig");
             remoteVrMetarig = assetBundle.LoadAsset<RuntimeAnimatorController>("metarigOtherPlayers");
 
-            springMan = assetBundle.LoadAsset<GameObject>("SpringMan");
+            enemyPrefab = assetBundle.LoadAsset<GameObject>("NutcrackerEnemy");
 
             return true;
         }

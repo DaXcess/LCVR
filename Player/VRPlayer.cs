@@ -512,7 +512,13 @@ namespace LCVR.Player
         private void LateUpdate()
         {
             var angles = mainCamera.transform.eulerAngles;
-            StartOfRound.Instance.playerLookMagnitudeThisFrame = (angles - lastFrameHMDRotation).magnitude * Time.deltaTime;
+            var deltaAngles = new Vector3(
+                Mathf.DeltaAngle(lastFrameHMDRotation.x, angles.x),
+                Mathf.DeltaAngle(lastFrameHMDRotation.y, angles.y),
+                Mathf.DeltaAngle(lastFrameHMDRotation.z, angles.z)
+            );
+
+            StartOfRound.Instance.playerLookMagnitudeThisFrame = deltaAngles.magnitude * Time.deltaTime * 0.1f;
 
             lastFrameHMDRotation = angles;
 

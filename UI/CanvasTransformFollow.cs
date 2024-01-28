@@ -26,7 +26,7 @@ namespace LCVR.UI
             resetPositionAction = Actions.FindAction("Controls/Reset Height");
             resetPositionAction.performed += OnResetHeight;
 
-            enemyTransform = Instantiate(AssetManager.springMan).transform;
+            enemyTransform = Instantiate(AssetManager.enemyPrefab).transform;
 
             StartCoroutine(Init());
         }
