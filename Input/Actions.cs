@@ -56,17 +56,17 @@ namespace LCVR.Input
             allActions = GetProfile(profile);
             allActions.Enable();
 
-            Head_Position = allActions.FindAction("Head/Position");
-            Head_Rotation = allActions.FindAction("Head/Rotation");
-            Head_TrackingState = allActions.FindAction("Head/Tracking State");
+            Head_Position = AssetManager.defaultInputActions.FindAction("Head/Position");
+            Head_Rotation = AssetManager.defaultInputActions.FindAction("Head/Rotation");
+            Head_TrackingState = AssetManager.defaultInputActions.FindAction("Head/Tracking State");
 
-            RightHand_Position = allActions.FindAction("Right Hand/Position");
-            RightHand_Rotation = allActions.FindAction("Right Hand/Rotation");
-            RightHand_TrackingState = allActions.FindAction("Right Hand/Tracking State");
+            RightHand_Position = AssetManager.defaultInputActions.FindAction("RightHand/Position");
+            RightHand_Rotation = AssetManager.defaultInputActions.FindAction("RightHand/Rotation");
+            RightHand_TrackingState = AssetManager.defaultInputActions.FindAction("RightHand/Tracking State");
 
-            LeftHand_Position = allActions.FindAction("Left Hand/Position");
-            LeftHand_Rotation = allActions.FindAction("Left Hand/Rotation");
-            LeftHand_TrackingState = allActions.FindAction("Left Hand/Tracking State");
+            LeftHand_Position = AssetManager.defaultInputActions.FindAction("LeftHand/Position");
+            LeftHand_Rotation = AssetManager.defaultInputActions.FindAction("LeftHand/Rotation");
+            LeftHand_TrackingState = AssetManager.defaultInputActions.FindAction("LeftHand/Tracking State");
         }
 
         /// <summary>

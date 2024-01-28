@@ -1,12 +1,14 @@
 # 1.1.6
 
 **Adjustments:**
+
 - Changed some of the locomotion code
 - Removed version checking on compatible mods
 - Made the Nutcracker less sensitive to head rotations
 - _**Don't** turn around..._
 
 **Bug fixes:**
+
 - Fixed menu button not closing the terminal
 
 # 1.1.5

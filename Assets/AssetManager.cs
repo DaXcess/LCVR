@@ -8,7 +8,6 @@ namespace LCVR.Assets
         private static AssetBundle assetBundle;
 
         public static GameObject aLiteralCube;
-        public static GameObject cockroach;
         public static GameObject keyboard;
         public static GameObject leftHand;
         public static GameObject rightHand;
@@ -39,7 +38,6 @@ namespace LCVR.Assets
             }
 
             aLiteralCube = assetBundle.LoadAsset<GameObject>("ALiteralCube");
-            cockroach = assetBundle.LoadAsset<GameObject>("Cockroach");
             keyboard = assetBundle.LoadAsset<GameObject>("NonNativeKeyboard");
             defaultInputActions = assetBundle.LoadAsset<InputActionAsset>("XR Input Actions");
             defaultRayMat = assetBundle.LoadAsset<Material>("Default Ray");
