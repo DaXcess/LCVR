@@ -3,11 +3,13 @@ using Microsoft.MixedReality.Toolkit.Experimental.UI;
 using TMPro;
 using UnityEngine;
 
-namespace LCVR.Input
+namespace LCVR.UI
 {
-    internal class MainMenuKeyboard : MonoBehaviour
+    internal class Keyboard : MonoBehaviour
     {
         private TMP_InputField[] inputFields;
+
+        public NonNativeKeyboard keyboard;
 
         private void Awake()
         {
@@ -17,8 +19,8 @@ namespace LCVR.Input
             {
                 input.onSelect.AddListener((_) =>
                 {
-                    NonNativeKeyboard.Instance.InputField = input;
-                    NonNativeKeyboard.Instance.PresentKeyboard();
+                    keyboard.InputField = input;
+                    keyboard.PresentKeyboard();
                 });
             });
         }

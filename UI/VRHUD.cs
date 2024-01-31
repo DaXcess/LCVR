@@ -1,6 +1,7 @@
 ﻿using LCVR.Assets;
 using LCVR.Player;
 using LCVR.UI;
+using Microsoft.MixedReality.Toolkit.Experimental.UI;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -21,6 +22,8 @@ namespace LCVR
         public VRPlayer player;
 
         private ObjectScanner scanner;
+        private NonNativeKeyboard menuKeyboard;
+        public NonNativeKeyboard terminalKeyboard;
 
         public void Initialize(VRPlayer player)
         {
@@ -326,6 +329,8 @@ namespace LCVR
 
             transform.localScale = Vector3.one * 0.0007f;
 
+            InitializeKeyboard();
+
             Initialized = true;
         }
 
@@ -383,6 +388,26 @@ namespace LCVR
             dialogueBox.localPosition = Vector3.zero;
             dialogueBox.localRotation = Quaternion.identity;
             dialogueBox.localScale = Vector3.one;
+        }
+
+        /// <summary>
+        /// Add a keyboard to the pause menu
+        /// </summary>
+        private void InitializeKeyboard()
+        {
+            var canvas = GameObject.Find("Systems/UI/Canvas").GetComponent<Canvas>();
+            menuKeyboard = Instantiate(AssetManager.keyboard).GetComponent<NonNativeKeyboard>();
+
+            menuKeyboard.transform.SetParent(canvas.transform, false);
+            menuKeyboard.transform.localPosition = new Vector3(0, -470, -40);
+            menuKeyboard.transform.localEulerAngles = new Vector3(13, 0, 0);
+            menuKeyboard.transform.localScale = Vector3.one * 0.8f;
+
+            menuKeyboard.gameObject.Find("keyboard_Alpha/Deny_Button").SetActive(false);
+            menuKeyboard.gameObject.Find("keyboard_Alpha/Confirm_Button").SetActive(false);
+
+            var component = canvas.gameObject.AddComponent<Keyboard>();
+            component.keyboard = menuKeyboard;
         }
     }
 }

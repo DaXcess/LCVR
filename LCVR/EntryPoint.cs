@@ -159,6 +159,8 @@ namespace LCVR
                 terminal.QuitTerminal();
             };
 
+            player.hud.terminalKeyboard = keyboard;
+
             Actions.ReloadInputBindings();
 
 #if DEBUG
