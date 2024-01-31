@@ -2,6 +2,7 @@
 
 **Adjustments:**
 
+- Improved keyboard behavior. It now also properly works in the pause menu.
 - When sprint toggle is enabled, sprint will be disabled when in a special interaction animation
 
 **Bug fixes:**
