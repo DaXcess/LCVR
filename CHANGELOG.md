@@ -1,3 +1,13 @@
+# 1.1.7
+
+**Adjustments:**
+
+- When sprint toggle is enabled, sprint will be disabled when in a special interaction animation
+
+**Bug fixes:**
+
+- Fixed ray interactors not working when leaving a game
+
 # 1.1.6
 
 **Adjustments:**

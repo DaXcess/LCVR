@@ -126,17 +126,11 @@ namespace LCVR.Patches
             Object.Destroy(canvas.GetComponent<GraphicRaycaster>());
             canvas.gameObject.AddComponent<TrackedDeviceGraphicRaycaster>();
 
-            var rightController = new GameObject("Right Controller");
-            var leftController = new GameObject("Left Controller");
+            var leftControllerInteractor = new GameObject("Left Controller").CreateInteractorController(Utils.Hand.Left);
+            var rightControllerInteractor = new GameObject("Right Controller").CreateInteractorController(Utils.Hand.Right);
 
-            rightController.CreateInteractorController("RightHand");
-            leftController.CreateInteractorController("LeftHand");
-
-            var leftTransform = leftController.GetComponent<XRRayInteractor>().rayOriginTransform;
-            var rightTransform = rightController.GetComponent<XRRayInteractor>().rayOriginTransform;
-
-            leftTransform.localRotation = Quaternion.Euler(60, 347, 90);
-            rightTransform.localRotation = Quaternion.Euler(60, 347, 270);
+            leftControllerInteractor.rayOriginTransform.localRotation = Quaternion.Euler(60, 347, 90);
+            rightControllerInteractor.rayOriginTransform.localRotation = Quaternion.Euler(60, 347, 270);
         }
 
         private static void DisableKeybindsSetting()

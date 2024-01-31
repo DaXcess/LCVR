@@ -117,15 +117,19 @@ namespace LCVR
 
                 for (uint i = 0; i < valueCount; i++)
                 {
-                    var valueName = new StringBuilder((int)maxValueNameLength + 1);
-                    var cbValueName = maxValueNameLength + 1;
+                    try
+                    {
+                        var valueName = new StringBuilder((int)maxValueNameLength + 1);
+                        var cbValueName = maxValueNameLength + 1;
 
-                    int result = Native.RegEnumValue(hKey, i, valueName, ref cbValueName, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
+                        int result = Native.RegEnumValue(hKey, i, valueName, ref cbValueName, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
 
-                    if (result != 0)
-                        return null;
+                        if (result != 0)
+                            continue;
 
-                    values.Add(valueName.ToString());
+                        values.Add(valueName.ToString());
+                    }
+                    catch { }
                 }
 
                 var runtimes = values.Select(value => JsonConvert.DeserializeObject<OpenXRRuntime>(File.ReadAllText(value)).runtime.name).ToArray();

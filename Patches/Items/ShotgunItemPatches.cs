@@ -2,7 +2,6 @@
 using LCVR.Player;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Reflection.Emit;
 using UnityEngine;
 
@@ -26,7 +25,7 @@ namespace LCVR.Patches.Items
 
             var rayOrigin = Object.FindObjectOfType<VRController>().interactOrigin;
             __instance.ShootGun(rayOrigin.position, rayOrigin.forward);
-            typeof(ShotgunItem).GetField("localClientSendingShootGunRPC", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(__instance, true);
+            Field(typeof(ShotgunItem), "localClientSendingShootGunRPC").SetValue(__instance, true);
             __instance.ShootGunServerRpc(rayOrigin.position, rayOrigin.forward);
 
             return false;

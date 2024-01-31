@@ -65,10 +65,10 @@ namespace LCVR
             transform.position = parent.position + parent.rotation * positionOffset;
         }
 
-        public static void CreateInteractorController(this GameObject @object, string hand)
+        public static XRRayInteractor CreateInteractorController(this GameObject @object, Hand hand, bool rayVisible = true, bool trackingEnabled = true, bool actionsEnabled = true)
         {
             var controller = @object.AddComponent<ActionBasedController>();
-            @object.AddComponent<XRRayInteractor>();
+            var interactor = @object.AddComponent<XRRayInteractor>();
             var visual = @object.AddComponent<XRInteractorLineVisual>();
             var renderer = @object.GetComponent<LineRenderer>();
 
@@ -85,18 +85,21 @@ namespace LCVR
                     new GradientColorKey(Color.white, 1)
                 ]
             };
+            visual.enabled = rayVisible;
 
             renderer.material = AssetManager.defaultRayMat;
 
-            controller.AddActionBasedControllerBinds(hand);
+            controller.AddActionBasedControllerBinds(hand, trackingEnabled, actionsEnabled);
+
+            return interactor;
         }
 
-        public static void AddActionBasedControllerBinds(this ActionBasedController controller, string hand, bool trackingEnabled = true, bool actionsEnabled = true)
+        public static void AddActionBasedControllerBinds(this ActionBasedController controller, Hand hand, bool trackingEnabled = true, bool actionsEnabled = true)
         {
             controller.enableInputTracking = trackingEnabled;
-            controller.positionAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Position"));
-            controller.rotationAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Rotation"));
-            controller.trackingStateAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Tracking State"));
+            controller.positionAction = new InputActionProperty(hand.Position());
+            controller.rotationAction = new InputActionProperty(hand.Rotation());
+            controller.trackingStateAction = new InputActionProperty(hand.TrackingState());
 
             controller.enableInputActions = actionsEnabled;
             controller.selectAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Select"));
@@ -115,6 +118,42 @@ namespace LCVR
         public static bool BoxCast(this Ray ray, float radius, out RaycastHit hit, float maxDistance = Mathf.Infinity, int layerMask = Physics.DefaultRaycastLayers)
         {
             return Physics.BoxCast(ray.origin, Vector3.one * radius, ray.direction, out hit, Quaternion.identity, maxDistance, layerMask);
+        }
+
+        public enum Hand
+        {
+            Left,
+            Right,
+        }
+
+        private static InputAction Position(this Hand hand)
+        {
+            return hand switch
+            {
+                Hand.Left => Actions.LeftHand_Position,
+                Hand.Right => Actions.RightHand_Position,
+                _ => throw new System.NotImplementedException(),
+            };
+        }
+
+        private static InputAction Rotation(this Hand hand)
+        {
+            return hand switch
+            {
+                Hand.Left => Actions.LeftHand_Rotation,
+                Hand.Right => Actions.RightHand_Rotation,
+                _ => throw new System.NotImplementedException(),
+            };
+        }
+
+        private static InputAction TrackingState(this Hand hand)
+        {
+            return hand switch
+            {
+                Hand.Left => Actions.LeftHand_TrackingState,
+                Hand.Right => Actions.RightHand_TrackingState,
+                _ => throw new System.NotImplementedException(),
+            };
         }
     }
 }

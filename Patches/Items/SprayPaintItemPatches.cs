@@ -1,6 +1,5 @@
 ﻿using HarmonyLib;
 using LCVR.Player;
-using System.Reflection;
 using UnityEngine;
 
 namespace LCVR.Patches.Items
@@ -18,7 +17,7 @@ namespace LCVR.Patches.Items
         {
             var rayOrigin = Object.FindObjectOfType<VRController>().interactOrigin;
 
-            if ((bool)typeof(SprayPaintItem).GetMethod("AddSprayPaintLocal", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, [rayOrigin.transform.position, rayOrigin.transform.forward]))
+            if ((bool)AccessTools.Method(typeof(SprayPaintItem), "AddSprayPaintLocal").Invoke(__instance, [rayOrigin.transform.position, rayOrigin.transform.forward]))
             {
                 __instance.SprayPaintServerRpc(rayOrigin.transform.position, rayOrigin.transform.forward);
                 __result = true;

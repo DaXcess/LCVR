@@ -23,13 +23,13 @@ namespace LCVR.Input
         public static InputAction Head_Rotation;
         public static InputAction Head_TrackingState;
 
-        public static InputAction RightHand_Position;
-        public static InputAction RightHand_Rotation;
-        public static InputAction RightHand_TrackingState;
-
         public static InputAction LeftHand_Position;
         public static InputAction LeftHand_Rotation;
         public static InputAction LeftHand_TrackingState;
+
+        public static InputAction RightHand_Position;
+        public static InputAction RightHand_Rotation;
+        public static InputAction RightHand_TrackingState;
 
         private static readonly InputActionAsset allActions;
 
@@ -60,13 +60,13 @@ namespace LCVR.Input
             Head_Rotation = AssetManager.defaultInputActions.FindAction("Head/Rotation");
             Head_TrackingState = AssetManager.defaultInputActions.FindAction("Head/Tracking State");
 
-            RightHand_Position = AssetManager.defaultInputActions.FindAction("RightHand/Position");
-            RightHand_Rotation = AssetManager.defaultInputActions.FindAction("RightHand/Rotation");
-            RightHand_TrackingState = AssetManager.defaultInputActions.FindAction("RightHand/Tracking State");
+            LeftHand_Position = AssetManager.defaultInputActions.FindAction("Left/Position");
+            LeftHand_Rotation = AssetManager.defaultInputActions.FindAction("Left/Rotation");
+            LeftHand_TrackingState = AssetManager.defaultInputActions.FindAction("Left/Tracking State");
 
-            LeftHand_Position = AssetManager.defaultInputActions.FindAction("LeftHand/Position");
-            LeftHand_Rotation = AssetManager.defaultInputActions.FindAction("LeftHand/Rotation");
-            LeftHand_TrackingState = AssetManager.defaultInputActions.FindAction("LeftHand/Tracking State");
+            RightHand_Position = AssetManager.defaultInputActions.FindAction("Right/Position");
+            RightHand_Rotation = AssetManager.defaultInputActions.FindAction("Right/Rotation");
+            RightHand_TrackingState = AssetManager.defaultInputActions.FindAction("Right/Tracking State");
         }
 
         /// <summary>

@@ -12,6 +12,7 @@ namespace LCVR.Assets
         public static GameObject leftHand;
         public static GameObject rightHand;
 
+        public static Material splashMaterial;
         public static Material defaultRayMat;
         public static Material alwaysOnTopMat;
 
@@ -40,8 +41,11 @@ namespace LCVR.Assets
             aLiteralCube = assetBundle.LoadAsset<GameObject>("ALiteralCube");
             keyboard = assetBundle.LoadAsset<GameObject>("NonNativeKeyboard");
             defaultInputActions = assetBundle.LoadAsset<InputActionAsset>("XR Input Actions");
+
+            splashMaterial = assetBundle.LoadAsset<Material>("Splash");
             defaultRayMat = assetBundle.LoadAsset<Material>("Default Ray");
             alwaysOnTopMat = assetBundle.LoadAsset<Material>("Always On Top");
+            
             githubImage = assetBundle.LoadAsset<Sprite>("Github");
             kofiImage = assetBundle.LoadAsset<Sprite>("Ko-Fi");
             discordImage = assetBundle.LoadAsset<Sprite>("Discord");

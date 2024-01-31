@@ -50,7 +50,7 @@ namespace LCVR.Networking
         {
             dissonance = GameObject.Find("DissonanceSetup").GetComponent<DissonanceComms>();
             network = dissonance.GetComponent<NfgoCommsNetwork>();
-            client = (BaseClient<NfgoServer, NfgoClient, NfgoConn>)typeof(NfgoCommsNetwork).GetProperty("Client", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(network);
+            client = (BaseClient<NfgoServer, NfgoClient, NfgoConn>)AccessTools.Property(typeof(NfgoCommsNetwork), "Client").GetValue(network);
             peers = new Peers(AccessTools.Field(client.GetType(), "_peers").GetValue(client));
 
             // Wait for voicechat connection

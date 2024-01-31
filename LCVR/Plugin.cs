@@ -1,9 +1,11 @@
 ﻿using BepInEx;
 using BepInEx.Bootstrap;
 using GameNetcodeStuff;
+using HarmonyLib;
 using LCVR.Assets;
 using LCVR.Patches;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -12,6 +14,7 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering.HighDefinition;
+using UnityEngine.SceneManagement;
 using UnityEngine.XR;
 using UnityEngine.XR.Management;
 using UnityEngine.XR.OpenXR;
@@ -32,7 +35,7 @@ namespace LCVR
     {
         public const string PLUGIN_GUID = "io.daxcess.lcvr";
         public const string PLUGIN_NAME = "LCVR";
-        public const string PLUGIN_VERSION = "1.1.6";
+        public const string PLUGIN_VERSION = "1.1.7";
 
         private readonly string[] GAME_ASSEMBLY_HASHES = [
             "AAC6149C355A19865C0F67FD0C1D7111D4F418EF94D700265B591665B4CDCE73", // V45
@@ -51,7 +54,7 @@ namespace LCVR
 
             // Reload Unity's Input System plugins since BepInEx in some
             // configurations runs after the Input System has already been initialized
-            typeof(InputSystem).GetMethod("PerformDefaultPluginInitialization", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, []);
+            AccessTools.Method(typeof(InputSystem), "PerformDefaultPluginInitialization").Invoke(null, []);
 
             // Plugin startup logic
             LCVR.Logger.SetSource(Logger);
@@ -119,7 +122,11 @@ namespace LCVR
             asset.currentPlatformRenderPipelineSettings = settings;
 
             if (!disableVr && InitVRLoader())
+            {
                 Flags |= Flags.VR;
+
+                StartCoroutine(HijackSplashScreen());
+            }
 
             HarmonyPatcher.PatchUniversal();
 
@@ -285,7 +292,7 @@ namespace LCVR
                 metaQuestTouch,
                 oculusTouch
             };
-            typeof(OpenXRSettings).GetField("features", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(OpenXRSettings.Instance, featList.ToArray());
+            AccessTools.Field(typeof(OpenXRSettings), "features").SetValue(OpenXRSettings.Instance, featList.ToArray());
 
             Logger.LogDebug("Enabled XR Controller Profiles");
         }
@@ -310,8 +317,8 @@ namespace LCVR
             OpenXRSettings.Instance.depthSubmissionMode = OpenXRSettings.DepthSubmissionMode.None;
 
             // Initialize XR
-            typeof(XRGeneralSettings).GetMethod("InitXRSDK", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(generalSettings, []);
-            typeof(XRGeneralSettings).GetMethod("Start", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(generalSettings, []);
+            AccessTools.Method(typeof(XRGeneralSettings), "InitXRSDK").Invoke(generalSettings, []);
+            AccessTools.Method(typeof(XRGeneralSettings), "Start").Invoke(generalSettings, []);
 
             Logger.LogInfo("Initialized OpenXR Runtime");
         }
@@ -398,6 +405,25 @@ namespace LCVR
                 Logger.LogWarning("Could not find openxr_loader.dll to copy to the game, VR might not work!");
 
             return mustRestart;
+        }
+    
+        /// <summary>
+        /// Modify the splash screen logo
+        /// </summary>
+        private IEnumerator HijackSplashScreen()
+        {
+            yield return new WaitUntil(() =>
+            {
+                try
+                {
+                    SceneManager.GetActiveScene().GetRootGameObjects();
+                    return true;
+                } catch { return false; }
+            });
+
+            var mesh = GameObject.Find("SplashRootObject/Quad").GetComponent<MeshRenderer>();
+
+            mesh.material = AssetManager.splashMaterial;
         }
     }
 

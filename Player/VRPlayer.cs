@@ -184,8 +184,11 @@ namespace LCVR.Player
             mainHand.Initialize(this);
 
             // Add ray interactors for VR keyboard
-            leftControllerRayInteractor = AddRayInteractor(leftController.transform, "LeftHand");
-            rightControllerRayInteractor = AddRayInteractor(rightController.transform, "RightHand");
+            leftControllerRayInteractor = new GameObject("Left Ray Interactor").CreateInteractorController(Utils.Hand.Left, false, false);
+            rightControllerRayInteractor = new GameObject("Right Ray Interactor").CreateInteractorController(Utils.Hand.Right, false, false);
+
+            leftControllerRayInteractor.transform.SetParent(leftController.transform, false);
+            rightControllerRayInteractor.transform.SetParent(rightController.transform, false);
 
             leftControllerRayInteractor.transform.localPosition = new Vector3(0.01f, 0, 0);
             leftControllerRayInteractor.transform.localRotation = Quaternion.Euler(80, 0, 0);
@@ -357,47 +360,17 @@ namespace LCVR.Player
                 ResetHeight();
         }
 
-        private XRRayInteractor AddRayInteractor(Transform parent, string hand)
-        {
-            var @object = new GameObject($"{hand} Ray Interactor");
-            @object.transform.SetParent(parent, false);
-
-            var controller = @object.AddComponent<ActionBasedController>();
-            var interactor = @object.AddComponent<XRRayInteractor>();
-            var visual = @object.AddComponent<XRInteractorLineVisual>();
-            var renderer = @object.GetComponent<LineRenderer>();
-
-            interactor.raycastMask = LayerMask.GetMask("UI");
-
-            visual.lineBendRatio = 1;
-            visual.invalidColorGradient = new Gradient()
-            {
-                mode = GradientMode.Blend,
-                alphaKeys = [
-                    new GradientAlphaKey(1, 0),
-                    new GradientAlphaKey(1, 1)
-                ],
-                colorKeys = [
-                    new GradientColorKey(Color.gray, 0),
-                    new GradientColorKey(Color.gray, 1)
-                ]
-            };
-            visual.enabled = false;
-
-            renderer.material = AssetManager.defaultRayMat;
-
-            controller.AddActionBasedControllerBinds(hand, false);
-
-            return interactor;
-        }
-
         private void Update()
         {
             var movement = mainCamera.transform.localPosition - lastFrameHMDPosition;
             movement.y = 0;
 
+            // Make sure player is facing towards the interacted object and that they're not sprinting
             if (!wasInSpecialAnimation && playerController.inSpecialInteractAnimation)
+            {
                 turningProvider.SetOffset(playerController.currentTriggerInAnimationWith.playerPositionNode.eulerAngles.y - mainCamera.transform.localEulerAngles.y);
+                isSprinting = false;
+            }
 
             var rotationOffset = playerController.jetpackControls switch
             {

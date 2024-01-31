@@ -115,16 +115,9 @@ namespace LCVR.Patches
     [HarmonyPatch]
     internal static class PlayerControllerPatches
     {
-        private static readonly InputAction pivotAction;
-
         private static bool isDead = false;
 
-        private static readonly FieldInfo cameraUpField = typeof(PlayerControllerB).GetField("cameraUp", BindingFlags.NonPublic | BindingFlags.Instance);
-
-        static PlayerControllerPatches()
-        {
-            pivotAction = Actions.FindAction("Controls/Pivot");
-        }
+        private static readonly FieldInfo cameraUpField = AccessTools.Field(typeof(PlayerControllerB), "cameraUp");
 
         private static void SetCameraUp(this PlayerControllerB player, float value)
         {
@@ -227,7 +220,7 @@ namespace LCVR.Patches
             // Handle spectator camera pivoting
             if (isDead)
             {
-                var movement = pivotAction.ReadValue<Vector2>() * Plugin.Config.SpectateCameraSpeedModifier.Value;
+                var movement = Actions.FindAction("Controls/Pivot").ReadValue<Vector2>() * Plugin.Config.SpectateCameraSpeedModifier.Value;
 
                 __instance.spectateCameraPivot.Rotate(new Vector3(0, movement.x, 0));
                 __instance.SetCameraUp(__instance.GetCameraUp() - movement.y);

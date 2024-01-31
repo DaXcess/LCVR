@@ -1,4 +1,5 @@
 ﻿using GameNetcodeStuff;
+using HarmonyLib;
 using LCVR.Player;
 using System.Collections;
 using System.Collections.Generic;
@@ -10,6 +11,8 @@ namespace LCVR.Items
     // The holding is insanely scuffed but I really have no clue how to do it properly I'm not /that/ good of a developer
     internal class VRShovelItem : VRItem<Shovel>
     {
+        private static FieldInfo previousPlayerHeldByField = AccessTools.Field(typeof(Shovel), "previousPlayerHeldBy");
+
         private readonly Vector3 positionOffset = new(-0.09f, 0, 0.25f);
 
         private Transform interactTransform;
@@ -25,12 +28,12 @@ namespace LCVR.Items
         {
             get
             {
-                return (PlayerControllerB)typeof(Shovel).GetField("previousPlayerHeldBy", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(item);
+                return (PlayerControllerB)previousPlayerHeldByField.GetValue(item);
             }
 
             set
             {
-                typeof(Shovel).GetField("previousPlayerHeldBy", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(item, value);
+                previousPlayerHeldByField.SetValue(item, value);
             }
         }
 
@@ -158,7 +161,7 @@ namespace LCVR.Items
             if (!CanUseItem())
                 return;
 
-            if (Time.realtimeSinceStartup - lastActionTime < 1f)
+            if (Time.realtimeSinceStartup - lastActionTime < 0.7f)
                 return;
 
             lastActionTime = Time.realtimeSinceStartup;
