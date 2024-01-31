@@ -13,6 +13,8 @@ namespace Microsoft.MixedReality.Toolkit.Experimental.UI
     [RequireComponent(typeof(Button))]
     public class KeyboardValueKey : MonoBehaviour
     {
+        private NonNativeKeyboard keyboard;
+
         /// <summary>
         /// The default string value for this key.
         /// </summary>
@@ -39,6 +41,9 @@ namespace Microsoft.MixedReality.Toolkit.Experimental.UI
         /// </summary>
         private void Awake()
         {
+            if (keyboard == null)
+                keyboard = GetComponentInParent<NonNativeKeyboard>();
+
             m_Button = GetComponent<Button>();
         }
 
@@ -53,7 +58,7 @@ namespace Microsoft.MixedReality.Toolkit.Experimental.UI
             m_Button.onClick.RemoveAllListeners();
             m_Button.onClick.AddListener(FireAppendValue);
 
-            NonNativeKeyboard.Instance.OnKeyboardShifted += Shift;
+            keyboard.OnKeyboardShifted += Shift;
         }
 
         /// <summary>
@@ -61,7 +66,7 @@ namespace Microsoft.MixedReality.Toolkit.Experimental.UI
         /// </summary>
         private void FireAppendValue()
         {
-            NonNativeKeyboard.Instance.AppendValue(this);
+            keyboard.AppendValue(this);
         }
 
         /// <summary>

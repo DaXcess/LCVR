@@ -22,7 +22,7 @@ namespace LCVR
         public VRPlayer player;
 
         private ObjectScanner scanner;
-        private NonNativeKeyboard menuKeyboard;
+        public NonNativeKeyboard menuKeyboard;
         public NonNativeKeyboard terminalKeyboard;
 
         public void Initialize(VRPlayer player)

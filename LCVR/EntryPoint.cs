@@ -119,34 +119,34 @@ namespace LCVR
             // Add VR keyboard to the Terminal
             var terminal = Object.FindObjectOfType<Terminal>();
 
-            var keyboardObject = Object.Instantiate(AssetManager.keyboard);
-            keyboardObject.transform.SetParent(terminal.transform.parent.parent, false);
-            keyboardObject.transform.localPosition = new Vector3(-0.584f, 0.333f, 0.791f);
-            keyboardObject.transform.localEulerAngles = new Vector3(0, 90, 90);
-            keyboardObject.transform.localScale = Vector3.one * 0.0009f;
+            var terminalKeyboardObject = Object.Instantiate(AssetManager.keyboard);
+            terminalKeyboardObject.transform.SetParent(terminal.transform.parent.parent, false);
+            terminalKeyboardObject.transform.localPosition = new Vector3(-0.584f, 0.333f, 0.791f);
+            terminalKeyboardObject.transform.localEulerAngles = new Vector3(0, 90, 90);
+            terminalKeyboardObject.transform.localScale = Vector3.one * 0.0009f;
 
-            keyboardObject.GetComponent<Canvas>().worldCamera = uiCamera;
+            terminalKeyboardObject.GetComponent<Canvas>().worldCamera = uiCamera;
 
-            var keyboard = keyboardObject.GetComponent<NonNativeKeyboard>();
-            keyboard.InputField = terminal.screenText;
-            keyboard.CloseOnEnter = false;
+            var terminalKeyboard = terminalKeyboardObject.GetComponent<NonNativeKeyboard>();
+            terminalKeyboard.InputField = terminal.screenText;
+            terminalKeyboard.CloseOnEnter = false;
 
-            keyboard.OnKeyboardValueKeyPressed += (_) =>
+            terminalKeyboard.OnKeyboardValueKeyPressed += (_) =>
             {
                 RoundManager.PlayRandomClip(terminal.terminalAudio, terminal.keyboardClips);
             };
 
-            keyboard.OnKeyboardFunctionKeyPressed += (_) =>
+            terminalKeyboard.OnKeyboardFunctionKeyPressed += (_) =>
             {
                 RoundManager.PlayRandomClip(terminal.terminalAudio, terminal.keyboardClips);
             };
 
-            keyboard.OnTextSubmitted += (_, _) =>
+            terminalKeyboard.OnTextSubmitted += (_, _) =>
             {
                 terminal.OnSubmit();
             };
 
-            keyboard.OnMacroTriggered += (text) =>
+            terminalKeyboard.OnMacroTriggered += (text) =>
             {
                 terminal.screenText.text = terminal.screenText.text.Substring(0, terminal.screenText.text.Length - terminal.textAdded);
                 terminal.screenText.text += text;
@@ -154,12 +154,12 @@ namespace LCVR
                 terminal.OnSubmit();
             };
 
-            keyboard.OnClosed += (_, _) =>
+            terminalKeyboard.OnClosed += (_, _) =>
             {
                 terminal.QuitTerminal();
             };
 
-            player.hud.terminalKeyboard = keyboard;
+            player.hud.terminalKeyboard = terminalKeyboard;
 
             Actions.ReloadInputBindings();
 

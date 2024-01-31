@@ -10,18 +10,25 @@ namespace Microsoft.MixedReality.Toolkit.Experimental.UI
     /// </summary>
     public class SymbolKeyboard : MonoBehaviour
     {
-        //[Experimental]
+        private NonNativeKeyboard keyboard;
+
         [SerializeField]
         private UnityEngine.UI.Button m_PageBck = null;
 
         [SerializeField]
         private UnityEngine.UI.Button m_PageFwd = null;
 
+        private void Awake()
+        {
+            if (keyboard == null)
+                keyboard = GetComponentInParent<NonNativeKeyboard>();
+        }
+
         private void Update()
         {
             // Visual reflection of state.
-            m_PageBck.interactable = NonNativeKeyboard.Instance.IsShifted;
-            m_PageFwd.interactable = !NonNativeKeyboard.Instance.IsShifted;
+            m_PageBck.interactable = keyboard.IsShifted;
+            m_PageFwd.interactable = !keyboard.IsShifted;
         }
     }
 }

@@ -536,7 +536,12 @@ namespace LCVR.Player
             Logger.LogDebug("Opened pause menu");
 
             if (!isDead)
+            {
+                // Make sure keyboard is closed when pause menu opens
+                hud.menuKeyboard.Close();
+
                 SwitchToUICamera();
+            }
 
             mainHand.enabled = false;
             leftControllerRayInteractor.GetComponent<XRInteractorLineVisual>().enabled = true;
@@ -550,6 +555,8 @@ namespace LCVR.Player
         public void OnPauseMenuClosed()
         {
             Logger.LogDebug("Closed pause menu");
+
+            hud.menuKeyboard.Close();
 
             if (!isDead)
                 SwitchToGameCamera();

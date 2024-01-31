@@ -13,6 +13,8 @@ namespace Microsoft.MixedReality.Toolkit.Experimental.UI
     [RequireComponent(typeof(Button))]
     public class KeyboardKeyFunc : MonoBehaviour
     {
+        private NonNativeKeyboard keyboard;
+
         /// <summary>
         /// Possible functionality for a button.
         /// </summary>
@@ -54,6 +56,12 @@ namespace Microsoft.MixedReality.Toolkit.Experimental.UI
         public Function ButtonFunction => buttonFunction;
         public string MacroText => macroText;
 
+        private void Awake()
+        {
+            if (keyboard == null)
+                keyboard = GetComponentInParent<NonNativeKeyboard>();
+        }
+
         /// <summary>
         /// Subscribe to the onClick event.
         /// </summary>
@@ -69,7 +77,7 @@ namespace Microsoft.MixedReality.Toolkit.Experimental.UI
         /// </summary>
         private void FireFunctionKey()
         {
-            NonNativeKeyboard.Instance.FunctionKey(this);
+            keyboard.FunctionKey(this);
         }
     }
 }

@@ -1,13 +1,11 @@
 ﻿using HarmonyLib;
 using LCVR.Assets;
-using LCVR.Input;
 using LCVR.UI;
 using Microsoft.MixedReality.Toolkit.Experimental.UI;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
-using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.UI;
 
 namespace LCVR.Patches
@@ -19,8 +17,8 @@ namespace LCVR.Patches
         /// <summary>
         /// This function runs when the pre-init menu is shown
         /// </summary>
-        [HarmonyPostfix]
         [HarmonyPatch(typeof(PreInitSceneScript), "Start")]
+        [HarmonyPostfix]
         private static void OnPreInitMenuShown()
         {
             InitMenuScene();
@@ -63,8 +61,8 @@ namespace LCVR.Patches
         /// <summary>
         /// This function runs when the main menu is shown
         /// </summary>
-        [HarmonyPrefix]
         [HarmonyPatch(typeof(MenuManager), "Start")]
+        [HarmonyPrefix]
         private static void OnMainMenuShown(MenuManager __instance)
         {
             InitMenuScene();
@@ -251,8 +249,8 @@ namespace LCVR.Patches
             vrIntroPanel.SetActive(true);
         }
 
-        [HarmonyPrefix]
         [HarmonyPatch(typeof(XRUIInputModule), "ProcessNavigation")]
+        [HarmonyPrefix]
         private static void ForceNewInputSystem(XRUIInputModule __instance)
         {
             if (__instance.activeInputMode != XRUIInputModule.ActiveInputMode.InputSystemActions)
@@ -269,8 +267,8 @@ namespace LCVR.Patches
         /// <summary>
         /// This function runs when the pre-init menu is shown
         /// </summary>
-        [HarmonyPostfix]
         [HarmonyPatch(typeof(PreInitSceneScript), "Start")]
+        [HarmonyPostfix]
         private static void OnPreInitMenuShown()
         {
             if (!Plugin.Flags.HasFlag(Flags.RestartRequired))
@@ -298,8 +296,8 @@ namespace LCVR.Patches
         /// <summary>
         /// This function runs when the main menu is shown
         /// </summary>
-        [HarmonyPrefix]
         [HarmonyPatch(typeof(MenuManager), "Start")]
+        [HarmonyPrefix]
         private static void OnMainMenuShown(MenuManager __instance)
         {
             if (__instance.isInitScene)

@@ -21,8 +21,6 @@ namespace Microsoft.MixedReality.Toolkit.Experimental.UI
     ///       get the textEntered event.
     public class NonNativeKeyboard : MonoBehaviour
     {
-        public static NonNativeKeyboard Instance { get; private set; }
-
         /// <summary>
         /// Layout type enum for the type of keyboard layout to use.  
         /// This is used when spawning to enable the correct keys based on layout type.
@@ -89,11 +87,6 @@ namespace Microsoft.MixedReality.Toolkit.Experimental.UI
         /// </summary>
         //[Experimental]
         public TMP_InputField InputField = null;
-
-        /// <summary>
-        /// Move the axis slider based on the camera forward and the keyboard plane projection.
-        /// </summary>
-        public AxisSlider InputFieldSlide = null;
 
         /// <summary>
         /// Bool for toggling the slider being enabled.
@@ -249,31 +242,11 @@ namespace Microsoft.MixedReality.Toolkit.Experimental.UI
         /// </summary>
         void Awake()
         {
-            Instance = this;
-
             m_StartingScale = transform.localScale;
             Bounds canvasBounds = RectTransformUtility.CalculateRelativeRectTransformBounds(transform);
 
             RectTransform rect = GetComponent<RectTransform>();
             m_ObjectBounds = new Vector3(canvasBounds.size.x * rect.localScale.x, canvasBounds.size.y * rect.localScale.y, canvasBounds.size.z * rect.localScale.z);
-
-            // Actually find microphone key in the keyboard
-            //var dictationButton = TransformExtensions.GetChildRecursive(gameObject.transform, "Dictation");
-            //if (dictationButton != null)
-            //{
-            //    var dictationIcon = dictationButton.Find("keyboard_closeIcon");
-            //    if (dictationIcon != null)
-            //    {
-            //        _recordImage = dictationIcon.GetComponentInChildren<Image>();
-            //        var material = new Material(_recordImage.material);
-            //        _defaultColor = material.color;
-            //        _recordImage.material = material;
-            //    }
-            //}
-
-            // Setting the keyboardType to an undefined TouchScreenKeyboardType,
-            // which prevents the MRTK keyboard from triggering the system keyboard itself.
-            InputField.keyboardType = (TouchScreenKeyboardType)(int.MaxValue);
 
             // Keep keyboard deactivated until needed
             gameObject.SetActive(false);
@@ -371,14 +344,7 @@ namespace Microsoft.MixedReality.Toolkit.Experimental.UI
         /// Destroy unmanaged memory links.
         /// </summary>
         void OnDestroy()
-        {
-            //if (dictationSystem != null && IsMicrophoneActive())
-            //{
-            //    dictationSystem.StopRecording();
-            //}
-
-            Instance = null;
-        }
+        { }
 
         #region Present Functions
 
