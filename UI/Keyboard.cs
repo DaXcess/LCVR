@@ -3,12 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace LCVR.UI
 {
     internal class Keyboard : MonoBehaviour
     {
-        private readonly List<TMP_InputField> inputFields = [];
+        private readonly Dictionary<TMP_InputField, UnityAction<string>> inputFields = [];
 
         public NonNativeKeyboard keyboard;
 
@@ -33,15 +34,24 @@ namespace LCVR.UI
 
             foreach (var input in inputs)
             {
-                if (inputFields.Contains(input))
+                if (inputFields.ContainsKey(input))
                     continue;
 
-                input.onSelect.AddListener((_) =>
+                var action = new UnityAction<string>((_) =>
                 {
                     keyboard.InputField = input;
                     keyboard.PresentKeyboard();
                 });
+
+                inputFields.Add(input, action);
+                input.onSelect.AddListener(action);
             }
+        }
+
+        private void OnDestroy()
+        {
+            foreach (var kv in inputFields)
+                kv.Key.onSelect.RemoveListener(kv.Value);
         }
     }
 }

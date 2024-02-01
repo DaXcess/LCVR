@@ -1,3 +1,9 @@
+# 1.1.8
+
+**Bug fixes:**
+
+- Fixed event handler leak in the Keyboard causing the game to hang
+
 # 1.1.7
 
 **Adjustments:**

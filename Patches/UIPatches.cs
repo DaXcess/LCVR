@@ -326,7 +326,7 @@ namespace LCVR.Patches
             var description = modDebugPanel.Find("Panel/DemoText").GetComponent<TextMeshProUGUI>();
 
             title.text = "LCVR DEBUG BUILD!";
-            description.text = "You are using a development version of LCVR! Expect this version of the mod to be highly unstable!";
+            description.text = "You are using a development version of LCVR! This means that some features might not work as advertised, or gameplay being affected in unexpected ways. Do not use this version if you wish to keep your save files intact!";
 
             var picture = modDebugPanel.Find("Panel/Picture").GetComponent<Image>();
             picture.transform.SetSiblingIndex(0);
