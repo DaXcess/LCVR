@@ -2,9 +2,9 @@ name: Compile and publish mod
 
 on:
   push:
-    branches: ["main", "gha"]
+    branches: ["dev", "gha"]
   pull_request:
-    branches: ["main", "gha"]
+    branches: ["dev", "gha"]
 
 jobs:
   build:
@@ -28,7 +28,7 @@ jobs:
         run: dotnet restore
 
       - name: Build app
-        run: dotnet build -c Release
+        run: dotnet build
 
       - name: Prepare and bundle package
         id: prepare
@@ -36,8 +36,8 @@ jobs:
           # Set up template
           unzip ~/lcvr/package-template.zip -d ./package
 
-          # Copy and sign release binary
-          cp bin/Release/netstandard2.1/LCVR.dll ./package/BepInEx/plugins/LCVR/
+          # Copy and sign debug binary
+          cp bin/Debug/netstandard2.1/LCVR.dll ./package/BepInEx/plugins/LCVR/
           gpg --output ./package/BepInEx/plugins/LCVR/LCVR.dll.sig --detach-sig ./package/BepInEx/plugins/LCVR/LCVR.dll
 
           # Copy docs and license
@@ -50,11 +50,11 @@ jobs:
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
           # Update Thunderstore manifest
-          jq '.version_number = "$version"' ./package/manifest.json > ./package/manifest_new.json
+          jq ".version_number = \"$version\"" ./package/manifest.json > ./package/manifest_new.json
           mv ./package/manifest_new.json ./package/manifest.json
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: LCVR-${{ steps.prepare.outputs.version }}
+          name: LCVR-${{ steps.prepare.outputs.version }}-dev
           path: ./package
