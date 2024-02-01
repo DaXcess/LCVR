@@ -5,7 +5,7 @@ namespace LCVR.Experiments.MenuScripts
     public class StareAtUICamera : MonoBehaviour
     {
         [SerializeField]
-        private Vector3 rotationOffset;
+        private Vector3 rotationOffset = new();
 
         private Transform targetTransform;
 
