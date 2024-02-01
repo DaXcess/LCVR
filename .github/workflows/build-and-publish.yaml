@@ -32,20 +32,22 @@ jobs:
       run: dotnet build -c Release
 
     - name: Prepare and bundle package
+      id: prepare
       run: |
         unzip ~/lcvr/package-template.zip -d ./package
         cp bin/Release/netstandard2.1/LCVR.dll ./package/BepInEx/plugins/LCVR/
         gpg --output ./package/BepInEx/plugins/LCVR/LCVR.dll.sig --detach-sig ./package/BepInEx/plugins/LCVR/LCVR.dll
 
         version=$(grep -oP '<Version>\K[^<]+' LCVR.csproj)
+        echo "::set-output name=version::$version"
         jq '.version_number = "$version"' ./package/manifest.json > ./package/manifest.json
         (cd package && zip -r ./LCVR-$version.zip .)
 
         # Demo
         cp ./package/LCVR-$version.zip ~/
 
-#    - name: Upload build artifacts
-#      uses: actions/upload-artifact@v3
-#      with:
-#        name: MSIX Package
-#        path: ${{ env.Wap_Project_Directory }}\AppPackages
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: LCVR
+        path: ./package/LCVR-${{ steps.prepare.output.version }}.zip
