@@ -39,7 +39,7 @@ jobs:
 
         version=$(grep -oP '<Version>\K[^<]+' LCVR.csproj)
         jq '.version_number = "$version"' ./package/manifest.json > ./package/manifest.json
-        zip -r ./package/LCVR-$version.zip ./package/*
+        (cd package && zip -r ./LCVR-$version.zip .)
 
         # Demo
         cp ./package/LCVR-$version.zip ~/
