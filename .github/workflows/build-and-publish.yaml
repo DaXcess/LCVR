@@ -34,17 +34,27 @@ jobs:
     - name: Prepare and bundle package
       id: prepare
       run: |
+        # Set up template
         unzip ~/lcvr/package-template.zip -d ./package
+        
+        # Copy and sign release binary
         cp bin/Release/netstandard2.1/LCVR.dll ./package/BepInEx/plugins/LCVR/
         gpg --output ./package/BepInEx/plugins/LCVR/LCVR.dll.sig --detach-sig ./package/BepInEx/plugins/LCVR/LCVR.dll
 
+        # Copy docs and license
+        cp CHANGELOG.md ./package/CHANGELOG.md
+        cp docs/THUNDERSTORE.md ./package/README.md
+        cp LICENSE ./package/LICENSE
+
+        # Extract package version from project
         version=$(grep -oP '<Version>\K[^<]+' LCVR.csproj)
         echo "version=$version" >> "$GITHUB_OUTPUT"
-        
+
+        # Update Thunderstore manifest
         jq '.version_number = "$version"' ./package/manifest.json > ./package/manifest.json
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: LCVR-${{ steps.prepare.outputs.version }}.zip
+        name: LCVR-${{ steps.prepare.outputs.version }}
         path: ./package
