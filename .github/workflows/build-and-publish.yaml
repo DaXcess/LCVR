@@ -42,13 +42,9 @@ jobs:
         echo "version=$version" >> "$GITHUB_OUTPUT"
         
         jq '.version_number = "$version"' ./package/manifest.json > ./package/manifest.json
-        (cd package && zip -r ./LCVR-$version.zip .)
-
-        # Demo
-        cp ./package/LCVR-$version.zip ~/
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
         name: LCVR-${{ steps.prepare.outputs.version }}.zip
-        path: ./package/LCVR-${{ steps.prepare.outputs.version }}.zip
+        path: ./package
