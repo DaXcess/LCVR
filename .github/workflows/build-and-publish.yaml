@@ -39,7 +39,8 @@ jobs:
         gpg --output ./package/BepInEx/plugins/LCVR/LCVR.dll.sig --detach-sig ./package/BepInEx/plugins/LCVR/LCVR.dll
 
         version=$(grep -oP '<Version>\K[^<]+' LCVR.csproj)
-        echo "::set-output name=version::$version"
+        echo "version=$version" >> "$GITHUB_OUTPUT"
+        
         jq '.version_number = "$version"' ./package/manifest.json > ./package/manifest.json
         (cd package && zip -r ./LCVR-$version.zip .)
 
@@ -50,4 +51,4 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: LCVR
-        path: ./package/LCVR-${{ steps.prepare.output.version }}.zip
+        path: ./package/LCVR-${{ steps.prepare.outputs.version }}.zip
