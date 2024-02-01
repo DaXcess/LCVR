@@ -29,7 +29,7 @@ jobs:
       run: dotnet restore
 
     - name: Build app
-      run: dotnet build
+      run: dotnet build -c Release
 
     - name: Prepare and bundle package
       run: |
