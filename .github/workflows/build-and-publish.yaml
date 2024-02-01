@@ -31,6 +31,19 @@ jobs:
     - name: Build app
       run: dotnet build
 
+    - name: Prepare and bundle package
+      run: |
+        unzip ~/lcvr/package-template.zip -d ./package
+        cp bin/Release/netstandard2.1/LCVR.dll ./package/BepInEx/plugins/LCVR/
+        gpg --output ./package/BepInEx/plugins/LCVR/LCVR.dll.sig --detach-sig ./package/BepInEx/plugins/LCVR/LCVR.dll
+
+        version=$(grep -oP '<Version>\K[^<]+' LCVR.csproj)
+        jq '.version_number = "$version"' ./package/manifest.json > ./package/manifest.json
+        zip -r ./package/LCVR-$version.zip ./package/*
+
+        # Demo
+        cp ./package/LCVR-$version.zip ~/
+
 #    - name: Upload build artifacts
 #      uses: actions/upload-artifact@v3
 #      with:
