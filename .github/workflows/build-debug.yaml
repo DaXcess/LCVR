@@ -1,4 +1,4 @@
-name: Compile and publish mod
+name: Build Debug
 
 on:
   push:
