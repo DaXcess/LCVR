@@ -50,5 +50,5 @@ jobs:
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: LCVR
+        name: LCVR-${{ steps.prepare.outputs.version }}.zip
         path: ./package/LCVR-${{ steps.prepare.outputs.version }}.zip
