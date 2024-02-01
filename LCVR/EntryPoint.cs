@@ -51,8 +51,13 @@ namespace LCVR
             if (input != null)
                 input.enabled = false;
 
-            // Disable first person helmet
-            GameObject.Find("PlayerHUDHelmetModel").SetActive(false);
+            // Move around the volumetric plane
+            var helmetContainer = GameObject.Find("Systems/Rendering/PlayerHUDHelmetModel");
+            var helmetModel = helmetContainer.Find("ScavengerHelmet");
+            helmetModel.transform.Find("Plane").SetParent(helmetContainer.transform);
+
+            // Toggle helmet visor visibility
+            helmetModel.SetActive(Plugin.Config.EnableHelmetVisor.Value);
 
             // Disable ui camera and promote main camera
             mainCamera.targetTexture = null;

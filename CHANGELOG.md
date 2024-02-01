@@ -3,6 +3,11 @@
 **Bug fixes:**
 
 - Fixed event handler leak in the Keyboard causing the game to hang
+- Fixed weird fog rendering issue in the left eye when the radar is active
+
+**Added configuration:**
+
+- Added new configuration option `EnableHelmetVisor` (Default: false). When enabled, will show the first person visor model.
 
 # 1.1.7
 

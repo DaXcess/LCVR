@@ -10,7 +10,8 @@ namespace LCVR
 
         public ConfigEntry<bool> DisableVR { get; } = file.Bind("General", "DisableVR", false, "Disables the main functionality of this mod, can be used if you want to play without VR while keeping the mod installed.");
         public ConfigEntry<bool> IntroScreenSeen { get; } = file.Bind("General", "IntroScreenSeen", false, "Whether the VR intro screen has been displayed before. This configuration option should be set automatically.");
-        
+        public ConfigEntry<bool> EnableHelmetVisor { get; } = file.Bind("General", "EnableHelmetVisor", false, "Enabled the first person helmet visor and helmet. This will restrict your field of view, but looks more immersive.");
+
         // Performance configuration
 
         public ConfigEntry<bool> EnableDynamicResolution { get; } = file.Bind("Performance", "EnableDynamicResolution", false, "Whether or not dynamic resolution should be enabled. Required for most of these settings to have an effect.");
