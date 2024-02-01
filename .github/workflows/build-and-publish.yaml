@@ -1,0 +1,31 @@
+name: Compile and publish mod
+
+on:
+  push:
+    branches: [ "main", "gha" ]
+  pull_request:
+    branches: [ "main", "gha" ]
+
+jobs:
+  build:
+    runs-on: self-hosted
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      
+    - name: Install .NET Core
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Restore NuGet packages
+      run: dotnet restore
+
+    - name: Build app
+      run: dotnet build
+
+#    - name: Upload build artifacts
+#      uses: actions/upload-artifact@v3
+#      with:
+#        name: MSIX Package
+#        path: ${{ env.Wap_Project_Directory }}\AppPackages
