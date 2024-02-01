@@ -43,7 +43,7 @@ jobs:
 
         # Copy docs and license
         cp CHANGELOG.md ./package/CHANGELOG.md
-        cp docs/THUNDERSTORE.md ./package/README.md
+        cp Docs/thunderstore.md ./package/README.md
         cp LICENSE ./package/LICENSE
 
         # Extract package version from project
