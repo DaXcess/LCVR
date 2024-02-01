@@ -2,9 +2,9 @@ name: Build Release
 
 on:
   push:
-    branches: ["main", "gha"]
+    branches: ["main"]
   pull_request:
-    branches: ["main", "gha"]
+    branches: ["main"]
 
 jobs:
   build:
