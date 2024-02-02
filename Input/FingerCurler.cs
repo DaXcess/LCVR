@@ -15,7 +15,7 @@ namespace LCVR.Input
             private readonly Quaternion bone02Rotation = Quaternion.Euler(secondRotation);
 
             private readonly float sign = isLeft ? 1f : -1f;
-            
+
             public float curl;
 
             public void Update()
@@ -27,26 +27,15 @@ namespace LCVR.Input
             }
         }
 
-        public class Thumb
+        public class Thumb(Transform root, Vector3 firstRotation, Vector3 secondRotation)
         {
-            public Transform bone01;
-            public Transform bone02;
+            public Transform bone01 = root;
+            public Transform bone02 = root.GetChild(0);
 
             public float curl;
 
-            private readonly Quaternion bone01Rotation;
-            private readonly Quaternion bone02Rotation;
-
-            public Thumb(Transform root, Vector3 firstRotation, Vector3 secondRotation)
-            {
-                bone01 = root;
-                bone02 = root.GetChild(0);
-
-                var offset = Quaternion.AngleAxis(-30f, Vector3.right);
-
-                bone01Rotation = offset * Quaternion.Euler(firstRotation);
-                bone02Rotation = Quaternion.Euler(secondRotation);
-            }
+            private readonly Quaternion bone01Rotation = Quaternion.AngleAxis(-30f, Vector3.right) * Quaternion.Euler(firstRotation);
+            private readonly Quaternion bone02Rotation = Quaternion.Euler(secondRotation);
 
             public void Update()
             {
