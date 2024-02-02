@@ -59,6 +59,16 @@ namespace LCVR
             // Toggle helmet visor visibility
             helmetModel.SetActive(Plugin.Config.EnableHelmetVisor.Value);
 
+            // Move helmet model to child of target point
+            var helmetTarget = StartOfRound.Instance.localPlayerController.gameObject.Find("ScavengerModel/metarig/CameraContainer/MainCamera/HUDHelmetPosition").transform;
+            helmetContainer.transform.SetParent(helmetTarget, false);
+
+            helmetContainer.transform.localPosition = Vector3.zero;
+            helmetContainer.transform.localEulerAngles = Vector3.zero;
+
+            helmetTarget.transform.localPosition = new Vector3(0.01f, -0.068f, -0.073f);
+            helmetTarget.transform.localScale = Vector3.one;
+
             // Disable ui camera and promote main camera
             mainCamera.targetTexture = null;
             uiCamera.GetComponent<HDAdditionalCameraData>().xrRendering = false;

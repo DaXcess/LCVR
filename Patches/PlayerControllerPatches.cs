@@ -93,6 +93,16 @@ namespace LCVR.Patches
             codes[index + 2].operand = 0.025f;
             codes[index + 5].operand = 0.025f;
 
+            // Remove local visor updating (this will be done using hierarchy instead)
+            var startIndex = codes.FindIndex(x => x.opcode == OpCodes.Ldfld && x.operand == (object)Field(typeof(PlayerControllerB), nameof(PlayerControllerB.localVisor))) - 1;
+            var endIndex = startIndex + 21;
+
+            for (int i = startIndex; i <= endIndex; i++)
+            {
+                codes[i].opcode = OpCodes.Nop;
+                codes[i].operand = null;
+            }
+
             return codes.AsEnumerable();
         }
     }
