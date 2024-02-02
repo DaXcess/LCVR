@@ -7,7 +7,7 @@ namespace LCVR.Items
 {
     internal class VRSprayPaintItem : VRItem<SprayPaintItem>
     {
-        private static FieldInfo timeSinceSwitchingSlotsField = AccessTools.Field(typeof(PlayerControllerB), "timeSinceSwitchingSlots");
+        private static readonly FieldInfo timeSinceSwitchingSlotsField = AccessTools.Field(typeof(PlayerControllerB), "timeSinceSwitchingSlots");
 
         private VRController hand;
 

@@ -43,13 +43,6 @@ namespace LCVR.Patches
                 codes[i].operand = null;
             }
 
-            // Remove Player Rig Updating
-            //for (int i = 1965; i <= 1990; i++)
-            //{
-            //    codes[i].opcode = OpCodes.Nop;
-            //    codes[i].operand = null;
-            //}
-
             return codes.AsEnumerable();
         }
     }
@@ -71,7 +64,7 @@ namespace LCVR.Patches
             codes[index] = new(OpCodes.Stloc_0);
 
             index = codes.FindLastIndex(x => x.operand == (object)"Sprint");
-            
+
             int startIndex = index - 1;
             int endIndex = index + 4;
 
@@ -92,13 +85,6 @@ namespace LCVR.Patches
         static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
             var codes = new List<CodeInstruction>(instructions);
-
-            // Remove Player Rig Updating
-            //for (int i = 497; i <= 516; i++)
-            //{
-            //    codes[i].opcode = OpCodes.Nop;
-            //    codes[i].operand = null;
-            //}
 
             // Make it so player sends position updates more frequently (Multiplayer 6 DOF looks better with this)
 

@@ -76,6 +76,5 @@ namespace LCVR
         public override object Clamp(object value) => value;
         public override bool IsValid(object value) => true;
         public override string ToDescriptionString() => $"# Acceptable values: {string.Join(", ", names)}";
-
     }
 }

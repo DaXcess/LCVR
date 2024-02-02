@@ -4,8 +4,8 @@ namespace LCVR.Items
 {
     internal class VRFlashlight : VRItem<FlashlightItem>
     {
-        private Vector3 positionOffset = new(0.01f, 0.2f, -0.065f);
-        private Vector3 rotationOffset = new(-90, 0, 0);
+        private readonly Vector3 positionOffset = new(0.01f, 0.2f, -0.065f);
+        private readonly Vector3 rotationOffset = new(-90, 0, 0);
 
         protected new void Awake()
         {

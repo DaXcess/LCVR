@@ -289,7 +289,6 @@ namespace LCVR.Patches
             text.raycastTarget = false;
         }
 
-
 #if DEBUG
         internal static bool debugScreenSeen = false;
 

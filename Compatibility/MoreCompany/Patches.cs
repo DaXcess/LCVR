@@ -2,7 +2,6 @@
 using LCVR.Patches;
 using MoreCompany.Behaviors;
 using MoreCompany.Cosmetics;
-using System.Reflection;
 using UnityEngine.EventSystems;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine;

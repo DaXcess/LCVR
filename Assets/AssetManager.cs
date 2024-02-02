@@ -9,8 +9,8 @@ namespace LCVR.Assets
 
         public static GameObject aLiteralCube;
         public static GameObject keyboard;
-        public static GameObject leftHand;
-        public static GameObject rightHand;
+
+        public static GameObject enemyPrefab;
 
         public static Material splashMaterial;
         public static Material defaultRayMat;
@@ -26,8 +26,6 @@ namespace LCVR.Assets
         public static Sprite discordImage;
         public static Sprite warningImage;
 
-        public static GameObject enemyPrefab;
-
         public static bool LoadAssets()
         {
             assetBundle = AssetBundle.LoadFromMemory(Properties.Resources.lethalcompanyvr);
@@ -40,20 +38,21 @@ namespace LCVR.Assets
 
             aLiteralCube = assetBundle.LoadAsset<GameObject>("ALiteralCube");
             keyboard = assetBundle.LoadAsset<GameObject>("NonNativeKeyboard");
+            enemyPrefab = assetBundle.LoadAsset<GameObject>("NutcrackerEnemy");
+
             defaultInputActions = assetBundle.LoadAsset<InputActionAsset>("XR Input Actions");
 
             splashMaterial = assetBundle.LoadAsset<Material>("Splash");
             defaultRayMat = assetBundle.LoadAsset<Material>("Default Ray");
             alwaysOnTopMat = assetBundle.LoadAsset<Material>("Always On Top");
-            
+
             githubImage = assetBundle.LoadAsset<Sprite>("Github");
             kofiImage = assetBundle.LoadAsset<Sprite>("Ko-Fi");
             discordImage = assetBundle.LoadAsset<Sprite>("Discord");
             warningImage = assetBundle.LoadAsset<Sprite>("Warning");
+
             localVrMetarig = assetBundle.LoadAsset<RuntimeAnimatorController>("metarig");
             remoteVrMetarig = assetBundle.LoadAsset<RuntimeAnimatorController>("metarigOtherPlayers");
-
-            enemyPrefab = assetBundle.LoadAsset<GameObject>("NutcrackerEnemy");
 
             return true;
         }

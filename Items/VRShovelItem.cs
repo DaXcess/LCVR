@@ -11,7 +11,7 @@ namespace LCVR.Items
     // The holding is insanely scuffed but I really have no clue how to do it properly I'm not /that/ good of a developer
     internal class VRShovelItem : VRItem<Shovel>
     {
-        private static FieldInfo previousPlayerHeldByField = AccessTools.Field(typeof(Shovel), "previousPlayerHeldBy");
+        private static readonly FieldInfo previousPlayerHeldByField = AccessTools.Field(typeof(Shovel), "previousPlayerHeldBy");
 
         private readonly Vector3 positionOffset = new(-0.09f, 0, 0.25f);
 

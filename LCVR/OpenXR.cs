@@ -86,8 +86,10 @@ namespace LCVR
             return true;
         }
 
-        public static string[] DetectOpenXRRuntimes()
+        public static string[] DetectOpenXRRuntimes(out string @default)
         {
+            @default = null;
+
             var hKey = IntPtr.Zero;
             var cbData = 0u;
 
@@ -105,7 +107,7 @@ namespace LCVR
                     return null;
 
                 var path = data.ToString();
-                var defaultRuntime = JsonConvert.DeserializeObject<OpenXRRuntime>(File.ReadAllText(path)).runtime.name;
+                @default = JsonConvert.DeserializeObject<OpenXRRuntime>(File.ReadAllText(path)).runtime.name;
 
                 if (Native.RegOpenKeyEx(hKey, "AvailableRuntimes", 0, 0x20019, out hKey) != 0)
                     return null;
@@ -133,13 +135,6 @@ namespace LCVR
                 }
 
                 var runtimes = values.Select(value => JsonConvert.DeserializeObject<OpenXRRuntime>(File.ReadAllText(value)).runtime.name).ToArray();
-
-                Array.Sort(runtimes, (a, b) =>
-                {
-                    if (a == defaultRuntime) return -1;
-                    if (b == defaultRuntime) return 1;
-                    return string.Compare(a, b, StringComparison.Ordinal);
-                });
 
                 return runtimes;
             }

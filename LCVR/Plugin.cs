@@ -78,7 +78,7 @@ namespace LCVR
             {
                 if (allowUnverified)
                 {
-                    Logger.LogError("Warning: Unsupported game version, or corrupted game detected!");
+                    Logger.LogWarning("Warning: Unsupported game version, or corrupted game detected!");
                     Flags |= Flags.InvalidGameAssembly;
                 }
                 else
@@ -225,13 +225,22 @@ namespace LCVR
                 }
                 else Logger.LogError("Failed to generate OpenXR diagnostics report!");
 
-                var runtimes = OpenXR.DetectOpenXRRuntimes();
+                var runtimes = OpenXR.DetectOpenXRRuntimes(out var defaultRuntime);
                 if (runtimes != null)
                 {
                     Logger.LogWarning("List of registered OpenXR runtimes on this device:");
 
-                    for (var i = 0; i < runtimes.Length; i++)
-                        Logger.LogWarning($"{(i == 0 ? ">>> " : "    ")}{runtimes[i]}");
+                    if (defaultRuntime != null)
+                        Logger.LogWarning($">>> {defaultRuntime}");
+                    else
+                        Logger.LogWarning("No default runtime detected!");
+
+                    foreach (var rt in runtimes)
+                    {
+                        if (rt == defaultRuntime) continue;
+
+                        Logger.LogWarning($"    {rt}");
+                    }
                 }
 
                 return false;
@@ -406,7 +415,7 @@ namespace LCVR
 
             return mustRestart;
         }
-    
+
         /// <summary>
         /// Modify the splash screen logo
         /// </summary>
@@ -418,7 +427,8 @@ namespace LCVR
                 {
                     SceneManager.GetActiveScene().GetRootGameObjects();
                     return true;
-                } catch { return false; }
+                }
+                catch { return false; }
             });
 
             var mesh = GameObject.Find("SplashRootObject/Quad").GetComponent<MeshRenderer>();
