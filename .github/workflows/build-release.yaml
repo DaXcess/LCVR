@@ -16,6 +16,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up variables
+        id: vars
+        run: |
+          # Extract package version from project
+          version=$(grep -oP '<Version>\K[^<]+' LCVR.csproj)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
       - name: Copy build time dependencies
         run: cp ~/lcvr/Libs/*.dll ./Libs/
 
@@ -31,7 +38,6 @@ jobs:
         run: dotnet build -c Release
 
       - name: Prepare and bundle package
-        id: prepare
         run: |
           # Set up template
           unzip ~/lcvr/package-template.zip -d ./package
@@ -45,17 +51,13 @@ jobs:
           cp Docs/thunderstore.md ./package/README.md
           cp LICENSE ./package/LICENSE
 
-          # Extract package version from project
-          version=$(grep -oP '<Version>\K[^<]+' LCVR.csproj)
-          echo "version=$version" >> "$GITHUB_OUTPUT"
-
           # Update Thunderstore manifest
-          jq ".version_number = \"$version\"" ./package/manifest.json > ./package/manifest_new.json
+          jq '.version_number = "${{ steps.vars.outputs.version }}"' ./package/manifest.json > ./package/manifest_new.json
           mv ./package/manifest_new.json ./package/manifest.json
 
       - name: Upload build artifacts
         if: github.event_name == 'push'
         uses: actions/upload-artifact@v4
         with:
-          name: LCVR-${{ steps.prepare.outputs.version }}
+          name: LCVR-${{ steps.vars.outputs.version }}
           path: ./package
