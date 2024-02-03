@@ -1,3 +1,9 @@
+# 1.1.9
+
+**Bug fixes:**
+
+- Fixed helmet (and volumetric plane) positioning after death
+
 # 1.1.8
 
 **Bug fixes:**

@@ -151,6 +151,25 @@ namespace LCVR.Patches
             return codes.AsEnumerable();
         }
 
+        [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.KillPlayer))]
+        [HarmonyTranspiler]
+        private static IEnumerable<CodeInstruction> PatchKillPlayer(IEnumerable<CodeInstruction> instructions)
+        {
+            var codes = new List<CodeInstruction>(instructions);
+            
+            // Fix visor being repositioned on death
+            var startIndex = codes.FindIndex(code => code.opcode == OpCodes.Ldfld && code.operand == (object)Field(typeof(PlayerControllerB), nameof(PlayerControllerB.localVisor))) - 1;
+            var endIndex = startIndex + 6;
+
+            for (var i = startIndex; i <= endIndex; i++)
+            {
+                codes[i].opcode = OpCodes.Nop;
+                codes[i].operand = null;
+            }
+
+            return codes.AsEnumerable();
+        }
+
         /// <summary>
         /// Adds an arbitrary deadzone since the ScrollMouse gets performed if you only even touch the joystick a little bit
         /// </summary>
