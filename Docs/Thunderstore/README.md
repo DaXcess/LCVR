@@ -59,21 +59,39 @@ Adding VR into a game will drastically change some of the gameplay elements. Thi
 
 In some rare cases, a mod will have "first class support", meaning that LCVR, the mod in question, or both mods have added official compatibility for both mods to work together seamlessly.
 
+## Known incompatibilities
+
+It is generally assumed that any emote mod not listed as fully compatible inside the compatibility sheet will **completely break** LCVR, as the changes made to the player model more often than not conflict heavily with LCVR's IK implementation.
+
+This also includes combining multiple emote mods (even when they are both listed as compatible!) as more often than not the compatibility between the two (or more) emote mods don't account for LCVR when combined.
+
 # Configuring the mod
 
 You can change the mod configuration from within the game itself. Just launch the game with the VR mod installed, get to the main menu, and press the big VR button on the right side of the screen. This will open a big settings menu where you can configure the VR mod to your liking.
 
 > _When creating a modpack or profile code, it is recommended to **NOT** ship your config file, so that other people can configure it on their own using the default settings. To quickly reset the settings, delete the config file named `io.daxcess.lcvr.cfg` from the `BepInEx/config` directory._
 
-# Basic Controls
+# Controls
 
-> For a list of all controls, check out the `controls` wiki page
+LCVR attempts to automatically detect which type of controller you are using, and will automatically apply the correct controller profile once they have been detected.
 
-Once you are in game, you can move around by using the left joystick. You can use the right joystick (left/right) for snap/smooth turning (if enabled) and switching inventory slot (up/down).
+The current list of built-in controller profiles are:
 
-To sprint, press the left joystick button.
+- Oculus (Rift S, Quest 2, Quest 3) - Default Fallback
+- Valve Index
+- HTC Vive
+- HP Reverb G2
+- Windows Mixed Reality
 
-To crouch, press the right joystick button.
+For a list of all controls for your specific controllers, check out the `controls` wiki pages.
+
+# How to change controls
+
+Check out the [LCVR Controller Profiles](https://github.com/DaXcess/LCVR-Controller-Profiles) GitHub page to find a list of available controller bindings.
+
+In the mod's configuration, set the `ControllerBindingsOverrideProfile` option to the name of the profile binding you would like to use. This does however require an active internet connection, since these profiles are downloaded directly from this GitHub repository and will allow the use of new profiles without having to update the mod.
+
+> Setting `ControllerBindingsOverrideProfile` will override the controller auto-detection
 
 # Main Menu
 
@@ -132,6 +150,9 @@ LCVR features a bunch of new interactions that VR players can use to interact wi
   Anyways, just flick open the door with your hand, and use your finger to toggle the switches.
   _This interaction only works when you are using your pointer finger, a fist or flat hand will not work_
 
+- **Doors**
+  Always had the issue where like a billion people tried to open the same door and it just keeps opening and closing and you can't get through? Well now you actually have to interact with the door handle to open and close the door. Is a door locked? Find out by trying to open the door and listen for the sound cue (or just notice that it doesn't open, whatever). To use a key on a door, interact with the door handle using your right hand while holding a key. Same thing for the lockpicker, however picking up the lockpicker when it is placed on a door also requires you to physically grab it. When the lockpicker is an item on the floor, it will behave normally, and can be picked up from a distance.
+
 - **Face**
 
   Just want to really scream right into that walkie, begging to be teleported because a Jester is right around the corner? Well, you can now do so without pressing any button! Just hold up any compatible item to your face to use them, but watch out what you all put near your face!
@@ -155,14 +176,20 @@ This mod, in addition to adding VR and motion controls, also adds a few special 
 - Shovel/Sign Swinging
   - If you are holding a shovel or a sign, you'll notice that you are holding it in two hands. If you hold your controllers over your shoulder and bring them down with enough force, the mod will swing the shovel for you, dealing damage to players/entities in front of you.
 
-# Spectating
+# Free Roam Spectating
 
-To be fair, watching your fellow coworkers do all the work while you just sit there and watch them while you're dead can become pretty boring, so LCVR spices this up a little.
+> Free Roam Spectator provided by The Company:tm: Device:copyright:. _"Experience death like nobody has ever before! It's amazing!"_
 
-When you die, you will still be able to walk around like normal. You still have your arms, you can still get in/out of the facility and you can even still use ladders!
+Hate having to just watch a flat screen where your fellow employees die to the horrors of the facilities? Well fear no more! With the new Company:tm: Device:copyright: you retain the rights to wander the desolate planets even when your physical body is no longer showing signs compatible with life!
 
-You cannot however interact with anything else anymore, since, well... _you're dead!_
+_Since the company was a big fan of using Linux for the Device:copyright:, the colors look more gray when dead since they cheaped out on the HDR support._
 
-You can use the right trigger to teleport between players that are still alive, just like in the base game.
+You can teleport to other employees, like you would using the old spectator view, by using the **Interact** _(Default: Right Controller Trigger)_ button. This will cycle through each employee in the lobby that has not yet met their maker. Use this to quickly see how a fellow employee is going about their day, or to get unstuck if you have fallen into a pit.
 
-You can also use the left grip button to hide the spectator screen, so you can fully witness the horrors of your fellow coworkers, without having to fear dying _(since you've already perished)_.
+_Since the Device:copyright: is making use of simulated consciousness, physical barriers like doors act like air, so you can walk right through them no problem!_
+
+Afraid of the dark? Use the **Drop Item** _(Default: B)_ button to toggle night vision! When enabled, this light will illuminate the world and facilities around you, so that you can see what your still breathing fellow employees can't!
+
+_Another issue of the simulated consciousness is that you can no longer interact with the world around you. You are only able to use ladders and entrance doors, like fire exits and the main entrance. The Company:tm: has explained in a statement that they are not planning on fixing this issue._
+
+Want to hide that pesky "you are dead lol" interface? Just press the **Secondary Use** _(Default: Left Controller Grip)_ button to toggle the interface.
