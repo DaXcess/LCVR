@@ -1,49 +1,48 @@
 ﻿using UnityEngine;
 using UnityEngine.Events;
 
-namespace LCVR.Input
+namespace LCVR.Input;
+
+public class MotionDetector : MonoBehaviour
 {
-    public class MotionDetector : MonoBehaviour
+    public UnityEvent onShake;
+
+    private Vector3 lastPosition;
+
+    private float shakeThreshold = 0.5f;
+    private float shakeHoldThreshold = 0.09f;
+    private float shakeDelay = 0.2f;
+
+    private float lastShakeTime = 0;
+    private bool startHold = false;
+
+    void Awake()
     {
-        public UnityEvent onShake;
+        onShake = new UnityEvent();
+    }
 
-        private Vector3 lastPosition;
+    void FixedUpdate()
+    {
+        var distance = Vector3.Distance(lastPosition, transform.localPosition) * 10;
 
-        private float shakeThreshold = 0.5f;
-        private float shakeHoldThreshold = 0.09f;
-        private float shakeDelay = 0.2f;
+        if (startHold && distance > shakeHoldThreshold)
+            TriggerShake();
+        else
+            startHold = false;
 
-        private float lastShakeTime = 0;
-        private bool startHold = false;
+        if (distance > shakeThreshold)
+            startHold = true;
 
-        void Awake()
-        {
-            onShake = new UnityEvent();
-        }
+        lastPosition = transform.localPosition;
+    }
 
-        void FixedUpdate()
-        {
-            var distance = Vector3.Distance(lastPosition, transform.localPosition) * 10;
+    private void TriggerShake()
+    {
+        if (Time.realtimeSinceStartup - lastShakeTime < shakeDelay)
+            return;
 
-            if (startHold && distance > shakeHoldThreshold)
-                TriggerShake();
-            else
-                startHold = false;
+        lastShakeTime = Time.realtimeSinceStartup;
 
-            if (distance > shakeThreshold)
-                startHold = true;
-
-            lastPosition = transform.localPosition;
-        }
-
-        private void TriggerShake()
-        {
-            if (Time.realtimeSinceStartup - lastShakeTime < shakeDelay)
-                return;
-
-            lastShakeTime = Time.realtimeSinceStartup;
-
-            onShake.Invoke();
-        }
+        onShake.Invoke();
     }
 }

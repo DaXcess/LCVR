@@ -1,27 +1,26 @@
 ﻿using UnityEngine;
 
-namespace LCVR.Compatibility
+namespace LCVR.Compatibility;
+
+internal class MoreCompany
 {
-    internal class MoreCompany
+    public static void SetupMoreCompanyUI()
     {
-        public static void SetupMoreCompanyUI()
-        {
-            var overlay = GameObject.Find("TestOverlay(Clone)");
-            var menuContainer = GameObject.Find("MenuContainer");
+        var overlay = GameObject.Find("TestOverlay(Clone)");
+        var menuContainer = GameObject.Find("MenuContainer");
 
-            if (overlay == null)
-                return;
+        if (overlay == null)
+            return;
 
-            var canvasUi = overlay.Find("Canvas/GlobalScale");
-            canvasUi.transform.parent = menuContainer.transform;
-            canvasUi.transform.localPosition = new Vector3(-46, 6, -90);
-            canvasUi.transform.localEulerAngles = Vector3.zero;
-            canvasUi.transform.localScale = Vector3.one;
+        var canvasUi = overlay.Find("Canvas/GlobalScale");
+        canvasUi.transform.parent = menuContainer.transform;
+        canvasUi.transform.localPosition = new Vector3(-46, 6, -90);
+        canvasUi.transform.localEulerAngles = Vector3.zero;
+        canvasUi.transform.localScale = Vector3.one;
 
-            var activateButton = canvasUi.Find("ActivateButton");
-            activateButton.transform.localPosition = new Vector3(activateButton.transform.localPosition.x, activateButton.transform.localPosition.y, 90);
+        var activateButton = canvasUi.Find("ActivateButton");
+        activateButton.transform.localPosition = new Vector3(activateButton.transform.localPosition.x, activateButton.transform.localPosition.y, 90);
 
-            overlay.Find("CanvasCam").SetActive(false);
-        }
+        overlay.Find("CanvasCam").SetActive(false);
     }
 }

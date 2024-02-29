@@ -1,37 +1,32 @@
 ﻿using System;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
-namespace LCVR.Input
+namespace LCVR.Input;
+
+internal class SmoothTurningProvider : TurningProvider
 {
-    internal class SmoothTurningProvider : TurningProvider
+    private float offset = 0;
+
+    public void Update()
     {
-        private readonly InputAction turnAction;
+        var value = Actions.Instance["Controls/Turn"].ReadValue<float>();
+        bool shouldExecute = MathF.Abs(value) > 0.75;
 
-        private float offset = 0;
-
-        internal SmoothTurningProvider()
+        if (shouldExecute)
         {
-            turnAction = Actions.FindAction("Controls/Turn");
-        }
+            var totalRotation = (value > 0 ? 90 : -90) * Time.deltaTime * Plugin.Config.SmoothTurnSpeedModifier.Value;
 
-        public void Update()
-        {
-            var value = turnAction.ReadValue<float>();
-            bool shouldExecute = MathF.Abs(value) > 0.75;
-
-            if (shouldExecute)
-                offset += (value > 0 ? 90 : -90) * Time.deltaTime * Plugin.Config.SmoothTurnSpeedModifier.Value;
+            offset += totalRotation;
         }
+    }
 
-        public void SetOffset(float offset)
-        {
-            this.offset = offset;
-        }
+    public void SetOffset(float offset)
+    {
+        this.offset = offset;
+    }
 
-        public float GetRotationOffset()
-        {
-            return offset;
-        }
+    public float GetRotationOffset()
+    {
+        return offset;
     }
 }

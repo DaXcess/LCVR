@@ -1,724 +1,631 @@
 ﻿using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.XR;
-using UnityEngine.XR;
 using System;
-using UnityEngine.Rendering.HighDefinition;
 using LCVR.Input;
 using System.Collections;
 using LCVR.Networking;
-using LCVR.Assets;
 using GameNetcodeStuff;
 using UnityEngine.XR.Interaction.Toolkit;
-using Microsoft.MixedReality.Toolkit.Experimental.UI;
 using LCVR.Patches;
-using HarmonyLib;
-using LCVR.UI;
-
+using UnityEngine.Animations.Rigging;
+using System.Linq;
 using CrouchState = LCVR.Networking.DNet.Rig.CrouchState;
 
-namespace LCVR.Player
+namespace LCVR.Player;
+
+public class VRPlayer : MonoBehaviour
 {
-    // Attach this to the main Player
+    private const float SCALE_FACTOR = 1.5f;
+    private const int CAMERA_CLIP_MASK = 1 << 8 | 1 << 26;
 
-    internal class VRPlayer : MonoBehaviour
+    private PlayerControllerB playerController;
+    private CharacterController characterController;
+    private Bones bones;
+
+    private Coroutine stopSprintingCoroutine;
+
+    private float cameraFloorOffset = 0f;
+    private float crouchOffset = 0f;
+    private float realHeight = 2.3f;
+
+    private readonly float sqrMoveThreshold = 1E-5f;
+    private readonly float turnAngleThreshold = 120.0f;
+    private readonly float turnWeightSharp = 15.0f;
+
+    private bool isSprinting = false;
+    private bool isRoomCrouching = false;
+
+    private bool wasInSpecialAnimation = false;
+    private bool wasInEnemyAnimation = false;
+    private Vector3 specialAnimationPositionOffset = Vector3.zero;
+
+    private Camera mainCamera;
+
+    private GameObject leftController;
+    private GameObject rightController;
+
+    private XRRayInteractor leftControllerRayInteractor;
+    private XRRayInteractor rightControllerRayInteractor;
+
+    private Transform xrOrigin;
+
+    private Vector3 lastFrameHMDPosition = new(0, 0, 0);
+    private Vector3 lastFrameHMDRotation = new(0, 0, 0);
+
+    private Vector3 totalMovementSinceLastMove = Vector3.zero;
+
+    private TurningProvider turningProvider;
+
+    private VRController mainController;
+
+    private VRInteractor leftHandInteractor;
+    private VRInteractor rightHandInteractor;
+
+    public VRFingerCurler LeftFingerCurler { get; private set; }
+    public VRFingerCurler RightFingerCurler { get; private set; }
+
+    private GameObject leftHandVRTarget;
+    private GameObject rightHandVRTarget;
+
+    public Transform leftItemHolder;
+    public Transform rightItemHolder;
+
+    #region Public Accessors
+    public PlayerControllerB PlayerController => playerController;
+    public Bones Bones => bones;
+
+    public VRController PrimaryController => mainController;
+    public VRInteractor LeftHandInteractor => leftHandInteractor;
+    public VRInteractor RightHandInteractor => rightHandInteractor;
+
+    public bool IsDead => playerController.isPlayerDead;
+    public bool IsRoomCrouching => isRoomCrouching;
+    #endregion
+
+    private void Awake()
     {
-        private const float SCALE_FACTOR = 1.5f;
+        Logger.LogDebug("Going to intialize XR Rig");
 
-        public static VRPlayer Instance { get; private set; }
+        playerController = GetComponent<PlayerControllerB>();
+        characterController = GetComponent<CharacterController>();
+        bones = new Bones(transform);
 
-        private readonly InputAction resetHeightAction;
-        private readonly InputAction sprintAction;
+        // Prevent walking through walls
+        GetComponent<Rigidbody>().collisionDetectionMode = CollisionDetectionMode.Continuous;
 
-        private Coroutine stopSprintingCoroutine;
+        // Create XR stuff
+        xrOrigin = new GameObject("XR Origin").transform;
+        mainCamera = VRSession.Instance.MainCamera;
 
-        public float cameraFloorOffset = 0f;
-        private float crouchOffset = 0f;
-        private float realHeight = 2.3f;
+        // Fool the animator (this removes console error spam)
+        new GameObject("MainCamera").transform.parent = Find("ScavengerModel/metarig/CameraContainer").transform;
 
-        private readonly float sqrMoveThreshold = 1E-5f;
-        private readonly float turnAngleThreshold = 120.0f;
-        private readonly float turnWeightSharp = 15.0f;
+        // Unparent camera container
+        mainCamera.transform.parent = xrOrigin;
+        xrOrigin.localPosition = Vector3.zero;
+        xrOrigin.localRotation = Quaternion.Euler(0, 0, 0);
+        xrOrigin.localScale = Vector3.one;
 
-        private bool isDead = false;
-        private bool isSprinting = false;
+        // Create controller objects
+        rightController = new GameObject("Right Controller");
+        leftController = new GameObject("Left Controller");
 
-        public bool isRoomCrouching = false;
+        // And mount to camera container
+        rightController.transform.parent = xrOrigin;
+        leftController.transform.parent = xrOrigin;
 
-        private bool wasInSpecialAnimation = false;
-        private Vector3 specialAnimationPositionOffset = Vector3.zero;
+        // Left hand tracking
+        var rightHandPoseDriver = rightController.AddComponent<TrackedPoseDriver>();
+        rightHandPoseDriver.positionAction = Actions.Instance.RightHandPosition;
+        rightHandPoseDriver.rotationAction = Actions.Instance.RightHandRotation;
+        rightHandPoseDriver.trackingStateInput = new InputActionProperty(Actions.Instance.RightHandTrackingState);
 
-        private PlayerControllerB playerController;
+        // Right hand tracking
+        var leftHandPoseDriver = leftController.AddComponent<TrackedPoseDriver>();
+        leftHandPoseDriver.positionAction = Actions.Instance.LeftHandPosition;
+        leftHandPoseDriver.rotationAction = Actions.Instance.LeftHandRotation;
+        leftHandPoseDriver.trackingStateInput = new InputActionProperty(Actions.Instance.LeftHandTrackingState);
 
-        public GameObject leftController;
-        public GameObject rightController;
+        // Set up IK Rig VR targets
+        var headVRTarget = new GameObject("Head VR Target");
+        rightHandVRTarget = new GameObject("Right Hand VR Target");
+        leftHandVRTarget = new GameObject("Left Hand VR Target");
 
-        private XRRayInteractor leftControllerRayInteractor;
-        private XRRayInteractor rightControllerRayInteractor;
+        headVRTarget.transform.parent = mainCamera.transform;
+        rightHandVRTarget.transform.parent = rightController.transform;
+        leftHandVRTarget.transform.parent = leftController.transform;
 
-        private Transform xrOrigin;
+        // Head defintely does need to have offsets (in this case an offset of 0, 0, 0)
+        headVRTarget.transform.localPosition = Vector3.zero;
 
-        private Vector3 lastFrameHMDPosition = new(0, 0, 0);
-        private Vector3 lastFrameHMDRotation = new(0, 0, 0);
+        rightHandVRTarget.transform.localPosition = new Vector3(0.0279f, 0.0353f, -0.0044f);
+        rightHandVRTarget.transform.localRotation = Quaternion.Euler(0, 90, 168);
 
-        private TurningProvider turningProvider;
+        leftHandVRTarget.transform.localPosition = new Vector3(-0.0279f, 0.0353f, 0.0044f);
+        leftHandVRTarget.transform.localRotation = Quaternion.Euler(0, 270, 192);
 
-        public VRHUD hud;
-        public VRController mainHand;
-        public Camera mainCamera;
-        public Camera customCamera;
-        public Camera uiCamera;
-        private Transform uiCameraAnchor;
+        // Add controller interactors
+        mainController = rightController.AddComponent<VRController>();
+        leftHandInteractor = bones.LocalLeftHand.gameObject.AddComponent<VRInteractor>();
+        rightHandInteractor = bones.LocalRightHand.gameObject.AddComponent<VRInteractor>();
 
-        public Transform leftHandRigTransform;
-        public Transform rightHandRigTransform;
+        // Add ray interactors for VR keyboard
+        leftControllerRayInteractor = new GameObject("Left Ray Interactor").CreateInteractorController(Utils.Hand.Left, false, false);
+        rightControllerRayInteractor = new GameObject("Right Ray Interactor").CreateInteractorController(Utils.Hand.Right, false, false);
 
-        public VRFingerCurler leftFingerCurler;
-        public VRFingerCurler rightFingerCurler;
+        leftControllerRayInteractor.transform.SetParent(leftController.transform, false);
+        rightControllerRayInteractor.transform.SetParent(rightController.transform, false);
 
-        private GameObject leftHandVRTarget;
-        private GameObject rightHandVRTarget;
+        leftControllerRayInteractor.transform.localPosition = new Vector3(0.01f, 0, 0);
+        leftControllerRayInteractor.transform.localRotation = Quaternion.Euler(80, 0, 0);
 
-        public Transform leftItemHolder;
-        public Transform rightItemHolder;
+        rightControllerRayInteractor.transform.localPosition = new Vector3(-0.01f, 0, 0);
+        rightControllerRayInteractor.transform.localRotation = Quaternion.Euler(80, 0, 0);
 
-        public bool RebuildingRig { get; private set; } = false;
-
-        public VRPlayer()
+        // Add turning provider
+        turningProvider = Plugin.Config.TurnProvider.Value switch
         {
-            resetHeightAction = Actions.FindAction("Controls/Reset Height");
-            sprintAction = Actions.FindAction("Controls/Sprint");
-        }
+            Config.TurnProviderOption.Snap => new SnapTurningProvider(),
+            Config.TurnProviderOption.Smooth => new SmoothTurningProvider(),
+            _ => new NullTurningProvider(),
+        };
 
-        private void Awake()
+        // Input actions
+        Actions.Instance.OnReload += (oldActions, newActions) =>
         {
-            Instance = this;
+            oldActions["Controls/Reset Height"].performed -= ResetHeight_performed;
+            oldActions["Controls/Sprint"].performed -= Sprint_performed;
+        
+            newActions["Controls/Reset Height"].performed += ResetHeight_performed;
+            newActions["Controls/Sprint"].performed += Sprint_performed;
+        };
 
-            Logger.LogDebug("Going to intialize XR Rig");
+        Actions.Instance["Controls/Reset Height"].performed += ResetHeight_performed;
+        Actions.Instance["Controls/Sprint"].performed += Sprint_performed;
+        ResetHeight();
 
-            playerController = GetComponent<PlayerControllerB>();
+        // Set up item holders
+        var leftHolder = new GameObject("Left Hand Item Holder");
+        var rightHolder = new GameObject("Right Hand Item Holder");
 
-            // Create XR stuff
-            xrOrigin = new GameObject("XR Origin").transform;
-            mainCamera = Find("ScavengerModel/metarig/CameraContainer/MainCamera").GetComponent<Camera>();
-            uiCamera = GameObject.Find("UICamera").GetComponent<Camera>();
-            uiCameraAnchor = new GameObject("UI Camera Anchor").transform;
+        leftItemHolder = leftHolder.transform;
+        leftItemHolder.SetParent(bones.LocalLeftHand, false);
+        leftItemHolder.localPosition = new Vector3(0.018f, 0.045f, -0.042f);
+        leftItemHolder.localEulerAngles = new Vector3(360f - 356.3837f, 357.6979f, 0.1453f);
 
-            // Set up pause menu stuff
-            uiCameraAnchor.position = new Vector3(0, -1000, 0);
-            uiCamera.transform.SetParent(uiCameraAnchor.transform, false);
+        rightItemHolder = rightHolder.transform;
+        rightItemHolder.SetParent(bones.LocalRightHand, false);
+        rightItemHolder.localPosition = new Vector3(-0.002f, 0.036f, -0.042f);
+        rightItemHolder.localEulerAngles = new Vector3(356.3837f, 357.6979f, 0.1453f);
 
-            uiCamera.cullingMask = -1;
+        // Set up finger curlers
+        LeftFingerCurler = new VRFingerCurler(bones.LocalLeftHand, true);
+        RightFingerCurler = new VRFingerCurler(bones.LocalRightHand, false);
 
-            var poseDriver = uiCamera.GetComponent<TrackedPoseDriver>() ?? uiCamera.gameObject.AddComponent<TrackedPoseDriver>();
-            poseDriver.positionAction = Actions.Head_Position;
-            poseDriver.rotationAction = Actions.Head_Rotation;
-            poseDriver.trackingStateInput = new InputActionProperty(Actions.Head_TrackingState);
+        BuildVRRig();
 
-            if (Plugin.Config.EnableCustomCamera.Value)
-                customCamera = mainCamera.transform.parent.Find("Custom Camera").GetComponent<Camera>();
+        Logger.LogDebug("Initialized XR Rig");
+    }
 
-            // Fool the animator (this removes console error spam)
-            new GameObject("MainCamera").transform.parent = Find("ScavengerModel/metarig/CameraContainer").transform;
+    private void BuildVRRig()
+    {
+        // Reset player character briefly to allow the RigBuilder to behave properly
+        bones.ResetToPrefabPositions();
 
-            // Unparent camera container
-            mainCamera.transform.parent = xrOrigin;
-            xrOrigin.localPosition = Vector3.zero;
-            xrOrigin.localRotation = Quaternion.Euler(0, 0, 0);
-            xrOrigin.localScale = Vector3.one;
+        // ARMS ONLY RIG
 
-            // Get references to arms
-            leftHandRigTransform = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/shoulder.L/arm.L_upper/arm.L_lower/hand.L").transform;
-            rightHandRigTransform = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/shoulder.R/arm.R_upper/arm.R_lower/hand.R").transform;
+        // Set up rigging
+        var model = Find("ScavengerModel/metarig/ScavengerModelArmsOnly", true).gameObject;
 
-            // Initialize HUD
-            hud = new GameObject("VR HUD Manager").AddComponent<VRHUD>();
-            hud.Initialize(this);
+        // Why are these even nonzero in the first place?
+        bones.LocalMetarig.localPosition = Vector3.zero;
+        bones.LocalArmsRig.localPosition = Vector3.zero;
 
-            // Create HMD tracker
-            var cameraPoseDriver = mainCamera.gameObject.AddComponent<TrackedPoseDriver>();
-            cameraPoseDriver.positionAction = Actions.Head_Position;
-            cameraPoseDriver.rotationAction = Actions.Head_Rotation;
-            cameraPoseDriver.trackingStateInput = new InputActionProperty(Actions.Head_TrackingState);
+        var rigFollow = model.GetComponent<IKRigFollowVRRig>() ?? model.AddComponent<IKRigFollowVRRig>();
 
-            // Create controller objects
-            rightController = new GameObject("Right Controller");
-            leftController = new GameObject("Left Controller");
+        // Setting up the head
+        rigFollow.head = mainCamera.transform;
 
-            // And mount to camera container
-            rightController.transform.parent = xrOrigin;
-            leftController.transform.parent = xrOrigin;
+        // Setting up the left arm
 
-            // Left hand tracking
-            var rightHandPoseDriver = rightController.AddComponent<TrackedPoseDriver>();
-            rightHandPoseDriver.positionAction = Actions.RightHand_Position;
-            rightHandPoseDriver.rotationAction = Actions.RightHand_Rotation;
-            rightHandPoseDriver.trackingStateInput = new InputActionProperty(Actions.RightHand_TrackingState);
+        bones.LocalLeftArmRig.localPosition = Vector3.zero;
+        bones.LocalLeftArmRigHint.localPosition = new Vector3(-10f, -2f, -1f);
 
-            // Right hand tracking
-            var leftHandPoseDriver = leftController.AddComponent<TrackedPoseDriver>();
-            leftHandPoseDriver.positionAction = Actions.LeftHand_Position;
-            leftHandPoseDriver.rotationAction = Actions.LeftHand_Rotation;
-            leftHandPoseDriver.trackingStateInput = new InputActionProperty(Actions.LeftHand_TrackingState);
+        // Disable built-in constraints since they don't support hints (fucks up the elbows)
+        Destroy(bones.LocalLeftArmRig.GetComponent<ChainIKConstraint>());
+        var localLeftArmConstraint = bones.LocalLeftArmRig.gameObject.AddComponent<TwoBoneIKConstraint>();
 
-            // Set up IK Rig VR targets
-            var headVRTarget = new GameObject("Head VR Target");
-            rightHandVRTarget = new GameObject("Right Hand VR Target");
-            leftHandVRTarget = new GameObject("Left Hand VR Target");
+        localLeftArmConstraint.data.root = bones.LocalLeftUpperArm;
+        localLeftArmConstraint.data.mid = bones.LocalLeftLowerArm;
+        localLeftArmConstraint.data.tip = bones.LocalLeftHand;
+        localLeftArmConstraint.data.target = bones.LocalLeftArmRigTarget;
+        localLeftArmConstraint.data.hint = bones.LocalLeftArmRigHint;
+        localLeftArmConstraint.data.hintWeight = 1;
+        localLeftArmConstraint.data.targetRotationWeight = 1;
+        localLeftArmConstraint.data.targetPositionWeight = 1;
 
-            headVRTarget.transform.parent = mainCamera.transform;
-            rightHandVRTarget.transform.parent = rightController.transform;
-            leftHandVRTarget.transform.parent = leftController.transform;
+        rigFollow.leftHand = new IKRigFollowVRRig.VRMap()
+        {
+            ikTarget = bones.LocalLeftArmRigTarget,
+            vrTarget = leftHandVRTarget.transform,
+            trackingPositionOffset = Vector3.zero,
+            trackingRotationOffset = Vector3.zero
+        };
 
-            // Head defintely does need to have offsets (in this case an offset of 0, 0, 0)
-            headVRTarget.transform.localPosition = Vector3.zero;
+        // Setting up the right arm
 
-            rightHandVRTarget.transform.localPosition = new Vector3(0.0279f, 0.0353f, -0.0044f);
-            rightHandVRTarget.transform.localRotation = Quaternion.Euler(0, 90, 168);
+        bones.LocalRightArmRig.localPosition = Vector3.zero;
+        bones.LocalRightArmRigHint.localPosition = new Vector3(12.5f, -2f, -1f);
 
-            leftHandVRTarget.transform.localPosition = new Vector3(-0.0279f, 0.0353f, 0.0044f);
-            leftHandVRTarget.transform.localRotation = Quaternion.Euler(0, 270, 192);
+        // Disable built-in constraints since they don't support hints (fucks up the elbows)
+        Destroy(bones.LocalRightArmRig.GetComponent<ChainIKConstraint>());
+        var localRightArmConstraint = bones.LocalRightArmRig.gameObject.AddComponent<TwoBoneIKConstraint>();
 
-            // Add controller interactor
-            mainHand = rightController.AddComponent<VRController>();
-            mainHand.Initialize(this);
+        localRightArmConstraint.data.root = bones.LocalRightUpperArm;
+        localRightArmConstraint.data.mid = bones.LocalRightLowerArm;
+        localRightArmConstraint.data.tip = bones.LocalRightHand;
+        localRightArmConstraint.data.target = bones.LocalRightArmRigTarget;
+        localRightArmConstraint.data.hint = bones.LocalRightArmRigHint;
+        localRightArmConstraint.data.hintWeight = 1;
+        localRightArmConstraint.data.targetRotationWeight = 1;
+        localRightArmConstraint.data.targetPositionWeight = 1;
 
-            // Add ray interactors for VR keyboard
-            leftControllerRayInteractor = new GameObject("Left Ray Interactor").CreateInteractorController(Utils.Hand.Left, false, false);
-            rightControllerRayInteractor = new GameObject("Right Ray Interactor").CreateInteractorController(Utils.Hand.Right, false, false);
+        rigFollow.rightHand = new IKRigFollowVRRig.VRMap()
+        {
+            ikTarget = bones.LocalRightArmRigTarget,
+            vrTarget = rightHandVRTarget.transform,
+            trackingPositionOffset = Vector3.zero,
+            trackingRotationOffset = Vector3.zero
+        };
 
-            leftControllerRayInteractor.transform.SetParent(leftController.transform, false);
-            rightControllerRayInteractor.transform.SetParent(rightController.transform, false);
+        // This one is pretty hit or miss, sometimes y needs to be -0.2f, other times it needs to be -2.25f
+        rigFollow.headBodyPositionOffset = new Vector3(0, -0.2f, 0);
 
-            leftControllerRayInteractor.transform.localPosition = new Vector3(0.01f, 0, 0);
-            leftControllerRayInteractor.transform.localRotation = Quaternion.Euler(80, 0, 0);
+        // Disable badges
+        bones.Spine.Find("LevelSticker").gameObject.SetActive(false);
+        bones.Spine.Find("BetaBadge").gameObject.SetActive(false);
 
-            rightControllerRayInteractor.transform.localPosition = new Vector3(-0.01f, 0, 0);
-            rightControllerRayInteractor.transform.localRotation = Quaternion.Euler(80, 0, 0);
+        // FULL BODY RIG
 
-            // Add turning provider
-            turningProvider = Plugin.Config.TurnProvider.Value switch
-            {
-                Config.TurnProviderOption.Snap => new SnapTurningProvider(),
-                Config.TurnProviderOption.Smooth => new SmoothTurningProvider(),
-                _ => new NullTurningProvider(),
-            };
+        // Set up rigging
+        var fullModel = Find("ScavengerModel", true).gameObject;
 
-            // Input actions
-            sprintAction.performed += Sprint_performed;
-            resetHeightAction.performed += ResetHeight_performed;
+        bones.Metarig.localPosition = Vector3.zero;
+
+        var fullRigFollow = fullModel.GetComponent<IKRigFollowVRRig>() ?? fullModel.AddComponent<IKRigFollowVRRig>();
+
+        // Setting up the left arm
+
+        bones.LeftArmRigHint.localPosition = new Vector3(-10f, -2f, -1f);
+
+        // Disable built-in constraints since they don't support hints (fucks up the elbows)
+        Destroy(bones.LeftArmRig.GetComponent<ChainIKConstraint>());
+        var leftArmConstraint = bones.LeftArmRig.gameObject.AddComponent<TwoBoneIKConstraint>();
+
+        leftArmConstraint.data.root = bones.LeftUpperArm;
+        leftArmConstraint.data.mid = bones.LeftLowerArm;
+        leftArmConstraint.data.tip = bones.LeftHand;
+        leftArmConstraint.data.target = bones.LeftArmRigTarget;
+        leftArmConstraint.data.hint = bones.LeftArmRigHint;
+        leftArmConstraint.data.hintWeight = 1;
+        leftArmConstraint.data.targetRotationWeight = 1;
+        leftArmConstraint.data.targetPositionWeight = 1;
+
+        fullRigFollow.leftHand = new IKRigFollowVRRig.VRMap()
+        {
+            ikTarget = bones.LeftArmRigTarget,
+            vrTarget = leftHandVRTarget.transform,
+            trackingPositionOffset = Vector3.zero,
+            trackingRotationOffset = Vector3.zero
+        };
+
+        // Setting up the right arm
+
+        bones.RightArmRigHint.localPosition = new Vector3(12.5f, -2f, -1f);
+
+        // Disable built-in constraints since they don't support hints (fucks up the elbows)
+        Destroy(bones.RightArmRig.GetComponent<ChainIKConstraint>());
+        var rightArmConstraint = bones.RightArmRig.gameObject.AddComponent<TwoBoneIKConstraint>();
+
+        rightArmConstraint.data.root = bones.RightUpperArm;
+        rightArmConstraint.data.mid = bones.RightLowerArm;
+        rightArmConstraint.data.tip = bones.RightHand;
+        rightArmConstraint.data.target = bones.RightArmRigTarget;
+        rightArmConstraint.data.hint = bones.RightArmRigHint;
+        rightArmConstraint.data.hintWeight = 1;
+        rightArmConstraint.data.targetRotationWeight = 1;
+        rightArmConstraint.data.targetPositionWeight = 1;
+
+        fullRigFollow.rightHand = new IKRigFollowVRRig.VRMap()
+        {
+            ikTarget = bones.RightArmRigTarget,
+            vrTarget = rightHandVRTarget.transform,
+            trackingPositionOffset = Vector3.zero,
+            trackingRotationOffset = Vector3.zero
+        };
+
+        fullRigFollow.headBodyPositionOffset = new Vector3(0, 0, 0);
+
+        GetComponentInChildren<RigBuilder>().Build();
+    }
+
+    private void Sprint_performed(InputAction.CallbackContext obj)
+    {
+        if (!obj.performed)
+            return;
+
+        isSprinting = !isSprinting;
+    }
+
+    private void OnDestroy()
+    {
+        Actions.Instance["Controls/Sprint"].performed -= Sprint_performed;
+        Actions.Instance["Controls/Reset Height"].performed -= ResetHeight_performed;
+    }
+
+    private void ResetHeight_performed(InputAction.CallbackContext obj)
+    {
+        if (obj.performed)
             ResetHeight();
+    }
 
-            // Set up item holders
-            var rightHandTarget = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/shoulder.R/arm.R_upper/arm.R_lower/hand.R");
-            var leftHandTarget = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/shoulder.L/arm.L_upper/arm.L_lower/hand.L");
+    private void Update()
+    {
+        var movement = mainCamera.transform.localPosition - lastFrameHMDPosition;
+        movement.y = 0;
 
-            var rightHolder = new GameObject("Right Hand Item Holder");
-            var leftHolder = new GameObject("Left Hand Item Holder");
-
-            rightItemHolder = rightHolder.transform;
-            rightItemHolder.SetParent(rightHandTarget, false);
-            rightItemHolder.localPosition = new Vector3(-0.002f, 0.036f, -0.042f);
-            rightItemHolder.localEulerAngles = new Vector3(356.3837f, 357.6979f, 0.1453f);
-
-            leftItemHolder = leftHolder.transform;
-            leftItemHolder.SetParent(leftHandTarget, false);
-            leftItemHolder.localPosition = new Vector3(0.018f, 0.045f, -0.042f);
-            leftItemHolder.localEulerAngles = new Vector3(360f - 356.3837f, 357.6979f, 0.1453f);
-
-            // Set up finger curlers
-            rightFingerCurler = new VRFingerCurler(rightHandTarget, false);
-            leftFingerCurler = new VRFingerCurler(leftHandTarget, true);
-
-            StartCoroutine(RebuildRig());
-
-            Logger.LogDebug("Initialized XR Rig");
-        }
-
-        private IEnumerator RebuildRig()
+        // Make sure player is facing towards the interacted object and that they're not sprinting
+        if (!wasInSpecialAnimation && playerController.inSpecialInteractAnimation && playerController.currentTriggerInAnimationWith?.playerPositionNode)
         {
-            RebuildingRig = true;
-
-            // Temporarily disable animation controller
-            var animator = GetComponentInChildren<Animator>();
-            animator.runtimeAnimatorController = null;
-
-            // Disable target movement by IK
-            GetComponentsInChildren<IKRigFollowVRRig>().Do(follow => follow.enabled = false);
-
-            yield return null;
-
-            // ARMS ONLY RIG
-
-            // Set up rigging
-            var model = Find("ScavengerModel/metarig/ScavengerModelArmsOnly", true).gameObject;
-            var modelMetarig = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig", true);
-
-            Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/RigArms", true);
-
-            var rigFollow = model.GetComponent<IKRigFollowVRRig>() ?? model.AddComponent<IKRigFollowVRRig>();
-            rigFollow.enabled = false;
-
-            // Setting up the head
-            rigFollow.head = mainCamera.transform;
-
-            // Setting up the right arm
-
-            var rightArmTarget = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/RigArms/RightArm/ArmsRightArm_target");
-
-            rightArmTarget.localPosition = new Vector3(2.271f, 1.800556f, 1.008003f);
-            rightArmTarget.localEulerAngles = new Vector3(180, 0, -78.54772f);
-
-            rigFollow.rightHand = new IKRigFollowVRRig.VRMap()
-            {
-                ikTarget = rightArmTarget.transform,
-                vrTarget = rightHandVRTarget.transform,
-                trackingPositionOffset = Vector3.zero,
-                trackingRotationOffset = Vector3.zero
-            };
-
-            // Setting up the left arm
-
-            var leftArmTarget = Find("ScavengerModel/metarig/ScavengerModelArmsOnly/metarig/spine.003/RigArms/LeftArm/ArmsLeftArm_target");
-            rigFollow.leftHand = new IKRigFollowVRRig.VRMap()
-            {
-                ikTarget = leftArmTarget.transform,
-                vrTarget = leftHandVRTarget.transform,
-                trackingPositionOffset = Vector3.zero,
-                trackingRotationOffset = Vector3.zero
-            };
-
-            // This one is pretty hit or miss, sometimes y needs to be -0.2f, other times it needs to be -2.25f
-            rigFollow.headBodyPositionOffset = new Vector3(0, -0.2f, 0);
-
-            // Disable badges
-            Find("ScavengerModel/metarig/spine/spine.001/spine.002/spine.003/LevelSticker").gameObject.SetActive(false);
-            Find("ScavengerModel/metarig/spine/spine.001/spine.002/spine.003/BetaBadge").gameObject.SetActive(false);
-
-            // FULL BODY RIG
-
-            // Set up rigging
-            var fullModel = Find("ScavengerModel", true).gameObject;
-            var fullModelMetarig = Find("ScavengerModel/metarig", true);
-
-            var fullRigFollow = fullModel.GetComponent<IKRigFollowVRRig>() ?? fullModel.AddComponent<IKRigFollowVRRig>();
-            fullRigFollow.enabled = false;
-
-            // Setting up the right arm
-
-            var fullRightArmTarget = Find("ScavengerModel/metarig/spine/spine.001/spine.002/spine.003/RightArm_target");
-            fullRigFollow.rightHand = new IKRigFollowVRRig.VRMap()
-            {
-                ikTarget = fullRightArmTarget.transform,
-                vrTarget = rightHandVRTarget.transform,
-                trackingPositionOffset = Vector3.zero,
-                trackingRotationOffset = Vector3.zero
-            };
-
-            // Setting up the left arm
-
-            var fullLeftArmTarget = Find("ScavengerModel/metarig/spine/spine.001/spine.002/spine.003/LeftArm_target");
-            fullRigFollow.leftHand = new IKRigFollowVRRig.VRMap()
-            {
-                ikTarget = fullLeftArmTarget.transform,
-                vrTarget = leftHandVRTarget.transform,
-                trackingPositionOffset = Vector3.zero,
-                trackingRotationOffset = Vector3.zero
-            };
-
-            // This one is pretty hit or miss, sometimes y needs to be 0, other times it needs to be -2.25f
-            fullRigFollow.headBodyPositionOffset = new Vector3(0, 0, 0);
-
-            yield return null;
-
-            // Enable target movement by IK
-            GetComponentsInChildren<IKRigFollowVRRig>().Do(follow => follow.enabled = true);
-
-            // Re-enable animation controller
-            animator.runtimeAnimatorController = AssetManager.localVrMetarig;
-
-            RebuildingRig = false;
-        }
-
-        private void Sprint_performed(InputAction.CallbackContext obj)
-        {
-            if (!obj.performed)
-                return;
-
-            isSprinting = !isSprinting;
-        }
-
-        private void OnDestroy()
-        {
-            sprintAction.performed -= Sprint_performed;
-            resetHeightAction.performed -= ResetHeight_performed;
-        }
-
-        private void ResetHeight_performed(InputAction.CallbackContext obj)
-        {
-            if (obj.performed)
-                ResetHeight();
-        }
-
-        private void Update()
-        {
-            var movement = mainCamera.transform.localPosition - lastFrameHMDPosition;
-            movement.y = 0;
-
-            // Make sure player is facing towards the interacted object and that they're not sprinting
-            if (!wasInSpecialAnimation && playerController.inSpecialInteractAnimation)
-            {
-                turningProvider.SetOffset(playerController.currentTriggerInAnimationWith.playerPositionNode.eulerAngles.y - mainCamera.transform.localEulerAngles.y);
-                isSprinting = false;
-            }
-
-            var rotationOffset = playerController.jetpackControls switch
-            {
-                true => Quaternion.Euler(playerController.jetpackTurnCompass.eulerAngles.x, turningProvider.GetRotationOffset(), playerController.jetpackTurnCompass.eulerAngles.z),
-                false => Quaternion.Euler(0, turningProvider.GetRotationOffset(), 0)
-            };
-
-            var movementAccounted = rotationOffset * movement;
-            var cameraPosAccounted = rotationOffset * new Vector3(mainCamera.transform.localPosition.x, 0, mainCamera.transform.localPosition.z);
-
-            if (!wasInSpecialAnimation && playerController.inSpecialInteractAnimation)
-                specialAnimationPositionOffset = new Vector3(-cameraPosAccounted.x * SCALE_FACTOR, 0, -cameraPosAccounted.z * SCALE_FACTOR);
-
-            wasInSpecialAnimation = playerController.inSpecialInteractAnimation;
-
-            // Move player if we're not in special interact animation
-            if (!playerController.inSpecialInteractAnimation)
-                transform.position += new Vector3(movementAccounted.x * SCALE_FACTOR, 0, movementAccounted.z * SCALE_FACTOR);
-
-            // Update rotation offset after adding movement from frame (if not in build mode)
-            if (!ShipBuildModeManager.Instance.InBuildMode && !playerController.inSpecialInteractAnimation)
-                turningProvider.Update();
-
-            var lastOriginPos = xrOrigin.position;
-
-            // If we are in special animation allow 6 DOF but don't update player position
-            if (!playerController.inSpecialInteractAnimation)
-                xrOrigin.position = new Vector3(transform.position.x - cameraPosAccounted.x * SCALE_FACTOR, transform.position.y, transform.position.z - cameraPosAccounted.z * SCALE_FACTOR);
-            else
-                xrOrigin.position = transform.position + specialAnimationPositionOffset;
-
-            // Check for roomscale crouching
-            float realCrouch = mainCamera.transform.localPosition.y / realHeight;
-            bool roomCrouch = realCrouch < 0.5f;
-
-            if (roomCrouch != isRoomCrouching)
-            {
-                playerController.Crouch(roomCrouch);
-                isRoomCrouching = roomCrouch;
-            }
-
-            // Apply crouch offset (don't offset if roomscale)
-            crouchOffset = Mathf.Lerp(crouchOffset, !isRoomCrouching && playerController.isCrouching ? -1 : 0, 0.2f);
-
-            // Apply floor offset and sinking value
-            xrOrigin.position += new Vector3(0, cameraFloorOffset + crouchOffset - playerController.sinkingValue * 2.5f, 0);
-            xrOrigin.rotation = rotationOffset;
-            xrOrigin.localScale = Vector3.one * SCALE_FACTOR;
-
-            //Logger.LogDebug($"{transform.position} {xrOrigin.position} {leftHandVRTarget.transform.position} {rightHandVRTarget.transform.position} {cameraFloorOffset} {cameraPosAccounted}");
-
-            if ((xrOrigin.position - lastOriginPos).sqrMagnitude > sqrMoveThreshold) // player moved
-                // Rotate body sharply but still smoothly
-                TurnBodyToCamera(turnWeightSharp);
-            else if (!playerController.inSpecialInteractAnimation && GetBodyToCameraAngle() is var angle && angle > turnAngleThreshold)
-                // Rotate body as smoothly as possible but prevent 360 deg head twists on quick rotations
-                TurnBodyToCamera(turnWeightSharp * Mathf.InverseLerp(turnAngleThreshold, 170f, angle));
-
-            if (!playerController.inSpecialInteractAnimation)
-                lastFrameHMDPosition = mainCamera.transform.localPosition;
-
-            // Set sprint
-            if (Plugin.Config.ToggleSprint.Value)
-            {
-                if (playerController.isExhausted)
-                    isSprinting = false;
-
-                var move = IngamePlayerSettings.Instance.playerInput.actions.FindAction("Move").ReadValue<Vector2>();
-                if (move.x == 0 && move.y == 0 && stopSprintingCoroutine == null && isSprinting)
-                    stopSprintingCoroutine = StartCoroutine(StopSprinting());
-                else if ((move.x != 0 || move.y != 0) && stopSprintingCoroutine != null)
-                {
-                    StopCoroutine(stopSprintingCoroutine);
-                    stopSprintingCoroutine = null;
-                }
-
-                PlayerControllerB_Sprint_Patch.sprint = !isRoomCrouching && isSprinting ? 1 : 0;
-            }
-            else
-                PlayerControllerB_Sprint_Patch.sprint = !isRoomCrouching && sprintAction.IsPressed() ? 1 : 0;
-
-            if (Plugin.Config.EnableCustomCamera.Value)
-            {
-                customCamera.transform.position = mainCamera.transform.position;
-                customCamera.transform.rotation = Quaternion.Lerp(customCamera.transform.rotation, mainCamera.transform.rotation, Mathf.Clamp(Plugin.Config.CustomCameraLerpFactor.Value, 0.01f, 1f));
-            }
-
-            DNet.BroadcastRig(new DNet.Rig()
-            {
-                leftHandPosition = leftController.transform.localPosition,
-                leftHandEulers = leftController.transform.localEulerAngles,
-                leftHandFingers = leftFingerCurler.GetCurls(),
-
-                rightHandPosition = rightController.transform.localPosition,
-                rightHandEulers = rightController.transform.localEulerAngles,
-                rightHandFingers = rightFingerCurler.GetCurls(),
-
-                cameraEulers = mainCamera.transform.eulerAngles,
-                cameraPosAccounted = cameraPosAccounted,
-
-                crouchState = (playerController.isCrouching, isRoomCrouching) switch
-                {
-                    (true, true) => CrouchState.Roomscale,
-                    (true, false) => CrouchState.Button,
-                    (false, _) => CrouchState.None
-                },
-                rotationOffset = rotationOffset.eulerAngles.y,
-                cameraFloorOffset = cameraFloorOffset,
-            });
-        }
-
-        private void LateUpdate()
-        {
-            var angles = mainCamera.transform.eulerAngles;
-            var deltaAngles = new Vector3(
-                Mathf.DeltaAngle(lastFrameHMDRotation.x, angles.x),
-                Mathf.DeltaAngle(lastFrameHMDRotation.y, angles.y),
-                Mathf.DeltaAngle(lastFrameHMDRotation.z, angles.z)
-            );
-
-            StartOfRound.Instance.playerLookMagnitudeThisFrame = deltaAngles.magnitude * Time.deltaTime * 0.1f;
-
-            lastFrameHMDRotation = angles;
-
-            // Update tracked finger curls after animator update
-            leftFingerCurler?.Update();
-
-            if (!playerController.isHoldingObject)
-            {
-                rightFingerCurler?.Update();
-            }
-        }
-
-        public void OnDeath()
-        {
-            isDead = true;
-
-            VibrateController(XRNode.LeftHand, 1f, 1f);
-            VibrateController(XRNode.RightHand, 1f, 1f);
-
-            if (Plugin.Config.EnableCustomCamera.Value)
-                customCamera.enabled = false;
-
-            SwitchToUICamera();
-
-            hud.UpdateHUDForSpectatorCam();
-        }
-
-        public void OnRevive()
-        {
-            isDead = false;
-
-            if (Plugin.Config.EnableCustomCamera.Value)
-                customCamera.enabled = true;
-
-            SwitchToGameCamera();
-            playerController.quickMenuManager.CloseQuickMenu();
-            hud.RevertHUDFromSpectatorCam();
-        }
-
-        public void OnPauseMenuOpened()
-        {
-            Logger.LogDebug("Opened pause menu");
-
-            if (!isDead)
-            {
-                // Make sure keyboard is closed when pause menu opens
-                hud.menuKeyboard.Close();
-
-                SwitchToUICamera();
-            }
-
-            mainHand.enabled = false;
-            leftControllerRayInteractor.GetComponent<XRInteractorLineVisual>().enabled = true;
-            rightControllerRayInteractor.GetComponent<XRInteractorLineVisual>().enabled = true;
-
-            leftController.transform.SetParent(uiCameraAnchor, false);
-            rightController.transform.SetParent(uiCameraAnchor, false);
-            rightController.GetComponent<VRController>().HideDebugLineRenderer();
-        }
-
-        public void OnPauseMenuClosed()
-        {
-            Logger.LogDebug("Closed pause menu");
-
-            hud.menuKeyboard.Close();
-
-            if (!isDead)
-                SwitchToGameCamera();
-
-            mainHand.enabled = true;
-            leftControllerRayInteractor.GetComponent<XRInteractorLineVisual>().enabled = false;
-            rightControllerRayInteractor.GetComponent<XRInteractorLineVisual>().enabled = false;
-
-            leftController.transform.SetParent(xrOrigin, false);
-            rightController.transform.SetParent(xrOrigin, false);
-            rightController.GetComponent<VRController>().ShowDebugLineRenderer();
-        }
-
-        public void OnEnterTerminal()
-        {
-            hud.terminalKeyboard.PresentKeyboard();
-
-            leftControllerRayInteractor.GetComponent<XRInteractorLineVisual>().enabled = true;
-            rightControllerRayInteractor.GetComponent<XRInteractorLineVisual>().enabled = true;
-
-            rightController.GetComponent<VRController>().HideDebugLineRenderer();
-        }
-
-        public void OnExitTerminal()
-        {
-            if (hud.terminalKeyboard.isActiveAndEnabled)
-                hud.terminalKeyboard.Close();
-
-            leftControllerRayInteractor.GetComponent<XRInteractorLineVisual>().enabled = false;
-            rightControllerRayInteractor.GetComponent<XRInteractorLineVisual>().enabled = false;
-
-            rightController.GetComponent<VRController>().ShowDebugLineRenderer();
-        }
-
-        public void ResetHeight()
-        {
-            StartCoroutine(ResetHeightRoutine());
-        }
-
-        private IEnumerator ResetHeightRoutine()
-        {
-            yield return new WaitForSeconds(0.2f);
-
-            realHeight = mainCamera.transform.localPosition.y * SCALE_FACTOR;
-            var targetHeight = 2.3f;
-
-            cameraFloorOffset = targetHeight - realHeight;
-        }
-
-        private IEnumerator StopSprinting()
-        {
-            yield return new WaitForSeconds(Plugin.Config.MovementSprintToggleCooldown.Value);
-
+            turningProvider.SetOffset(playerController.currentTriggerInAnimationWith.playerPositionNode.eulerAngles.y - mainCamera.transform.localEulerAngles.y);
             isSprinting = false;
-            stopSprintingCoroutine = null;
         }
 
-        private void SwitchToUICamera()
+        var rotationOffset = playerController.jetpackControls switch
         {
-            var hdUICamera = uiCamera.GetComponent<HDAdditionalCameraData>();
-            var hdMainCamera = mainCamera.GetComponent<HDAdditionalCameraData>();
+            true => Quaternion.Euler(playerController.jetpackTurnCompass.eulerAngles.x, turningProvider.GetRotationOffset(), playerController.jetpackTurnCompass.eulerAngles.z),
+            false => Quaternion.Euler(0, turningProvider.GetRotationOffset(), 0)
+        };
 
-            hdMainCamera.xrRendering = false;
-            mainCamera.stereoTargetEye = StereoTargetEyeMask.None;
-            mainCamera.depth = uiCamera.depth - 1;
-            mainCamera.enabled = false;
+        var movementAccounted = rotationOffset * movement;
+        var cameraPosAccounted = rotationOffset * new Vector3(mainCamera.transform.localPosition.x, 0, mainCamera.transform.localPosition.z);
 
-            hdUICamera.xrRendering = true;
-            uiCamera.stereoTargetEye = StereoTargetEyeMask.Both;
-            uiCamera.nearClipPlane = 0.01f;
-            uiCamera.farClipPlane = 15f;
-            uiCamera.enabled = true;
+        if (!wasInSpecialAnimation && playerController.inSpecialInteractAnimation)
+            specialAnimationPositionOffset = new Vector3(-cameraPosAccounted.x * SCALE_FACTOR, 0, -cameraPosAccounted.z * SCALE_FACTOR);
 
-            FindObjectsOfType<CanvasTransformFollow>().Do(follow => follow.ResetPosition(true));
+        if (!wasInEnemyAnimation && playerController.inAnimationWithEnemy)
+        {
+            var direction = playerController.inAnimationWithEnemy.transform.position - transform.position;
+            var rotation = Quaternion.LookRotation(direction, Vector3.up);
 
-            if (!Plugin.Config.CameraResolutionGlobal.Value)
-                XRSettings.eyeTextureResolutionScale = 1;
+            turningProvider.SetOffset(rotation.eulerAngles.y - mainCamera.transform.localEulerAngles.y);
         }
 
-        private void SwitchToGameCamera()
+        wasInSpecialAnimation = playerController.inSpecialInteractAnimation;
+        wasInEnemyAnimation = playerController.inAnimationWithEnemy != null;
+
+        if (playerController.inSpecialInteractAnimation)
+            totalMovementSinceLastMove = Vector3.zero;
+        else
+            totalMovementSinceLastMove += movementAccounted;
+
+        var controllerMovement = Actions.Instance["Movement/Move"].ReadValue<Vector2>();
+        bool moved = controllerMovement.x > 0 || controllerMovement.y > 0;
+        var hit = UnityEngine.Physics.OverlapBox(mainCamera.transform.position, Vector3.one * 0.1f, Quaternion.identity, CAMERA_CLIP_MASK)
+            .Where(c => !c.isTrigger)
+            .Where(c => c.transform != transform.Find("Misc/Cube")) // Idk what this cube is used for but for some reason it starts colliding if you are not the host
+            .Count() > 0;
+
+        // Move player if we're not in special interact animation
+        if (!playerController.inSpecialInteractAnimation && (totalMovementSinceLastMove.sqrMagnitude > 0.25f || hit || moved))
         {
-            var hdUICamera = uiCamera.GetComponent<HDAdditionalCameraData>();
-            var hdMainCamera = mainCamera.GetComponent<HDAdditionalCameraData>();
-
-            hdUICamera.xrRendering = false;
-            uiCamera.stereoTargetEye = StereoTargetEyeMask.None;
-            uiCamera.enabled = false;
-
-            hdMainCamera.xrRendering = true;
-            mainCamera.stereoTargetEye = StereoTargetEyeMask.Both;
-            mainCamera.depth = uiCamera.depth + 1;
-            mainCamera.enabled = true;
-
-            if (!Plugin.Config.CameraResolutionGlobal.Value)
-                XRSettings.eyeTextureResolutionScale = Plugin.Config.CameraResolution.Value;
+            // Also move down a small amount to prevent somehow ungrounding the character controller
+            characterController.Move(new Vector3(totalMovementSinceLastMove.x * SCALE_FACTOR, -0.0025f, totalMovementSinceLastMove.z * SCALE_FACTOR));
+            totalMovementSinceLastMove = Vector3.zero;
         }
 
-        private void TurnBodyToCamera(float turnWeight)
+        // Update rotation offset after adding movement from frame (if not in build mode)
+        if (!ShipBuildModeManager.Instance.InBuildMode && !playerController.inSpecialInteractAnimation)
+            turningProvider.Update();
+
+        var lastOriginPos = xrOrigin.position;
+
+        // If we are in special animation allow 6 DOF but don't update player position
+        if (!playerController.inSpecialInteractAnimation)
+            xrOrigin.position = new Vector3(
+                transform.position.x + (totalMovementSinceLastMove.x * SCALE_FACTOR) - (cameraPosAccounted.x * SCALE_FACTOR),
+                transform.position.y,
+                transform.position.z + (totalMovementSinceLastMove.z * SCALE_FACTOR) - (cameraPosAccounted.z * SCALE_FACTOR)
+            );
+        else
+            xrOrigin.position = transform.position + specialAnimationPositionOffset;
+
+        // Move player model
+        var point = transform.InverseTransformPoint(mainCamera.transform.position);
+        bones.Model.localPosition = new Vector3(point.x, 0, point.z);
+
+        // Check for roomscale crouching
+        float realCrouch = mainCamera.transform.localPosition.y / realHeight;
+        bool roomCrouch = realCrouch < 0.5f;
+
+        if (roomCrouch != isRoomCrouching)
         {
-            var newRotation = Quaternion.Euler(transform.rotation.eulerAngles.x, mainCamera.transform.eulerAngles.y, transform.rotation.eulerAngles.z);
-            transform.rotation = Quaternion.Lerp(transform.rotation, newRotation, Time.deltaTime * turnWeight);
+            playerController.Crouch(roomCrouch);
+            isRoomCrouching = roomCrouch;
         }
 
-        private float GetBodyToCameraAngle()
+        // Apply crouch offset (don't offset if roomscale)
+        crouchOffset = Mathf.Lerp(crouchOffset, !isRoomCrouching && playerController.isCrouching ? -1 : 0, 0.2f);
+
+        // Apply floor offset and sinking value
+        xrOrigin.position += new Vector3(0, cameraFloorOffset + crouchOffset - playerController.sinkingValue * 2.5f, 0);
+        xrOrigin.rotation = rotationOffset;
+        xrOrigin.localScale = Vector3.one * SCALE_FACTOR;
+
+        //Logger.LogDebug($"{transform.position} {xrOrigin.position} {leftHandVRTarget.transform.position} {rightHandVRTarget.transform.position} {cameraFloorOffset} {cameraPosAccounted}");
+
+        if ((xrOrigin.position - lastOriginPos).sqrMagnitude > sqrMoveThreshold) // player moved
+                                                                                 // Rotate body sharply but still smoothly
+            TurnBodyToCamera(turnWeightSharp);
+        else if (!playerController.inSpecialInteractAnimation && GetBodyToCameraAngle() is var angle && angle > turnAngleThreshold)
+            // Rotate body as smoothly as possible but prevent 360 deg head twists on quick rotations
+            TurnBodyToCamera(turnWeightSharp * Mathf.InverseLerp(turnAngleThreshold, 170f, angle));
+
+        if (!playerController.inSpecialInteractAnimation)
+            lastFrameHMDPosition = mainCamera.transform.localPosition;
+
+        // Set sprint
+        if (Plugin.Config.ToggleSprint.Value)
         {
-            return Quaternion.Angle(Quaternion.Euler(0, transform.eulerAngles.y, 0), Quaternion.Euler(0, mainCamera.transform.eulerAngles.y, 0));
-        }
+            if (playerController.isExhausted)
+                isSprinting = false;
 
-        private Transform Find(string name, bool resetLocalPosition = false)
-        {
-            var transform = base.transform.Find(name);
-            if (transform == null) return null;
-
-            if (resetLocalPosition)
-                transform.localPosition = Vector3.zero;
-
-            return transform;
-        }
-
-        public static void VibrateController(XRNode hand, float duration, float amplitude)
-        {
-            UnityEngine.XR.InputDevice device = InputDevices.GetDeviceAtXRNode(hand);
-
-            if (device != null && device.TryGetHapticCapabilities(out HapticCapabilities capabilities) && capabilities.supportsImpulse)
+            var move = playerController.isCrouching ? Vector2.zero : Actions.Instance["Movement/Move"].ReadValue<Vector2>();
+            if (move.x == 0 && move.y == 0 && stopSprintingCoroutine == null && isSprinting)
+                stopSprintingCoroutine = StartCoroutine(StopSprinting());
+            else if ((move.x != 0 || move.y != 0) && stopSprintingCoroutine != null)
             {
-                device.SendHapticImpulse(0, amplitude, duration);
+                StopCoroutine(stopSprintingCoroutine);
+                stopSprintingCoroutine = null;
             }
+
+
+            PlayerControllerB_Sprint_Patch.sprint = !isRoomCrouching && !playerController.isCrouching && isSprinting ? 1 : 0;
+        }
+        else
+            PlayerControllerB_Sprint_Patch.sprint = !isRoomCrouching && Actions.Instance["Controls/Sprint"].IsPressed() ? 1 : 0;
+
+        DNet.BroadcastRig(new DNet.Rig()
+        {
+            leftHandPosition = leftController.transform.localPosition,
+            leftHandEulers = leftController.transform.localEulerAngles,
+            leftHandFingers = LeftFingerCurler.GetCurls(),
+
+            rightHandPosition = rightController.transform.localPosition,
+            rightHandEulers = rightController.transform.localEulerAngles,
+            rightHandFingers = RightFingerCurler.GetCurls(),
+
+            cameraEulers = mainCamera.transform.eulerAngles,
+            cameraPosAccounted = cameraPosAccounted,
+            modelOffset = totalMovementSinceLastMove,
+
+            crouchState = (playerController.isCrouching, isRoomCrouching) switch
+            {
+                (true, true) => CrouchState.Roomscale,
+                (true, false) => CrouchState.Button,
+                (false, _) => CrouchState.None
+            },
+            rotationOffset = rotationOffset.eulerAngles.y,
+            cameraFloorOffset = cameraFloorOffset,
+        });
+    }
+
+    private void LateUpdate()
+    {
+        var angles = mainCamera.transform.eulerAngles;
+        var deltaAngles = new Vector3(
+            Mathf.DeltaAngle(lastFrameHMDRotation.x, angles.x),
+            Mathf.DeltaAngle(lastFrameHMDRotation.y, angles.y),
+            Mathf.DeltaAngle(lastFrameHMDRotation.z, angles.z)
+        );
+
+        StartOfRound.Instance.playerLookMagnitudeThisFrame = deltaAngles.magnitude * Time.deltaTime * 0.1f;
+
+        lastFrameHMDRotation = angles;
+
+        // Update tracked finger curls after animator update
+        LeftFingerCurler?.Update();
+
+        if (!playerController.isHoldingObject)
+        {
+            RightFingerCurler?.Update();
         }
     }
 
-    internal class IKRigFollowVRRig : MonoBehaviour
+    public void EnableInteractorVisuals(bool enabled = true)
     {
-        [Serializable]
-        public class VRMap
-        {
-            public Transform vrTarget;
-            public Transform ikTarget;
-            public Vector3 trackingPositionOffset;
-            public Vector3 trackingRotationOffset;
+        leftControllerRayInteractor.GetComponent<XRInteractorLineVisual>().enabled = enabled;
+        rightControllerRayInteractor.GetComponent<XRInteractorLineVisual>().enabled = enabled;
+    }
 
-            public void Map()
-            {
-                ikTarget.position = vrTarget.TransformPoint(trackingPositionOffset);
-                ikTarget.rotation = vrTarget.rotation * Quaternion.Euler(trackingRotationOffset);
-            }
+    public void ResetHeight()
+    {
+        StartCoroutine(ResetHeightRoutine());
+    }
+
+    private IEnumerator ResetHeightRoutine()
+    {
+        yield return new WaitForSeconds(0.2f);
+
+        realHeight = mainCamera.transform.localPosition.y * SCALE_FACTOR;
+        var targetHeight = 2.3f;
+
+        cameraFloorOffset = targetHeight - realHeight;
+    }
+
+    private IEnumerator StopSprinting()
+    {
+        yield return new WaitForSeconds(Plugin.Config.MovementSprintToggleCooldown.Value);
+
+        isSprinting = false;
+        stopSprintingCoroutine = null;
+    }
+
+    private void TurnBodyToCamera(float turnWeight)
+    {
+        var newRotation = Quaternion.Euler(transform.rotation.eulerAngles.x, mainCamera.transform.eulerAngles.y, transform.rotation.eulerAngles.z);
+        transform.rotation = Quaternion.Lerp(transform.rotation, newRotation, Time.deltaTime * turnWeight);
+    }
+
+    private float GetBodyToCameraAngle()
+    {
+        return Quaternion.Angle(Quaternion.Euler(0, transform.eulerAngles.y, 0), Quaternion.Euler(0, mainCamera.transform.eulerAngles.y, 0));
+    }
+
+    private Transform Find(string name, bool resetLocalPosition = false)
+    {
+        var transform = base.transform.Find(name);
+        if (transform == null) return null;
+
+        if (resetLocalPosition)
+            transform.localPosition = Vector3.zero;
+
+        return transform;
+    }
+}
+
+internal class IKRigFollowVRRig : MonoBehaviour
+{
+    [Serializable]
+    public class VRMap
+    {
+        public Transform vrTarget;
+        public Transform ikTarget;
+        public Vector3 trackingPositionOffset;
+        public Vector3 trackingRotationOffset;
+
+        public void Map()
+        {
+            ikTarget.position = vrTarget.TransformPoint(trackingPositionOffset);
+            ikTarget.rotation = vrTarget.rotation * Quaternion.Euler(trackingRotationOffset);
+        }
+    }
+
+    public Transform head;
+    public VRMap leftHand;
+    public VRMap rightHand;
+
+    public Vector3 headBodyPositionOffset;
+
+    private void LateUpdate()
+    {
+        if (head != null)
+        {
+            transform.position = head.position + headBodyPositionOffset;
         }
 
-        public Transform head;
-        public VRMap leftHand;
-        public VRMap rightHand;
-
-        public Vector3 headBodyPositionOffset;
-
-        private void LateUpdate()
-        {
-            if (head != null)
-            {
-                transform.position = head.position + headBodyPositionOffset;
-            }
-
-            leftHand.Map();
-            rightHand.Map();
-        }
+        leftHand.Map();
+        rightHand.Map();
     }
 }

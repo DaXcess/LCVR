@@ -5,53 +5,52 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace LCVR.UI
+namespace LCVR.UI;
+
+internal class Keyboard : MonoBehaviour
 {
-    internal class Keyboard : MonoBehaviour
+    private readonly Dictionary<TMP_InputField, UnityAction<string>> inputFields = [];
+
+    public NonNativeKeyboard keyboard;
+
+    private void Awake()
     {
-        private readonly Dictionary<TMP_InputField, UnityAction<string>> inputFields = [];
+        StartCoroutine(PopulateInputsRoutine());
+    }
 
-        public NonNativeKeyboard keyboard;
-
-        private void Awake()
+    private IEnumerator PopulateInputsRoutine()
+    {
+        while (true)
         {
-            StartCoroutine(PopulateInputsRoutine());
+            PopulateInputs();
+
+            yield return new WaitForSeconds(0.5f);
         }
+    }
 
-        private IEnumerator PopulateInputsRoutine()
+    private void PopulateInputs()
+    {
+        var inputs = FindObjectsOfType<TMP_InputField>(true);
+
+        foreach (var input in inputs)
         {
-            while (true)
+            if (inputFields.ContainsKey(input))
+                continue;
+
+            var action = new UnityAction<string>((_) =>
             {
-                PopulateInputs();
+                keyboard.InputField = input;
+                keyboard.PresentKeyboard();
+            });
 
-                yield return new WaitForSeconds(0.5f);
-            }
+            inputFields.Add(input, action);
+            input.onSelect.AddListener(action);
         }
+    }
 
-        private void PopulateInputs()
-        {
-            var inputs = FindObjectsOfType<TMP_InputField>(true);
-
-            foreach (var input in inputs)
-            {
-                if (inputFields.ContainsKey(input))
-                    continue;
-
-                var action = new UnityAction<string>((_) =>
-                {
-                    keyboard.InputField = input;
-                    keyboard.PresentKeyboard();
-                });
-
-                inputFields.Add(input, action);
-                input.onSelect.AddListener(action);
-            }
-        }
-
-        private void OnDestroy()
-        {
-            foreach (var kv in inputFields)
-                kv.Key.onSelect.RemoveListener(kv.Value);
-        }
+    private void OnDestroy()
+    {
+        foreach (var kv in inputFields)
+            kv.Key.onSelect.RemoveListener(kv.Value);
     }
 }

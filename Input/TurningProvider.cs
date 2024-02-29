@@ -1,27 +1,26 @@
-﻿namespace LCVR.Input
+﻿namespace LCVR.Input;
+
+internal interface TurningProvider
 {
-    internal interface TurningProvider
+    void Update();
+
+    void SetOffset(float offset);
+
+    float GetRotationOffset();
+}
+
+public class NullTurningProvider : TurningProvider
+{
+    public float GetRotationOffset()
     {
-        void Update();
-
-        void SetOffset(float offset);
-
-        float GetRotationOffset();
+        return 0;
     }
 
-    public class NullTurningProvider : TurningProvider
+    public void SetOffset(float _)
+    { 
+    }
+
+    public void Update()
     {
-        public float GetRotationOffset()
-        {
-            return 0;
-        }
-
-        public void SetOffset(float _)
-        { 
-        }
-
-        public void Update()
-        {
-        }
     }
 }

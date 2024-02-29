@@ -1,4 +1,4 @@
-# Controls
+# Default Controls
 
 This VR mod divides the controls into two categories: **Lethal Company Controls** and **VR Controls**. The reason behind this is how they are implemented. **LC Controls** are replacing the built in controls of the game, by overriding the player input controller with them. The **VR Controls** however are exclusively used within the mod, and are not injected into the game's built in controls.
 
@@ -36,13 +36,14 @@ This VR mod divides the controls into two categories: **Lethal Company Controls*
 
 ## Default VR Controls
 
-|    Action    | Binding           | Notes                                                                                   |
-| :----------: | ----------------- | --------------------------------------------------------------------------------------- |
-| Reset Height | Y                 | Recalculates the offset between your headset and the floor                              |
-|     Grab     | R Grip Button     | The grab and interact button for world interactables                                    |
-|     Turn     | R Joystick X Axis | If you have snap/smooth turning enabled, this will determine the direction to rotate in |
-|    Pivot     | R Joystick        | Spectator camera pivoting and build mode prop rotating                                  |
-|    Sprint    | L Joystick Button | Must either be held down or toggles based on the configuration that is used             |
+|    Action     | Binding           | Notes                                                                                   |
+| :-----------: | ----------------- | --------------------------------------------------------------------------------------- |
+| Reset Height  | Y                 | Recalculates the offset between your headset and the floor                              |
+|   Interact    | R Grip Button     | The grab and interact button for world interactables                                    |
+| Interact Left | L Grip Button     | The grab and interact button for world interactables (left hand)                        |
+|     Turn      | R Joystick X Axis | If you have snap/smooth turning enabled, this will determine the direction to rotate in |
+|     Pivot     | R Joystick        | Spectator camera pivoting and build mode prop rotating                                  |
+|    Sprint     | L Joystick Button | Must either be held down or toggles based on the configuration that is used             |
 
 # How to change controls
 

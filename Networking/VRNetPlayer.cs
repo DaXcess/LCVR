@@ -1,166 +1,242 @@
 ﻿using GameNetcodeStuff;
 using LCVR.Input;
+using LCVR.Player;
 using UnityEngine;
-
+using UnityEngine.Animations.Rigging;
 using CrouchState = LCVR.Networking.DNet.Rig.CrouchState;
 
-namespace LCVR.Networking
+namespace LCVR.Networking;
+
+public class VRNetPlayer : MonoBehaviour
 {
-    public class VRNetPlayer : MonoBehaviour
+    private PlayerControllerB playerController;
+    private Bones bones;
+
+    private ChainIKConstraintData originalLeftArmConstraintData;
+    private ChainIKConstraintData originalRightArmConstraintData;
+
+    private Transform xrOrigin;
+    private Transform leftController;
+    private Transform rightController;
+    private Transform leftHandVRTarget;
+    private Transform rightHandVRTarget;
+
+    public Transform leftItemHolder;
+    public Transform rightItemHolder;
+
+    public FingerCurler leftFingerCurler;
+    public FingerCurler rightFingerCurler;
+
+    public Transform camera;
+
+    private float cameraFloorOffset;
+    private float rotationOffset;
+
+    private Vector3 cameraPosAccounted;
+    private Vector3 modelOffset;
+
+    private CrouchState crouchState = CrouchState.None;
+    private float crouchOffset;
+
+    public PlayerControllerB PlayerController => playerController;
+    public Bones Bones => bones;
+
+    private void Awake()
     {
-        private PlayerControllerB playerController;
+        playerController = GetComponent<PlayerControllerB>();
+        bones = new Bones(transform);
 
-        public Transform xrOrigin;
-        public Transform leftController;
-        public Transform rightController;
-        public Transform leftHandVRTarget;
-        public Transform rightHandVRTarget;
+        // Because I want to transmit local controller positions and angles (since it's much cleaner)
+        // I decided to somewhat recreate the XR Origin setup so that all the offsets are correct
+        xrOrigin = new GameObject("XR Origin").transform;
+        xrOrigin.localPosition = Vector3.zero;
+        xrOrigin.localEulerAngles = Vector3.zero;
+        xrOrigin.localScale = Vector3.one;
 
-        public Transform leftHandTarget;
-        public Transform rightHandTarget;
+        // Create controller objects & VR targets
+        leftController = new GameObject("Left Controller").transform;
+        rightController = new GameObject("Right Controller").transform;
+        leftHandVRTarget = new GameObject("Left Hand VR Target").transform;
+        rightHandVRTarget = new GameObject("Right Hand VR Target").transform;
 
-        public Transform leftItemHolder;
-        public Transform rightItemHolder;
+        leftController.SetParent(xrOrigin, false);
+        rightController.SetParent(xrOrigin, false);
 
-        public FingerCurler leftFingerCurler;
-        public FingerCurler rightFingerCurler;
+        leftHandVRTarget.SetParent(leftController, false);
+        rightHandVRTarget.SetParent(rightController, false);
 
-        public Transform camera;
+        rightHandVRTarget.localPosition = new Vector3(0.0279f, 0.0353f, -0.0044f);
+        rightHandVRTarget.localEulerAngles = new Vector3(0, 90, 168);
 
-        private float cameraFloorOffset;
-        private float rotationOffset;
+        leftHandVRTarget.localPosition = new Vector3(-0.0279f, 0.0353f, 0.0044f);
+        leftHandVRTarget.localEulerAngles = new Vector3(0, 270, 192);
 
-        private Vector3 cameraPosAccounted;
+        camera = transform.Find("ScavengerModel/metarig/CameraContainer/MainCamera");
 
-        private CrouchState crouchState = CrouchState.None;
-        private float crouchOffset;
+        // Set up item holders
+        var leftHolder = new GameObject("Left Hand Item Holder");
+        var rightHolder = new GameObject("Right Hand Item Holder");
 
-        public bool RebuildingRig { get; private set; } = false;
+        leftItemHolder = leftHolder.transform;
+        leftItemHolder.SetParent(bones.LeftHand, false);
+        leftItemHolder.localPosition = new Vector3(0.018f, 0.045f, -0.042f);
+        leftItemHolder.localEulerAngles = new Vector3(360f - 356.3837f, 357.6979f, 0.1453f);
 
-        private void Awake()
+        rightItemHolder = rightHolder.transform;
+        rightItemHolder.SetParent(bones.RightHand, false);
+        rightItemHolder.localPosition = new Vector3(-0.002f, 0.036f, -0.042f);
+        rightItemHolder.localEulerAngles = new Vector3(356.3837f, 357.6979f, 0.1453f);
+
+        // Set up finger curlers
+        leftFingerCurler = new FingerCurler(bones.LeftHand, true);
+        rightFingerCurler = new FingerCurler(bones.RightHand, false);
+
+        BuildVRRig();
+    }
+
+    private void BuildVRRig()
+    {
+        // Reset player character briefly to allow the RigBuilder to behave properly
+        bones.ResetToPrefabPositions();
+
+        // Setting up the left arm
+
+        bones.LeftArmRigHint.localPosition = new Vector3(-10f, -2f, -1f);
+
+        // Disable built-in constraints since they don't support hints (fucks up the elbows)
+        var originalLeftArmConstraint = bones.LeftArmRig.GetComponent<ChainIKConstraint>();
+        originalLeftArmConstraintData = originalLeftArmConstraint.data;
+        Destroy(originalLeftArmConstraint);
+
+        var leftArmConstraint = bones.LeftArmRig.gameObject.AddComponent<TwoBoneIKConstraint>();
+        leftArmConstraint.data.root = bones.LeftUpperArm;
+        leftArmConstraint.data.mid = bones.LeftLowerArm;
+        leftArmConstraint.data.tip = bones.LeftHand;
+        leftArmConstraint.data.target = bones.LeftArmRigTarget;
+        leftArmConstraint.data.hint = bones.LeftArmRigHint;
+        leftArmConstraint.data.hintWeight = 1;
+        leftArmConstraint.data.targetRotationWeight = 1;
+        leftArmConstraint.data.targetPositionWeight = 1;
+
+        // Setting up the right arm
+
+        bones.RightArmRigHint.localPosition = new Vector3(12.5f, -2f, -1f);
+
+        // Disable built-in constraints since they don't support hints (fucks up the elbows)
+        var originalRightArmConstraint = bones.RightArmRig.GetComponent<ChainIKConstraint>();
+        originalRightArmConstraintData = originalRightArmConstraint.data;
+        Destroy(originalRightArmConstraint);
+
+        var rightArmConstraint = bones.RightArmRig.gameObject.AddComponent<TwoBoneIKConstraint>();
+        rightArmConstraint.data.root = bones.RightUpperArm;
+        rightArmConstraint.data.mid = bones.RightLowerArm;
+        rightArmConstraint.data.tip = bones.RightHand;
+        rightArmConstraint.data.target = bones.RightArmRigTarget;
+        rightArmConstraint.data.hint = bones.RightArmRigHint;
+        rightArmConstraint.data.hintWeight = 1;
+        rightArmConstraint.data.targetRotationWeight = 1;
+        rightArmConstraint.data.targetPositionWeight = 1;
+
+        GetComponentInChildren<RigBuilder>().Build();
+    }
+
+    private void Update()
+    {
+        // Apply crouch offset
+        crouchOffset = Mathf.Lerp(crouchOffset, crouchState switch
         {
-            playerController = GetComponent<PlayerControllerB>();
+            CrouchState.Button => -1,
+            _ => 0,
+        }, 0.2f);
 
-            // Because I want to transmit local controller positions and angles (since it's much cleaner)
-            // I decided to somewhat recreate the XR Origin setup so that all the offsets are correct
-            xrOrigin = new GameObject("XR Origin").transform;
-            xrOrigin.localPosition = Vector3.zero;
-            xrOrigin.localEulerAngles = Vector3.zero;
-            xrOrigin.localScale = Vector3.one;
+        // Apply origin transforms
+        xrOrigin.position = transform.position;
 
-            // Create controller objects & VR targets
-            leftController = new GameObject("Left Controller").transform;
-            rightController = new GameObject("Right Controller").transform;
-            leftHandVRTarget = new GameObject("Left Hand VR Target").transform;
-            rightHandVRTarget = new GameObject("Right Hand VR Target").transform;
+        // If we are in special animation allow 6 DOF but don't update player position
+        if (!playerController.inSpecialInteractAnimation)
+        {
+            xrOrigin.position = new Vector3(
+                transform.position.x + (modelOffset.x * 1.5f) - (cameraPosAccounted.x * 1.5f),
+                transform.position.y,
+                transform.position.z + (modelOffset.z * 1.5f) - (cameraPosAccounted.z * 1.5f)
+            );
 
-            leftController.SetParent(xrOrigin, false);
-            rightController.SetParent(xrOrigin, false);
-
-            leftHandVRTarget.SetParent(leftController, false);
-            rightHandVRTarget.SetParent(rightController, false);
-
-            rightHandVRTarget.localPosition = new Vector3(0.0279f, 0.0353f, -0.0044f);
-            rightHandVRTarget.localEulerAngles = new Vector3(0, 90, 168);
-
-            leftHandVRTarget.localPosition = new Vector3(-0.0279f, 0.0353f, 0.0044f);
-            leftHandVRTarget.localEulerAngles = new Vector3(0, 270, 192);
-
-            leftHandTarget = gameObject.Find("ScavengerModel/metarig/spine/spine.001/spine.002/spine.003/LeftArm_target").transform;
-            rightHandTarget = gameObject.Find("ScavengerModel/metarig/spine/spine.001/spine.002/spine.003/RightArm_target").transform;
-            camera = gameObject.Find("ScavengerModel/metarig/CameraContainer/MainCamera").transform;
-
-            // Set up item holders
-            var rightHandParent = gameObject.Find("ScavengerModel/metarig/spine/spine.001/spine.002/spine.003/shoulder.R/arm.R_upper/arm.R_lower/hand.R").transform;
-            var leftHandParent = gameObject.Find("ScavengerModel/metarig/spine/spine.001/spine.002/spine.003/shoulder.L/arm.L_upper/arm.L_lower/hand.L").transform;
-
-            var rightHolder = new GameObject("Right Hand Item Holder");
-            var leftHolder = new GameObject("Left Hand Item Holder");
-
-            rightItemHolder = rightHolder.transform;
-            rightItemHolder.SetParent(rightHandParent, false);
-            rightItemHolder.localPosition = new Vector3(-0.002f, 0.036f, -0.042f);
-            rightItemHolder.localEulerAngles = new Vector3(356.3837f, 357.6979f, 0.1453f);
-
-            leftItemHolder = leftHolder.transform;
-            leftItemHolder.SetParent(leftHandParent, false);
-            leftItemHolder.localPosition = new Vector3(0.018f, 0.045f, -0.042f);
-            leftItemHolder.localEulerAngles = new Vector3(360f - 356.3837f, 357.6979f, 0.1453f);
-
-            // Set up finger curlers
-            rightFingerCurler = new FingerCurler(rightHandParent, false);
-            leftFingerCurler = new FingerCurler(leftHandParent, true);
+            bones.Model.localPosition = transform.InverseTransformPoint(transform.position + modelOffset);
         }
-
-        private void Update()
+        else
         {
-            // Apply crouch offset
-            crouchOffset = Mathf.Lerp(crouchOffset, crouchState switch
-            {
-                CrouchState.Button => -1,
-                _ => 0,
-            }, 0.2f);
-
-            // Apply origin transforms
             xrOrigin.position = transform.position;
-
-            // If we are in special animation allow 6 DOF but don't update player position
-            if (!playerController.inSpecialInteractAnimation)
-                xrOrigin.position = new Vector3(transform.position.x - cameraPosAccounted.x * 1.5f, transform.position.y, transform.position.z - cameraPosAccounted.z * 1.5f);
-            else
-                xrOrigin.position = transform.position /*+ specialAnimationPositionOffset*/;
-
-            xrOrigin.position += new Vector3(0, cameraFloorOffset + crouchOffset - playerController.sinkingValue * 2.5f, 0);
-            xrOrigin.eulerAngles = new Vector3(0, rotationOffset, 0);
-            xrOrigin.localScale = Vector3.one * 1.5f;
-
-            //Logger.LogDebug($"{transform.position} {xrOrigin.position} {leftHandVRTarget.position} {rightHandVRTarget.position} {cameraFloorOffset} {cameraPosAccounted}");
-
-            // Arms need to be moved forward when crouched
-            if (crouchState != CrouchState.None)
-                xrOrigin.position += transform.forward * 0.55f;
+            bones.Model.localPosition = Vector3.zero;
         }
 
-        private void LateUpdate()
+        xrOrigin.position += new Vector3(0, cameraFloorOffset + crouchOffset - playerController.sinkingValue * 2.5f, 0);
+        xrOrigin.eulerAngles = new Vector3(0, rotationOffset, 0);
+        xrOrigin.localScale = Vector3.one * 1.5f;
+
+        // Arms need to be moved forward when crouched
+        if (crouchState != CrouchState.None)
+            xrOrigin.position += transform.forward * 0.55f;
+    }
+
+    private void LateUpdate()
+    {
+        var positionOffset = new Vector3(0, crouchState switch
         {
-            var positionOffset = new Vector3(0, crouchState switch
-            {
-                CrouchState.Roomscale => 0.1f,
-                _ => 0,
-            }, 0);
+            CrouchState.Roomscale => 0.1f,
+            _ => 0,
+        }, 0);
 
-            // Apply controller transforms
-            leftHandTarget.position = leftHandVRTarget.position + positionOffset;
-            leftHandTarget.rotation = leftHandVRTarget.rotation;
+        // Apply controller transforms
+        bones.LeftArmRigTarget.position = leftHandVRTarget.position + positionOffset;
+        bones.LeftArmRigTarget.rotation = leftHandVRTarget.rotation;
 
-            rightHandTarget.position = rightHandVRTarget.position + positionOffset;
-            rightHandTarget.rotation = rightHandVRTarget.rotation;
+        bones.RightArmRigTarget.position = rightHandVRTarget.position + positionOffset;
+        bones.RightArmRigTarget.rotation = rightHandVRTarget.rotation;
 
-            // Update tracked finger curls after animator update
-            leftFingerCurler?.Update();
+        // Update tracked finger curls after animator update
+        leftFingerCurler?.Update();
 
-            if (!playerController.isHoldingObject)
-            {
-                rightFingerCurler?.Update();
-            }
-        }
-
-        public void UpdateTargetTransforms(DNet.Rig rig)
+        if (!playerController.isHoldingObject)
         {
-            leftController.localPosition = rig.leftHandPosition;
-            leftController.localEulerAngles = rig.leftHandEulers;
-            leftFingerCurler?.SetCurls(rig.leftHandFingers);
-
-            rightController.localPosition = rig.rightHandPosition;
-            rightController.localEulerAngles = rig.rightHandEulers;
-            rightFingerCurler?.SetCurls(rig.rightHandFingers);
-
-            camera.transform.eulerAngles = rig.cameraEulers;
-            cameraPosAccounted = rig.cameraPosAccounted;
-
-            crouchState = rig.crouchState;
-            rotationOffset = rig.rotationOffset;
-            cameraFloorOffset = rig.cameraFloorOffset;
+            rightFingerCurler?.Update();
         }
+    }
+
+    public void UpdateTargetTransforms(DNet.Rig rig)
+    {
+        leftController.localPosition = rig.leftHandPosition;
+        leftController.localEulerAngles = rig.leftHandEulers;
+        leftFingerCurler?.SetCurls(rig.leftHandFingers);
+
+        rightController.localPosition = rig.rightHandPosition;
+        rightController.localEulerAngles = rig.rightHandEulers;
+        rightFingerCurler?.SetCurls(rig.rightHandFingers);
+
+        camera.transform.eulerAngles = rig.cameraEulers;
+        cameraPosAccounted = rig.cameraPosAccounted;
+        modelOffset = rig.modelOffset;
+
+        crouchState = rig.crouchState;
+        rotationOffset = rig.rotationOffset;
+        cameraFloorOffset = rig.cameraFloorOffset;
+    }
+
+    /// <summary>
+    /// Properly clean up the IK if a VR player leaves the game
+    /// </summary>
+    void OnDestroy()
+    {
+        bones.ResetToPrefabPositions();
+
+        Destroy(bones.LeftArmRig.GetComponent<TwoBoneIKConstraint>());
+        Destroy(bones.RightArmRig.GetComponent<TwoBoneIKConstraint>());
+
+        var leftArmConstraint = bones.LeftArmRig.gameObject.AddComponent<ChainIKConstraint>();
+        var rightArmConstraint = bones.RightArmRig.gameObject.AddComponent<ChainIKConstraint>();
+
+        leftArmConstraint.data = originalLeftArmConstraintData;
+        rightArmConstraint.data = originalRightArmConstraintData;
+
+        GetComponentInChildren<RigBuilder>().Build();
     }
 }

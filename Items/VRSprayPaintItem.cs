@@ -3,51 +3,41 @@ using HarmonyLib;
 using LCVR.Player;
 using System.Reflection;
 
-namespace LCVR.Items
+namespace LCVR.Items;
+
+internal class VRSprayPaintItem : VRItem<SprayPaintItem>
 {
-    internal class VRSprayPaintItem : VRItem<SprayPaintItem>
+    private static readonly FieldInfo timeSinceSwitchingSlotsField = AccessTools.Field(typeof(PlayerControllerB), "timeSinceSwitchingSlots");
+
+    private new void Awake()
     {
-        private static readonly FieldInfo timeSinceSwitchingSlotsField = AccessTools.Field(typeof(PlayerControllerB), "timeSinceSwitchingSlots");
+        base.Awake();
 
-        private VRController hand;
+        if (!IsLocal)
+            return;
 
-        private new void Awake()
-        {
-            base.Awake();
+        VRSession.Instance.MotionDetector.onShake.AddListener(OnShakeMotion);
+    }
 
-            if (!IsLocal)
-                return;
+    private void OnDestroy()
+    {
+        if (IsLocal)
+            VRSession.Instance.MotionDetector.onShake.RemoveListener(OnShakeMotion);
+    }
 
-            hand = VRPlayer.Instance.mainHand;
-            hand.motionDetector.onShake.AddListener(OnShakeMotion);
+    private void OnShakeMotion()
+    {
+        if (player.currentlyHeldObjectServer != item)
+            return;
 
-            if (!Plugin.Config.SprayPaintTipSeen.Value)
-            {
-                HUDManager.Instance.DisplayTip("Shake shake shake", "You can shake the can by shaking your hand back on forth in quick succession.");
-                Plugin.Config.SprayPaintTipSeen.Value = true;
-            }
-        }
+        if (player.isGrabbingObjectAnimation || player.inTerminalMenu || player.inSpecialInteractAnimation)
+            return;
 
-        private void OnDestroy()
-        {
-            if (IsLocal)
-                hand.motionDetector.onShake.RemoveListener(OnShakeMotion);
-        }
+        timeSinceSwitchingSlotsField.SetValue(player, 0f);
+        player.currentlyHeldObjectServer.ItemInteractLeftRightOnClient(false);
+    }
 
-        private void OnShakeMotion()
-        {
-            if (player.currentlyHeldObjectServer != item)
-                return;
-
-            if (player.isGrabbingObjectAnimation || player.inTerminalMenu || player.inSpecialInteractAnimation)
-                return;
-
-            timeSinceSwitchingSlotsField.SetValue(player, 0f);
-            player.currentlyHeldObjectServer.ItemInteractLeftRightOnClient(false);
-        }
-
-        protected override void OnUpdate()
-        {
-        }
+    protected override void OnUpdate()
+    {
     }
 }

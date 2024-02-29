@@ -1,69 +1,68 @@
 ﻿using BepInEx.Logging;
 
-namespace LCVR
+namespace LCVR;
+
+public static class Logger
 {
-    public static class Logger
+    private static ManualLogSource logSource;
+
+    public static void SetSource(ManualLogSource Logger)
     {
-        private static ManualLogSource logSource;
-
-        public static void SetSource(ManualLogSource Logger)
-        {
-            logSource = Logger;
-        }
-
-        public static void Log(object message)
-        {
-            logSource.LogInfo(message);
-        }
-
-        public static void LogInfo(object message)
-        {
-            logSource.LogInfo(message);
-        }
-
-        public static void LogWarning(object message)
-        {
-            logSource.LogWarning(message);
-        }
-
-        public static void LogError(object message)
-        {
-            logSource.LogError(message);
-        }
-
-        public static void LogDebug(object message)
-        {
-            logSource.LogDebug(message);
-        }
+        logSource = Logger;
     }
 
-    public class NamedLogger(string name)
+    public static void Log(object message)
     {
-        private readonly string name = name;
+        logSource.LogInfo(message);
+    }
 
-        public void Log(string message)
-        {
-            Logger.LogInfo($"[{name}] {message}");
-        }
+    public static void LogInfo(object message)
+    {
+        logSource.LogInfo(message);
+    }
 
-        public void LogInfo(string message)
-        {
-            Logger.LogInfo($"[{name}] {message}");
-        }
+    public static void LogWarning(object message)
+    {
+        logSource.LogWarning(message);
+    }
 
-        public void LogWarning(string message)
-        {
-            Logger.LogInfo($"[{name}] {message}");
-        }
+    public static void LogError(object message)
+    {
+        logSource.LogError(message);
+    }
 
-        public void LogError(string message)
-        {
-            Logger.LogInfo($"[{name}] {message}");
-        }
+    public static void LogDebug(object message)
+    {
+        logSource.LogDebug(message);
+    }
+}
 
-        public void LogDebug(string message)
-        {
-            Logger.LogInfo($"[{name}] {message}");
-        }
+public class NamedLogger(string name)
+{
+    private readonly string name = name;
+
+    public void Log(string message)
+    {
+        Logger.Log($"[{name}] {message}");
+    }
+
+    public void LogInfo(string message)
+    {
+        Logger.LogInfo($"[{name}] {message}");
+    }
+
+    public void LogWarning(string message)
+    {
+        Logger.LogWarning($"[{name}] {message}");
+    }
+
+    public void LogError(string message)
+    {
+        Logger.LogError($"[{name}] {message}");
+    }
+
+    public void LogDebug(string message)
+    {
+        Logger.LogDebug($"[{name}] {message}");
     }
 }

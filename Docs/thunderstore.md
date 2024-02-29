@@ -55,15 +55,15 @@ You can join the [LCVR Discord Server](https://discord.gg/2DxNgpPZUF)!
 
 # Compatibility
 
-Adding VR into a game will drastically change some of the gameplay elements. This is guaranteed to cause some incompatibilities with other Lethal Company mods. You can find a [compatibility sheet here](https://docs.google.com/spreadsheets/d/1mSulrvMkQFtjF_BWDeSfGz9rm3UWKMywmUP1yhcgCGo/edit?usp=sharing) where you can find a list of mods that have been tested to see if they work well in conjunction with the VR mod.
+Adding VR into a game will drastically change some of the gameplay elements. This is guaranteed to cause some incompatibilities with other Lethal Company mods. You can find a [compatibility sheet here](https://docs.google.com/spreadsheets/d/1mSulrvMkQFtjF_BWDeSfGz9rm3UWKMywmUP1yhcgCGo/edit?usp=sharing) where you can find a list of mods that have been tested to see if they work well in conjunction with the VR mod _(mostly managed by Moderators)_.
 
-In some rare cases, a mod will have "first class support", meaning that LCVR, the mod in question, or both mods have added official compatibility for both mods to work together seamlessly. At the time of writing, the only mod that currently has first class support is [MoreCompany](https://github.com/notnotnotswipez/MoreCompany).
+In some rare cases, a mod will have "first class support", meaning that LCVR, the mod in question, or both mods have added official compatibility for both mods to work together seamlessly.
 
 # Configuring the mod
 
-Before starting the game, it is recommended to check the configuration options to see if anything needs changing. Some of the settings will change how you interact with the game in VR. Another important tab to check is **performance**. Since this game is a Unity HDRP game the performance is less optimal than it should be.
+You can change the mod configuration from within the game itself. Just launch the game with the VR mod installed, get to the main menu, and press the big VR button on the right side of the screen. This will open a big settings menu where you can configure the VR mod to your liking.
 
-If you are not using a mod manager, then you can find the configuration inside `BepInEx/config/io.daxcess.lcvr.cfg`.
+> _When creating a modpack or profile code, it is recommended to **NOT** ship your config file, so that other people can configure it on their own using the default settings. To quickly reset the settings, delete the config file named `io.daxcess.lcvr.cfg` from the `BepInEx/config` directory._
 
 # Basic Controls
 
@@ -77,13 +77,13 @@ To crouch, press the right joystick button.
 
 # Main Menu
 
-<img src="https://github.com/DaXcess/LCVR/blob/main/.github/assets/main-menu.webp?raw=true" height="300" />
+<!-- <img src="https://github.com/DaXcess/LCVR/blob/main/.github/assets/main-menu.webp?raw=true" height="300" /> -->
 
-The main menu is controlled by ray interactors. You can use any controller to point towards any UI element and click using the trigger button on the corresponding controller. The only thing that has been changed on the main menu by the mod is that the keybinds settings have been disabled, since these have been hijacked by the mod.
+The main menu is controlled by ray interactors. You can use any controller to point towards any UI element and click using the trigger button on the corresponding controller. In the main menu you also have access to a keyboard when you focus any input element, so that you can change your lobby name, tags, or change settings using the VR settings menu.
 
 # The Terminal
 
-<img src="https://github.com/DaXcess/LCVR/blob/main/.github/assets/terminal.webp?raw=true" height="300" />
+<!-- <img src="https://github.com/DaXcess/LCVR/blob/main/.github/assets/terminal.webp?raw=true" height="300" /> -->
 
 Since in VR you don't have access to a keyboard (under normal circumstances), the mod displays a virtual keyboard when you enter the terminal. You can use this keyboard to interact with the terminal like you would on PC.
 
@@ -91,12 +91,62 @@ This keyboard currently features two macros: A confirm and deny button. When pre
 
 You can exit the terminal by pressing the pause button or by clicking on the close button on the terminal keyboard.
 
+# VR Interactions
+
+LCVR features a bunch of new interactions that VR players can use to interact with the world around them, without having to use a boring invisible laser and a simple controller binding.
+
+> All of the following interactions can be disabled individually inside the config
+
+- **Ship Lever**
+
+  You now must physically pull/push the ship lever to land the ship or take off from a planet. The lever, when held, will follow the position of your hand, and this even works for other players who have the mod!
+
+- **Monitor Buttons**
+
+  You may notice that the monitor buttons have been moved next to the lever. This is because you can now physically press the buttons to turn on/off the monitor, or switch to another player on the radar!
+
+- **Charging Station**
+
+  Hate being forced to stand in front of the charging station every time you charge an item? Well now you can just hold any item that has a battery, and just hold it up to the charging station. Voila, your item has now been charged. If you pull the item out too quickly though, the charger will not charge your item!
+  _This interaction only works on the right hand. Putting your left hand inside the charger will make you just look like an idiot._
+
+- **Ship Door**
+
+  Have an angry dog chasing you around? Just smash the ship door buttons to close or open the ship door.
+
+- **Teleporter**
+
+  Want to inverse into the facility with style? Just flick open the glass cover, and **SMASH** the teleporter button with your fist!
+
+- **Company Bell**
+
+  Delicately place your finger on top of the bell to make it ring... Or just smash it, you do you.
+
+- **Ship Horn**
+
+  Pull the ship horn cord using your hand. Yup.
+
+- **Breaker Box**
+
+  Y'all ever had issues with trying to flip the switches on the breaker box in VR? It's so stupid because their hitboxes are gigantic!
+  Anyways, just flick open the door with your hand, and use your finger to toggle the switches.
+  _This interaction only works when you are using your pointer finger, a fist or flat hand will not work_
+
+- **Face**	
+  
+  Just want to really scream right into that walkie, begging to be teleported because a Jester is right around the corner? Well, you can now do so without pressing any button! Just hold up any compatible item to your face to use them, but watch out what you all put near your face!
+  *This interaction only works on the right hand, for obvious reasons*
+
+### Muffle
+
+Hate it when you die to a dog because your frantic screaming caused you to lure the canines towards your location? Just hold your hand in front of your mouth, and none of the enemies will be able to hear you anymore! As a bonus, anyone with the VR mod will now hear your voice muffled, as if you got snatched by a snare flea. However be warned, the longer you hold your hand in front of your mouth, the less you will be able to see _(only until a hard limit, you will not be completely blinded)_.
+
 # VR additions
 
-<div>
+<!-- <div>
   <img src="https://github.com/DaXcess/LCVR/blob/main/.github/assets/shovel.webp?raw=true" height="250" />
   <img src="https://github.com/DaXcess/LCVR/blob/main/.github/assets/spray.webp?raw=true" height="250" />
-</div>
+</div> -->
 
 This mod, in addition to adding VR and motion controls, also adds a few special interactions that you can perform in VR. At the time of writing, these currently are:
 
@@ -104,3 +154,15 @@ This mod, in addition to adding VR and motion controls, also adds a few special 
   - When holding the spray paint item, you can physically shake it to shake the can in the game. You can also still use the secondary interact button to shake the can.
 - Shovel/Sign Swinging
   - If you are holding a shovel or a sign, you'll notice that you are holding it in two hands. If you hold your controllers over your shoulder and bring them down with enough force, the mod will swing the shovel for you, dealing damage to players/entities in front of you.
+
+# Spectating
+
+To be fair, watching your fellow coworkers do all the work while you just sit there and watch them while you're dead can become pretty boring, so LCVR spices this up a little.
+
+When you die, you will still be able to walk around like normal. You still have your arms, you can still get in/out of the facility and you can even still use ladders!
+
+You cannot however interact with anything else anymore, since, well... _you're dead!_
+
+You can use the right trigger to teleport between players that are still alive, just like in the base game.
+
+You can also use the left grip button to hide the spectator screen, so you can fully witness the horrors of your fellow coworkers, without having to fear dying _(since you've already perished)_.

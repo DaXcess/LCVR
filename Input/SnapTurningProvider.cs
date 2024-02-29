@@ -1,47 +1,38 @@
 ﻿using System;
-using UnityEngine.InputSystem;
 
-namespace LCVR.Input
+namespace LCVR.Input;
+
+internal class SnapTurningProvider : TurningProvider
 {
-    internal class SnapTurningProvider : TurningProvider
+    private bool turnedLastInput = false;
+    private float offset = 0;
+
+    public void Update()
     {
-        private readonly InputAction turnAction;
-        private readonly float turnAmount;
+        var value = Actions.Instance["Controls/Turn"].ReadValue<float>();
+        bool shouldExecute = MathF.Abs(value) > 0.75;
 
-        private bool turnedLastInput = false;
-        private float offset = 0;
-
-        internal SnapTurningProvider()
+        if (shouldExecute)
         {
-            turnAction = Actions.FindAction("Controls/Turn");
-            turnAmount = Plugin.Config.SnapTurnSize.Value;
-        }
+            var turnAmount = Plugin.Config.SnapTurnSize.Value;
+            if (turnedLastInput) return;
 
-        public void Update()
+            turnedLastInput = true;
+            offset += value > 0 ? turnAmount : -turnAmount;
+        }
+        else
         {
-            var value = turnAction.ReadValue<float>();
-            bool shouldExecute = MathF.Abs(value) > 0.75;
-            
-            if (shouldExecute)
-            {
-                if (turnedLastInput) return;
-
-                turnedLastInput = true;
-                offset += value > 0 ? turnAmount : -turnAmount;
-            } else
-            {
-                turnedLastInput = false;
-            }
+            turnedLastInput = false;
         }
+    }
 
-        public void SetOffset(float offset)
-        {
-            this.offset = offset;
-        }
+    public void SetOffset(float offset)
+    {
+        this.offset = offset;
+    }
 
-        public float GetRotationOffset()
-        {
-            return offset;
-        }
+    public float GetRotationOffset()
+    {
+        return offset;
     }
 }

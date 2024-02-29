@@ -4,10 +4,15 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>LCVR</AssemblyName>
     <Description>Collecting Scrap in VR</Description>
-    <Version>1.1.9</Version>
+    <Version>1.2.0</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>12.0</LangVersion>
     <Title>LethalCompanyVR</Title>
+    <Copyright>Copyright (c) DaXcess 2024</Copyright>
+    <PackageProjectUrl>https://lcvr.daxcess.io</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/DaXcess/LCVR</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -26,7 +31,6 @@
   <ItemGroup>
     <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
     <PackageReference Include="BepInEx.Core" Version="5.*" />
-    <PackageReference Include="BepInEx.PluginInfoProps" Version="1.*" />
     <PackageReference Include="UnityEngine.Modules" Version="2022.3.9" IncludeAssets="compile" />
   </ItemGroup>
 
@@ -40,9 +44,6 @@
     </Reference>
     <Reference Include="Mimics">
       <HintPath>Libs\Mods\Mimics.dll</HintPath>
-    </Reference>
-    <Reference Include="TooManyEmotes">
-      <HintPath>Libs\Mods\TooManyEmotes.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp">
       <HintPath>Libs\Assembly-CSharp.dll</HintPath>
@@ -102,5 +103,8 @@
 
   <ItemGroup>
     <Folder Include="ThirdParty\" />
+
+    <None Include="README.md" Pack="true" PackagePath="\" />
+    <None Include="LICENSE" Pack="true" PackagePath="\" />
   </ItemGroup>
 </Project>
