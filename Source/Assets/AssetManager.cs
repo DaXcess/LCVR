@@ -51,7 +51,7 @@ public class AssetManager
         settingsPanel = assetBundle.LoadAsset<GameObject>("Panel");
         animatedLogo = assetBundle.LoadAsset<GameObject>("AnimatedLogo");
         volumeManager = assetBundle.LoadAsset<GameObject>("Volume Manager");
-        enemyPrefab = assetBundle.LoadAsset<GameObject>("NutcrackerEnemy");
+        enemyPrefab = assetBundle.LoadAsset<GameObject>("DressGirl");
         spectatorLight = assetBundle.LoadAsset<GameObject>("Spectator Light");
 
         defaultInputActions = assetBundle.LoadAsset<InputActionAsset>("XR Input Actions");

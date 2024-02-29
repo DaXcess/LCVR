@@ -9,9 +9,6 @@ namespace LCVR.Networking;
 
 public class VRNetPlayer : MonoBehaviour
 {
-    private PlayerControllerB playerController;
-    private Bones bones;
-
     private ChainIKConstraintData originalLeftArmConstraintData;
     private ChainIKConstraintData originalRightArmConstraintData;
 
@@ -38,13 +35,13 @@ public class VRNetPlayer : MonoBehaviour
     private CrouchState crouchState = CrouchState.None;
     private float crouchOffset;
 
-    public PlayerControllerB PlayerController => playerController;
-    public Bones Bones => bones;
+    public PlayerControllerB PlayerController { get; private set; }
+    public Bones Bones { get; private set; }
 
     private void Awake()
     {
-        playerController = GetComponent<PlayerControllerB>();
-        bones = new Bones(transform);
+        PlayerController = GetComponent<PlayerControllerB>();
+        Bones = new Bones(transform);
 
         // Because I want to transmit local controller positions and angles (since it's much cleaner)
         // I decided to somewhat recreate the XR Origin setup so that all the offsets are correct
@@ -78,18 +75,18 @@ public class VRNetPlayer : MonoBehaviour
         var rightHolder = new GameObject("Right Hand Item Holder");
 
         leftItemHolder = leftHolder.transform;
-        leftItemHolder.SetParent(bones.LeftHand, false);
+        leftItemHolder.SetParent(Bones.LeftHand, false);
         leftItemHolder.localPosition = new Vector3(0.018f, 0.045f, -0.042f);
         leftItemHolder.localEulerAngles = new Vector3(360f - 356.3837f, 357.6979f, 0.1453f);
 
         rightItemHolder = rightHolder.transform;
-        rightItemHolder.SetParent(bones.RightHand, false);
+        rightItemHolder.SetParent(Bones.RightHand, false);
         rightItemHolder.localPosition = new Vector3(-0.002f, 0.036f, -0.042f);
         rightItemHolder.localEulerAngles = new Vector3(356.3837f, 357.6979f, 0.1453f);
 
         // Set up finger curlers
-        leftFingerCurler = new FingerCurler(bones.LeftHand, true);
-        rightFingerCurler = new FingerCurler(bones.RightHand, false);
+        leftFingerCurler = new FingerCurler(Bones.LeftHand, true);
+        rightFingerCurler = new FingerCurler(Bones.RightHand, false);
 
         BuildVRRig();
     }
@@ -97,42 +94,42 @@ public class VRNetPlayer : MonoBehaviour
     private void BuildVRRig()
     {
         // Reset player character briefly to allow the RigBuilder to behave properly
-        bones.ResetToPrefabPositions();
+        Bones.ResetToPrefabPositions();
 
         // Setting up the left arm
 
-        bones.LeftArmRigHint.localPosition = new Vector3(-10f, -2f, -1f);
+        Bones.LeftArmRigHint.localPosition = new Vector3(-10f, -2f, -1f);
 
         // Disable built-in constraints since they don't support hints (fucks up the elbows)
-        var originalLeftArmConstraint = bones.LeftArmRig.GetComponent<ChainIKConstraint>();
+        var originalLeftArmConstraint = Bones.LeftArmRig.GetComponent<ChainIKConstraint>();
         originalLeftArmConstraintData = originalLeftArmConstraint.data;
         Destroy(originalLeftArmConstraint);
 
-        var leftArmConstraint = bones.LeftArmRig.gameObject.AddComponent<TwoBoneIKConstraint>();
-        leftArmConstraint.data.root = bones.LeftUpperArm;
-        leftArmConstraint.data.mid = bones.LeftLowerArm;
-        leftArmConstraint.data.tip = bones.LeftHand;
-        leftArmConstraint.data.target = bones.LeftArmRigTarget;
-        leftArmConstraint.data.hint = bones.LeftArmRigHint;
+        var leftArmConstraint = Bones.LeftArmRig.gameObject.AddComponent<TwoBoneIKConstraint>();
+        leftArmConstraint.data.root = Bones.LeftUpperArm;
+        leftArmConstraint.data.mid = Bones.LeftLowerArm;
+        leftArmConstraint.data.tip = Bones.LeftHand;
+        leftArmConstraint.data.target = Bones.LeftArmRigTarget;
+        leftArmConstraint.data.hint = Bones.LeftArmRigHint;
         leftArmConstraint.data.hintWeight = 1;
         leftArmConstraint.data.targetRotationWeight = 1;
         leftArmConstraint.data.targetPositionWeight = 1;
 
         // Setting up the right arm
 
-        bones.RightArmRigHint.localPosition = new Vector3(12.5f, -2f, -1f);
+        Bones.RightArmRigHint.localPosition = new Vector3(12.5f, -2f, -1f);
 
         // Disable built-in constraints since they don't support hints (fucks up the elbows)
-        var originalRightArmConstraint = bones.RightArmRig.GetComponent<ChainIKConstraint>();
+        var originalRightArmConstraint = Bones.RightArmRig.GetComponent<ChainIKConstraint>();
         originalRightArmConstraintData = originalRightArmConstraint.data;
         Destroy(originalRightArmConstraint);
 
-        var rightArmConstraint = bones.RightArmRig.gameObject.AddComponent<TwoBoneIKConstraint>();
-        rightArmConstraint.data.root = bones.RightUpperArm;
-        rightArmConstraint.data.mid = bones.RightLowerArm;
-        rightArmConstraint.data.tip = bones.RightHand;
-        rightArmConstraint.data.target = bones.RightArmRigTarget;
-        rightArmConstraint.data.hint = bones.RightArmRigHint;
+        var rightArmConstraint = Bones.RightArmRig.gameObject.AddComponent<TwoBoneIKConstraint>();
+        rightArmConstraint.data.root = Bones.RightUpperArm;
+        rightArmConstraint.data.mid = Bones.RightLowerArm;
+        rightArmConstraint.data.tip = Bones.RightHand;
+        rightArmConstraint.data.target = Bones.RightArmRigTarget;
+        rightArmConstraint.data.hint = Bones.RightArmRigHint;
         rightArmConstraint.data.hintWeight = 1;
         rightArmConstraint.data.targetRotationWeight = 1;
         rightArmConstraint.data.targetPositionWeight = 1;
@@ -153,7 +150,7 @@ public class VRNetPlayer : MonoBehaviour
         xrOrigin.position = transform.position;
 
         // If we are in special animation allow 6 DOF but don't update player position
-        if (!playerController.inSpecialInteractAnimation)
+        if (!PlayerController.inSpecialInteractAnimation)
         {
             xrOrigin.position = new Vector3(
                 transform.position.x + (modelOffset.x * 1.5f) - (cameraPosAccounted.x * 1.5f),
@@ -161,15 +158,15 @@ public class VRNetPlayer : MonoBehaviour
                 transform.position.z + (modelOffset.z * 1.5f) - (cameraPosAccounted.z * 1.5f)
             );
 
-            bones.Model.localPosition = transform.InverseTransformPoint(transform.position + modelOffset);
+            Bones.Model.localPosition = transform.InverseTransformPoint(transform.position + modelOffset);
         }
         else
         {
             xrOrigin.position = transform.position;
-            bones.Model.localPosition = Vector3.zero;
+            Bones.Model.localPosition = Vector3.zero;
         }
 
-        xrOrigin.position += new Vector3(0, cameraFloorOffset + crouchOffset - playerController.sinkingValue * 2.5f, 0);
+        xrOrigin.position += new Vector3(0, cameraFloorOffset + crouchOffset - PlayerController.sinkingValue * 2.5f, 0);
         xrOrigin.eulerAngles = new Vector3(0, rotationOffset, 0);
         xrOrigin.localScale = Vector3.one * 1.5f;
 
@@ -187,16 +184,16 @@ public class VRNetPlayer : MonoBehaviour
         }, 0);
 
         // Apply controller transforms
-        bones.LeftArmRigTarget.position = leftHandVRTarget.position + positionOffset;
-        bones.LeftArmRigTarget.rotation = leftHandVRTarget.rotation;
+        Bones.LeftArmRigTarget.position = leftHandVRTarget.position + positionOffset;
+        Bones.LeftArmRigTarget.rotation = leftHandVRTarget.rotation;
 
-        bones.RightArmRigTarget.position = rightHandVRTarget.position + positionOffset;
-        bones.RightArmRigTarget.rotation = rightHandVRTarget.rotation;
+        Bones.RightArmRigTarget.position = rightHandVRTarget.position + positionOffset;
+        Bones.RightArmRigTarget.rotation = rightHandVRTarget.rotation;
 
         // Update tracked finger curls after animator update
         leftFingerCurler?.Update();
 
-        if (!playerController.isHoldingObject)
+        if (!PlayerController.isHoldingObject)
         {
             rightFingerCurler?.Update();
         }
@@ -226,13 +223,13 @@ public class VRNetPlayer : MonoBehaviour
     /// </summary>
     void OnDestroy()
     {
-        bones.ResetToPrefabPositions();
+        Bones.ResetToPrefabPositions();
 
-        Destroy(bones.LeftArmRig.GetComponent<TwoBoneIKConstraint>());
-        Destroy(bones.RightArmRig.GetComponent<TwoBoneIKConstraint>());
+        Destroy(Bones.LeftArmRig.GetComponent<TwoBoneIKConstraint>());
+        Destroy(Bones.RightArmRig.GetComponent<TwoBoneIKConstraint>());
 
-        var leftArmConstraint = bones.LeftArmRig.gameObject.AddComponent<ChainIKConstraint>();
-        var rightArmConstraint = bones.RightArmRig.gameObject.AddComponent<ChainIKConstraint>();
+        var leftArmConstraint = Bones.LeftArmRig.gameObject.AddComponent<ChainIKConstraint>();
+        var rightArmConstraint = Bones.RightArmRig.gameObject.AddComponent<ChainIKConstraint>();
 
         leftArmConstraint.data = originalLeftArmConstraintData;
         rightArmConstraint.data = originalRightArmConstraintData;
