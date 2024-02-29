@@ -1,8 +1,20 @@
 # Table of contents
 
-1. [Checking if VR is active](#checking-if-vr-is-active)
-2. [Creating a VR interactable object](#creating-a-vr-interactable-object)
-3. [Registering custom doors](#registering-custom-doors)
+1. [Adding LCVR as a dependency](#adding-lcvr-as-a-dependency)
+2. [Checking if VR is active](#checking-if-vr-is-active)
+3. [Creating a VR interactable object](#creating-a-vr-interactable-object)
+4. [Registering custom doors](#registering-custom-doors)
+
+## Adding LCVR as a dependency
+
+To properly be able to interface with LCVR, you must first reference the LCVR assembly in your mod.
+
+LCVR is available on [NuGet](https://www.nuget.org/packages/LCVR), and can be downloaded using the NuGet Package Manager in Visual Studio, or by using the `dotnet` CLI:
+
+```sh
+# Optionally target a specific version by adding `--version x.x.x` at the end
+dotnet add package LCVR
+```
 
 ## Checking if VR is active
 
