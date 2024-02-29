@@ -15,7 +15,7 @@
 <details>
   <summary>Jumpscare</summary>
 
-  <img src="https://github.com/DaXcess/LCVR/blob/main/.github/assets/pino.jpg?raw=true" />
+  <img src="https://github.com/DaXcess/LCVR/blob/assets/pino.jpg?raw=true" />
 </details>
 <br/>
 
@@ -77,13 +77,13 @@ To crouch, press the right joystick button.
 
 # Main Menu
 
-<!-- <img src="https://github.com/DaXcess/LCVR/blob/main/.github/assets/main-menu.webp?raw=true" height="300" /> -->
+<img src="https://github.com/DaXcess/LCVR/blob/assets/main-menu.webp?raw=true" height="300" />
 
 The main menu is controlled by ray interactors. You can use any controller to point towards any UI element and click using the trigger button on the corresponding controller. In the main menu you also have access to a keyboard when you focus any input element, so that you can change your lobby name, tags, or change settings using the VR settings menu.
 
 # The Terminal
 
-<!-- <img src="https://github.com/DaXcess/LCVR/blob/main/.github/assets/terminal.webp?raw=true" height="300" /> -->
+<img src="https://github.com/DaXcess/LCVR/blob/assets/terminal.webp?raw=true" height="300" />
 
 Since in VR you don't have access to a keyboard (under normal circumstances), the mod displays a virtual keyboard when you enter the terminal. You can use this keyboard to interact with the terminal like you would on PC.
 
@@ -132,10 +132,10 @@ LCVR features a bunch of new interactions that VR players can use to interact wi
   Anyways, just flick open the door with your hand, and use your finger to toggle the switches.
   _This interaction only works when you are using your pointer finger, a fist or flat hand will not work_
 
-- **Face**	
-  
+- **Face**
+
   Just want to really scream right into that walkie, begging to be teleported because a Jester is right around the corner? Well, you can now do so without pressing any button! Just hold up any compatible item to your face to use them, but watch out what you all put near your face!
-  *This interaction only works on the right hand, for obvious reasons*
+  _This interaction only works on the right hand, for obvious reasons_
 
 ### Muffle
 
@@ -143,10 +143,10 @@ Hate it when you die to a dog because your frantic screaming caused you to lure 
 
 # VR additions
 
-<!-- <div>
-  <img src="https://github.com/DaXcess/LCVR/blob/main/.github/assets/shovel.webp?raw=true" height="250" />
-  <img src="https://github.com/DaXcess/LCVR/blob/main/.github/assets/spray.webp?raw=true" height="250" />
-</div> -->
+<div>
+  <img src="https://github.com/DaXcess/LCVR/blob/assets/shovel.webp?raw=true" height="250" />
+  <img src="https://github.com/DaXcess/LCVR/blob/assets/spray.webp?raw=true" height="250" />
+</div>
 
 This mod, in addition to adding VR and motion controls, also adds a few special interactions that you can perform in VR. At the time of writing, these currently are:
 

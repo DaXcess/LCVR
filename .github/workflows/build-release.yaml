@@ -23,9 +23,6 @@ jobs:
           version=$(grep -oP '<Version>\K[^<]+' LCVR.csproj)
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
-      - name: Copy build time dependencies
-        run: cp ~/lcvr/Libs/*.dll ./Libs/
-
       - name: Setup Dotnet
         uses: actions/setup-dotnet@v4
         with:
@@ -48,7 +45,7 @@ jobs:
 
           # Copy docs and license
           cp CHANGELOG.md ./package/CHANGELOG.md
-          cp Docs/thunderstore.md ./package/README.md
+          cp Docs/Thunderstore/README.md ./package/README.md
           cp LICENSE ./package/LICENSE
 
           # Update Thunderstore manifest
@@ -61,3 +58,12 @@ jobs:
         with:
           name: LCVR-${{ steps.vars.outputs.version }}
           path: ./package
+
+      - name: Build NuGet package
+        run: dotnet pack -p:Version='${{ steps.vars.outputs.version }}' -c Release
+
+      - name: Prepare NuGet for upload
+        run: dotnet nuget add source --username ${{ github.repository_owner }} --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/${{ github.repository_owner }}}/index.json"
+
+      - name: Upload NuGet package to Github
+        run: dotnet nuget push bin/Release/*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source "github"
