@@ -21,7 +21,7 @@ public class InputPatches
 }
 
 [LCVRPatch]
-[HarmonyPatch(typeof(IngamePlayerSettings), "DiscardChangedSettings")]
+[HarmonyPatch(typeof(IngamePlayerSettings), nameof(IngamePlayerSettings.DiscardChangedSettings))]
 internal static class InputPatches_DiscardChangedSettings
 {
     static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)

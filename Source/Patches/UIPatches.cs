@@ -20,7 +20,7 @@ internal static class UIPatches
     /// <summary>
     /// This function runs when the pre-init menu is shown
     /// </summary>
-    [HarmonyPatch(typeof(PreInitSceneScript), "Start")]
+    [HarmonyPatch(typeof(PreInitSceneScript), nameof(PreInitSceneScript.Start))]
     [HarmonyPostfix]
     private static void OnPreInitMenuShown()
     {
@@ -64,7 +64,7 @@ internal static class UIPatches
     /// <summary>
     /// This function runs when the main menu is shown
     /// </summary>
-    [HarmonyPatch(typeof(MenuManager), "Start")]
+    [HarmonyPatch(typeof(MenuManager), nameof(MenuManager.Start))]
     [HarmonyPrefix]
     private static void OnMainMenuShown(MenuManager __instance)
     {
@@ -275,7 +275,10 @@ internal static class UIPatches
         version.autoSizeTextContainer = true;
     }
 
-    [HarmonyPatch(typeof(XRUIInputModule), "ProcessNavigation")]
+    /// <summary>
+    /// Make sure the new input system is being used
+    /// </summary>
+    [HarmonyPatch(typeof(XRUIInputModule), nameof(XRUIInputModule.ProcessNavigation))]
     [HarmonyPrefix]
     private static void ForceNewInputSystem(XRUIInputModule __instance)
     {
@@ -293,7 +296,7 @@ internal static class UniversalUIPatches
     /// <summary>
     /// This function runs when the pre-init menu is shown
     /// </summary>
-    [HarmonyPatch(typeof(PreInitSceneScript), "Start")]
+    [HarmonyPatch(typeof(PreInitSceneScript), nameof(PreInitSceneScript.Start))]
     [HarmonyPostfix]
     private static void OnPreInitMenuShown()
     {
@@ -322,7 +325,7 @@ internal static class UniversalUIPatches
     /// <summary>
     /// This function runs when the main menu is shown
     /// </summary>
-    [HarmonyPatch(typeof(MenuManager), "Start")]
+    [HarmonyPatch(typeof(MenuManager), nameof(MenuManager.Start))]
     [HarmonyPostfix]
     private static void OnMainMenuShown(MenuManager __instance)
     {

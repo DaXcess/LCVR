@@ -12,21 +12,30 @@ internal class TerminalPatches
 {
     private static Action<InputAction.CallbackContext> openMenuDelegate;
 
-    [HarmonyPatch(typeof(Terminal), "BeginUsingTerminal")]
+    /// <summary>
+    /// Detect when the terminal is being used
+    /// </summary>
+    [HarmonyPatch(typeof(Terminal), nameof(Terminal.BeginUsingTerminal))]
     [HarmonyPostfix]
     private static void OnEnterTerminal()
     {
         VRSession.Instance.OnEnterTerminal();
     }
 
-    [HarmonyPatch(typeof(Terminal), "QuitTerminal")]
+    /// <summary>
+    /// Detect when the terminal is no longer being used
+    /// </summary>
+    [HarmonyPatch(typeof(Terminal), nameof(Terminal.QuitTerminal))]
     [HarmonyPostfix]
     private static void OnExitTerminal()
     {
         VRSession.Instance.OnExitTerminal();
     }
 
-    [HarmonyPatch(typeof(Terminal), "OnEnable")]
+    /// <summary>
+    /// Make sure the pause button exits the terminal
+    /// </summary>
+    [HarmonyPatch(typeof(Terminal), nameof(Terminal.OnEnable))]
     [HarmonyPostfix]
     private static void OnEnable(Terminal __instance)
     {
@@ -36,7 +45,10 @@ internal class TerminalPatches
         Actions.Instance.OnReload += OnReloadActions;
     }
 
-    [HarmonyPatch(typeof(Terminal), "OnDisable")]
+    /// <summary>
+    /// Make sure action event handlers are removed when the terminal script gets disabled
+    /// </summary>
+    [HarmonyPatch(typeof(Terminal), nameof(Terminal.OnDisable))]
     [HarmonyPostfix]
     private static void OnDisable(Terminal __instance)
     {

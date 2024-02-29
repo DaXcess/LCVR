@@ -6,7 +6,10 @@ namespace LCVR.Patches.Items;
 [HarmonyPatch]
 internal static class ShovelItemPatches
 {
-    [HarmonyPatch(typeof(Shovel), "ItemActivate")]
+    /// <summary>
+    /// Prevent being able to use the trigger to swing the shovel
+    /// </summary>
+    [HarmonyPatch(typeof(Shovel), nameof(Shovel.ItemActivate))]
     [HarmonyPrefix]
     private static bool ItemActivate()
     {

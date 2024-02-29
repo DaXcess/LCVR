@@ -6,6 +6,9 @@ namespace LCVR.Patches;
 [HarmonyPatch]
 internal static class RoundManagerPatches
 {
+    /// <summary>
+    /// Easter egg
+    /// </summary>
     [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.GenerateNewLevelClientRpc))]
     [HarmonyPostfix]
     private static void OnGenerateNewLevelClientRpc()

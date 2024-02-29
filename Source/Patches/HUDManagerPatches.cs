@@ -17,7 +17,7 @@ internal static class HUDManagerPatches
     /// <summary>
     /// Disables the ping scan if you are in the pause menu
     /// </summary>
-    [HarmonyPatch(typeof(HUDManager), "CanPlayerScan")]
+    [HarmonyPatch(typeof(HUDManager), nameof(HUDManager.CanPlayerScan))]
     [HarmonyPrefix]
     private static bool CanPlayerScan(ref bool __result)
     {
@@ -39,13 +39,13 @@ internal static class HUDManagerPatches
     {
         VRSession.Instance.HUD.HideHUD(hide);
     }
-}
 
-[LCVRPatch]
-[HarmonyPatch(typeof(HUDManager), "Update")]
-internal static class HUDManagerLeaveEarlyPatches
-{
-    private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+    /// <summary>
+    /// Fix for the leave early button not working, by making the "PingScan" binding function as the leave early button
+    /// </summary>
+    [HarmonyPatch(typeof(HUDManager), nameof(HUDManager.Update))]
+    [HarmonyTranspiler]
+    private static IEnumerable<CodeInstruction> LeaveEarlyFixTranspiler(IEnumerable<CodeInstruction> instructions)
     {
         var codes = new List<CodeInstruction>(instructions);
         var startIndex = codes.FindIndex(instruction => instruction.opcode == OpCodes.Callvirt && (MethodInfo)instruction.operand == PropertyGetter(typeof(PlayerActions), "Movement")) - 2;

@@ -10,8 +10,7 @@ public class CameraPatches
     /// <summary>
     /// Prevents the game camera from setting a target texture, which would make the output not render to the headset
     /// </summary>
-    [HarmonyPatch(typeof(Camera), "targetTexture")]
-    [HarmonyPatch(MethodType.Setter)]
+    [HarmonyPatch(typeof(Camera), nameof(Camera.targetTexture), MethodType.Setter)]
     [HarmonyPrefix]
     private static bool UpdateCameraTargetTexture(Camera __instance, ref RenderTexture value)
     {

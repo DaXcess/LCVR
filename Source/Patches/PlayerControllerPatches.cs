@@ -6,7 +6,6 @@ using LCVR.Networking;
 using LCVR.Player;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Reflection.Emit;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -17,7 +16,7 @@ using static HarmonyLib.AccessTools;
 namespace LCVR.Patches;
 
 [LCVRPatch]
-[HarmonyPatch(typeof(PlayerControllerB), "Update")]
+[HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.Update))]
 public static class PlayerControllerB_Update_Patch
 {
     static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
@@ -49,7 +48,7 @@ public static class PlayerControllerB_Update_Patch
 }
 
 [LCVRPatch]
-[HarmonyPatch(typeof(PlayerControllerB), "Update")]
+[HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.Update))]
 public static class PlayerControllerB_Sprint_Patch
 {
     public static float sprint = 0;
@@ -80,19 +79,12 @@ public static class PlayerControllerB_Sprint_Patch
 }
 
 [LCVRPatch]
-[HarmonyPatch(typeof(PlayerControllerB), "LateUpdate")]
+[HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.LateUpdate))]
 internal static class PlayerControllerB_LateUpdate_Patches
 {
     static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
     {
         var codes = new List<CodeInstruction>(instructions);
-
-        // Make it so player sends position updates more frequently (Multiplayer 6 DOF looks better with this)
-
-        int index = codes.FindLastIndex(x => x.operand == (object)Method(typeof(PlayerControllerB), "NearOtherPlayers"));
-
-        codes[index + 2].operand = 0.025f;
-        codes[index + 5].operand = 0.025f;
 
         // Remove local visor updating (this will be done using hierarchy instead)
         var startIndex = codes.FindIndex(x => x.opcode == OpCodes.Ldfld && x.operand == (object)Field(typeof(PlayerControllerB), nameof(PlayerControllerB.localVisor))) - 1;
@@ -112,7 +104,10 @@ internal static class PlayerControllerB_LateUpdate_Patches
 [HarmonyPatch]
 internal static class PlayerControllerPatches
 {
-    [HarmonyPatch(typeof(PlayerControllerB), "OnEnable")]
+    /// <summary>
+    /// Make sure the OnEnable function uses the correct inputs
+    /// </summary>
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.OnEnable))]
     [HarmonyTranspiler]
     private static IEnumerable<CodeInstruction> PatchOnEnable(IEnumerable<CodeInstruction> instructions)
     {
@@ -125,7 +120,10 @@ internal static class PlayerControllerPatches
         return codes.AsEnumerable();
     }
 
-    [HarmonyPatch(typeof(PlayerControllerB), "OnDisable")]
+    /// <summary>
+    /// Make sure the OnDisable function uses the correct inputs
+    /// </summary>
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.OnDisable))]
     [HarmonyTranspiler]
     private static IEnumerable<CodeInstruction> PatchOnDisable(IEnumerable<CodeInstruction> instructions)
     {
@@ -138,6 +136,10 @@ internal static class PlayerControllerPatches
         return codes.AsEnumerable();
     }
 
+    /// <summary>
+    /// Prevent the local player visor from being moved when the player dies
+    /// </summary>
+    /// <param name="instructions"></param>
     [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.KillPlayer))]
     [HarmonyTranspiler]
     private static IEnumerable<CodeInstruction> PatchKillPlayer(IEnumerable<CodeInstruction> instructions)
@@ -152,8 +154,7 @@ internal static class PlayerControllerPatches
     /// <summary>
     /// Adds an arbitrary deadzone since the ScrollMouse gets performed if you only even touch the joystick a little bit
     /// </summary>
-    /// <returns></returns>
-    [HarmonyPatch(typeof(PlayerControllerB), "ScrollMouse_performed")]
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.ScrollMouse_performed))]
     [HarmonyPrefix]
     private static bool OnScroll(PlayerControllerB __instance, ref InputAction.CallbackContext context)
     {
@@ -166,7 +167,10 @@ internal static class PlayerControllerPatches
         return true;
     }
 
-    [HarmonyPatch(typeof(PlayerControllerB), "Crouch_performed")]
+    /// <summary>
+    /// Prevent the crouch button from doing anything if we are currently roomscale crouching
+    /// </summary>
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.Crouch_performed))]
     [HarmonyPrefix]
     private static bool OnCrouchPerformed(PlayerControllerB __instance)
     {
@@ -176,7 +180,10 @@ internal static class PlayerControllerPatches
         return !VRSession.Instance.LocalPlayer.IsRoomCrouching;
     }
 
-    [HarmonyPatch(typeof(PlayerControllerB), "Update")]
+    /// <summary>
+    /// Make sure the local player has the correct animator applied
+    /// </summary>
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.Update))]
     [HarmonyPostfix]
     private static void UpdatePrefix(PlayerControllerB __instance)
     {
@@ -195,7 +202,7 @@ internal static class PlayerControllerPatches
     /// <summary>
     /// Send haptic feedback on damage received
     /// </summary>
-    [HarmonyPatch(typeof(PlayerControllerB), "DamagePlayer")]
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.DamagePlayer))]
     [HarmonyPostfix]
     public static void AfterDamagePlayer(PlayerControllerB __instance)
     {
@@ -208,7 +215,10 @@ internal static class PlayerControllerPatches
         VRSession.Instance.VolumeManager.TakeDamage();
     }
 
-    [HarmonyPatch(typeof(PlayerControllerB), "PlayerLookInput")]
+    /// <summary>
+    /// Override the camera up parameter by using the headset rotation instead of mouse movement
+    /// </summary>
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.PlayerLookInput))]
     [HarmonyPostfix]
     private static void AfterPlayerLookInput(PlayerControllerB __instance)
     {
@@ -229,6 +239,9 @@ internal static class PlayerControllerPatches
             hit.collider.gameObject.GetComponent<PlayerControllerB>()?.ShowNameBillboard();
     }
 
+    /// <summary>
+    /// Disable the player spawn animation in VR
+    /// </summary>
     [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.SpawnPlayerAnimation))]
     [HarmonyPrefix]
     private static bool OnPlayerSpawnAnimation()
@@ -236,14 +249,20 @@ internal static class PlayerControllerPatches
         return false;
     }
 
-    [HarmonyPatch(typeof(PlayerControllerB), "SetHoverTipAndCurrentInteractTrigger")]
+    /// <summary>
+    /// Prevent vanilla "look at interactable" code from running, as we have our own implementation
+    /// </summary>
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.SetHoverTipAndCurrentInteractTrigger))]
     [HarmonyPrefix]
-    private static bool SetHoverTipAndCurrentInteractTriggerPrefix(PlayerControllerB __instance)
+    private static bool SetHoverTipAndCurrentInteractTriggerPrefix()
     {
         return false;
     }
 
-    [HarmonyPatch(typeof(PlayerControllerB), "ClickHoldInteraction")]
+    /// <summary>
+    /// Prevent vanilla "hold interactable" code from running, as we have our own implementation
+    /// </summary>
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.ClickHoldInteraction))]
     [HarmonyPrefix]
     private static bool ClickHoldInteractionPrefix()
     {
@@ -254,7 +273,7 @@ internal static class PlayerControllerPatches
     /// Vibrates the controllers when the player dies.
     /// The actual cool `on death` code is inside the spectator patches.
     /// </summary>
-    [HarmonyPatch(typeof(PlayerControllerB), "KillPlayer")]
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.KillPlayer))]
     [HarmonyPostfix]
     private static void OnPlayerDeath(PlayerControllerB __instance)
     {
@@ -267,7 +286,10 @@ internal static class PlayerControllerPatches
         VRSession.VibrateController(XRNode.RightHand, 1f, 1f);
     }
 
-    [HarmonyPatch(typeof(PlayerControllerB), "SwitchToItemSlot")]
+    /// <summary>
+    /// Detect when the local player switches to a VR special item and apply scripts to that item
+    /// </summary>
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.SwitchToItemSlot))]
     [HarmonyPostfix]
     private static void SwitchedToItemSlot(PlayerControllerB __instance)
     {
@@ -296,7 +318,10 @@ internal static class PlayerControllerPatches
 [HarmonyPatch]
 internal static class UniversalPlayerControllerPatches
 {
-    [HarmonyPatch(typeof(PlayerControllerB), "Update")]
+    /// <summary>
+    /// Update player rig animator
+    /// </summary>
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.Update))]
     [HarmonyPostfix]
     private static void UpdatePrefix(PlayerControllerB __instance)
     {
@@ -311,7 +336,10 @@ internal static class UniversalPlayerControllerPatches
         }
     }
 
-    [HarmonyPatch(typeof(PlayerControllerB), "SwitchToItemSlot")]
+    /// <summary>
+    /// Detect when a VR player switches to a VR special item and apply scripts to that item
+    /// </summary>
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.SwitchToItemSlot))]
     [HarmonyPostfix]
     private static void SwitchedToItemSlot(PlayerControllerB __instance)
     {

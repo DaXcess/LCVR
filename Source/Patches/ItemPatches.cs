@@ -10,7 +10,7 @@ internal static class UniversalItemPatches
     /// <summary>
     /// Prevents the built in LateUpdate if a VR item disables it
     /// </summary>
-    [HarmonyPatch(typeof(GrabbableObject), "LateUpdate")]
+    [HarmonyPatch(typeof(GrabbableObject), nameof(GrabbableObject.LateUpdate))]
     [HarmonyPrefix]
     private static bool LateUpdatePrefix(GrabbableObject __instance)
     {
@@ -23,7 +23,7 @@ internal static class UniversalItemPatches
     /// <summary>
     /// Updates radar position of the item if the original LateUpdate function got blocked
     /// </summary>
-    [HarmonyPatch(typeof(GrabbableObject), "LateUpdate")]
+    [HarmonyPatch(typeof(GrabbableObject), nameof(GrabbableObject.LateUpdate))]
     [HarmonyPostfix]
     private static void LateUpdatePostfix(GrabbableObject __instance, bool __runOriginal)
     {

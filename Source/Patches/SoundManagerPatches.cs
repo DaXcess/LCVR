@@ -12,7 +12,10 @@ internal static class SoundManagerPatches
 {
     private static Coroutine heartbeatCoroutine;
 
-    [HarmonyPatch(typeof(SoundManager), "SetFearAudio")]
+    /// <summary>
+    /// Vibrate the controllers when the heartbeat audio is present
+    /// </summary>
+    [HarmonyPatch(typeof(SoundManager), nameof(SoundManager.SetFearAudio))]
     [HarmonyPostfix]
     private static void HapticHeartbeat(SoundManager __instance, bool ___playingHeartbeat)
     {
