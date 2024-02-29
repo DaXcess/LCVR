@@ -34,11 +34,8 @@ jobs:
       - name: Build NuGet package
         run: dotnet pack -p:Version='${{ steps.vars.outputs.version }}' -c Release
 
-      - name: Upload NuGet package to nuget.org
-        run: dotnet nuget push bin/Release/*.nupkg --api-key ${{ secrets.NUGET_TOKEN }} --source https://api.nuget.org/v3/index.json
-
-      - name: Clean up NuGet source
-        run: dotnet nuget remove source github
+      - name: Upload NuGet package
+        run: dotnet nuget push bin/Release/*.nupkg --api-key ${{ secrets.NUGET_TOKEN }} --source https://nuget.daxcess.io/v3/index.json
 
       - name: Build app
         run: dotnet build -c Release

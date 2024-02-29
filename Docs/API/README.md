@@ -9,7 +9,9 @@
 
 To properly be able to interface with LCVR, you must first reference the LCVR assembly in your mod.
 
-LCVR is available on [NuGet](https://www.nuget.org/packages/LCVR), and can be downloaded using the NuGet Package Manager in Visual Studio, or by using the `dotnet` CLI:
+LCVR is available on [DaXcess' NuGet Registry](https://nuget.daxcess.io/packages/LCVR), and can be downloaded using the NuGet Package Manager in Visual Studio, or by using the `dotnet` CLI:
+
+> Make sure you have added `https://nuget.daxcess.io/v3/index.json` to your NuGet sources list
 
 ```sh
 # Optionally target a specific version by adding `--version x.x.x` at the end
