@@ -1,5 +1,5 @@
 ﻿using HarmonyLib;
-using System.Reflection;
+using UnityEngine.InputSystem.XR;
 
 namespace LCVR.Patches;
 
@@ -10,12 +10,9 @@ namespace LCVR.Patches;
 [HarmonyPatch]
 internal static class XRPatches
 {
-    private static MethodInfo TargetMethod()
-    {
-        return AccessTools.Method(AccessTools.TypeByName("UnityEngine.InputSystem.XR.XRSupport"), "Initialize");
-    }
-
-    private static bool Prefix()
+    [HarmonyPatch(typeof(XRSupport), nameof(XRSupport.Initialize))]
+    [HarmonyPrefix]
+    private static bool OnBeforeInitialize()
     {
         return false;
     }

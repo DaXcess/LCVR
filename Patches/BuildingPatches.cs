@@ -32,15 +32,13 @@ internal static class ShipBuildModeManagerPatches
 [HarmonyPatch(typeof(ShipBuildModeManager), "Update")]
 internal static class ShipBuildModeManagerFromHandPatches
 {
-    private static readonly FieldInfo playerCameraRay = AccessTools.Field(typeof(ShipBuildModeManager), "playerCameraRay");
-
     private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
     {
         foreach (var instruction in instructions)
         {
             yield return instruction;
 
-            if (instruction.opcode == OpCodes.Stfld && (FieldInfo)instruction.operand == playerCameraRay)
+            if (instruction.opcode == OpCodes.Stfld && (FieldInfo)instruction.operand == AccessTools.Field(typeof(ShipBuildModeManager), "playerCameraRay"))
             {
                 yield return new CodeInstruction(OpCodes.Ldarg_0);
                 yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ShipBuildModeManagerFromHandPatches), "UpdateRay"));
@@ -53,7 +51,7 @@ internal static class ShipBuildModeManagerFromHandPatches
         var origin = VRSession.Instance.LocalPlayer.PrimaryController.InteractOrigin;
         var ray = new Ray(origin.position, origin.forward);
 
-        AccessTools.Field(typeof(ShipBuildModeManager), "playerCameraRay").SetValue(manager, ray);
+        manager.playerCameraRay = ray;
     }
 }
 

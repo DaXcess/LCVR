@@ -1,8 +1,6 @@
 ﻿using GameNetcodeStuff;
-using HarmonyLib;
 using LCVR.Networking;
 using System.Collections.Generic;
-using System.Reflection;
 using UnityEngine;
 
 namespace LCVR.Items;
@@ -15,8 +13,6 @@ namespace LCVR.Items;
 public abstract class VRItem<T> : MonoBehaviour where T : GrabbableObject
 {
     public static readonly Dictionary<GrabbableObject, VRItem<T>> itemCache = [];
-
-    private static readonly MethodInfo canUseItem = AccessTools.Method(typeof(PlayerControllerB), "CanUseItem");
 
     protected T item;
     protected PlayerControllerB player;
@@ -69,6 +65,6 @@ public abstract class VRItem<T> : MonoBehaviour where T : GrabbableObject
 
     protected bool CanUseItem()
     {
-        return (bool)canUseItem.Invoke(item.playerHeldBy, []);
+        return item.playerHeldBy.CanUseItem();
     }
 }

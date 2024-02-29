@@ -49,7 +49,8 @@ internal static class SpectatorPlayerPatches
         if (!__instance.IsOwner || wasPlayerDead || !__instance.AllowPlayerDeath())
             return;
 
-        AccessTools.Method(typeof(PlayerControllerB), "ChangeAudioListenerToObject").Invoke(__instance, [__instance.gameplayCamera.gameObject]);
+        // Keep using the FPV camera after death
+        __instance.ChangeAudioListenerToObject(__instance.gameplayCamera.gameObject);
         StartOfRound.Instance.SwitchCamera(__instance.gameplayCamera);
 
         // We should still be able to walk around
@@ -189,8 +190,7 @@ internal static class SpectatorPlayerPatches
         player.thisPlayerModelArms.enabled = false;
         player.isPlayerControlled = false;
         player.takingFallDamage = false;
-
-        AccessTools.Field(typeof(PlayerControllerB), "isCameraDisabled").SetValue(player, true);
+        player.isCameraDisabled = true;
 
         // Re-enable interactors
         VRSession.Instance.LocalPlayer.LeftHandInteractor.enabled = true;

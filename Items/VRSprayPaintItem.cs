@@ -1,14 +1,9 @@
-﻿using GameNetcodeStuff;
-using HarmonyLib;
-using LCVR.Player;
-using System.Reflection;
+﻿using LCVR.Player;
 
 namespace LCVR.Items;
 
 internal class VRSprayPaintItem : VRItem<SprayPaintItem>
 {
-    private static readonly FieldInfo timeSinceSwitchingSlotsField = AccessTools.Field(typeof(PlayerControllerB), "timeSinceSwitchingSlots");
-
     private new void Awake()
     {
         base.Awake();
@@ -33,7 +28,7 @@ internal class VRSprayPaintItem : VRItem<SprayPaintItem>
         if (player.isGrabbingObjectAnimation || player.inTerminalMenu || player.inSpecialInteractAnimation)
             return;
 
-        timeSinceSwitchingSlotsField.SetValue(player, 0f);
+        player.timeSinceSwitchingSlots = 0f;
         player.currentlyHeldObjectServer.ItemInteractLeftRightOnClient(false);
     }
 

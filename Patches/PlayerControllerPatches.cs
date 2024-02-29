@@ -112,18 +112,6 @@ internal static class PlayerControllerB_LateUpdate_Patches
 [HarmonyPatch]
 internal static class PlayerControllerPatches
 {
-    private static readonly FieldInfo cameraUpField = Field(typeof(PlayerControllerB), "cameraUp");
-
-    private static void SetCameraUp(this PlayerControllerB player, float value)
-    {
-        cameraUpField.SetValue(player, value);
-    }
-
-    private static float GetCameraUp(this PlayerControllerB player)
-    {
-        return (float)cameraUpField.GetValue(player);
-    }
-
     [HarmonyPatch(typeof(PlayerControllerB), "OnEnable")]
     [HarmonyTranspiler]
     private static IEnumerable<CodeInstruction> PatchOnEnable(IEnumerable<CodeInstruction> instructions)
@@ -230,7 +218,7 @@ internal static class PlayerControllerPatches
         if (rot > 180)
             rot -= 360;
 
-        __instance.SetCameraUp(rot);
+        __instance.cameraUp = rot;
 
         // Handle username billboard
         if (__instance.isGrabbingObjectAnimation)

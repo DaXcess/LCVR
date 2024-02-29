@@ -37,7 +37,7 @@ internal static class SpectatorEnemyPatches
 
         if ((networkManager.IsClient || networkManager.IsHost) && StartOfRound.Instance.localPlayerController.isPlayerDead)
         {
-            AccessTools.Field(typeof(CentipedeAI), "triggeredFall").SetValue(__instance, false);
+            __instance.triggeredFall = false;
             return false;
         }
 

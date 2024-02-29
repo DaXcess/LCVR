@@ -40,12 +40,11 @@ internal class Door : MonoBehaviour, VRInteractable
             }
             else if (picking && item is LockPicker lockpicker)
             {
-                var position = (Vector3)AccessTools.Method(typeof(LockPicker), "GetLockPickerDoorPosition").Invoke(lockpicker, [door]);
-                var placeOnLockPicker1 = (bool)AccessTools.Field(typeof(LockPicker), "placeOnLockPicker1").GetValue(lockpicker);
+                var position = lockpicker.GetLockPickerDoorPosition(door);
 
                 lockpicker.playerHeldBy.DiscardHeldObject(true, door.NetworkObject, position, true);
-                lockpicker.PlaceLockPickerServerRpc(door.NetworkObject, placeOnLockPicker1);
-                lockpicker.PlaceOnDoor(door, placeOnLockPicker1);
+                lockpicker.PlaceLockPickerServerRpc(door.NetworkObject, lockpicker.placeOnLockPicker1);
+                lockpicker.PlaceOnDoor(door, lockpicker.placeOnLockPicker1);
             }
             else
                 door.doorLockSFX.PlayOneShot(AssetManager.doorLocked);

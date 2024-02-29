@@ -63,7 +63,7 @@ public class ChargeStation : MonoBehaviour, VRInteractable
     public void CancelChargingAnimation()
     {
         charger.zapAudio.Stop();
-        charger.StopCoroutine((Coroutine)AccessTools.Field(typeof(ItemCharger), "chargeItemCoroutine").GetValue(charger));
+        charger.StopCoroutine(charger.chargeItemCoroutine);
     }
 
     public bool OnButtonPress(VRInteractor _) { return false; }

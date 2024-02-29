@@ -6,6 +6,8 @@ using System.Reflection;
 using System.Reflection.Emit;
 using UnityEngine.InputSystem;
 
+using static HarmonyLib.AccessTools;
+
 namespace LCVR.Patches;
 
 [LCVRPatch]
@@ -43,23 +45,23 @@ internal static class HUDManagerPatches
 [HarmonyPatch(typeof(HUDManager), "Update")]
 internal static class HUDManagerLeaveEarlyPatches
 {
-    private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+    private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
     {
         var codes = new List<CodeInstruction>(instructions);
-        var startIndex = codes.FindIndex(instruction => instruction.opcode == OpCodes.Callvirt && (MethodInfo)instruction.operand == AccessTools.PropertyGetter(typeof(PlayerActions), "Movement")) - 2;
+        var startIndex = codes.FindIndex(instruction => instruction.opcode == OpCodes.Callvirt && (MethodInfo)instruction.operand == PropertyGetter(typeof(PlayerActions), "Movement")) - 2;
 
         var labels = codes[startIndex].labels;
-        codes[startIndex++] = new(OpCodes.Callvirt, AccessTools.PropertyGetter(typeof(IngamePlayerSettings), nameof(IngamePlayerSettings.Instance)))
+        codes[startIndex++] = new(OpCodes.Callvirt, PropertyGetter(typeof(IngamePlayerSettings), nameof(IngamePlayerSettings.Instance)))
         {
             labels = labels
         };
 
-        codes[startIndex++] = new(OpCodes.Ldfld, AccessTools.Field(typeof(IngamePlayerSettings), nameof(IngamePlayerSettings.playerInput)));
-        codes[startIndex++] = new(OpCodes.Callvirt, AccessTools.PropertyGetter(typeof(PlayerInput), nameof(PlayerInput.actions)));
+        codes[startIndex++] = new(OpCodes.Ldfld, Field(typeof(IngamePlayerSettings), nameof(IngamePlayerSettings.playerInput)));
+        codes[startIndex++] = new(OpCodes.Callvirt, PropertyGetter(typeof(PlayerInput), nameof(PlayerInput.actions)));
         codes[startIndex++] = new(OpCodes.Ldstr, "PingScan");
         codes[startIndex++] = new(OpCodes.Ldc_I4_0);
-        codes[startIndex++] = new(OpCodes.Callvirt, AccessTools.Method(typeof(InputActionAsset), nameof(InputActionAsset.FindAction), [typeof(string), typeof(bool)]));
-        codes[startIndex++] = new(OpCodes.Callvirt, AccessTools.Method(typeof(InputAction), nameof(InputAction.IsPressed)));
+        codes[startIndex++] = new(OpCodes.Callvirt, Method(typeof(InputActionAsset), nameof(InputActionAsset.FindAction), [typeof(string), typeof(bool)]));
+        codes[startIndex++] = new(OpCodes.Callvirt, Method(typeof(InputAction), nameof(InputAction.IsPressed)));
 
         return codes.AsEnumerable();
     }

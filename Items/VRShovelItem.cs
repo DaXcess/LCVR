@@ -1,9 +1,6 @@
-﻿using GameNetcodeStuff;
-using HarmonyLib;
-using LCVR.Player;
+﻿using LCVR.Player;
 using System.Collections;
 using System.Collections.Generic;
-using System.Reflection;
 using UnityEngine;
 
 namespace LCVR.Items;
@@ -11,8 +8,6 @@ namespace LCVR.Items;
 // The holding is insanely scuffed but I really have no clue how to do it properly I'm not /that/ good of a developer
 internal class VRShovelItem : VRItem<Shovel>
 {
-    private static readonly FieldInfo previousPlayerHeldByField = AccessTools.Field(typeof(Shovel), "previousPlayerHeldBy");
-
     private readonly Vector3 positionOffset = new(-0.09f, 0, 0.25f);
 
     private Transform interactTransform;
@@ -23,19 +18,6 @@ internal class VRShovelItem : VRItem<Shovel>
     private bool hasSwung = false;
     private float lastActionTime = 0;
     private float timeNotReeledUp = 0;
-
-    private PlayerControllerB PreviousPlayerHeldBy
-    {
-        get
-        {
-            return (PlayerControllerB)previousPlayerHeldByField.GetValue(item);
-        }
-
-        set
-        {
-            previousPlayerHeldByField.SetValue(item, value);
-        }
-    }
 
     private new void Awake()
     {
@@ -162,7 +144,7 @@ internal class VRShovelItem : VRItem<Shovel>
         timeNotReeledUp = 0;
 
         item.reelingUp = true;
-        PreviousPlayerHeldBy = item.playerHeldBy;
+        item.previousPlayerHeldBy = item.playerHeldBy;
         item.playerHeldBy.activatingItem = true;
         item.playerHeldBy.twoHanded = true;
         item.playerHeldBy.playerBodyAnimator.ResetTrigger("shovelHit");
@@ -195,7 +177,7 @@ internal class VRShovelItem : VRItem<Shovel>
     {
         item.reelingUp = false;
         hasSwung = false;
-        PreviousPlayerHeldBy.twoHanded = false;
+        item.previousPlayerHeldBy.twoHanded = false;
 
         item.SwingShovel(true);
         yield return new WaitForSeconds(0.13f);

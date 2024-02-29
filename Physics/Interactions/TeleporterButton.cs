@@ -15,8 +15,6 @@ internal class TeleporterButton : MonoBehaviour, VRInteractable
     internal TextMeshProUGUI timerText;
     internal TeleporterButtonGlass glassInteractable;
 
-    private float Cooldown => Mathf.Ceil((float)AccessTools.Field(typeof(ShipTeleporter), "cooldownTime").GetValue(teleporter));
-
     public InteractableFlags Flags => InteractableFlags.BothHands;
 
     void Awake()
@@ -34,12 +32,12 @@ internal class TeleporterButton : MonoBehaviour, VRInteractable
     {
         while (true)
         {
-            if (Cooldown > 0)
+            if (teleporter.cooldownTime > 0)
                 timerText.color = new Color(1f, 0.1062f, 0f, 0.4314f);
             else
                 timerText.color = new Color(0.1062f, 1f, 0f, 0.4314f);
 
-            timerText.text = $"{Mathf.Floor(Cooldown / 60f)}:{(int)Cooldown % 60:D2}";
+            timerText.text = $"{Mathf.Floor(teleporter.cooldownTime / 60f)}:{(int)teleporter.cooldownTime % 60:D2}";
             yield return new WaitForSeconds(1);
         }
     }

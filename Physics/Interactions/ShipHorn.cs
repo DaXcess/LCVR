@@ -16,9 +16,6 @@ internal class ShipHorn : MonoBehaviour, VRInteractable
     private Transform targetTransform;
     private float grabYPosition;
 
-    private bool BlastingLocally => (bool)AccessTools.Field(typeof(ShipAlarmCord), "localClientHoldingCord").GetValue(shipHorn);
-    private bool BlastingByOther => (bool)AccessTools.Field(typeof(ShipAlarmCord), "otherClientHoldingCord").GetValue(shipHorn);
-
     public InteractableFlags Flags => InteractableFlags.BothHands;
 
     void Awake()
@@ -43,7 +40,7 @@ internal class ShipHorn : MonoBehaviour, VRInteractable
 
     public bool OnButtonPress(VRInteractor interactor)
     {
-        if (BlastingByOther || !trigger.interactable)
+        if (shipHorn.otherClientHoldingCord || !trigger.interactable)
             return false;
 
         targetTransform = interactor.transform;

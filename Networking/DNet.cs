@@ -1,9 +1,9 @@
 ﻿using Dissonance;
 using Dissonance.Integrations.Unity_NFGO;
 using Dissonance.Networking;
+using Dissonance.Networking.Client;
 using GameNetcodeStuff;
 using HarmonyLib;
-using JetBrains.Annotations;
 using LCVR.Patches;
 using LCVR.Physics.Interactions;
 using LCVR.Player;
@@ -12,7 +12,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using UnityEngine;
 
 namespace LCVR.Networking;
@@ -29,18 +28,9 @@ public class DNet
     private static DissonanceComms dissonance;
     private static NfgoCommsNetwork network;
     private static BaseClient<NfgoServer, NfgoClient, NfgoConn> client;
-    private static Peers peers;
+    private static SlaveClientCollection<NfgoConn> peers;
 
-    private static ushort? LocalId
-    {
-        get
-        {
-            var session = AccessTools.Field(client.GetType(), "_serverNegotiator").GetValue(client);
-            var localId = (ushort?)AccessTools.Property(session.GetType(), "LocalId").GetValue(session);
-
-            return localId;
-        }
-    }
+    private static ushort? LocalId => client._serverNegotiator.LocalId;
 
     // A list of all known VR clients
     private static readonly Dictionary<ushort, ClientInfo<NfgoConn?>> clients = [];
@@ -52,8 +42,8 @@ public class DNet
     {
         dissonance = GameObject.Find("DissonanceSetup").GetComponent<DissonanceComms>();
         network = dissonance.GetComponent<NfgoCommsNetwork>();
-        client = (BaseClient<NfgoServer, NfgoClient, NfgoConn>)AccessTools.Property(typeof(NfgoCommsNetwork), "Client").GetValue(network);
-        peers = new Peers(AccessTools.Field(client.GetType(), "_peers").GetValue(client));
+        client = network.Client;
+        peers = client._peers;
 
         // Wait for voicechat connection
         yield return new WaitUntil(() => LocalId.HasValue);
@@ -506,21 +496,6 @@ public class DNet
     }
 
     #endregion
-}
-
-internal static class DissonanceExtensions
-{
-    private static readonly MethodInfo sendReliableP2P;
-
-    static DissonanceExtensions()
-    {
-        sendReliableP2P = AccessTools.Method(typeof(BaseClient<NfgoServer, NfgoClient, NfgoConn>), "SendReliableP2P");
-    }
-
-    public static void SendReliableP2P(this BaseClient<NfgoServer, NfgoClient, NfgoConn> client, [NotNull] List<ClientInfo<NfgoConn?>> destinations, ArraySegment<byte> packet)
-    {
-        sendReliableP2P.Invoke(client, [destinations, packet]);
-    }
 }
 
 [LCVRPatch(LCVRPatchTarget.Universal)]

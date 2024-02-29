@@ -25,7 +25,7 @@ internal static class ShotgunItemPatches
 
         var rayOrigin = VRSession.Instance.LocalPlayer.PrimaryController.InteractOrigin;
         __instance.ShootGun(rayOrigin.position, rayOrigin.forward);
-        Field(typeof(ShotgunItem), "localClientSendingShootGunRPC").SetValue(__instance, true);
+        __instance.localClientSendingShootGunRPC = true;
         __instance.ShootGunServerRpc(rayOrigin.position, rayOrigin.forward);
 
         return false;
@@ -44,7 +44,7 @@ internal static class KurtCobainPatches
         var codes = new List<CodeInstruction>(instructions);
 
         int index = codes.FindIndex(x => x.operand == (object)Method(typeof(Animator), nameof(Animator.SetTrigger), [typeof(string)])) + 1;
-        
+
         codes[index].opcode = OpCodes.Ldc_I4_0;
 
         return codes.AsEnumerable();

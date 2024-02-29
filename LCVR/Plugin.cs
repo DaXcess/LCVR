@@ -1,7 +1,6 @@
 ﻿using BepInEx;
 using BepInEx.Bootstrap;
 using GameNetcodeStuff;
-using HarmonyLib;
 using LCVR.Assets;
 using LCVR.Patches;
 using System;
@@ -19,7 +18,6 @@ using UnityEngine.SceneManagement;
 using UnityEngine.XR;
 using UnityEngine.XR.Management;
 using UnityEngine.XR.OpenXR;
-using UnityEngine.XR.OpenXR.Features;
 using UnityEngine.XR.OpenXR.Features.Interactions;
 
 using DependencyFlags = BepInEx.BepInDependency.DependencyFlags;
@@ -53,7 +51,7 @@ public class Plugin : BaseUnityPlugin
 
         // Reload Unity's Input System plugins since BepInEx in some
         // configurations runs after the Input System has already been initialized
-        AccessTools.Method(typeof(InputSystem), "PerformDefaultPluginInitialization").Invoke(null, []);
+        InputSystem.PerformDefaultPluginInitialization();
 
         // Plugin startup logic
         LCVR.Logger.SetSource(Logger);
@@ -290,11 +288,8 @@ public class Plugin : BaseUnityPlugin
         metaQuestTouch.enabled = true;
         oculusTouch.enabled = true;
 
-        // Patch the OpenXRSettings.features field to include controller profiles
         // This feature list is empty by default if the game isn't a VR game
-
-        var featList = new List<OpenXRFeature>()
-        {
+        OpenXRSettings.Instance.features = [
             valveIndex,
             hpReverb,
             htcVive,
@@ -302,8 +297,7 @@ public class Plugin : BaseUnityPlugin
             khrSimple,
             metaQuestTouch,
             oculusTouch
-        };
-        AccessTools.Field(typeof(OpenXRSettings), "features").SetValue(OpenXRSettings.Instance, featList.ToArray());
+        ];
 
         Logger.LogDebug("Enabled XR Controller Profiles");
     }
@@ -317,7 +311,7 @@ public class Plugin : BaseUnityPlugin
         var generalSettings = ScriptableObject.CreateInstance<XRGeneralSettings>();
         var managerSettings = ScriptableObject.CreateInstance<XRManagerSettings>();
         var xrLoader = ScriptableObject.CreateInstance<OpenXRLoader>();
-        
+
         generalSettings.Manager = managerSettings;
 
         // Casting this, because I couldn't stand the `this field is obsolete` warning
@@ -328,8 +322,8 @@ public class Plugin : BaseUnityPlugin
         OpenXRSettings.Instance.depthSubmissionMode = OpenXRSettings.DepthSubmissionMode.None;
 
         // Initialize XR
-        AccessTools.Method(typeof(XRGeneralSettings), "InitXRSDK").Invoke(generalSettings, []);
-        AccessTools.Method(typeof(XRGeneralSettings), "Start").Invoke(generalSettings, []);
+        generalSettings.InitXRSDK();
+        generalSettings.Start();
 
         Logger.LogInfo("Initialized OpenXR Runtime");
     }

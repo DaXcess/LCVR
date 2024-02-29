@@ -21,8 +21,6 @@ public class AssetManager
     public static Material defaultRayMat;
     public static Material alwaysOnTopMat;
 
-    public static Shader compositionGraph;
-
     public static InputActionAsset defaultInputActions;
 
     public static RuntimeAnimatorController localVrMetarig;
@@ -61,8 +59,6 @@ public class AssetManager
         splashMaterial = assetBundle.LoadAsset<Material>("Splash");
         defaultRayMat = assetBundle.LoadAsset<Material>("Default Ray");
         alwaysOnTopMat = assetBundle.LoadAsset<Material>("Always On Top");
-
-        compositionGraph = assetBundle.LoadAsset<Shader>("CompostionGraph");
 
         githubImage = assetBundle.LoadAsset<Sprite>("Github");
         kofiImage = assetBundle.LoadAsset<Sprite>("Ko-Fi");

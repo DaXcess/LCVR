@@ -26,7 +26,7 @@ public class Face : MonoBehaviour, VRInteractable
     public InteractableFlags Flags => InteractableFlags.RightHand;
     public bool IsInteracting => isInteracting;
 
-    private bool CanInteract => (bool)AccessTools.Method(typeof(PlayerControllerB), "CanUseItem").Invoke(VRSession.Instance.LocalPlayer.PlayerController, []);
+    private bool CanInteract => VRSession.Instance.LocalPlayer.PlayerController.CanUseItem();
 
     void Update()
     {
@@ -34,7 +34,7 @@ public class Face : MonoBehaviour, VRInteractable
             return;
 
         var item = GetItem();
-        if (item && heldItem != item && (float)AccessTools.Field(typeof(PlayerControllerB), "timeSinceSwitchingSlots").GetValue(VRSession.Instance.LocalPlayer.PlayerController) > 0.075f)
+        if (item && heldItem != item && VRSession.Instance.LocalPlayer.PlayerController.timeSinceSwitchingSlots > 0.075f)
         {
             heldItem = item;
             heldItem.UseItemOnClient(true);
