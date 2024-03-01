@@ -1,3 +1,3 @@
-# Thunderstore Wiki Pages
+﻿# Documentation
 
-This directory will store all the wiki pages that can be found on the Thunderstore page
+This directory will store all the documentation for thunderstore pages and the LCVR API

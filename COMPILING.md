@@ -1,4 +1,4 @@
-# Compiling
+﻿# Compiling
 
 ## Initial setup
 
@@ -11,10 +11,6 @@ You can download it from the link above, or alternitavely if you are using Arch 
 ```sh
 $ pacman -S dotnet-sdk
 ```
-
-## Copying the game assembly
-
-This project depends on code from the actual game (what a surprise), but since the game is not free this code has not been provided in this repository by default. If you have installed the game, browse the games local files and copy `Lethal Company_data/Managed/Assembly-CSharp.dll` and `Lethal Company_data/Managed/DissonanceVoip.dll` to the `Libs` directory in the repo. If your IDE was opened during this process, you might have to restart or reload it.
 
 ## Building the assembly
 

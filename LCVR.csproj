@@ -4,10 +4,15 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>LCVR</AssemblyName>
     <Description>Collecting Scrap in VR</Description>
-    <Version>1.1.9</Version>
+    <Version>1.2.0</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>12.0</LangVersion>
     <Title>LethalCompanyVR</Title>
+    <Copyright>Copyright (c) DaXcess 2024</Copyright>
+    <PackageProjectUrl>https://lcvr.daxcess.io</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/DaXcess/LCVR</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -15,74 +20,23 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Libs\**" />
-    <Compile Remove="RuntimeDeps\**" />
-    <EmbeddedResource Remove="Libs\**" />
-    <EmbeddedResource Remove="RuntimeDeps\**" />
-    <None Remove="Libs\**" />
-    <None Remove="RuntimeDeps\**" />
+    <Compile Remove="ThirdParty\**" />
+    <EmbeddedResource Remove="ThirdParty\**" />
+    <None Remove="ThirdParty\**" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
     <PackageReference Include="BepInEx.Core" Version="5.*" />
-    <PackageReference Include="BepInEx.PluginInfoProps" Version="1.*" />
+    <PackageReference Include="LCVRDeps" Version="1.49.0" />
+    <PackageReference Include="Mimics" Version="2.4.1" />
+    <PackageReference Include="MoreCompany" Version="1.8.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
     <PackageReference Include="UnityEngine.Modules" Version="2022.3.9" IncludeAssets="compile" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="MoreCompany">
-      <HintPath>Libs\Mods\MoreCompany.dll</HintPath>
-    </Reference>
-    <Reference Include="Mimics">
-      <HintPath>Libs\Mods\Mimics.dll</HintPath>
-    </Reference>
-    <Reference Include="TooManyEmotes">
-      <HintPath>Libs\Mods\TooManyEmotes.dll</HintPath>
-    </Reference>
-    <Reference Include="Assembly-CSharp">
-      <HintPath>Libs\Assembly-CSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="DissonanceVoip">
-      <HintPath>Libs\DissonanceVoip.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>Libs\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="Unity.Animation.Rigging">
-      <HintPath>Libs\Unity.Animation.Rigging.dll</HintPath>
-    </Reference>
-    <Reference Include="Unity.InputSystem">
-      <HintPath>Libs\Unity.InputSystem.dll</HintPath>
-    </Reference>
-    <Reference Include="Unity.Netcode.Runtime">
-      <HintPath>Libs\Unity.Netcode.Runtime.dll</HintPath>
-    </Reference>
-    <Reference Include="Unity.RenderPipelines.Core.Runtime">
-      <HintPath>Libs\Unity.RenderPipelines.Core.Runtime.dll</HintPath>
-    </Reference>
-    <Reference Include="Unity.RenderPipelines.HighDefinition.Runtime">
-      <HintPath>Libs\Unity.RenderPipelines.HighDefinition.Runtime.dll</HintPath>
-    </Reference>
-    <Reference Include="Unity.TextMeshPro">
-      <HintPath>Libs\Unity.TextMeshPro.dll</HintPath>
-    </Reference>
-    <Reference Include="Unity.XR.Interaction.Toolkit">
-      <HintPath>Libs\Unity.XR.Interaction.Toolkit.dll</HintPath>
-    </Reference>
-    <Reference Include="Unity.XR.Management">
-      <HintPath>Libs\Unity.XR.Management.dll</HintPath>
-    </Reference>
-    <Reference Include="Unity.XR.OpenXR">
-      <HintPath>Libs\Unity.XR.OpenXR.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.UI">
-      <HintPath>Libs\UnityEngine.UI.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
   <ItemGroup>
@@ -101,6 +55,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="ThirdParty\" />
+    <None Include="README.md" Pack="true" PackagePath="\" />
+    <None Include="LICENSE" Pack="true" PackagePath="\" />
   </ItemGroup>
 </Project>
