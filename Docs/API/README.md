@@ -1,4 +1,4 @@
-# Table of contents
+﻿# Table of contents
 
 1. [Adding LCVR as a dependency](#adding-lcvr-as-a-dependency)
 2. [Checking if VR is active](#checking-if-vr-is-active)

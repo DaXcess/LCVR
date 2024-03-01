@@ -1,4 +1,4 @@
-# Lethal Company VR Mod
+﻿# Lethal Company VR Mod
 
 <!-- Shields idea shamelessly stolen from Evaisa's LethalLib -->
 

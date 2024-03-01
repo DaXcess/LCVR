@@ -1,4 +1,4 @@
-# 1.2.0
+﻿# 1.2.0
 
 ## Settings Menu
 
@@ -16,36 +16,46 @@ LCVR v1.2.0 features a bunch of new interactions that VR players can use to inte
 > All of the following interactions can be disabled individually inside the config.
 
 - **Ship Lever**
+
   You now must physically pull/push the ship lever to land the ship or take off from a planet. The lever, when held, will follow the position of your hand, and this even works for other players who have the mod!
 
 - **Monitor Buttons**
+
   You may notice that the monitor buttons have been moved next to the lever. This is because you can now physically press the buttons to turn on/off the monitor, or switch to another player on the radar!
 
 - **Charging Station**
+
   Hate being forced to stand in front of the charging station every time you charge an item? Well now you just hold any item that has a battery, and just hold it up to the charging station. Voila, your item has now been charged. If you pull the item out too quickly though, the charger will not charge your item!
   _This interaction only works on the right hand, putting your left hand inside the charger will make you just look like an idiot._
 
 - **Ship Door**
+
   Have an angry dog chasing you around? Just smash the ship door buttons to close or open the ship door.
 
 - **Teleporter**
+
   Want to inverse into the facility with style? Just flick open the glass cover, and **SMASH** the teleporter button with your fist!
 
 - **Company Bell**
+
   Delicately place your finger on top of the bell to make it ring... Or just smash it, you do you.
 
 - **Ship Horn**
+
   Funny little horn with a funny little cord can now be pulled using your funny little hand.
 
 - **Breaker Box**
+
   Y'all ever had issues with trying to flip the switches on the breaker box in VR? It's so stupid because their hitboxes are gigantic!
   Anyways, just flick open the door with your hand, and use your finger to toggle the switches.
   _This interaction only works when you are using your pointer finger, a fist or flat hand will not work_
 
 - **Doors**
+
   Always had the issue where like a billion people tried to open the same door and it just keeps opening and closing and you can't get through? Well now you actually have to interact with the door handle to open and close the door. Is a door locked? Find out by trying to open the door and listen for the sound cue (or just notice that it doesn't open, whatever). To use a key on a door, interact with the door handle using your right hand while holding a key. Same thing for the lockpicker, however picking up the lockpicker when it is placed on a door also requires you to physically grab it. When the lockpicker is an item on the floor, it will behave normally, and can be picked up from a distance.
 
 - **Face**
+
   Just want to really scream right into that walkie, begging to be teleported because a Jester is right around the corner? Well, you can now do so without pressing any button! Just hold up any compatible item to your face to use them, but watch out what you all put near your face!
   _This interaction only works on the right hand, for obvious reasons_
 
@@ -56,6 +66,10 @@ Hate it when you die to a dog because your frantic screaming caused you to lure 
 ## Fixed broken arms
 
 Replaced the games IK constraints with ones that are properly able to determine the position of the elbow, meaning the arms should no longer bend inwards.
+
+## Fixed controller auto-detection
+
+In versions before 1.2.0, the automatic detection of the type of controller being used happened too early in the loading process, causing a large amount of users to default to the `default` controller profile, which is only meant for Oculus/Meta (or similar ABXY) devices. In version 1.2.0 going forward, this auto-detection keeps running in the background until a match is found, even when already in a level (though the detection should complete once you start using the controllers in the main menu, but maybe some mods bypass the menu screen entirely).
 
 ## Locomotion Update
 
