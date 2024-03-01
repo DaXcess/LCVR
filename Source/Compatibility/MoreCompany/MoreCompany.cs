@@ -2,7 +2,7 @@
 
 namespace LCVR.Compatibility;
 
-internal class MoreCompany
+internal static class MoreCompany
 {
     public static void SetupMoreCompanyUI()
     {

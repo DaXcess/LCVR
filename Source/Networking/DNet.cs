@@ -19,9 +19,9 @@ namespace LCVR.Networking;
 // (Ab)using Dissonance Voice to communicate directly to players without the host needing to have mods installed
 // Keep in mind that all of this code is and should be CLIENT side!
 
-public class DNet
+public static class DNet
 {
-    public const ushort PROTOCOL_VERSION = 3;
+    private const ushort PROTOCOL_VERSION = 3;
 
     private static readonly NamedLogger Logger = new("Networking");
 

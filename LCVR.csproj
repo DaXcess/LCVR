@@ -28,7 +28,7 @@
   <ItemGroup>
     <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
     <PackageReference Include="BepInEx.Core" Version="5.*" />
-    <PackageReference Include="LCVRDeps" Version="1.0.0" />
+    <PackageReference Include="LCVRDeps" Version="1.49.0" />
     <PackageReference Include="Mimics" Version="2.4.1" />
     <PackageReference Include="MoreCompany" Version="1.8.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />

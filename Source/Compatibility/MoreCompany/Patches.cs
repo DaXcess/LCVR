@@ -12,7 +12,7 @@ namespace LCVR.Compatibility;
 [HarmonyPatch]
 internal static class MoreCompanyUIPatches
 {
-    [HarmonyPatch(typeof(CosmeticRegistry), "UpdateCosmeticsOnDisplayGuy")]
+    [HarmonyPatch(typeof(CosmeticRegistry), nameof(CosmeticRegistry.UpdateCosmeticsOnDisplayGuy))]
     [HarmonyPostfix]
     private static void AfterUpdateCosmetics()
     {
@@ -26,7 +26,7 @@ internal static class MoreCompanyUIPatches
     private static Vector2 lastRayPosition = Vector2.zero;
     private static Vector3 rotationalVelocity = Vector3.zero;
 
-    [HarmonyPatch(typeof(SpinDragger), "Update")]
+    [HarmonyPatch(typeof(SpinDragger), nameof(SpinDragger.Update))]
     [HarmonyPrefix]
     private static bool UpdateSpinDragger(SpinDragger __instance)
     {
@@ -50,7 +50,7 @@ internal static class MoreCompanyUIPatches
         return false;
     }
 
-    [HarmonyPatch(typeof(SpinDragger), "OnPointerDown")]
+    [HarmonyPatch(typeof(SpinDragger), nameof(SpinDragger.OnPointerDown))]
     [HarmonyPrefix]
     private static bool OnPointerDown(SpinDragger __instance, PointerEventData eventData)
     {
@@ -76,7 +76,7 @@ internal static class MoreCompanyUIPatches
         return false;
     }
 
-    [HarmonyPatch(typeof(SpinDragger), "OnPointerUp")]
+    [HarmonyPatch(typeof(SpinDragger), nameof(SpinDragger.OnPointerUp))]
     [HarmonyPrefix]
     private static bool OnPointerUp()
     {

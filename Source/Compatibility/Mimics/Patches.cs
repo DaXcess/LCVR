@@ -13,7 +13,7 @@ internal static class MimicUIPatches
     // The difference between the original fire door and the mimic 
     private static readonly Vector3 doorInteractorOffset = new(0, 1.6307f, -0.35f);
 
-    [HarmonyPatch(typeof(RoundManager), "SetExitIDs")]
+    [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.SetExitIDs))]
     [HarmonyPostfix]
     [HarmonyAfter(["x753.Mimics"])]
     private static void AssignInteractTriggerOffset()

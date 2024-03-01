@@ -3,7 +3,7 @@ using UnityEngine.InputSystem;
 
 namespace LCVR.Assets;
 
-public class AssetManager
+internal static class AssetManager
 {
     private static AssetBundle assetBundle;
 
