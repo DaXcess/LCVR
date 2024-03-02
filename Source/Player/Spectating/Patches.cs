@@ -2,6 +2,7 @@ using GameNetcodeStuff;
 using HarmonyLib;
 using LCVR.Patches;
 using System.Collections;
+using LCVR.Assets;
 using UnityEngine;
 
 namespace LCVR.Player.Spectating;
@@ -105,14 +106,25 @@ internal static class SpectatorPlayerPatches
         var shipDoorRight = shipDoorContainer.transform.Find("HangarDoorRight (1)");
         var shipDoorWall = shipDoorContainer.transform.Find("Cube");
 
-        shipDoorLeft.GetComponent<MeshRenderer>().enabled = false;
         shipDoorLeft.GetComponent<BoxCollider>().isTrigger = true;
-
-        shipDoorRight.GetComponent<MeshRenderer>().enabled = false;
         shipDoorRight.GetComponent<BoxCollider>().isTrigger = true;
-
         shipDoorWall.GetComponent<BoxCollider>().isTrigger = true;
+        
+        // Make the ship doors transparent
+        var shipDoorLeftRenderer = shipDoorLeft.GetComponent<Renderer>();
+        var shipDoorRightRenderer = shipDoorRight.GetComponent<Renderer>();
 
+        shipDoorLeftRenderer.materials =
+            [AssetManager.transparentHangarShipDoor1, AssetManager.transparentHangarShipDoor2];
+        shipDoorRightRenderer.materials =
+            [AssetManager.transparentHangarShipDoor2, AssetManager.transparentHangarShipDoor1];
+
+        var color1 = AssetManager.transparentHangarShipDoor1.color;
+        var color2 = AssetManager.transparentHangarShipDoor2.color;
+
+        AssetManager.transparentHangarShipDoor1.color = new Color(color1.r, color1.g, color1.b, 0.25f);
+        AssetManager.transparentHangarShipDoor2.color = new Color(color2.r, color2.g, color2.b, 0.25f);
+        
         // Make sure all enemies are no longer targeting us
         var enemies = Object.FindObjectsOfType<EnemyAI>();
         foreach (var enemy in enemies)
@@ -202,13 +214,16 @@ internal static class SpectatorPlayerPatches
         var shipDoorRight = shipDoorContainer.transform.Find("HangarDoorRight (1)");
         var shipDoorWall = shipDoorContainer.transform.Find("Cube");
 
-        shipDoorLeft.GetComponent<MeshRenderer>().enabled = true;
         shipDoorLeft.GetComponent<BoxCollider>().isTrigger = false;
-
-        shipDoorRight.GetComponent<MeshRenderer>().enabled = true;
         shipDoorRight.GetComponent<BoxCollider>().isTrigger = false;
-
         shipDoorWall.GetComponent<BoxCollider>().isTrigger = false;
+        
+        // Make the ship doors opaque again
+        var color1 = AssetManager.transparentHangarShipDoor1.color;
+        var color2 = AssetManager.transparentHangarShipDoor2.color;
+
+        AssetManager.transparentHangarShipDoor1.color = new Color(color1.r, color1.g, color1.b, 1f);
+        AssetManager.transparentHangarShipDoor2.color = new Color(color2.r, color2.g, color2.b, 1f);
 
         VRSession.Instance.HUD.ToggleSpectatorLight(false);
     }

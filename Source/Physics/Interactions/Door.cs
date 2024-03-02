@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using HarmonyLib;
 using LCVR.Assets;
@@ -55,10 +56,25 @@ internal class Door : MonoBehaviour, VRInteractable
         if (Time.realtimeSinceStartup - lastInteraction < 0.5f)
             return false;
 
-        door.OpenOrCloseDoor(VRSession.Instance.LocalPlayer.PlayerController);
+        StartCoroutine(delayedToggleDoor(door.isDoorOpened ? 0.2f : 0f));
         lastInteraction = Time.realtimeSinceStartup;
 
         return true;
+    }
+
+    private IEnumerator delayedToggleDoor(float wait = 0f)
+    {
+        yield return new WaitForSeconds(wait);
+        
+        ToggleDoor();
+    }
+
+    private void ToggleDoor()
+    {
+        var wasOpened = door.isDoorOpened;
+        door.OpenOrCloseDoor(VRSession.Instance.LocalPlayer.PlayerController);
+
+        transform.localScale *=  wasOpened ? 0.25f : 4f;
     }
 
     public void OnButtonRelease(VRInteractor _) { }
@@ -168,7 +184,7 @@ internal static class DoorPatches
         var interactableObject = GameObject.Instantiate(AssetManager.interactable, __instance.transform);
         interactableObject.transform.localPosition = position;
         interactableObject.transform.localEulerAngles = rotation;
-        interactableObject.transform.localScale = scale;
+        interactableObject.transform.localScale = scale * (__instance.isDoorOpened ? 4f : 1f);
 
         var interactable = interactableObject.AddComponent<Door>();
         interactable.door = __instance;

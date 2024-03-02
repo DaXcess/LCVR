@@ -68,6 +68,9 @@ public class Plugin : BaseUnityPlugin
         if (disableVr)
             Logger.LogWarning("VR has been disabled by config or the `--disable-vr` command line flag");
 
+        if (Environment.GetCommandLineArgs().Contains("--lcvr-debug-interactables"))
+            Flags |= Flags.InteractableDebug;
+
         // Verify game assembly to detect compatible version
         var allowUnverified = Environment.GetCommandLineArgs().Contains("--lcvr-skip-checksum");
 
@@ -436,8 +439,9 @@ public class Plugin : BaseUnityPlugin
 [Flags]
 public enum Flags
 {
-    VR = 1,
-    RestartRequired = 2,
-    UnityExplorerDetected = 4,
-    InvalidGameAssembly = 8
+    VR = 1 << 0,
+    RestartRequired = 1 << 1,
+    UnityExplorerDetected = 1 << 2,
+    InvalidGameAssembly = 1 << 3,
+    InteractableDebug = 1 << 4,
 }

@@ -20,8 +20,11 @@ internal static class AssetManager
     public static Material splashMaterial;
     public static Material defaultRayMat;
     public static Material alwaysOnTopMat;
+    public static Material transparentHangarShipDoor1;
+    public static Material transparentHangarShipDoor2;
 
     public static InputActionAsset defaultInputActions;
+    public static InputActionAsset nullInputActions;
 
     public static RuntimeAnimatorController localVrMetarig;
     public static RuntimeAnimatorController remoteVrMetarig;
@@ -55,10 +58,13 @@ internal static class AssetManager
         spectatorLight = assetBundle.LoadAsset<GameObject>("Spectator Light");
 
         defaultInputActions = assetBundle.LoadAsset<InputActionAsset>("XR Input Actions");
+        nullInputActions = assetBundle.LoadAsset<InputActionAsset>("NullPlayerActions");
 
         splashMaterial = assetBundle.LoadAsset<Material>("Splash");
         defaultRayMat = assetBundle.LoadAsset<Material>("Default Ray");
         alwaysOnTopMat = assetBundle.LoadAsset<Material>("Always On Top");
+        transparentHangarShipDoor1 = assetBundle.LoadAsset<Material>("HangarShipDoor1");
+        transparentHangarShipDoor2 = assetBundle.LoadAsset<Material>("HangarShipDoor2");
 
         githubImage = assetBundle.LoadAsset<Sprite>("Github");
         kofiImage = assetBundle.LoadAsset<Sprite>("Ko-Fi");

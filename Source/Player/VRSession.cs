@@ -36,7 +36,7 @@ public class VRSession : MonoBehaviour
     #endregion
 
     #region Custom Camera
-    private bool customCameraEnabled = false;
+    private bool customCameraEnabled;
     private Camera customCamera;
     private float customCameraLerpFactor;
     #endregion
@@ -74,15 +74,16 @@ public class VRSession : MonoBehaviour
         ChargeStation = ChargeStation.Create();
         #endregion
 
-        // Enable this line to show the interactors on the camera
-#if DEBUG && false
-        playerGameplayCamera.cullingMask |= 1 << 11;
-#endif
+        if (Plugin.Flags.HasFlag(Flags.InteractableDebug))
+            playerGameplayCamera.cullingMask |= 1 << 11;
     }
 
     void Update()
     {
-        if (customCameraEnabled && !localPlayer.IsDead)
+        if (!InVR)
+            return;
+        
+        if (customCameraEnabled)
         {
             customCamera.transform.position = playerGameplayCamera.transform.position;
             customCamera.transform.rotation = Quaternion.Lerp(customCamera.transform.rotation, playerGameplayCamera.transform.rotation, customCameraLerpFactor);
@@ -199,8 +200,7 @@ public class VRSession : MonoBehaviour
         #region Add keyboard to Terminal
         var terminal = FindObjectOfType<Terminal>();
 
-        var terminalKeyboardObject = Instantiate(AssetManager.keyboard);
-        terminalKeyboardObject.transform.SetParent(terminal.transform.parent.parent, false);
+        var terminalKeyboardObject = Instantiate(AssetManager.keyboard, terminal.transform.parent);
         terminalKeyboardObject.transform.localPosition = new Vector3(-0.584f, 0.333f, 0.791f);
         terminalKeyboardObject.transform.localEulerAngles = new Vector3(0, 90, 90);
         terminalKeyboardObject.transform.localScale = Vector3.one * 0.0009f;
@@ -347,9 +347,8 @@ public class VRSession : MonoBehaviour
 
         children.Do(child => child.SetParent(null, true));
 
-        customCamera = Instantiate(playerGameplayCamera);
+        customCamera = Instantiate(playerGameplayCamera, transform);
         customCamera.name = "Custom Camera";
-        customCamera.transform.SetParent(playerGameplayCamera.transform.parent, false);
         customCamera.transform.localEulerAngles = Vector3.zero;
         customCamera.transform.localPosition = Vector3.zero;
         customCamera.transform.localScale = Vector3.one;
@@ -358,6 +357,9 @@ public class VRSession : MonoBehaviour
         customCamera.depth++;
         customCamera.stereoTargetEye = StereoTargetEyeMask.None;
         customCamera.targetDisplay = 0;
+        
+        // Prevent cloned camera from tracking HMD movement
+        Destroy(customCamera.GetComponent<TrackedPoseDriver>());
 
         var hdDesktopCamera = customCamera.GetComponent<HDAdditionalCameraData>();
         hdDesktopCamera.xrRendering = false;
@@ -390,6 +392,9 @@ public class VRSession : MonoBehaviour
         HUD.menuKeyboard.Close();
         SwitchToUICamera();
 
+        if (customCameraEnabled)
+            customCamera.enabled = false;
+
         LocalPlayer.PrimaryController.enabled = false;
     }
 
@@ -399,6 +404,9 @@ public class VRSession : MonoBehaviour
 
         HUD.menuKeyboard.Close();
         SwitchToGameCamera();
+
+        if (customCameraEnabled)
+            customCamera.enabled = true;
 
         LocalPlayer.PrimaryController.enabled = true;
     }
