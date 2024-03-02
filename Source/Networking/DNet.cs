@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace LCVR.Networking;
 
@@ -23,7 +24,7 @@ public static class DNet
 {
     private const ushort PROTOCOL_VERSION = 3;
 
-    private static readonly NamedLogger Logger = new("Networking");
+    private static readonly NamedLogger logger = new("Networking");
 
     private static DissonanceComms dissonance;
     private static NfgoCommsNetwork network;
@@ -48,7 +49,7 @@ public static class DNet
         // Wait for voicechat connection
         yield return new WaitUntil(() => LocalId.HasValue);
 
-        Logger.LogDebug("Connected to Dissonance server");
+        logger.LogDebug("Connected to Dissonance server");
 
         dissonance.OnPlayerJoinedSession += OnPlayerJoinedSession;
         dissonance.OnPlayerLeftSession += OnPlayerLeftSession;
@@ -73,6 +74,8 @@ public static class DNet
         players.Clear();
         clients.Clear();
         clientByName.Clear();
+
+        muffledPlayers.Clear();
     }
 
     public static void BroadcastRig(Rig rig)
@@ -99,7 +102,7 @@ public static class DNet
     {
         if (!clients.TryGetValue(client, out var target))
         {
-            Logger.LogError($"Cannot send handshake response to {client}: Client info is missing!");
+            logger.LogError($"Cannot send handshake response to {client}: Client info is missing!");
             return;
         }
 
@@ -107,7 +110,7 @@ public static class DNet
     }
 
     /// <summary>
-    /// Continously send handshake requests to clients that have not been negotiated with yet
+    /// Continuously send handshake requests to clients that have not been negotiated with yet
     /// </summary>
     private static IEnumerator SendHandshakeCoroutine()
     {
@@ -127,17 +130,17 @@ public static class DNet
 
     private static void OnPlayerJoinedSession(VoicePlayerState player)
     {
-        Logger.LogDebug("Player joined, trying to resolve client info");
+        logger.LogDebug("Player joined, trying to resolve client info");
 
         if (!peers.TryGetClientInfoByName(player.Name, out var info))
         {
-            Logger.LogError($"Failed to resolve client info for client '{player.Name}'");
+            logger.LogError($"Failed to resolve client info for client '{player.Name}'");
             return;
         }
 
-        Logger.LogDebug($"Resolved client info");
-        Logger.LogDebug($"Player Name = {player.Name}");
-        Logger.LogDebug($"Player Id = {info.PlayerId}");
+        logger.LogDebug($"Resolved client info");
+        logger.LogDebug($"Player Name = {player.Name}");
+        logger.LogDebug($"Player Id = {info.PlayerId}");
 
         clients.Add(info.PlayerId, info);
         clientByName.Add(player.Name, info.PlayerId);
@@ -149,15 +152,17 @@ public static class DNet
             return;
 
         if (players.TryGetValue(id, out var networkPlayer))
-            GameObject.Destroy(networkPlayer);
+            Object.Destroy(networkPlayer);
 
         subscribers.Remove(id);
         players.Remove(id);
         clients.Remove(id);
         clientByName.Remove(player.Name);
 
-        Logger.LogDebug($"Player {player.Name} left the game");
-        Logger.LogDebug($"subscribers = {subscribers.Count}, players = {players.Count}, clients = {clients.Count} ({string.Join(", ", clients.Keys)}), clientByNames = {clientByName.Count} ({string.Join(", ", clientByName.Keys)})");
+        muffledPlayers.Remove(id);
+
+        logger.LogDebug($"Player {player.Name} left the game");
+        logger.LogDebug($"subscribers = {subscribers.Count}, players = {players.Count}, clients = {clients.Count} ({string.Join(", ", clients.Keys)}), clientByNames = {clientByName.Count} ({string.Join(", ", clientByName.Keys)})");
     }
 
     #endregion
@@ -166,7 +171,7 @@ public static class DNet
 
     private static void BroadcastPacket(MessageType type, byte[] payload)
     {
-        var targets = subscribers.Where(key => clients.TryGetValue(key, out var value)).Select(value => clients[value]).ToList();
+        var targets = subscribers.Where(key => clients.TryGetValue(key, out _)).Select(value => clients[value]).ToList();
 
         client.SendReliableP2P(targets, ConstructPacket(type, payload));
     }
@@ -235,7 +240,7 @@ public static class DNet
         if (protocol != PROTOCOL_VERSION)
             return;
 
-        Logger.LogDebug($"Player {sender} has initiated a handshake");
+        logger.LogDebug($"Player {sender} has initiated a handshake");
 
         SendHandshakeResponse(sender);
     }
@@ -251,15 +256,16 @@ public static class DNet
         // Re-initialize player if already present
         if (players.TryGetValue(sender, out var networkPlayer))
         {
-            GameObject.Destroy(networkPlayer);
+            Object.Destroy(networkPlayer);
             players.Remove(sender);
         }
 
-        yield return new WaitUntil(() => peers.TryGetClientInfoById(sender, out var client));
+        // Wait until client is a part of the peers list
+        yield return new WaitUntil(() => peers.TryGetClientInfoById(sender, out _));
 
         if (!peers.TryGetClientInfoById(sender, out var client))
         {
-            Logger.LogError($"Failed to resolve client for Player Id {sender}. No VR movements will be synchronized.");
+            logger.LogError($"Failed to resolve client for Player Id {sender}. No VR movements will be synchronized.");
 
             yield break;
         }
@@ -267,17 +273,17 @@ public static class DNet
         var player = dissonance.FindPlayer(client.PlayerName);
         if (player == null)
         {
-            Logger.LogError($"Failed to resolve client for Player {player.Name}. No VR movements will be synchronized.");
+            logger.LogError($"Failed to resolve client for Player {client.PlayerName}. No VR movements will be synchronized.");
             yield break;
         }
 
         yield return new WaitUntil(() => player.Tracker != null);
 
-        var playerObject = ((NfgoPlayer)player.Tracker).gameObject;
+        var playerObject = ((NfgoPlayer)player.Tracker!).gameObject;
         var playerController = playerObject.GetComponent<PlayerControllerB>();
         networkPlayer = playerObject.AddComponent<VRNetPlayer>();
 
-        Logger.LogInfo($"Found VR player {playerController.playerUsername}");
+        logger.LogInfo($"Found VR player {playerController.playerUsername}");
 
         players.Add(sender, networkPlayer);
 
@@ -317,11 +323,11 @@ public static class DNet
             lever.StopInteracting();
     }
 
-    private static readonly List<VRNetPlayer> muffledPlayers = [];
+    private static readonly HashSet<ushort> muffledPlayers = [];
 
     public static bool IsPlayerMuffled(int playerId)
     {
-        return muffledPlayers.Any(player => (int)player.PlayerController.playerClientId == playerId);
+        return muffledPlayers.Any(player => player == playerId);
     }
 
     private static void HandleSetMuffled(ushort sender, bool muffled)
@@ -329,7 +335,7 @@ public static class DNet
         if (!players.TryGetValue(sender, out var player))
             return;
 
-        Logger.Log($"{player.PlayerController.playerUsername} muffled: {muffled}");
+        logger.Log($"{player.PlayerController.playerUsername} muffled: {muffled}");
 
         if (muffled)
         {
@@ -337,11 +343,11 @@ public static class DNet
             occlude.overridingLowPass = true;
             occlude.lowPassOverride = 1000f;
 
-            muffledPlayers.Add(player);
+            muffledPlayers.Add(sender);
         }
         else
         {
-            muffledPlayers.Remove(player);
+            muffledPlayers.Remove(sender);
 
             StartOfRound.Instance.UpdatePlayerVoiceEffects();
         }
@@ -420,10 +426,10 @@ public static class DNet
             {
                 rightHandPosition = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()),
                 rightHandEulers = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()),
-                rightHandFingers = Fingers.Deserialize(br.ReadBytes(Fingers.ByteCount)),
+                rightHandFingers = Fingers.Deserialize(br.ReadBytes(Fingers.BYTE_COUNT)),
                 leftHandPosition = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()),
                 leftHandEulers = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()),
-                leftHandFingers = Fingers.Deserialize(br.ReadBytes(Fingers.ByteCount)),
+                leftHandFingers = Fingers.Deserialize(br.ReadBytes(Fingers.BYTE_COUNT)),
                 cameraEulers = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()),
                 cameraPosAccounted = new Vector3(br.ReadSingle(), 0, br.ReadSingle()),
                 modelOffset = new Vector3(br.ReadSingle(), 0, br.ReadSingle()),
@@ -445,7 +451,7 @@ public static class DNet
 
     public struct Fingers
     {
-        public const int ByteCount = 5;
+        public const int BYTE_COUNT = 5;
 
         public float thumb;
         public float index;
@@ -508,7 +514,7 @@ internal static class DissonancePatches
     {
         try
         {
-            using var stream = new MemoryStream(data.Array, data.Offset, data.Array.Length - data.Offset);
+            using var stream = new MemoryStream(data.Array!, data.Offset, data.Array!.Length - data.Offset);
             using var reader = new BinaryReader(stream);
 
             // Check magic
@@ -531,8 +537,6 @@ internal static class DissonancePatches
         {
             Logger.LogError(ex.Message);
             Logger.LogError(ex.StackTrace);
-
-            return;
         }
     }
 }

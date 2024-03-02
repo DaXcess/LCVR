@@ -32,12 +32,14 @@ internal class TeleporterButton : MonoBehaviour, VRInteractable
     {
         while (true)
         {
-            if (teleporter.cooldownTime > 0)
+            var cooldown = Mathf.Max(teleporter.cooldownTime, 0);
+            
+            if (cooldown > 0)
                 timerText.color = new Color(1f, 0.1062f, 0f, 0.4314f);
             else
                 timerText.color = new Color(0.1062f, 1f, 0f, 0.4314f);
 
-            timerText.text = $"{Mathf.Floor(teleporter.cooldownTime / 60f)}:{(int)teleporter.cooldownTime % 60:D2}";
+            timerText.text = $"{Mathf.Floor(cooldown / 60f)}:{(int)cooldown % 60:D2}";
             yield return new WaitForSeconds(1);
         }
     }

@@ -18,6 +18,10 @@ public class VRPlayer : MonoBehaviour
 {
     private const float SCALE_FACTOR = 1.5f;
     private const int CAMERA_CLIP_MASK = 1 << 8 | 1 << 26;
+    
+    private const float SQR_MOVE_THRESHOLD = 1E-5f;
+    private const float TURN_ANGLE_THRESHOLD = 120.0f;
+    private const float TURN_WEIGHT_SHARP = 15.0f;
 
     private PlayerControllerB playerController;
     private CharacterController characterController;
@@ -25,19 +29,15 @@ public class VRPlayer : MonoBehaviour
 
     private Coroutine stopSprintingCoroutine;
 
-    private float cameraFloorOffset = 0f;
-    private float crouchOffset = 0f;
+    private float cameraFloorOffset;
+    private float crouchOffset;
     private float realHeight = 2.3f;
 
-    private readonly float sqrMoveThreshold = 1E-5f;
-    private readonly float turnAngleThreshold = 120.0f;
-    private readonly float turnWeightSharp = 15.0f;
+    private bool isSprinting;
+    private bool isRoomCrouching;
 
-    private bool isSprinting = false;
-    private bool isRoomCrouching = false;
-
-    private bool wasInSpecialAnimation = false;
-    private bool wasInEnemyAnimation = false;
+    private bool wasInSpecialAnimation;
+    private bool wasInEnemyAnimation;
     private Vector3 specialAnimationPositionOffset = Vector3.zero;
 
     private Camera mainCamera;
@@ -403,7 +403,7 @@ public class VRPlayer : MonoBehaviour
         }
 
         wasInSpecialAnimation = playerController.inSpecialInteractAnimation;
-        wasInEnemyAnimation = playerController.inAnimationWithEnemy != null;
+        wasInEnemyAnimation = playerController.inAnimationWithEnemy is not null;
 
         if (playerController.inSpecialInteractAnimation)
             totalMovementSinceLastMove = Vector3.zero;
@@ -411,18 +411,21 @@ public class VRPlayer : MonoBehaviour
             totalMovementSinceLastMove += movementAccounted;
 
         var controllerMovement = Actions.Instance["Movement/Move"].ReadValue<Vector2>();
-        bool moved = controllerMovement.x > 0 || controllerMovement.y > 0;
-        var hit = UnityEngine.Physics.OverlapBox(mainCamera.transform.position, Vector3.one * 0.1f, Quaternion.identity, CAMERA_CLIP_MASK)
-            .Where(c => !c.isTrigger)
-            .Where(c => c.transform != transform.Find("Misc/Cube")) // Idk what this cube is used for but for some reason it starts colliding if you are not the host
-            .Count() > 0;
+        var moved = controllerMovement.x > 0 || controllerMovement.y > 0;
+        var hit = UnityEngine.Physics
+            .OverlapBox(mainCamera.transform.position, Vector3.one * 0.1f, Quaternion.identity, CAMERA_CLIP_MASK)
+            .Any(c => !c.isTrigger && c.transform != transform.Find("Misc/Cube"));
 
         // Move player if we're not in special interact animation
         if (!playerController.inSpecialInteractAnimation && (totalMovementSinceLastMove.sqrMagnitude > 0.25f || hit || moved))
         {
-            // Also move down a small amount to prevent somehow ungrounding the character controller
-            characterController.Move(new Vector3(totalMovementSinceLastMove.x * SCALE_FACTOR, -0.0025f, totalMovementSinceLastMove.z * SCALE_FACTOR));
+            var wasGrounded = characterController.isGrounded;
+            
+            characterController.Move(new Vector3(totalMovementSinceLastMove.x * SCALE_FACTOR, 0f, totalMovementSinceLastMove.z * SCALE_FACTOR));
             totalMovementSinceLastMove = Vector3.zero;
+
+            if (!characterController.isGrounded && wasGrounded)
+                characterController.Move(new Vector3(0, -0.01f, 0));
         }
 
         // Update rotation offset after adding movement from frame (if not in build mode)
@@ -465,12 +468,12 @@ public class VRPlayer : MonoBehaviour
 
         //Logger.LogDebug($"{transform.position} {xrOrigin.position} {leftHandVRTarget.transform.position} {rightHandVRTarget.transform.position} {cameraFloorOffset} {cameraPosAccounted}");
 
-        if ((xrOrigin.position - lastOriginPos).sqrMagnitude > sqrMoveThreshold) // player moved
+        if ((xrOrigin.position - lastOriginPos).sqrMagnitude > SQR_MOVE_THRESHOLD) // player moved
                                                                                  // Rotate body sharply but still smoothly
-            TurnBodyToCamera(turnWeightSharp);
-        else if (!playerController.inSpecialInteractAnimation && GetBodyToCameraAngle() is var angle && angle > turnAngleThreshold)
+            TurnBodyToCamera(TURN_WEIGHT_SHARP);
+        else if (!playerController.inSpecialInteractAnimation && GetBodyToCameraAngle() is var angle && angle > TURN_ANGLE_THRESHOLD)
             // Rotate body as smoothly as possible but prevent 360 deg head twists on quick rotations
-            TurnBodyToCamera(turnWeightSharp * Mathf.InverseLerp(turnAngleThreshold, 170f, angle));
+            TurnBodyToCamera(TURN_WEIGHT_SHARP * Mathf.InverseLerp(TURN_ANGLE_THRESHOLD, 170f, angle));
 
         if (!playerController.inSpecialInteractAnimation)
             lastFrameHMDPosition = mainCamera.transform.localPosition;
@@ -585,7 +588,7 @@ public class VRPlayer : MonoBehaviour
 
     private Transform Find(string name, bool resetLocalPosition = false)
     {
-        var transform = base.transform.Find(name);
+        var transform = this.transform.Find(name);
         if (transform == null) return null;
 
         if (resetLocalPosition)

@@ -342,7 +342,7 @@ public class Plugin : BaseUnityPlugin
         {
             return false;
         }
-
+        
         displays[0].Start();
 
         Logger.LogInfo("Started XR Display subsystem, welcome to VR!");

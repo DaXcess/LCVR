@@ -153,12 +153,9 @@ public class VRSession : MonoBehaviour
 
         #region Apply optimization configruation
         var hdCamera = playerGameplayCamera.GetComponent<HDAdditionalCameraData>();
-
-        if (Plugin.Config.EnableDLSS.Value)
-        {
-            hdCamera.allowDynamicResolution = true;
-            hdCamera.allowDeepLearningSuperSampling = true;
-        }
+        
+        hdCamera.allowDynamicResolution = Plugin.Config.EnableDynamicResolution.Value;
+        hdCamera.allowDeepLearningSuperSampling = Plugin.Config.EnableDLSS.Value;
 
         hdCamera.DisableQualitySetting(FrameSettingsField.DepthOfField);
         hdCamera.DisableQualitySetting(FrameSettingsField.SSAO);

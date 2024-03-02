@@ -9,6 +9,7 @@ using UnityEngine.XR.Interaction.Toolkit;
 using System.Security.Cryptography;
 using System.Text;
 using System;
+using System.Collections;
 using GameNetcodeStuff;
 
 namespace LCVR;
@@ -210,5 +211,13 @@ internal static class Utils
             Hand.Right => Actions.Instance.RightHandTrackingState,
             _ => throw new NotImplementedException(),
         };
+    }
+    
+    /// <summary>
+    /// A coroutine that does nothing
+    /// </summary>
+    public static IEnumerator NopRoutine()
+    {
+        yield break;
     }
 }

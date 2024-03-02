@@ -1,4 +1,5 @@
-﻿using GameNetcodeStuff;
+﻿using System.Collections;
+using GameNetcodeStuff;
 using HarmonyLib;
 using LCVR.Patches;
 using System.Collections.Generic;
@@ -76,5 +77,22 @@ internal static class SpectatorEnvironmentPatches
         var localDeadCheck = StartOfRound.Instance.localPlayerController.isPlayerDead;
 
         return !networkCheck || !localPlayerCheck || !localDeadCheck;
+    }
+
+    /// <summary>
+    /// Prevent dead players from being teleported if they don't have a body to teleport
+    /// </summary>
+    [HarmonyPatch(typeof(ShipTeleporter), nameof(ShipTeleporter.beamUpPlayer))]
+    [HarmonyPrefix]
+    private static bool PreventTeleportDeadPlayer(ShipTeleporter __instance, ref IEnumerator __result)
+    {
+        var target = StartOfRound.Instance.mapScreen.targetedPlayer;
+        if (target != StartOfRound.Instance.localPlayerController || !target.isPlayerDead ||
+            target.deadBody is not null)
+            return true;
+        
+        __instance.shipTeleporterAudio.PlayOneShot(__instance.teleporterSpinSFX);
+        __result = Utils.NopRoutine();
+        return false;
     }
 }

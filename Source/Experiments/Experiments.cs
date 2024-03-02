@@ -11,7 +11,7 @@ internal class Experiments
 {
     public static void RunExperiments()
     {
-        ShowMeTheMoney(10000);
+        // ShowMeTheMoney(10000);
         // SpawnShotgun();
         // SpawnBuyableItem<JetpackItem>("Jetpack");
         // SpawnBuyableItem<SprayPaintItem>("Spray paint");
@@ -87,6 +87,7 @@ internal class Experiments
     }
 }
 
+#if DEBUG
 [LCVRPatch(LCVRPatchTarget.Universal)]
 [HarmonyPatch]
 internal static class ExperimentalPatches
@@ -103,3 +104,4 @@ internal static class ExperimentalPatches
         return false;
     }
 }
+#endif

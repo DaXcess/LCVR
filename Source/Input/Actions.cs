@@ -184,18 +184,11 @@ public class Actions
 
     private InputActionAsset GetProfile(string profile)
     {
-        Logger.LogDebug(profile);
-        Logger.LogDebug(profiles);
-
-        Logger.LogDebug("A");
-
         if (!profiles.TryGetValue(profile, out var inputAsset))
         {
             Logger.LogWarning($"Tried to load unknown controller profile: {profile}, falling back to default");
             inputAsset = profiles["default"];
         }
-        Logger.LogDebug("B");
-
         // Download external profile if configured
         var actions = string.IsNullOrEmpty(Plugin.Config.ControllerBindingsOverrideProfile.Value) switch
         {
@@ -206,7 +199,6 @@ public class Actions
                 false => inputAsset
             }
         };
-        Logger.LogDebug("C");
 
         return actions;
     }
