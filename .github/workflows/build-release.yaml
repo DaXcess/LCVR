@@ -35,6 +35,7 @@ jobs:
         run: dotnet pack -p:Version='${{ steps.vars.outputs.version }}' -c Release
 
       - name: Upload NuGet package
+        if: github.event_name == 'push'
         run: dotnet nuget push bin/Release/*.nupkg --api-key ${{ secrets.NUGET_TOKEN }} --source https://nuget.daxcess.io/v3/index.json
 
       - name: Build app
