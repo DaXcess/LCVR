@@ -39,6 +39,8 @@ public static class DNet
     private static readonly Dictionary<string, ushort> clientByName = [];
     private static readonly List<ushort> subscribers = [];
 
+    public static VRNetPlayer[] Players => players.Values.ToArray();
+
     public static IEnumerator Initialize()
     {
         dissonance = GameObject.Find("DissonanceSetup").GetComponent<DissonanceComms>();
@@ -81,6 +83,11 @@ public static class DNet
     public static void BroadcastRig(Rig rig)
     {
         BroadcastPacket(MessageType.RigData, rig.Serialize());
+    }
+
+    public static void BroadcastSpectatorRig(SpectatorRig rig)
+    {
+        BroadcastPacket(MessageType.SpectatorRigData, rig.Serialize());
     }
 
     public static void InteractWithLever(bool started)
@@ -220,6 +227,10 @@ public static class DNet
             case MessageType.RigData:
                 HandleRigUpdate(sender, data);
                 break;
+            
+            case MessageType.SpectatorRigData:
+                HandleSpectatorRigUpdate(sender, data);
+                break;
 
             case MessageType.Lever:
                 HandleInteractWithLever(sender, BitConverter.ToBoolean(data));
@@ -310,6 +321,15 @@ public static class DNet
         player.UpdateTargetTransforms(rig);
     }
 
+    private static void HandleSpectatorRigUpdate(ushort sender, byte[] packet)
+    {
+        if (!players.TryGetValue(sender, out var player))
+            return;
+
+        var rig = SpectatorRig.Deserialize(packet);
+        player.UpdateSpectatorTransforms(rig);
+    }
+    
     private static void HandleInteractWithLever(ushort sender, bool started)
     {
         if (!players.TryGetValue(sender, out var player))
@@ -449,6 +469,68 @@ public static class DNet
         }
     }
 
+    public struct SpectatorRig
+    {
+        public Vector3 headPosition;
+        public Vector3 headRotation;
+
+        public Vector3 leftHandPosition;
+        public Vector3 leftHandRotation;
+
+        public Vector3 rightHandPosition;
+        public Vector3 rightHandRotation;
+
+        public byte[] Serialize()
+        {
+            using var mem = new MemoryStream();
+            using var bw = new BinaryWriter(mem);
+            
+            bw.Write(headPosition.x);
+            bw.Write(headPosition.y);
+            bw.Write(headPosition.z);
+            
+            bw.Write(headRotation.x);
+            bw.Write(headRotation.y);
+            bw.Write(headRotation.z);
+            
+            bw.Write(leftHandPosition.x);
+            bw.Write(leftHandPosition.y);
+            bw.Write(leftHandPosition.z);
+            
+            bw.Write(leftHandRotation.x);
+            bw.Write(leftHandRotation.y);
+            bw.Write(leftHandRotation.z);
+            
+            bw.Write(rightHandPosition.x);
+            bw.Write(rightHandPosition.y);
+            bw.Write(rightHandPosition.z);
+            
+            bw.Write(rightHandRotation.x);
+            bw.Write(rightHandRotation.y);
+            bw.Write(rightHandRotation.z);
+
+            return mem.ToArray();
+        }
+
+        public static SpectatorRig Deserialize(byte[] raw)
+        {
+            using var mem = new MemoryStream(raw);
+            using var br = new BinaryReader(mem);
+
+            var rig = new SpectatorRig()
+            {
+                headPosition = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()),
+                headRotation = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()),
+                leftHandPosition = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()),
+                leftHandRotation = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()),
+                rightHandPosition = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()),
+                rightHandRotation = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()),
+            };
+
+            return rig;
+        }
+    }
+    
     public struct Fingers
     {
         public const int BYTE_COUNT = 5;
@@ -496,6 +578,7 @@ public static class DNet
         HandshakeRequest = 16,
         HandshakeResponse,
         RigData,
+        SpectatorRigData,
         Lever,
         CancelChargerAnim,
         Muffled

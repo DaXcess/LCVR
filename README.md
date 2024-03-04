@@ -36,7 +36,7 @@ For more documentation on using the mod, check out the [LethalCompanyVR Thunders
 
 # For developers
 
-If you want to make your mod compatible with LCVR, make sure to check out the [API documentation](API.md). While at the time of writing it doesn't contain much, this might be expanded more in the future.
+If you want to make your mod compatible with LCVR, make sure to check out the [API documentation](Docs/API). While at the time of writing it doesn't contain much, this might be expanded more in the future.
 
 Also make sure you know how to use BepInEx Dependencies and assembly referencing properly to make sure that your mod keeps working even when LCVR is not installed _(unless your mod **requires** LCVR to work)_.
 

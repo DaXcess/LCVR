@@ -14,6 +14,7 @@ internal static class AssetManager
     public static GameObject animatedLogo;
     public static GameObject volumeManager;
     public static GameObject spectatorLight;
+    public static GameObject spectatorGhost;
 
     public static GameObject enemyPrefab;
 
@@ -41,7 +42,7 @@ internal static class AssetManager
     public static bool LoadAssets()
     {
         assetBundle = AssetBundle.LoadFromMemory(Properties.Resources.lethalcompanyvr);
-
+        
         if (assetBundle == null)
         {
             Logger.LogError("Failed to load asset bundle!");
@@ -56,6 +57,7 @@ internal static class AssetManager
         volumeManager = assetBundle.LoadAsset<GameObject>("Volume Manager");
         enemyPrefab = assetBundle.LoadAsset<GameObject>("DressGirl");
         spectatorLight = assetBundle.LoadAsset<GameObject>("Spectator Light");
+        spectatorGhost = assetBundle.LoadAsset<GameObject>("SpectatorGhost");
 
         defaultInputActions = assetBundle.LoadAsset<InputActionAsset>("XR Input Actions");
         nullInputActions = assetBundle.LoadAsset<InputActionAsset>("NullPlayerActions");

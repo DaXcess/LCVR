@@ -19,7 +19,7 @@ internal class CanvasTransformFollow : MonoBehaviour
 
     private Transform enemyTransform;
 
-    void Awake()
+    private void Awake()
     {
         Actions.Instance.OnReload += OnReloadActions;
         Actions.Instance["Controls/Reset Height"].performed += OnResetHeight;
@@ -29,18 +29,19 @@ internal class CanvasTransformFollow : MonoBehaviour
         StartCoroutine(Init());
     }
 
-    void OnReloadActions(InputActionAsset oldActions, InputActionAsset newActions)
+    private void OnReloadActions(InputActionAsset oldActions, InputActionAsset newActions)
     {
         oldActions["Controls/Reset Height"].performed -= OnResetHeight;
         newActions["Controls/Reset Height"].performed += OnResetHeight;
     }
 
-    void OnDestroy()
+    private void OnDestroy()
     {
+        Actions.Instance.OnReload -= OnReloadActions;
         Actions.Instance["Controls/Reset Height"].performed -= OnResetHeight;
     }
 
-    void Update()
+    private void Update()
     {
         transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, TURN_SMOOTHNESS);
         transform.position = Vector3.Lerp(transform.position, targetPosition, TURN_SMOOTHNESS);

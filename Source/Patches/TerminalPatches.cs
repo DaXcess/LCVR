@@ -55,8 +55,8 @@ internal class TerminalPatches
         if (openMenuDelegate == null || (Terminal)openMenuDelegate.Target != __instance)
             return;
 
-        Actions.Instance["Movement/OpenMenu"].performed -= openMenuDelegate;
         Actions.Instance.OnReload -= OnReloadActions;
+        Actions.Instance["Movement/OpenMenu"].performed -= openMenuDelegate;
     }
 
     private static void OnReloadActions(InputActionAsset oldActions, InputActionAsset newActions)

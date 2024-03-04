@@ -86,7 +86,7 @@ public class VRPlayer : MonoBehaviour
     private void Awake()
     {
         Logger.LogDebug("Going to intialize XR Rig");
-
+        
         playerController = GetComponent<PlayerControllerB>();
         characterController = GetComponent<CharacterController>();
         bones = new Bones(transform);
@@ -172,17 +172,10 @@ public class VRPlayer : MonoBehaviour
         };
 
         // Input actions
-        Actions.Instance.OnReload += (oldActions, newActions) =>
-        {
-            oldActions["Controls/Reset Height"].performed -= ResetHeight_performed;
-            oldActions["Controls/Sprint"].performed -= Sprint_performed;
-        
-            newActions["Controls/Reset Height"].performed += ResetHeight_performed;
-            newActions["Controls/Sprint"].performed += Sprint_performed;
-        };
-
+        Actions.Instance.OnReload += OnReloadActions;
         Actions.Instance["Controls/Reset Height"].performed += ResetHeight_performed;
         Actions.Instance["Controls/Sprint"].performed += Sprint_performed;
+        
         ResetHeight();
 
         // Set up item holders
@@ -358,25 +351,28 @@ public class VRPlayer : MonoBehaviour
         isSprinting = !isSprinting;
     }
 
-    private void OnDestroy()
-    {
-        Actions.Instance["Controls/Sprint"].performed -= Sprint_performed;
-        Actions.Instance["Controls/Reset Height"].performed -= ResetHeight_performed;
-    }
-
     private void ResetHeight_performed(InputAction.CallbackContext obj)
     {
         if (obj.performed)
             ResetHeight();
     }
 
+    private void OnReloadActions(InputActionAsset oldActions, InputActionAsset newActions)
+    {
+        oldActions["Controls/Reset Height"].performed -= ResetHeight_performed;
+        oldActions["Controls/Sprint"].performed -= Sprint_performed;
+        
+        newActions["Controls/Reset Height"].performed += ResetHeight_performed;
+        newActions["Controls/Sprint"].performed += Sprint_performed;
+    }
+    
     private void Update()
     {
         var movement = mainCamera.transform.localPosition - lastFrameHMDPosition;
         movement.y = 0;
 
         // Make sure player is facing towards the interacted object and that they're not sprinting
-        if (!wasInSpecialAnimation && playerController.inSpecialInteractAnimation && playerController.currentTriggerInAnimationWith?.playerPositionNode)
+        if (!wasInSpecialAnimation && playerController.inSpecialInteractAnimation && playerController.currentTriggerInAnimationWith is not null && playerController.currentTriggerInAnimationWith.playerPositionNode)
         {
             turningProvider.SetOffset(playerController.currentTriggerInAnimationWith.playerPositionNode.eulerAngles.y - mainCamera.transform.localEulerAngles.y);
             isSprinting = false;
@@ -498,30 +494,43 @@ public class VRPlayer : MonoBehaviour
         }
         else
             PlayerControllerB_Sprint_Patch.sprint = !isRoomCrouching && Actions.Instance["Controls/Sprint"].IsPressed() ? 1 : 0;
-
-        DNet.BroadcastRig(new DNet.Rig()
-        {
-            leftHandPosition = leftController.transform.localPosition,
-            leftHandEulers = leftController.transform.localEulerAngles,
-            leftHandFingers = LeftFingerCurler.GetCurls(),
-
-            rightHandPosition = rightController.transform.localPosition,
-            rightHandEulers = rightController.transform.localEulerAngles,
-            rightHandFingers = RightFingerCurler.GetCurls(),
-
-            cameraEulers = mainCamera.transform.eulerAngles,
-            cameraPosAccounted = cameraPosAccounted,
-            modelOffset = totalMovementSinceLastMove,
-
-            crouchState = (playerController.isCrouching, isRoomCrouching) switch
+        
+        if (!playerController.isPlayerDead)
+            DNet.BroadcastRig(new DNet.Rig()
             {
-                (true, true) => CrouchState.Roomscale,
-                (true, false) => CrouchState.Button,
-                (false, _) => CrouchState.None
-            },
-            rotationOffset = rotationOffset.eulerAngles.y,
-            cameraFloorOffset = cameraFloorOffset,
-        });
+                leftHandPosition = leftController.transform.localPosition,
+                leftHandEulers = leftController.transform.localEulerAngles,
+                leftHandFingers = LeftFingerCurler.GetCurls(),
+
+                rightHandPosition = rightController.transform.localPosition,
+                rightHandEulers = rightController.transform.localEulerAngles,
+                rightHandFingers = RightFingerCurler.GetCurls(),
+
+                cameraEulers = mainCamera.transform.eulerAngles,
+                cameraPosAccounted = cameraPosAccounted,
+                modelOffset = totalMovementSinceLastMove,
+
+                crouchState = (playerController.isCrouching, isRoomCrouching) switch
+                {
+                    (true, true) => CrouchState.Roomscale,
+                    (true, false) => CrouchState.Button,
+                    (false, _) => CrouchState.None
+                },
+                rotationOffset = rotationOffset.eulerAngles.y,
+                cameraFloorOffset = cameraFloorOffset,
+            });
+        else
+            DNet.BroadcastSpectatorRig(new DNet.SpectatorRig()
+            {
+                headPosition = mainCamera.transform.position,
+                headRotation = mainCamera.transform.eulerAngles,
+                
+                leftHandPosition = leftController.transform.position,
+                leftHandRotation = leftController.transform.eulerAngles,
+                
+                rightHandPosition = rightController.transform.position,
+                rightHandRotation = rightController.transform.eulerAngles
+            });
     }
 
     private void LateUpdate()
@@ -545,7 +554,14 @@ public class VRPlayer : MonoBehaviour
             RightFingerCurler?.Update();
         }
     }
-
+    
+    private void OnDestroy()
+    {
+        Actions.Instance.OnReload -= OnReloadActions;
+        Actions.Instance["Controls/Sprint"].performed -= Sprint_performed;
+        Actions.Instance["Controls/Reset Height"].performed -= ResetHeight_performed;
+    }
+    
     public void EnableInteractorVisuals(bool enabled = true)
     {
         leftControllerRayInteractor.GetComponent<XRInteractorLineVisual>().enabled = enabled;

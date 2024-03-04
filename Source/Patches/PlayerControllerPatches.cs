@@ -230,13 +230,27 @@ internal static class PlayerControllerPatches
 
         __instance.cameraUp = rot;
 
-        // Handle username billboard
         if (__instance.isGrabbingObjectAnimation)
             return;
-
+        
+        // Handle username billboard
         var ray = new Ray(__instance.gameplayCamera.transform.position, __instance.gameplayCamera.transform.forward);
         if (!__instance.isFreeCamera && UnityEngine.Physics.SphereCast(ray, 0.5f, out var hit, 5, 8))
-            hit.collider.gameObject.GetComponent<PlayerControllerB>()?.ShowNameBillboard();
+        {
+            if (hit.collider.TryGetComponent<PlayerControllerB>(out var player))
+            {
+                player.ShowNameBillboard();
+                return;
+            }
+
+            if (!__instance.isPlayerDead)
+                return;
+
+            if (!hit.collider.TryGetComponent<SpectatorGhost>(out var spectator))
+                return;
+
+            spectator.player.ShowSpectatorNameBillboard();
+        }
     }
 
     /// <summary>
@@ -365,6 +379,55 @@ internal static class UniversalPlayerControllerPatches
                 item.gameObject.AddComponent(type);
             else
                 component.enabled = true;
+        }
+    }
+
+    /// <summary>
+    /// On death, show all other spectator ghosts
+    /// </summary>
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.KillPlayer))]
+    [HarmonyPostfix]
+    private static void OnPlayerDeath(PlayerControllerB __instance)
+    {
+        if (__instance != StartOfRound.Instance.localPlayerController)
+            return;
+
+        foreach (var player in DNet.Players.Where(player => player.PlayerController.isPlayerDead))
+        {
+            player.ShowSpectatorGhost();
+        }
+    }
+
+    /// <summary>
+    /// Detect when another VR player has died
+    /// </summary>
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.KillPlayerClientRpc))]
+    [HarmonyPostfix]
+    private static void OnOtherPlayerDeath(PlayerControllerB __instance, int playerId)
+    {
+        if (!StartOfRound.Instance.localPlayerController.isPlayerDead)
+            return;
+        
+        var player = __instance.playersManager.allPlayerObjects[playerId].GetComponent<PlayerControllerB>();
+        if (player == StartOfRound.Instance.localPlayerController)
+            return;
+
+        if (!player.TryGetComponent<VRNetPlayer>(out var networkPlayer))
+            return;
+        
+        networkPlayer.ShowSpectatorGhost();
+    }
+
+    /// <summary>
+    /// Notify VR players that they have been revived
+    /// </summary>
+    [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.ReviveDeadPlayers))]
+    [HarmonyPostfix]
+    private static void OnPlayerRevived(StartOfRound __instance)
+    {
+        foreach (var player in DNet.Players)
+        {
+            player.HideSpectatorGhost();
         }
     }
 }

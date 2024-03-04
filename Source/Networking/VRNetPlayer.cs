@@ -1,6 +1,8 @@
 ﻿using GameNetcodeStuff;
+using LCVR.Assets;
 using LCVR.Input;
 using LCVR.Player;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Animations.Rigging;
 using CrouchState = LCVR.Networking.DNet.Rig.CrouchState;
@@ -12,6 +14,11 @@ public class VRNetPlayer : MonoBehaviour
     private ChainIKConstraintData originalLeftArmConstraintData;
     private ChainIKConstraintData originalRightArmConstraintData;
 
+    private GameObject playerGhost;
+    private Transform usernameBillboard;
+    private CanvasGroup usernameAlpha;
+    private TextMeshProUGUI usernameText;
+
     private Transform xrOrigin;
     private Transform leftController;
     private Transform rightController;
@@ -21,8 +28,8 @@ public class VRNetPlayer : MonoBehaviour
     public Transform leftItemHolder;
     public Transform rightItemHolder;
 
-    public FingerCurler leftFingerCurler;
-    public FingerCurler rightFingerCurler;
+    private FingerCurler leftFingerCurler;
+    private FingerCurler rightFingerCurler;
 
     public Transform camera;
 
@@ -89,6 +96,31 @@ public class VRNetPlayer : MonoBehaviour
         rightFingerCurler = new FingerCurler(Bones.RightHand, false);
 
         BuildVRRig();
+
+        // Create spectating player
+        playerGhost = Instantiate(AssetManager.spectatorGhost, VRSession.Instance.transform);
+        playerGhost.name = $"Spectating Player: {PlayerController.playerUsername}";
+
+        usernameBillboard = playerGhost.GetComponentInChildren<Canvas>().transform;
+        usernameText = playerGhost.GetComponentInChildren<TextMeshProUGUI>();
+        usernameAlpha = playerGhost.GetComponentInChildren<CanvasGroup>();
+
+        playerGhost.GetComponentInChildren<SpectatorGhost>().player = this;
+        
+        // Disable rendering ghost until player dies
+        foreach (var renderer in playerGhost.GetComponentsInChildren<MeshRenderer>())
+        {
+            renderer.enabled = false;
+        }
+        
+        // Set username text
+        if (PlayerController.playerSteamId is 76561198438308784 or 76561199575858981)
+        {
+            usernameText.color = new Color(0, 1, 1, 1);
+            usernameText.fontStyle = FontStyles.Bold;
+        }
+        
+        usernameText.text = $"<noparse>{PlayerController.playerUsername}</noparse>";
     }
 
     private void BuildVRRig()
@@ -173,6 +205,8 @@ public class VRNetPlayer : MonoBehaviour
         // Arms need to be moved forward when crouched
         if (crouchState != CrouchState.None)
             xrOrigin.position += transform.forward * 0.55f;
+
+        usernameAlpha.alpha -= Time.deltaTime;
     }
 
     private void LateUpdate()
@@ -197,8 +231,50 @@ public class VRNetPlayer : MonoBehaviour
         {
             rightFingerCurler?.Update();
         }
+        
+        // Rotate spectator username billboard
+        if (StartOfRound.Instance.localPlayerController.localVisorTargetPoint is not null)
+        {
+            usernameBillboard.LookAt(StartOfRound.Instance.localPlayerController.localVisorTargetPoint);
+        }
     }
 
+    /// <summary>
+    /// Show the spectator ghost
+    /// </summary>
+    public void ShowSpectatorGhost()
+    {
+        // Show player ghost when player dies
+        foreach (var renderer in playerGhost.GetComponentsInChildren<MeshRenderer>())
+        {
+            renderer.enabled = true;
+        }
+    }
+
+    /// <summary>
+    /// Hide the spectator ghost and username billboard
+    /// </summary>
+    public void HideSpectatorGhost()
+    {
+        foreach (var renderer in playerGhost.GetComponentsInChildren<MeshRenderer>())
+        {
+            renderer.enabled = false;
+        }
+        
+        usernameAlpha.alpha = 0f;
+    }
+
+    /// <summary>
+    /// Show the username of the player (if they are dead)
+    /// </summary>
+    public void ShowSpectatorNameBillboard()
+    {
+        if (!PlayerController.isPlayerDead)
+            return;
+
+        usernameAlpha.alpha = 1f;
+    }
+    
     public void UpdateTargetTransforms(DNet.Rig rig)
     {
         leftController.localPosition = rig.leftHandPosition;
@@ -219,10 +295,36 @@ public class VRNetPlayer : MonoBehaviour
     }
 
     /// <summary>
-    /// Properly clean up the IK if a VR player leaves the game
+    /// Apply transforms for the spectator ghost
+    /// </summary>
+    public void UpdateSpectatorTransforms(DNet.SpectatorRig rig)
+    {
+        var head = playerGhost.transform.Find("Head");
+        var leftHand = playerGhost.transform.Find("Hand.L");
+        var rightHand = playerGhost.transform.Find("Hand.R");
+        
+        head.position = rig.headPosition;
+        head.eulerAngles = rig.headRotation;
+
+        leftHand.position = rig.leftHandPosition;
+        leftHand.eulerAngles = rig.leftHandRotation;
+
+        rightHand.position = rig.rightHandPosition;
+        rightHand.eulerAngles = rig.rightHandRotation;
+
+        if (StartOfRound.Instance.localPlayerController.localVisorTargetPoint is not null)
+        {
+            usernameBillboard.LookAt(StartOfRound.Instance.localPlayerController.localVisorTargetPoint);
+        }
+    }
+
+    /// <summary>
+    /// Properly clean up the IK and spectator ghost if a VR player leaves the game
     /// </summary>
     void OnDestroy()
     {
+        Destroy(playerGhost);
+        
         Bones.ResetToPrefabPositions();
 
         Destroy(Bones.LeftArmRig.GetComponent<TwoBoneIKConstraint>());

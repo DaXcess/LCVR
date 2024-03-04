@@ -24,6 +24,9 @@ internal static class SpectatorPlayerPatches
 
     private static bool allowDeathScreenToggle = false;
 
+    private static Material[] leftShipDoorMaterials;
+    private static Material[] rightShipDoorMaterials;
+
     /// <summary>
     /// Store some fields that need to be restored after death
     /// </summary>
@@ -113,6 +116,9 @@ internal static class SpectatorPlayerPatches
         // Make the ship doors transparent
         var shipDoorLeftRenderer = shipDoorLeft.GetComponent<Renderer>();
         var shipDoorRightRenderer = shipDoorRight.GetComponent<Renderer>();
+
+        leftShipDoorMaterials = shipDoorLeftRenderer.materials;
+        rightShipDoorMaterials = shipDoorRightRenderer.materials;
 
         shipDoorLeftRenderer.materials =
             [AssetManager.transparentHangarShipDoor1, AssetManager.transparentHangarShipDoor2];
@@ -219,11 +225,8 @@ internal static class SpectatorPlayerPatches
         shipDoorWall.GetComponent<BoxCollider>().isTrigger = false;
         
         // Make the ship doors opaque again
-        var color1 = AssetManager.transparentHangarShipDoor1.color;
-        var color2 = AssetManager.transparentHangarShipDoor2.color;
-
-        AssetManager.transparentHangarShipDoor1.color = new Color(color1.r, color1.g, color1.b, 1f);
-        AssetManager.transparentHangarShipDoor2.color = new Color(color2.r, color2.g, color2.b, 1f);
+        shipDoorLeft.GetComponent<MeshRenderer>().materials = leftShipDoorMaterials;
+        shipDoorRight.GetComponent<MeshRenderer>().materials = rightShipDoorMaterials;
 
         VRSession.Instance.HUD.ToggleSpectatorLight(false);
     }
