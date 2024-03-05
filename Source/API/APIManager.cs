@@ -80,58 +80,78 @@ namespace LCVR.API
         /// <summary>
         /// Executed whenever the LCVR API is loaded. Can be used as an entrypoint to your plugin.
         /// </summary>
-        void OnLoad();
-        
+        void OnLoad()
+        {
+        }
+
         /// <summary>
         /// Executed whenever the user changes the configuration for LCVR using the Settings Manager.
         /// </summary>
-        void OnConfigChanged();
+        void OnConfigChanged()
+        {
+        }
 
         /// <summary>
         /// Executed whenever the local player joins a lobby.
         /// </summary>
-        void OnLobbyJoined();
+        void OnLobbyJoined()
+        {
+        }
 
         /// <summary>
         /// Executed whenever the local player leaves a lobby.
         /// </summary>
-        void OnLobbyLeft();
-        
+        void OnLobbyLeft()
+        {
+        }
+
         /// <summary>
         /// Executed whenever a VR player has joined the lobby.
         /// </summary>
         /// <param name="player">The VR player that joined</param>
-        void OnVRPlayerJoined(VRNetPlayer player);
+        void OnVRPlayerJoined(VRNetPlayer player)
+        {
+        }
 
         /// <summary>
         /// Executed whenever a VR player has left the lobby.
         /// </summary>
         /// <param name="player">The VR player that left</param>
-        void OnVRPlayerLeft(VRNetPlayer player);
+        void OnVRPlayerLeft(VRNetPlayer player)
+        {
+        }
 
         /// <summary>
         /// Executed whenever the local player dies.
         /// </summary>
-        void OnLocalPlayerDied();
+        void OnLocalPlayerDied()
+        {
+        }
 
         /// <summary>
         /// Executed whenever a VR player dies.
         /// </summary>
-        void OnVRPlayerDied(VRNetPlayer player);
-        
+        void OnVRPlayerDied(VRNetPlayer player)
+        {
+        }
+
         /// <summary>
         /// Executed whenever the pause menu is opened.
         ///
         /// <i>This method only gets executed when playing in VR.</i>
         /// </summary>
-        void OnPauseMenuOpened();
+        void OnPauseMenuOpened()
+        {
+        }
 
         /// <summary>
         /// Executed whenever the pause menu is closed.
         ///
         /// <i>This method only gets executed when playing in VR.</i>
         /// </summary>
-        void OnPauseMenuClosed();
+        void OnPauseMenuClosed()
+        {
+        }
     }
 
     public class LCVRPluginAttribute : Attribute { }

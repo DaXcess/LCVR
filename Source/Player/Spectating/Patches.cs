@@ -177,7 +177,7 @@ internal static class SpectatorPlayerPatches
 
         allowSpectatorActions = true;
         
-        // Fixes a bug where if you pick up an item while dying it stays in your inventory
+        // Fixes an issue where if you pick up an item while dying it stays in your inventory
         StartOfRound.Instance.localPlayerController.DropAllHeldItems(false);
     }
 

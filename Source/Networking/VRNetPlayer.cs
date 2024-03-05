@@ -10,6 +10,9 @@ using CrouchState = LCVR.Networking.DNet.Rig.CrouchState;
 
 namespace LCVR.Networking;
 
+/// <summary>
+/// A behaviour that is attached to other VR players
+/// </summary>
 public class VRNetPlayer : MonoBehaviour
 {
     private ChainIKConstraintData originalLeftArmConstraintData;
@@ -26,13 +29,10 @@ public class VRNetPlayer : MonoBehaviour
     private Transform leftHandVRTarget;
     private Transform rightHandVRTarget;
 
-    public Transform leftItemHolder;
-    public Transform rightItemHolder;
-
     private FingerCurler leftFingerCurler;
     private FingerCurler rightFingerCurler;
 
-    public Transform camera;
+    private Transform camera;
 
     private float cameraFloorOffset;
     private float rotationOffset;
@@ -45,6 +45,9 @@ public class VRNetPlayer : MonoBehaviour
 
     public PlayerControllerB PlayerController { get; private set; }
     public Bones Bones { get; private set; }
+    
+    public Transform LeftItemHolder { get; private set; }
+    public Transform RightItemHolder { get; private set; }
 
     private void Awake()
     {
@@ -82,15 +85,15 @@ public class VRNetPlayer : MonoBehaviour
         var leftHolder = new GameObject("Left Hand Item Holder");
         var rightHolder = new GameObject("Right Hand Item Holder");
 
-        leftItemHolder = leftHolder.transform;
-        leftItemHolder.SetParent(Bones.LeftHand, false);
-        leftItemHolder.localPosition = new Vector3(0.018f, 0.045f, -0.042f);
-        leftItemHolder.localEulerAngles = new Vector3(360f - 356.3837f, 357.6979f, 0.1453f);
+        LeftItemHolder = leftHolder.transform;
+        LeftItemHolder.SetParent(Bones.LeftHand, false);
+        LeftItemHolder.localPosition = new Vector3(0.018f, 0.045f, -0.042f);
+        LeftItemHolder.localEulerAngles = new Vector3(360f - 356.3837f, 357.6979f, 0.1453f);
 
-        rightItemHolder = rightHolder.transform;
-        rightItemHolder.SetParent(Bones.RightHand, false);
-        rightItemHolder.localPosition = new Vector3(-0.002f, 0.036f, -0.042f);
-        rightItemHolder.localEulerAngles = new Vector3(356.3837f, 357.6979f, 0.1453f);
+        RightItemHolder = rightHolder.transform;
+        RightItemHolder.SetParent(Bones.RightHand, false);
+        RightItemHolder.localPosition = new Vector3(-0.002f, 0.036f, -0.042f);
+        RightItemHolder.localEulerAngles = new Vector3(356.3837f, 357.6979f, 0.1453f);
 
         // Set up finger curlers
         leftFingerCurler = new FingerCurler(Bones.LeftHand, true);

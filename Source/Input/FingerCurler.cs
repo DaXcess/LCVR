@@ -72,7 +72,7 @@ public class FingerCurler
         }
     }
 
-    public DNet.Fingers GetCurls()
+    internal DNet.Fingers GetCurls()
     {
         return new DNet.Fingers()
         {
@@ -84,7 +84,7 @@ public class FingerCurler
         };
     }
 
-    public void SetCurls(DNet.Fingers fingers)
+    internal void SetCurls(DNet.Fingers fingers)
     {
         thumbFinger.curl = fingers.thumb;
         indexFinger.curl = fingers.index;
@@ -116,7 +116,7 @@ public class VRFingerCurler(Transform hand, bool isLeft) : FingerCurler(hand, is
     private InputAction IndexAction => Actions.Instance[$"{actionMap}/Index"];
     private InputAction OthersAction => Actions.Instance[$"{actionMap}/Others"];
 
-    private bool forceFist = false;
+    private bool forceFist;
 
     public bool IsFist => indexFinger.curl > 0.75f && middleFinger.curl > 0.75f;
     public bool IsPointer => indexFinger.curl <= 0.75f && middleFinger.curl > 0.75f;

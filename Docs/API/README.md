@@ -2,8 +2,9 @@
 
 1. [Adding LCVR as a dependency](#adding-lcvr-as-a-dependency)
 2. [Checking if VR is active](#checking-if-vr-is-active)
-3. [Creating a VR interactable object](#creating-a-vr-interactable-object)
-4. [Registering custom doors](#registering-custom-doors)
+3. [Creating a VR plugin](#creating-a-vr-plugin)
+4. [Creating a VR interactable object](#creating-a-vr-interactable-object)
+5. [Registering custom doors](#registering-custom-doors)
 
 ## Adding LCVR as a dependency
 
@@ -36,6 +37,27 @@ else
     // LCVR is in flatscreen mode
 }
 ```
+
+## Creating a VR plugin
+
+LCVR allows you to create a plugin without the need to use BepInEx.
+
+To get started, create a new class, like this:
+
+```cs
+using LCVR.API;
+
+[LCVRPlugin]
+public class MyVRPlugin : LCVRPlugin
+{
+    public void OnLoad()
+    {
+        // Startup code...
+    }
+}
+```
+
+For a list of available overrides, check the [LCVRPlugin.md](LCVRPlugin.md) documentation.
 
 ## Creating a VR interactable object
 
@@ -108,7 +130,7 @@ As you can see, any VR interactable object must have a script attached which inh
 - `OnButtonRelease`
   This function gets called after you release the interaction button on the hand that is currently interacting with this object.
 
-> For more in-depth examples, check out the [**built in interactions**](Physics/Interactions).
+> For more in-depth examples, check out the [**built in interactions**](../../Source/Physics/Interactions).
 
 ### Disabling the flatscreen interaction
 

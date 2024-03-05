@@ -56,12 +56,12 @@ internal class VRShovelItem : VRItem<Shovel>
 
         if (!IsLocal)
         {
-            transform.position = networkPlayer.leftItemHolder.position;
-            transform.LookAt(networkPlayer.rightItemHolder.position);
+            transform.position = networkPlayer.LeftItemHolder.position;
+            transform.LookAt(networkPlayer.RightItemHolder.position);
 
             var rotation2 = transform.rotation;
 
-            transform.eulerAngles = new Vector3(transform.eulerAngles.x, transform.eulerAngles.y, 360 - networkPlayer.leftItemHolder.eulerAngles.z);
+            transform.eulerAngles = new Vector3(transform.eulerAngles.x, transform.eulerAngles.y, 360 - networkPlayer.LeftItemHolder.eulerAngles.z);
             transform.position += rotation2 * positionOffset;
 
             return;
