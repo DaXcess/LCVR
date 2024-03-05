@@ -22,13 +22,14 @@ internal static class SpectatorEnemyPatches
     [HarmonyPrefix]
     private static bool NutcrackerCheckForLocalPlayer(ref bool __result)
     {
-        if (StartOfRound.Instance.localPlayerController.isPlayerDead)
+        if (!StartOfRound.Instance.localPlayerController.isPlayerDead)
         {
-            __result = false;
-            return false;
+            return true;
         }
 
-        return true;
+        __result = false;
+        return false;
+
     }
 
     /// <summary>

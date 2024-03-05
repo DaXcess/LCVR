@@ -264,13 +264,6 @@ public static class DNet
         if (!isInVR)
             yield break;
 
-        // Re-initialize player if already present
-        if (players.TryGetValue(sender, out var networkPlayer))
-        {
-            Object.Destroy(networkPlayer);
-            players.Remove(sender);
-        }
-
         // Wait until client is a part of the peers list
         yield return new WaitUntil(() => peers.TryGetClientInfoById(sender, out _));
 
@@ -290,25 +283,37 @@ public static class DNet
 
         yield return new WaitUntil(() => player.Tracker != null);
 
+        // Ignore players that have already been registered
+        if (players.TryGetValue(sender, out var networkPlayer))
+            yield break;
+
         var playerObject = ((NfgoPlayer)player.Tracker!).gameObject;
         var playerController = playerObject.GetComponent<PlayerControllerB>();
         networkPlayer = playerObject.AddComponent<VRNetPlayer>();
 
         logger.LogInfo($"Found VR player {playerController.playerUsername}");
 
-        players.Add(sender, networkPlayer);
+        if (!players.TryAdd(sender, networkPlayer))
+        {
+            Logger.LogError("VR player already exists? Emergency nuking the network connection for this player!");
+            
+            Object.Destroy(networkPlayer);
+            OnPlayerLeftSession(player);
+
+            yield break;
+        }
 
         foreach (var item in playerController.ItemSlots.Where(val => val != null))
         {
             // Add or enable VR item script on item if there is one for this item
-            if (Player.Items.items.TryGetValue(item.itemProperties.itemName, out var type))
-            {
-                var component = (MonoBehaviour)item.GetComponent(type);
-                if (component == null)
-                    item.gameObject.AddComponent(type);
-                else
-                    component.enabled = true;
-            }
+            if (!Player.Items.items.TryGetValue(item.itemProperties.itemName, out var type))
+                continue;
+
+            var component = (MonoBehaviour)item.GetComponent(type);
+            if (component == null)
+                item.gameObject.AddComponent(type);
+            else
+                component.enabled = true;
         }
     }
 
