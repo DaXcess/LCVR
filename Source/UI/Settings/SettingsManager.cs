@@ -2,8 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using LCVR.API;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.UI;
 
 namespace LCVR.UI.Settings;
@@ -245,5 +248,40 @@ public class SettingsManager : MonoBehaviour
     public void UpdateDescription(string title, string description)
     {
         descriptionText.text = $"<b>{title}</b>\n\n{description}";
+    }
+
+    // TODO: Add this function to the callback inside the AssetBundle
+    /// <summary>
+    /// This function gets called when the player closes the settings menu
+    /// </summary>
+    public void ConfirmSettings()
+    {
+        #region Reload and apply HDRP pipeline settings
+        var asset = QualitySettings.renderPipeline as HDRenderPipelineAsset;
+
+        if (!asset)
+        {
+            Logger.LogError("Failed to apply render pipeline changes: Render pipeline is null??");
+            return;
+        }
+        
+        var settings = asset.currentPlatformRenderPipelineSettings;
+
+        settings.dynamicResolutionSettings.enabled = Plugin.Config.EnableDynamicResolution.Value;
+        settings.dynamicResolutionSettings.enableDLSS = Plugin.Config.EnableDLSS.Value;
+        settings.dynamicResolutionSettings.dynResType = DynamicResolutionType.Hardware;
+        settings.dynamicResolutionSettings.upsampleFilter = Plugin.Config.DynamicResolutionUpscaleFilter.Value;
+        settings.dynamicResolutionSettings.minPercentage = settings.dynamicResolutionSettings.maxPercentage = Plugin.Config.DynamicResolutionPercentage.Value;
+        settings.supportMotionVectors = true;
+
+        settings.xrSettings.occlusionMesh = false;
+        settings.xrSettings.singlePass = false;
+        
+        settings.lodBias = new FloatScalableSetting([Plugin.Config.LODBias.Value, Plugin.Config.LODBias.Value, Plugin.Config.LODBias.Value], ScalableSettingSchemaId.With3Levels);
+
+        asset.currentPlatformRenderPipelineSettings = settings;
+        #endregion
+        
+        APIManager.OnConfigChanged();
     }
 }

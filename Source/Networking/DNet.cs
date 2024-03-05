@@ -12,6 +12,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using LCVR.API;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -20,7 +21,7 @@ namespace LCVR.Networking;
 // (Ab)using Dissonance Voice to communicate directly to players without the host needing to have mods installed
 // Keep in mind that all of this code is and should be CLIENT side!
 
-public static class DNet
+internal static class DNet
 {
     private const ushort PROTOCOL_VERSION = 3;
 
@@ -34,10 +35,18 @@ public static class DNet
     private static ushort? LocalId => client._serverNegotiator.LocalId;
 
     // A list of all known VR clients
+    
+    /// List of known clients inside the Dissonance Voice session
     private static readonly Dictionary<ushort, ClientInfo<NfgoConn?>> clients = [];
+    
+    /// List of active VR players in the session
     private static readonly Dictionary<ushort, VRNetPlayer> players = [];
+    
+    [Obsolete]
     private static readonly Dictionary<string, ushort> clientByName = [];
-    private static readonly List<ushort> subscribers = [];
+    
+    /// List of client IDs (from Dissonance Voice) which support DNet
+    private static readonly HashSet<ushort> subscribers = [];
 
     public static VRNetPlayer[] Players => players.Values.ToArray();
 
@@ -158,6 +167,9 @@ public static class DNet
         if (!clientByName.TryGetValue(player.Name, out var id))
             return;
 
+        // TODO: Remove, optionally also remove `clientByName`
+        logger.LogDebug($"{player.Tracker?.PlayerId}, {id}, {((NfgoPlayer)player.Tracker!).gameObject.GetComponent<PlayerControllerB>().playerClientId}");
+        
         if (players.TryGetValue(id, out var networkPlayer))
             Object.Destroy(networkPlayer);
 
@@ -258,8 +270,7 @@ public static class DNet
 
     private static IEnumerator HandleHandshakeResponse(ushort sender, bool isInVR)
     {
-        if (!subscribers.Contains(sender))
-            subscribers.Add(sender);
+        subscribers.Add(sender);
 
         if (!isInVR)
             yield break;
@@ -315,6 +326,8 @@ public static class DNet
             else
                 component.enabled = true;
         }
+        
+        APIManager.OnVRPlayerJoined(networkPlayer);
     }
 
     private static void HandleRigUpdate(ushort sender, byte[] packet)

@@ -168,7 +168,8 @@ public class VRPlayer : MonoBehaviour
         {
             Config.TurnProviderOption.Snap => new SnapTurningProvider(),
             Config.TurnProviderOption.Smooth => new SmoothTurningProvider(),
-            _ => new NullTurningProvider(),
+            Config.TurnProviderOption.Disabled => new NullTurningProvider(),
+            _ => throw new ArgumentException("Unknown turn provider configuration option provided")
         };
 
         // Input actions

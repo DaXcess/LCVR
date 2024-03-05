@@ -260,9 +260,8 @@ public class Plugin : BaseUnityPlugin
 
         settings.xrSettings.occlusionMesh = false;
         settings.xrSettings.singlePass = false;
-
-        if (Config.LODBias.Value != -1f)
-            settings.lodBias = new FloatScalableSetting([Config.LODBias.Value, Config.LODBias.Value, Config.LODBias.Value], ScalableSettingSchemaId.With3Levels);
+        
+        settings.lodBias = new FloatScalableSetting([Config.LODBias.Value, Config.LODBias.Value, Config.LODBias.Value], ScalableSettingSchemaId.With3Levels);
 
         asset.currentPlatformRenderPipelineSettings = settings;
 

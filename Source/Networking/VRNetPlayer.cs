@@ -1,4 +1,5 @@
 ﻿using GameNetcodeStuff;
+using LCVR.API;
 using LCVR.Assets;
 using LCVR.Input;
 using LCVR.Player;
@@ -275,7 +276,7 @@ public class VRNetPlayer : MonoBehaviour
         usernameAlpha.alpha = 1f;
     }
     
-    public void UpdateTargetTransforms(DNet.Rig rig)
+    internal void UpdateTargetTransforms(DNet.Rig rig)
     {
         leftController.localPosition = rig.leftHandPosition;
         leftController.localEulerAngles = rig.leftHandEulers;
@@ -297,7 +298,7 @@ public class VRNetPlayer : MonoBehaviour
     /// <summary>
     /// Apply transforms for the spectator ghost
     /// </summary>
-    public void UpdateSpectatorTransforms(DNet.SpectatorRig rig)
+    internal void UpdateSpectatorTransforms(DNet.SpectatorRig rig)
     {
         var head = playerGhost.transform.Find("Head");
         var leftHand = playerGhost.transform.Find("Hand.L");
@@ -337,5 +338,7 @@ public class VRNetPlayer : MonoBehaviour
         rightArmConstraint.data = originalRightArmConstraintData;
 
         GetComponentInChildren<RigBuilder>().Build();
+        
+        APIManager.OnVRPlayerLeft(this);
     }
 }

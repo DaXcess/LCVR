@@ -14,15 +14,17 @@ namespace LCVR.Player.Spectating;
 [HarmonyPatch]
 internal static class SpectatorPlayerPatches
 {
-    private static bool wasPlayerDead = false;
-    private static bool wasInElevator = false;
-    private static bool wasInHangarShipRoom = false;
-    private static bool wasInsideFactory = false;
+    private static readonly int GameOver = Animator.StringToHash("gameOver");
+    private static readonly int Revive = Animator.StringToHash("revive");
+    
+    private static bool wasPlayerDead;
+    private static bool wasInElevator;
+    private static bool wasInHangarShipRoom;
+    private static bool wasInsideFactory;
 
-    private static float timeOfDeath = 0;
     private static int lastSpectatedIndex = -1;
 
-    private static bool allowDeathScreenToggle = false;
+    private static bool allowSpectatorActions;
 
     private static Material[] leftShipDoorMaterials;
     private static Material[] rightShipDoorMaterials;
@@ -80,7 +82,8 @@ internal static class SpectatorPlayerPatches
         };
 
         var presets = Object.FindObjectOfType<AudioReverbPresets>();
-        presets?.audioPresets[audioPreset].ChangeAudioReverbForPlayer(__instance);
+        if (presets)
+            presets.audioPresets[audioPreset].ChangeAudioReverbForPlayer(__instance);
 
         // Make all large doors have no collision
         var switchables = Object.FindObjectsOfType<PowerSwitchable>();
@@ -155,25 +158,27 @@ internal static class SpectatorPlayerPatches
 
         VRSession.Instance.VolumeManager.Death();
         VRSession.Instance.StartCoroutine(delayedShowDeathScreen());
-
-        timeOfDeath = Time.realtimeSinceStartup;
     }
 
     private static IEnumerator delayedShowDeathScreen()
     {
+        allowSpectatorActions = false;
+        
         VRSession.Instance.HUD.ToggleDeathScreen(true);
-        allowDeathScreenToggle = false;
 
-        HUDManager.Instance.gameOverAnimator.ResetTrigger("gameOver");
-        HUDManager.Instance.gameOverAnimator.ResetTrigger("revive");
+        HUDManager.Instance.gameOverAnimator.ResetTrigger(GameOver);
+        HUDManager.Instance.gameOverAnimator.ResetTrigger(Revive);
 
         yield return new WaitForSeconds(2.5f);
 
-        HUDManager.Instance.gameOverAnimator.SetTrigger("gameOver");
+        HUDManager.Instance.gameOverAnimator.SetTrigger(GameOver);
 
         yield return new WaitForSeconds(4.3f);
 
-        allowDeathScreenToggle = true;
+        allowSpectatorActions = true;
+        
+        // Fixes a bug where if you pick up an item while dying it stays in your inventory
+        StartOfRound.Instance.localPlayerController.DropAllHeldItems(false);
     }
 
     /// <summary>
@@ -255,7 +260,7 @@ internal static class SpectatorPlayerPatches
             return;
 
         // Don't allow switching until after 2.5s
-        if (Time.realtimeSinceStartup - timeOfDeath < 2.5f)
+        if (!allowSpectatorActions)
             return;
 
         // Find player to spectate
@@ -282,7 +287,8 @@ internal static class SpectatorPlayerPatches
             };
 
             var presets = Object.FindObjectOfType<AudioReverbPresets>();
-            presets?.audioPresets[audioPreset].ChangeAudioReverbForPlayer(__instance);
+            if (presets)
+                presets.audioPresets[audioPreset].ChangeAudioReverbForPlayer(__instance);
 
             break;
         }
@@ -305,7 +311,7 @@ internal static class SpectatorPlayerPatches
     [HarmonyPostfix]
     private static void OnToggleDeathScreen(PlayerControllerB __instance)
     {
-        if (!allowDeathScreenToggle || __instance != StartOfRound.Instance.localPlayerController || !__instance.isPlayerDead)
+        if (!allowSpectatorActions || __instance != StartOfRound.Instance.localPlayerController || !__instance.isPlayerDead)
             return;
 
         VRSession.Instance.HUD.ToggleDeathScreen();

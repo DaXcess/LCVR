@@ -86,7 +86,7 @@ _Since the company was a big fan of using Linux for the Device©, the colors loo
 
 You can teleport to other employees, like you would using the old spectator view, by using the **Interact** _(Default: Right Controller Trigger)_ button. This will cycle through each employee in the lobby that has not yet met their maker. Use this to quickly see how a fellow employee is going about their day, or to get unstuck if you have fallen into a pit.
 
-_Since the Device© is making use of simulated consciousness, physical barriers like doors act like air, so you can walk right through them no problem!_
+_Since the Device© is making use of shared simulated consciousness, physical barriers like doors act like air, so you can walk right through them no problem!_
 
 Afraid of the dark? Use the **Drop Item** _(Default: B)_ button to toggle night vision! When enabled, this light will illuminate the world and facilities around you, so that you can see what your still breathing fellow employees can't!
 

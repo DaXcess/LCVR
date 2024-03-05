@@ -94,7 +94,7 @@ public class VRInteractor : MonoBehaviour
     }
 }
 
-public class InteractionManager : MonoBehaviour
+public class InteractionManager
 {
     private readonly Dictionary<VRInteractable, InteractableState> interactableState = [];
 

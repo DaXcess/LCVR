@@ -7,6 +7,7 @@ using LCVR.Player;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
+using LCVR.API;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.XR;
@@ -396,6 +397,8 @@ internal static class UniversalPlayerControllerPatches
         {
             player.ShowSpectatorGhost();
         }
+        
+        APIManager.OnLocalPlayerDied();
     }
 
     /// <summary>
@@ -416,6 +419,8 @@ internal static class UniversalPlayerControllerPatches
             return;
         
         networkPlayer.ShowSpectatorGhost();
+        
+        APIManager.OnVRPlayerDied(networkPlayer);
     }
 
     /// <summary>

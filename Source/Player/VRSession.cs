@@ -6,6 +6,7 @@ using LCVR.UI;
 using Microsoft.MixedReality.Toolkit.Experimental.UI;
 using System.Collections.Generic;
 using System.Linq;
+using LCVR.API;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
@@ -76,6 +77,8 @@ public class VRSession : MonoBehaviour
 
         if (Plugin.Flags.HasFlag(Flags.InteractableDebug))
             playerGameplayCamera.cullingMask |= 1 << 11;
+        
+        APIManager.OnLobbyJoined();
     }
 
     void Update()
@@ -88,6 +91,11 @@ public class VRSession : MonoBehaviour
             customCamera.transform.position = playerGameplayCamera.transform.position;
             customCamera.transform.rotation = Quaternion.Lerp(customCamera.transform.rotation, playerGameplayCamera.transform.rotation, customCameraLerpFactor);
         }
+    }
+
+    private void OnDestroy()
+    {
+        APIManager.OnLobbyLeft();
     }
 
     private void InitializeVRSession()
@@ -165,9 +173,7 @@ public class VRSession : MonoBehaviour
         if (Plugin.Config.DisableVolumetrics.Value)
             hdCamera.DisableQualitySetting(FrameSettingsField.Volumetrics);
 
-        if (!Plugin.Config.CameraResolutionGlobal.Value)
-            XRSettings.eyeTextureResolutionScale = Plugin.Config.CameraResolution.Value;
-
+        XRSettings.eyeTextureResolutionScale = Plugin.Config.CameraResolution.Value;
         XRSettings.useOcclusionMesh = false;
         #endregion
 
@@ -250,8 +256,8 @@ public class VRSession : MonoBehaviour
         #endregion
 
         #region Initialize Interaction Manager
-        InteractionManager = new GameObject("Interaction Manager").AddComponent<InteractionManager>();
-        InteractionManager.transform.parent = transform;
+
+        InteractionManager = new InteractionManager();
         #endregion
 
         #region Initialize HUD
@@ -396,6 +402,10 @@ public class VRSession : MonoBehaviour
             customCamera.enabled = false;
 
         LocalPlayer.PrimaryController.enabled = false;
+        LocalPlayer.LeftHandInteractor.enabled = false;
+        LocalPlayer.RightHandInteractor.enabled = false;
+        
+        APIManager.OnPauseMenuOpened();
     }
 
     public void OnPauseMenuClosed()
@@ -409,6 +419,10 @@ public class VRSession : MonoBehaviour
             customCamera.enabled = true;
 
         LocalPlayer.PrimaryController.enabled = true;
+        LocalPlayer.LeftHandInteractor.enabled = !LocalPlayer.PlayerController.isPlayerDead;
+        LocalPlayer.RightHandInteractor.enabled = !LocalPlayer.PlayerController.isPlayerDead;
+        
+        APIManager.OnPauseMenuClosed();
     }
 
     private void SwitchToUICamera()
@@ -429,8 +443,7 @@ public class VRSession : MonoBehaviour
 
         FindObjectsOfType<CanvasTransformFollow>().Do(follow => follow.ResetPosition(true));
 
-        if (!Plugin.Config.CameraResolutionGlobal.Value)
-            XRSettings.eyeTextureResolutionScale = 1;
+        XRSettings.eyeTextureResolutionScale = 1;
     }
 
     private void SwitchToGameCamera()
@@ -447,8 +460,7 @@ public class VRSession : MonoBehaviour
         playerGameplayCamera.depth = menuCamera.depth + 1;
         playerGameplayCamera.enabled = true;
 
-        if (!Plugin.Config.CameraResolutionGlobal.Value)
-            XRSettings.eyeTextureResolutionScale = Plugin.Config.CameraResolution.Value;
+        XRSettings.eyeTextureResolutionScale = Plugin.Config.CameraResolution.Value;
     }
 
     public static void VibrateController(XRNode hand, float duration, float amplitude)
