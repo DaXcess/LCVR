@@ -168,7 +168,7 @@ internal static class DNet
             return;
 
         // TODO: Remove, optionally also remove `clientByName`
-        logger.LogDebug($"{player.Tracker?.PlayerId}, {id}, {((NfgoPlayer)player.Tracker!).gameObject.GetComponent<PlayerControllerB>().playerClientId}");
+        logger.LogDebug($"{player.Tracker?.PlayerId}, {id}");
         
         if (players.TryGetValue(id, out var networkPlayer))
             Object.Destroy(networkPlayer);
