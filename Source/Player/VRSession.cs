@@ -6,7 +6,6 @@ using LCVR.UI;
 using Microsoft.MixedReality.Toolkit.Experimental.UI;
 using System.Collections.Generic;
 using System.Linq;
-using LCVR.API;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
@@ -77,11 +76,9 @@ public class VRSession : MonoBehaviour
 
         if (Plugin.Flags.HasFlag(Flags.InteractableDebug))
             playerGameplayCamera.cullingMask |= 1 << 11;
-        
-        APIManager.OnLobbyJoined();
     }
 
-    void Update()
+    void LateUpdate()
     {
         if (!InVR)
             return;
@@ -91,11 +88,6 @@ public class VRSession : MonoBehaviour
             customCamera.transform.position = playerGameplayCamera.transform.position;
             customCamera.transform.rotation = Quaternion.Lerp(customCamera.transform.rotation, playerGameplayCamera.transform.rotation, customCameraLerpFactor);
         }
-    }
-
-    private void OnDestroy()
-    {
-        APIManager.OnLobbyLeft();
     }
 
     private void InitializeVRSession()
@@ -404,8 +396,6 @@ public class VRSession : MonoBehaviour
         LocalPlayer.PrimaryController.enabled = false;
         LocalPlayer.LeftHandInteractor.enabled = false;
         LocalPlayer.RightHandInteractor.enabled = false;
-        
-        APIManager.OnPauseMenuOpened();
     }
 
     public void OnPauseMenuClosed()
@@ -421,8 +411,6 @@ public class VRSession : MonoBehaviour
         LocalPlayer.PrimaryController.enabled = true;
         LocalPlayer.LeftHandInteractor.enabled = !LocalPlayer.PlayerController.isPlayerDead;
         LocalPlayer.RightHandInteractor.enabled = !LocalPlayer.PlayerController.isPlayerDead;
-        
-        APIManager.OnPauseMenuClosed();
     }
 
     private void SwitchToUICamera()

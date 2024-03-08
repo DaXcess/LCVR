@@ -2,9 +2,8 @@
 
 1. [Adding LCVR as a dependency](#adding-lcvr-as-a-dependency)
 2. [Checking if VR is active](#checking-if-vr-is-active)
-3. [Creating a VR plugin](#creating-a-vr-plugin)
-4. [Creating a VR interactable object](#creating-a-vr-interactable-object)
-5. [Registering custom doors](#registering-custom-doors)
+3. [Creating a VR interactable object](#creating-a-vr-interactable-object)
+4. [Registering custom doors](#registering-custom-doors)
 
 ## Adding LCVR as a dependency
 
@@ -15,8 +14,8 @@ LCVR is available on [DaXcess' NuGet Registry](https://nuget.daxcess.io/packages
 > Make sure you have added `https://nuget.daxcess.io/v3/index.json` to your NuGet sources list
 
 ```sh
-# Optionally target a specific version by adding `--version x.x.x` at the end
-dotnet add package LCVR
+# Target a specific version by adding `--version x.x.x` at the end
+dotnet add package LCVR --version x.x.x
 ```
 
 ## Checking if VR is active
@@ -37,27 +36,6 @@ else
     // LCVR is in flatscreen mode
 }
 ```
-
-## Creating a VR plugin
-
-LCVR allows you to create a plugin without the need to use BepInEx.
-
-To get started, create a new class, like this:
-
-```cs
-using LCVR.API;
-
-[LCVRPlugin]
-public class MyVRPlugin : LCVRPlugin
-{
-    public void OnLoad()
-    {
-        // Startup code...
-    }
-}
-```
-
-For a list of available overrides, check the [LCVRPlugin.md](LCVRPlugin.md) documentation.
 
 ## Creating a VR interactable object
 

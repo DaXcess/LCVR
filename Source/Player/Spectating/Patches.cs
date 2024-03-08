@@ -17,7 +17,8 @@ internal static class SpectatorPlayerPatches
     private static readonly int GameOver = Animator.StringToHash("gameOver");
     private static readonly int Revive = Animator.StringToHash("revive");
     
-    private static bool wasPlayerDead;
+    private static bool isSpectating;
+    
     private static bool wasInElevator;
     private static bool wasInHangarShipRoom;
     private static bool wasInsideFactory;
@@ -25,10 +26,7 @@ internal static class SpectatorPlayerPatches
     private static int lastSpectatedIndex = -1;
 
     private static bool allowSpectatorActions;
-
-    private static Material[] leftShipDoorMaterials;
-    private static Material[] rightShipDoorMaterials;
-
+    
     /// <summary>
     /// Store some fields that need to be restored after death
     /// </summary>
@@ -39,7 +37,6 @@ internal static class SpectatorPlayerPatches
         if (!__instance.IsOwner)
             return;
 
-        wasPlayerDead = __instance.isPlayerDead;
         wasInElevator = __instance.isInElevator;
         wasInHangarShipRoom = __instance.isInHangarShipRoom;
         wasInsideFactory = __instance.isInsideFactory;
@@ -52,8 +49,12 @@ internal static class SpectatorPlayerPatches
     [HarmonyPostfix]
     private static void OnPlayerDeath(PlayerControllerB __instance)
     {
-        if (!__instance.IsOwner || wasPlayerDead || !__instance.AllowPlayerDeath())
+        Logger.LogDebug($"{__instance.IsOwner}, {isSpectating}, {__instance.AllowPlayerDeath()}");
+        
+        if (!__instance.IsOwner || isSpectating || !__instance.AllowPlayerDeath())
             return;
+
+        isSpectating = true;
 
         // Keep using the FPV camera after death
         __instance.ChangeAudioListenerToObject(__instance.gameplayCamera.gameObject);
@@ -115,24 +116,6 @@ internal static class SpectatorPlayerPatches
         shipDoorLeft.GetComponent<BoxCollider>().isTrigger = true;
         shipDoorRight.GetComponent<BoxCollider>().isTrigger = true;
         shipDoorWall.GetComponent<BoxCollider>().isTrigger = true;
-        
-        // Make the ship doors transparent
-        var shipDoorLeftRenderer = shipDoorLeft.GetComponent<Renderer>();
-        var shipDoorRightRenderer = shipDoorRight.GetComponent<Renderer>();
-
-        leftShipDoorMaterials = shipDoorLeftRenderer.materials;
-        rightShipDoorMaterials = shipDoorRightRenderer.materials;
-
-        shipDoorLeftRenderer.materials =
-            [AssetManager.transparentHangarShipDoor1, AssetManager.transparentHangarShipDoor2];
-        shipDoorRightRenderer.materials =
-            [AssetManager.transparentHangarShipDoor2, AssetManager.transparentHangarShipDoor1];
-
-        var color1 = AssetManager.transparentHangarShipDoor1.color;
-        var color2 = AssetManager.transparentHangarShipDoor2.color;
-
-        AssetManager.transparentHangarShipDoor1.color = new Color(color1.r, color1.g, color1.b, 0.25f);
-        AssetManager.transparentHangarShipDoor2.color = new Color(color2.r, color2.g, color2.b, 0.25f);
         
         // Make sure all enemies are no longer targeting us
         var enemies = Object.FindObjectsOfType<EnemyAI>();
@@ -202,6 +185,8 @@ internal static class SpectatorPlayerPatches
     [HarmonyPrefix]
     private static void OnPlayerRevived()
     {
+        isSpectating = false;
+        
         var player = StartOfRound.Instance.localPlayerController;
 
         if (!player.isPlayerDead)
@@ -229,10 +214,6 @@ internal static class SpectatorPlayerPatches
         shipDoorRight.GetComponent<BoxCollider>().isTrigger = false;
         shipDoorWall.GetComponent<BoxCollider>().isTrigger = false;
         
-        // Make the ship doors opaque again
-        shipDoorLeft.GetComponent<MeshRenderer>().materials = leftShipDoorMaterials;
-        shipDoorRight.GetComponent<MeshRenderer>().materials = rightShipDoorMaterials;
-
         VRSession.Instance.HUD.ToggleSpectatorLight(false);
     }
 

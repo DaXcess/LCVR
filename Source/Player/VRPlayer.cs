@@ -521,17 +521,25 @@ public class VRPlayer : MonoBehaviour
                 cameraFloorOffset = cameraFloorOffset,
             });
         else
+        {
+            var targetTransform = playerController.isInElevator
+                ? playerController.playersManager.elevatorTransform
+                : playerController.playersManager.playersContainer;
+
             DNet.BroadcastSpectatorRig(new DNet.SpectatorRig()
             {
-                headPosition = mainCamera.transform.position,
+                headPosition = targetTransform.InverseTransformPoint(mainCamera.transform.position),
                 headRotation = mainCamera.transform.eulerAngles,
-                
-                leftHandPosition = leftController.transform.position,
+
+                leftHandPosition = targetTransform.InverseTransformPoint(leftController.transform.position),
                 leftHandRotation = leftController.transform.eulerAngles,
-                
-                rightHandPosition = rightController.transform.position,
-                rightHandRotation = rightController.transform.eulerAngles
+
+                rightHandPosition = targetTransform.InverseTransformPoint(rightController.transform.position),
+                rightHandRotation = rightController.transform.eulerAngles,
+
+                parentedToShip = playerController.isInElevator
             });
+        }
     }
 
     private void LateUpdate()

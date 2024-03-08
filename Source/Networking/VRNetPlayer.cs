@@ -1,5 +1,4 @@
 ﻿using GameNetcodeStuff;
-using LCVR.API;
 using LCVR.Assets;
 using LCVR.Input;
 using LCVR.Player;
@@ -17,12 +16,14 @@ public class VRNetPlayer : MonoBehaviour
 {
     private ChainIKConstraintData originalLeftArmConstraintData;
     private ChainIKConstraintData originalRightArmConstraintData;
-
+    
     private GameObject playerGhost;
     private Transform usernameBillboard;
     private CanvasGroup usernameAlpha;
     private TextMeshProUGUI usernameText;
 
+    private bool spectatorWasParentedToShip;
+    
     private Transform xrOrigin;
     private Transform leftController;
     private Transform rightController;
@@ -306,14 +307,27 @@ public class VRNetPlayer : MonoBehaviour
         var head = playerGhost.transform.Find("Head");
         var leftHand = playerGhost.transform.Find("Hand.L");
         var rightHand = playerGhost.transform.Find("Hand.R");
+
+        if (rig.parentedToShip && !spectatorWasParentedToShip)
+        {
+            playerGhost.transform.SetParent(StartOfRound.Instance.elevatorTransform, true);
+            playerGhost.transform.localPosition = Vector3.zero;
+        }
+        else if (!rig.parentedToShip && spectatorWasParentedToShip)
+        {
+            playerGhost.transform.SetParent(null, true);
+            playerGhost.transform.localPosition = Vector3.zero;
+        }
+
+        spectatorWasParentedToShip = rig.parentedToShip;
         
-        head.position = rig.headPosition;
+        head.localPosition = rig.headPosition;
         head.eulerAngles = rig.headRotation;
 
-        leftHand.position = rig.leftHandPosition;
+        leftHand.localPosition = rig.leftHandPosition;
         leftHand.eulerAngles = rig.leftHandRotation;
 
-        rightHand.position = rig.rightHandPosition;
+        rightHand.localPosition = rig.rightHandPosition;
         rightHand.eulerAngles = rig.rightHandRotation;
 
         if (StartOfRound.Instance.localPlayerController.localVisorTargetPoint is not null)
@@ -341,7 +355,5 @@ public class VRNetPlayer : MonoBehaviour
         rightArmConstraint.data = originalRightArmConstraintData;
 
         GetComponentInChildren<RigBuilder>().Build();
-        
-        APIManager.OnVRPlayerLeft(this);
     }
 }

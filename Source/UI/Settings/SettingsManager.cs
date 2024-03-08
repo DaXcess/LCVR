@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using LCVR.API;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -281,7 +280,5 @@ public class SettingsManager : MonoBehaviour
 
         asset.currentPlatformRenderPipelineSettings = settings;
         #endregion
-        
-        APIManager.OnConfigChanged();
     }
 }

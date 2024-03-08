@@ -31,27 +31,46 @@ internal static class SpectatorEnvironmentPatches
     /// <summary>
     /// Prevent dead players from colliding with spider webs
     /// </summary>
-    [HarmonyPatch(typeof(SandSpiderWebTrap), "OnTriggerStay")]
+    [HarmonyPatch(typeof(SandSpiderWebTrap), nameof(SandSpiderWebTrap.OnTriggerStay))]
     [HarmonyPrefix]
     private static bool SandSpiderWebTrapOnCollide()
     {
-        return !StartOfRound.Instance?.localPlayerController?.isPlayerDead ?? true;
+        if (!StartOfRound.Instance || !StartOfRound.Instance.localPlayerController)
+            return true;
+        
+        return !StartOfRound.Instance.localPlayerController.isPlayerDead;
     }
 
     /// <summary>
     /// Prevent dead players from triggering touch-based interact triggers (e.g. garage door on Experimentation)
     /// </summary>
-    [HarmonyPatch(typeof(InteractTrigger), "OnTriggerEnter")]
+    [HarmonyPatch(typeof(InteractTrigger), nameof(InteractTrigger.OnTriggerEnter))]
     [HarmonyPrefix]
     private static bool InteractTriggerOnCollide()
     {
-        return !StartOfRound.Instance?.localPlayerController?.isPlayerDead ?? true;
+        if (!StartOfRound.Instance || !StartOfRound.Instance.localPlayerController)
+            return true;
+        
+        return !StartOfRound.Instance.localPlayerController.isPlayerDead;
+    }
+
+    /// <summary>
+    /// Prevent dead players from collapsing the bridge
+    /// </summary>
+    [HarmonyPatch(typeof(BridgeTrigger), nameof(BridgeTrigger.OnTriggerStay))]
+    [HarmonyPrefix]
+    private static bool BridgeTriggerOnCollide()
+    {
+        if (!StartOfRound.Instance || !StartOfRound.Instance.localPlayerController)
+            return true;
+        
+        return !StartOfRound.Instance.localPlayerController.isPlayerDead;
     }
 
     /// <summary>
     /// Prevent interact triggers from kicking the local player off a ladder when dead
     /// </summary>
-    [HarmonyPatch(typeof(InteractTrigger), "Update")]
+    [HarmonyPatch(typeof(InteractTrigger), nameof(InteractTrigger.Update))]
     [HarmonyTranspiler]
     private static IEnumerable<CodeInstruction> InteractTriggerAllowLadderWhenDead(IEnumerable<CodeInstruction> instructions)
     {

@@ -12,7 +12,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using LCVR.API;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -34,16 +33,14 @@ internal static class DNet
 
     private static ushort? LocalId => client._serverNegotiator.LocalId;
 
-    // A list of all known VR clients
-    
     /// List of known clients inside the Dissonance Voice session
     private static readonly Dictionary<ushort, ClientInfo<NfgoConn?>> clients = [];
     
     /// List of active VR players in the session
     private static readonly Dictionary<ushort, VRNetPlayer> players = [];
     
-    [Obsolete]
-    private static readonly Dictionary<string, ushort> clientByName = [];
+    /// List of cached peers by Dissonance name
+    private static readonly Dictionary<string, ushort> cachedPeers = [];
     
     /// List of client IDs (from Dissonance Voice) which support DNet
     private static readonly HashSet<ushort> subscribers = [];
@@ -69,7 +66,7 @@ internal static class DNet
             if (!player.IsLocalPlayer && peers.TryGetClientInfoByName(player.Name, out var client))
             {
                 clients.Add(client.PlayerId, client);
-                clientByName.Add(player.Name, client.PlayerId);
+                cachedPeers.Add(player.Name, client.PlayerId);
             }
 
         dissonance.StartCoroutine(SendHandshakeCoroutine());
@@ -84,7 +81,7 @@ internal static class DNet
 
         players.Clear();
         clients.Clear();
-        clientByName.Clear();
+        cachedPeers.Clear();
 
         muffledPlayers.Clear();
     }
@@ -159,29 +156,26 @@ internal static class DNet
         logger.LogDebug($"Player Id = {info.PlayerId}");
 
         clients.Add(info.PlayerId, info);
-        clientByName.Add(player.Name, info.PlayerId);
+        cachedPeers.Add(player.Name, info.PlayerId);
     }
 
     private static void OnPlayerLeftSession(VoicePlayerState player)
     {
-        if (!clientByName.TryGetValue(player.Name, out var id))
+        if (!cachedPeers.TryGetValue(player.Name, out var id))
             return;
 
-        // TODO: Remove, optionally also remove `clientByName`
-        logger.LogDebug($"{player.Tracker?.PlayerId}, {id}");
-        
         if (players.TryGetValue(id, out var networkPlayer))
             Object.Destroy(networkPlayer);
 
         subscribers.Remove(id);
         players.Remove(id);
         clients.Remove(id);
-        clientByName.Remove(player.Name);
+        cachedPeers.Remove(player.Name);
 
         muffledPlayers.Remove(id);
 
         logger.LogDebug($"Player {player.Name} left the game");
-        logger.LogDebug($"subscribers = {subscribers.Count}, players = {players.Count}, clients = {clients.Count} ({string.Join(", ", clients.Keys)}), clientByNames = {clientByName.Count} ({string.Join(", ", clientByName.Keys)})");
+        logger.LogDebug($"subscribers = {subscribers.Count}, players = {players.Count}, clients = {clients.Count} ({string.Join(", ", clients.Keys)}), clientByNames = {cachedPeers.Count} ({string.Join(", ", cachedPeers.Keys)})");
     }
 
     #endregion
@@ -326,8 +320,6 @@ internal static class DNet
             else
                 component.enabled = true;
         }
-        
-        APIManager.OnVRPlayerJoined(networkPlayer);
     }
 
     private static void HandleRigUpdate(ushort sender, byte[] packet)
@@ -498,6 +490,8 @@ internal static class DNet
         public Vector3 rightHandPosition;
         public Vector3 rightHandRotation;
 
+        public bool parentedToShip;
+
         public byte[] Serialize()
         {
             using var mem = new MemoryStream();
@@ -526,6 +520,8 @@ internal static class DNet
             bw.Write(rightHandRotation.x);
             bw.Write(rightHandRotation.y);
             bw.Write(rightHandRotation.z);
+            
+            bw.Write(parentedToShip);
 
             return mem.ToArray();
         }
@@ -543,6 +539,7 @@ internal static class DNet
                 leftHandRotation = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()),
                 rightHandPosition = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()),
                 rightHandRotation = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()),
+                parentedToShip = br.ReadBoolean()
             };
 
             return rig;

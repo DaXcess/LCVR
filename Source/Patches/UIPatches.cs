@@ -1,6 +1,5 @@
 ﻿using BepInEx.Bootstrap;
 using HarmonyLib;
-using LCVR.API;
 using LCVR.Assets;
 using LCVR.Player;
 using LCVR.UI;
@@ -87,8 +86,6 @@ internal static class UIPatches
         var today = System.DateTime.Today;
         if (today.Month == 4 && today.Day == 1)
             InitializeEasterEgg(__instance);
-        
-        APIManager.Initialize();
     }
 
     private static void InitMenuScene()
