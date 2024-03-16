@@ -6,6 +6,7 @@ using LCVR.UI;
 using Microsoft.MixedReality.Toolkit.Experimental.UI;
 using System.Collections.Generic;
 using System.Linq;
+using LCVR.Experiments;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
@@ -115,8 +116,8 @@ public class VRSession : MonoBehaviour
         helmetContainer.transform.localPosition = Vector3.zero;
         helmetContainer.transform.localEulerAngles = Vector3.zero;
 
-        helmetTarget.transform.localPosition = new Vector3(0.01f, -0.068f, -0.073f);
-        helmetTarget.transform.localScale = Vector3.one;
+        helmetTarget.localPosition = new Vector3(0.01f, -0.068f, -0.073f);
+        helmetTarget.localScale = Vector3.one;
         #endregion
 
         #region Disable UI camera and promote FPV camera
@@ -332,6 +333,9 @@ public class VRSession : MonoBehaviour
 
         Items.UpdateVRControlsItemsOffsets();
         Actions.Instance.Reload();
+        
+        // Add watchdog
+        gameObject.AddComponent<CameraWatchdog>();
         #endregion
     }
 

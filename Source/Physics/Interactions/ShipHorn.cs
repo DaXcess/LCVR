@@ -18,7 +18,7 @@ internal class ShipHorn : MonoBehaviour, VRInteractable
 
     public InteractableFlags Flags => InteractableFlags.BothHands;
 
-    void Awake()
+    private void Awake()
     {
         shipHorn = GetComponentInParent<ShipAlarmCord>();
         trigger = GetComponentInParent<InteractTrigger>();
@@ -26,13 +26,13 @@ internal class ShipHorn : MonoBehaviour, VRInteractable
         pullCord = transform.parent.parent;
     }
 
-    void Update()
+    private void Update()
     {
-        if (targetTransform == null)
+        if (targetTransform is null)
             return;
 
         var heightOffset = Mathf.Clamp(targetTransform.position.y - grabYPosition, -0.105f, 0);
-        pullCord.transform.localPosition = new Vector3(pullCord.transform.localPosition.x, 2.994f + heightOffset, pullCord.transform.localPosition.z);
+        pullCord.localPosition = new Vector3(pullCord.transform.localPosition.x, 2.994f + heightOffset, pullCord.localPosition.z);
 
         if (heightOffset < -0.08f)
             shipHorn.HoldCordDown();
@@ -46,18 +46,22 @@ internal class ShipHorn : MonoBehaviour, VRInteractable
         targetTransform = interactor.transform;
         animator.enabled = false;
         grabYPosition = targetTransform.position.y;
+        
+        interactor.FingerCurler.ForceFist(true);
 
         return true;
     }
 
-    public void OnButtonRelease(VRInteractor _)
+    public void OnButtonRelease(VRInteractor interactor)
     {
-        if (targetTransform != null)
+        if (targetTransform is not null)
         {
             shipHorn.StopHorn();
             targetTransform = null;
             animator.enabled = true;
         }
+        
+        interactor.FingerCurler.ForceFist(false);
     }
 
     public void OnColliderEnter(VRInteractor _) { }
@@ -68,7 +72,7 @@ internal class ShipHorn : MonoBehaviour, VRInteractable
 [HarmonyPatch]
 internal static class ShipAlarmCordPatches
 {
-    [HarmonyPatch(typeof(ShipAlarmCord), "Start")]
+    [HarmonyPatch(typeof(ShipAlarmCord), nameof(ShipAlarmCord.Start))]
     [HarmonyPostfix]
     private static void OnShipHornInitialized(ShipAlarmCord __instance)
     {

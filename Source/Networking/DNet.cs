@@ -27,11 +27,10 @@ internal static class DNet
     private static readonly NamedLogger logger = new("Networking");
 
     private static DissonanceComms dissonance;
-    private static NfgoCommsNetwork network;
-    private static BaseClient<NfgoServer, NfgoClient, NfgoConn> client;
+    private static BaseClient<NfgoServer, NfgoClient, NfgoConn> networkClient;
     private static SlaveClientCollection<NfgoConn> peers;
 
-    private static ushort? LocalId => client._serverNegotiator.LocalId;
+    private static ushort? LocalId => networkClient._serverNegotiator.LocalId;
 
     /// List of known clients inside the Dissonance Voice session
     private static readonly Dictionary<ushort, ClientInfo<NfgoConn?>> clients = [];
@@ -50,9 +49,8 @@ internal static class DNet
     public static IEnumerator Initialize()
     {
         dissonance = GameObject.Find("DissonanceSetup").GetComponent<DissonanceComms>();
-        network = dissonance.GetComponent<NfgoCommsNetwork>();
-        client = network.Client;
-        peers = client._peers;
+        networkClient = dissonance.GetComponent<NfgoCommsNetwork>().Client;
+        peers = networkClient._peers;
 
         // Wait for voicechat connection
         yield return new WaitUntil(() => LocalId.HasValue);
@@ -88,12 +86,12 @@ internal static class DNet
 
     public static void BroadcastRig(Rig rig)
     {
-        BroadcastPacket(MessageType.RigData, rig.Serialize());
+        BroadcastPacket(MessageType.RigData, Serialization.Serialize(rig));
     }
 
     public static void BroadcastSpectatorRig(SpectatorRig rig)
     {
-        BroadcastPacket(MessageType.SpectatorRigData, rig.Serialize());
+        BroadcastPacket(MessageType.SpectatorRigData, Serialization.Serialize(rig));
     }
 
     public static void InteractWithLever(bool started)
@@ -111,11 +109,11 @@ internal static class DNet
         BroadcastPacket(MessageType.Muffled, [muffled ? (byte)1 : (byte)0]);
     }
 
-    private static void SendHandshakeResponse(ushort client)
+    private static void SendHandshakeResponse(ushort clientId)
     {
-        if (!clients.TryGetValue(client, out var target))
+        if (!clients.TryGetValue(clientId, out var target))
         {
-            logger.LogError($"Cannot send handshake response to {client}: Client info is missing!");
+            logger.LogError($"Cannot send handshake response to {clientId}: Client info is missing!");
             return;
         }
 
@@ -186,12 +184,12 @@ internal static class DNet
     {
         var targets = subscribers.Where(key => clients.TryGetValue(key, out _)).Select(value => clients[value]).ToList();
 
-        client.SendReliableP2P(targets, ConstructPacket(type, payload));
+        networkClient.SendReliableP2P(targets, ConstructPacket(type, payload));
     }
 
     private static void SendPacket(MessageType type, byte[] payload, params ClientInfo<NfgoConn?>[] targets)
     {
-        client.SendReliableP2P([.. targets], ConstructPacket(type, payload));
+        networkClient.SendReliableP2P([.. targets], ConstructPacket(type, payload));
     }
 
     private static byte[] ConstructPacket(MessageType type, byte[] payload)
@@ -218,28 +216,28 @@ internal static class DNet
 
     #region PACKET HANDLING
 
-    public static void OnPacketReceived(MessageType messageType, ushort sender, byte[] data)
+    public static void OnPacketReceived(MessageType messageType, ushort sender, BinaryReader reader)
     {
         switch (messageType)
         {
             case MessageType.HandshakeRequest:
-                HandleHandshakeRequest(sender, BitConverter.ToUInt16(data, 0));
+                HandleHandshakeRequest(sender, reader.ReadUInt16());
                 break;
 
             case MessageType.HandshakeResponse:
-                dissonance.StartCoroutine(HandleHandshakeResponse(sender, BitConverter.ToBoolean(data)));
+                dissonance.StartCoroutine(HandleHandshakeResponse(sender, reader.ReadBoolean()));
                 break;
 
             case MessageType.RigData:
-                HandleRigUpdate(sender, data);
+                HandleRigUpdate(sender, reader);
                 break;
             
             case MessageType.SpectatorRigData:
-                HandleSpectatorRigUpdate(sender, data);
+                HandleSpectatorRigUpdate(sender, reader);
                 break;
 
             case MessageType.Lever:
-                HandleInteractWithLever(sender, BitConverter.ToBoolean(data));
+                HandleInteractWithLever(sender, reader.ReadBoolean());
                 break;
 
             case MessageType.CancelChargerAnim:
@@ -247,7 +245,7 @@ internal static class DNet
                 break;
 
             case MessageType.Muffled:
-                HandleSetMuffled(sender, BitConverter.ToBoolean(data));
+                HandleSetMuffled(sender, reader.ReadBoolean());
                 break;
         }
     }
@@ -322,21 +320,21 @@ internal static class DNet
         }
     }
 
-    private static void HandleRigUpdate(ushort sender, byte[] packet)
+    private static void HandleRigUpdate(ushort sender, BinaryReader reader)
     {
         if (!players.TryGetValue(sender, out var player))
             return;
 
-        var rig = Rig.Deserialize(packet);
+        var rig = Serialization.Deserialize<Rig>(reader);
         player.UpdateTargetTransforms(rig);
     }
 
-    private static void HandleSpectatorRigUpdate(ushort sender, byte[] packet)
+    private static void HandleSpectatorRigUpdate(ushort sender, BinaryReader reader)
     {
         if (!players.TryGetValue(sender, out var player))
             return;
 
-        var rig = SpectatorRig.Deserialize(packet);
+        var rig = Serialization.Deserialize<SpectatorRig>(reader);
         player.UpdateSpectatorTransforms(rig);
     }
     
@@ -387,6 +385,7 @@ internal static class DNet
 
     #region SERIALIZABLE STRUCTS
 
+    [Serialize]
     public struct Rig
     {
         public Vector3 rightHandPosition;
@@ -405,72 +404,6 @@ internal static class DNet
         public float rotationOffset;
         public float cameraFloorOffset;
 
-        public readonly byte[] Serialize()
-        {
-            using var mem = new MemoryStream();
-            using var bw = new BinaryWriter(mem);
-
-            bw.Write(rightHandPosition.x);
-            bw.Write(rightHandPosition.y);
-            bw.Write(rightHandPosition.z);
-
-            bw.Write(rightHandEulers.x);
-            bw.Write(rightHandEulers.y);
-            bw.Write(rightHandEulers.z);
-
-            bw.Write(rightHandFingers.Serialize());
-
-            bw.Write(leftHandPosition.x);
-            bw.Write(leftHandPosition.y);
-            bw.Write(leftHandPosition.z);
-
-            bw.Write(leftHandEulers.x);
-            bw.Write(leftHandEulers.y);
-            bw.Write(leftHandEulers.z);
-
-            bw.Write(leftHandFingers.Serialize());
-
-            bw.Write(cameraEulers.x);
-            bw.Write(cameraEulers.y);
-            bw.Write(cameraEulers.z);
-
-            bw.Write(cameraPosAccounted.x);
-            bw.Write(cameraPosAccounted.z);
-
-            bw.Write(modelOffset.x);
-            bw.Write(modelOffset.z);
-
-            bw.Write((byte)crouchState);
-            bw.Write(rotationOffset);
-            bw.Write(cameraFloorOffset);
-
-            return mem.ToArray();
-        }
-
-        public static Rig Deserialize(byte[] raw)
-        {
-            using var mem = new MemoryStream(raw);
-            using var br = new BinaryReader(mem);
-
-            var rig = new Rig
-            {
-                rightHandPosition = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()),
-                rightHandEulers = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()),
-                rightHandFingers = Fingers.Deserialize(br.ReadBytes(Fingers.BYTE_COUNT)),
-                leftHandPosition = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()),
-                leftHandEulers = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()),
-                leftHandFingers = Fingers.Deserialize(br.ReadBytes(Fingers.BYTE_COUNT)),
-                cameraEulers = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()),
-                cameraPosAccounted = new Vector3(br.ReadSingle(), 0, br.ReadSingle()),
-                modelOffset = new Vector3(br.ReadSingle(), 0, br.ReadSingle()),
-                crouchState = (CrouchState)br.ReadByte(),
-                rotationOffset = br.ReadSingle(),
-                cameraFloorOffset = br.ReadSingle(),
-            };
-
-            return rig;
-        }
-
         public enum CrouchState : byte
         {
             None,
@@ -479,6 +412,7 @@ internal static class DNet
         }
     }
 
+    [Serialize]
     public struct SpectatorRig
     {
         public Vector3 headPosition;
@@ -491,101 +425,16 @@ internal static class DNet
         public Vector3 rightHandRotation;
 
         public bool parentedToShip;
-
-        public byte[] Serialize()
-        {
-            using var mem = new MemoryStream();
-            using var bw = new BinaryWriter(mem);
-            
-            bw.Write(headPosition.x);
-            bw.Write(headPosition.y);
-            bw.Write(headPosition.z);
-            
-            bw.Write(headRotation.x);
-            bw.Write(headRotation.y);
-            bw.Write(headRotation.z);
-            
-            bw.Write(leftHandPosition.x);
-            bw.Write(leftHandPosition.y);
-            bw.Write(leftHandPosition.z);
-            
-            bw.Write(leftHandRotation.x);
-            bw.Write(leftHandRotation.y);
-            bw.Write(leftHandRotation.z);
-            
-            bw.Write(rightHandPosition.x);
-            bw.Write(rightHandPosition.y);
-            bw.Write(rightHandPosition.z);
-            
-            bw.Write(rightHandRotation.x);
-            bw.Write(rightHandRotation.y);
-            bw.Write(rightHandRotation.z);
-            
-            bw.Write(parentedToShip);
-
-            return mem.ToArray();
-        }
-
-        public static SpectatorRig Deserialize(byte[] raw)
-        {
-            using var mem = new MemoryStream(raw);
-            using var br = new BinaryReader(mem);
-
-            var rig = new SpectatorRig()
-            {
-                headPosition = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()),
-                headRotation = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()),
-                leftHandPosition = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()),
-                leftHandRotation = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()),
-                rightHandPosition = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()),
-                rightHandRotation = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()),
-                parentedToShip = br.ReadBoolean()
-            };
-
-            return rig;
-        }
     }
     
+    [Serialize]
     public struct Fingers
     {
-        public const int BYTE_COUNT = 5;
-
-        public float thumb;
-        public float index;
-        public float middle;
-        public float ring;
-        public float pinky;
-
-        public readonly byte[] Serialize()
-        {
-            using var mem = new MemoryStream();
-            using var bw = new BinaryWriter(mem);
-
-            bw.Write((byte)(thumb * 255f));
-            bw.Write((byte)(index * 255f));
-            bw.Write((byte)(middle * 255f));
-            bw.Write((byte)(ring * 255f));
-            bw.Write((byte)(pinky * 255f));
-
-            return mem.ToArray();
-        }
-
-        public static Fingers Deserialize(byte[] raw)
-        {
-            using var mem = new MemoryStream(raw);
-            using var br = new BinaryReader(mem);
-
-            var fingers = new Fingers
-            {
-                thumb = br.ReadByte() / 255f,
-                index = br.ReadByte() / 255f,
-                middle = br.ReadByte() / 255f,
-                pinky = br.ReadByte() / 255f,
-                ring = br.ReadByte() / 255f,
-            };
-
-            return fingers;
-        }
+        public byte thumb;
+        public byte index;
+        public byte middle;
+        public byte ring;
+        public byte pinky;
     }
 
     public enum MessageType : byte
@@ -627,9 +476,8 @@ internal static class DissonancePatches
 
             var type = (DNet.MessageType)messageType;
             var sender = reader.ReadUInt16();
-            var payload = reader.ReadBytes(data.Array.Length - data.Offset - 5);
 
-            DNet.OnPacketReceived(type, sender, payload);
+            DNet.OnPacketReceived(type, sender, reader);
         }
         catch (Exception ex)
         {

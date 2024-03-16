@@ -7,12 +7,13 @@ using LCVR.Patches;
 using LCVR.Player;
 using Unity.Netcode;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace LCVR.Physics.Interactions;
 
-internal class Door : MonoBehaviour, VRInteractable
+public class Door : MonoBehaviour, VRInteractable
 {
-    internal static Dictionary<string, (Vector3, Vector3, Vector3)> registeredDoorHandles = new()
+    internal static readonly Dictionary<string, (Vector3, Vector3, Vector3)> registeredDoorHandles = new()
     {
         ["SteelDoorMapModel"] = (new(-0.29f, 0.2336f, -0.025f), Vector3.zero, new(1, 0.15f, 0.025f)),
         ["FancyDoorMapModel"] = (new(-0.29f, 0.2836f, -0.055f), Vector3.zero, new(1, 0.09f, 0.155f))
@@ -21,15 +22,35 @@ internal class Door : MonoBehaviour, VRInteractable
     internal DoorLock door;
     private float lastInteraction;
 
+    internal bool wasOpened;
+    
     public InteractableFlags Flags => InteractableFlags.BothHands;
+
+    /// <summary>
+    /// This update loop modifies the hitbox size of the door so that they are easier to close
+    /// </summary>
+    private void Update()
+    {
+        switch (door.isDoorOpened)
+        {
+            case false when wasOpened:
+                transform.localScale *= 0.25f;
+                break;
+            case true when !wasOpened:
+                transform.localScale *= 4f;
+                break;
+        }
+
+        wasOpened = door.isDoorOpened;
+    }
 
     public bool OnButtonPress(VRInteractor interactor)
     {
         if (door.isLocked)
         {
             var item = VRSession.Instance.LocalPlayer.PlayerController.currentlyHeldObjectServer;
-            var unlocking = !door.isPickingLock && interactor.IsRightHand && item?.itemProperties.itemId == 14;
-            var picking = !door.isPickingLock && interactor.IsRightHand && item?.itemProperties.itemId == 8;
+            var unlocking = !door.isPickingLock && interactor.IsRightHand && item && item.itemProperties.itemId == 14;
+            var picking = !door.isPickingLock && interactor.IsRightHand && item && item.itemProperties.itemId == 8;
 
             if (unlocking)
             {
@@ -71,10 +92,7 @@ internal class Door : MonoBehaviour, VRInteractable
 
     private void ToggleDoor()
     {
-        var wasOpened = door.isDoorOpened;
         door.OpenOrCloseDoor(VRSession.Instance.LocalPlayer.PlayerController);
-
-        transform.localScale *=  wasOpened ? 0.25f : 4f;
     }
 
     public void OnButtonRelease(VRInteractor _) { }
@@ -116,7 +134,7 @@ internal class Door : MonoBehaviour, VRInteractable
         rotation ??= Vector3.zero;
         scale ??= Vector3.zero;
 
-        int idx = networkObjectName.LastIndexOf("(Clone)");
+        var idx = networkObjectName.LastIndexOf("(Clone)", StringComparison.Ordinal);
 
         if (idx > -1)
             networkObjectName = networkObjectName.Remove(idx, 7);
@@ -164,7 +182,7 @@ internal static class DoorPatches
 
         if (!Door.registeredDoorHandles.TryGetValue(__instance.NetworkObject.name, out var offsets))
         {
-            int idx = __instance.NetworkObject.name.LastIndexOf("(Clone)");
+            var idx = __instance.NetworkObject.name.LastIndexOf("(Clone)", StringComparison.Ordinal);
 
             if (idx < 0)
                 return;
@@ -181,13 +199,14 @@ internal static class DoorPatches
         // Make sure default ray based interaction no longer works for this door
         __instance.gameObject.name = "DoorInteractable";
 
-        var interactableObject = GameObject.Instantiate(AssetManager.interactable, __instance.transform);
+        var interactableObject = Object.Instantiate(AssetManager.interactable, __instance.transform);
         interactableObject.transform.localPosition = position;
         interactableObject.transform.localEulerAngles = rotation;
         interactableObject.transform.localScale = scale * (__instance.isDoorOpened ? 4f : 1f);
 
         var interactable = interactableObject.AddComponent<Door>();
         interactable.door = __instance;
+        interactable.wasOpened = __instance.isDoorOpened;
     }
 }
 
@@ -205,7 +224,7 @@ internal static class LockerPickerPatches
         // Do **not** yet disable the ray based interactor. Only disable when placed on door!
         __instance.gameObject.name = "LockPicker";
 
-        var interactableObject = GameObject.Instantiate(AssetManager.interactable, __instance.transform);
+        var interactableObject = Object.Instantiate(AssetManager.interactable, __instance.transform);
         interactableObject.transform.localScale = new Vector3(2f, 4f, 2.5f);
         interactableObject.AddComponent<LockPickerInteractable>();
     }

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using LCVR.Player;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -249,12 +250,14 @@ public class SettingsManager : MonoBehaviour
         descriptionText.text = $"<b>{title}</b>\n\n{description}";
     }
 
-    // TODO: Add this function to the callback inside the AssetBundle
     /// <summary>
     /// This function gets called when the player closes the settings menu
     /// </summary>
     public void ConfirmSettings()
     {
+        if (!VRSession.InVR)
+            return;
+        
         #region Reload and apply HDRP pipeline settings
         var asset = QualitySettings.renderPipeline as HDRenderPipelineAsset;
 

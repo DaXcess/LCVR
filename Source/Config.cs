@@ -11,6 +11,8 @@ public class Config(ConfigFile file)
     // General configuration
 
     public ConfigEntry<bool> DisableVR { get; } = file.Bind("General", "DisableVR", false, "Disables the main functionality of this mod, can be used if you want to play without VR while keeping the mod installed.");
+
+    public ConfigEntry<bool> AskOnStartup { get; } = file.Bind("General", "AskOnStartup", false, "When enabled, shows a popup on game launch where you are asked whether or not you want to play in VR. If DisableVR is set to true, this popup will not show.");
     public ConfigEntry<bool> IntroScreenSeen { get; } = file.Bind("General", "IntroScreenSeen", false, "Whether the VR intro screen has been displayed before. This configuration option should be set automatically.");
     public ConfigEntry<bool> EnableHelmetVisor { get; } = file.Bind("General", "EnableHelmetVisor", false, "Enables the first person helmet visor and helmet. This will restrict your field of view, but looks more immersive.");
 
@@ -19,7 +21,7 @@ public class Config(ConfigFile file)
     public ConfigEntry<bool> EnableDynamicResolution { get; } = file.Bind("Performance", "EnableDynamicResolution", false, "Whether or not dynamic resolution should be enabled. Required for most of these settings to have an effect.");
     public ConfigEntry<DynamicResUpscaleFilter> DynamicResolutionUpscaleFilter { get; } = file.Bind("Performance", "DynamicResolutionUpscaleFilter", DynamicResUpscaleFilter.EdgeAdaptiveScalingUpres, new ConfigDescription("The filter/algorithm that will be used to perform dynamic resolution upscaling. Defaulted to FSR (Edge Adaptive Scaling).", new AcceptableValueEnum<DynamicResUpscaleFilter>()));
     public ConfigEntry<float> DynamicResolutionPercentage { get; } = file.Bind("Performance", "DynamicResolutionPercentage", 80f, new ConfigDescription("The percentage of resolution to scale the game down to. The lower the value, the harder the upscale filter has to work which will result in quality loss.", new AcceptableValueRange<float>(0, 100)));
-    public ConfigEntry<bool> EnableDLSS { get; } = file.Bind("Performance", "EnableDLSS", false, "Enable DLSS support for the game. Required dynamic resolution to be enabled. DLSS will override the upscale filter used.");
+    public ConfigEntry<bool> EnableDLSS { get; } = file.Bind("Performance", "EnableDLSS", false, "(Not recommended!) Enable DLSS support for the game. Requires dynamic resolution to be enabled. DLSS will override the upscale filter used.");
     public ConfigEntry<float> CameraResolution { get; } = file.Bind("Performance", "CameraResolution", 0.75f, new ConfigDescription("This setting configures the resolution scale of the game, lower values are more performant, but will make the game look worse. From around 0.8 the difference is negligible (on a Quest 2, with dynamic resolution disabled).", new AcceptableValueRange<float>(0.05f, 1f)));
     public ConfigEntry<bool> DisableVolumetrics { get; } = file.Bind("Performance", "DisableVolumetrics", false, "Disables volumetrics in the game, which significantly improves performance, but removes all fog and may be considered cheating.");
 
@@ -75,14 +77,10 @@ public class Config(ConfigFile file)
     }
 }
 
-internal class AcceptableValueEnum<T> : AcceptableValueBase where T : notnull, Enum
+internal class AcceptableValueEnum<T>() : AcceptableValueBase(typeof(T))
+    where T : notnull, Enum
 {
-    private readonly string[] names;
-
-    public AcceptableValueEnum() : base(typeof(T))
-    {
-        names = Enum.GetNames(typeof(T));
-    }
+    private readonly string[] names = Enum.GetNames(typeof(T));
 
     public override object Clamp(object value) => value;
     public override bool IsValid(object value) => true;

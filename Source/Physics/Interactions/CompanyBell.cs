@@ -11,7 +11,7 @@ internal class CompanyBell : MonoBehaviour, VRInteractable
     private InteractTrigger trigger;
     private float lastInteractTime;
 
-    private bool CanInteract => Time.realtimeSinceStartup - lastInteractTime > 0.25f;
+    private bool CanInteract => Time.realtimeSinceStartup - lastInteractTime > 0.075f;
 
     public InteractableFlags Flags => InteractableFlags.BothHands;
 

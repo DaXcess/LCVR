@@ -21,37 +21,32 @@ public abstract class VRItem<T> : MonoBehaviour where T : GrabbableObject
     /// <summary>
     /// Keep receiving updates even when the item is pocketed
     /// </summary>
-    protected bool UpdateWhenPocketed { get; set; } = false;
+    protected bool UpdateWhenPocketed { get; set; }
 
     /// <summary>
     /// Prevents the game from running LateUpdate calls on this item, which mess with the position and rotation of the object
     /// </summary>
-    public bool CancelGameUpdate { get; protected set; } = false;
+    public bool CancelGameUpdate { get; protected set; }
 
-    protected bool IsLocal
-    {
-        get => _isLocal;
-    }
-
-    private bool _isLocal = false;
+    protected bool IsLocal { get; private set; }
 
     protected virtual void Awake()
     {
         item = GetComponent<T>();
         player = item.playerHeldBy;
         networkPlayer = player.GetComponent<VRNetPlayer>();
-        _isLocal = networkPlayer == null;
+        IsLocal = networkPlayer == null;
 
         itemCache.Add(item, this);
 
-        Logger.LogDebug($"VRItem[{GetType().Name}] (IsLocal: {_isLocal}) instantiated for item '{item.itemProperties.itemName}'");
+        Logger.LogDebug($"VRItem[{GetType().Name}] (IsLocal: {IsLocal}) instantiated for item '{item.itemProperties.itemName}'");
     }
 
     protected virtual void LateUpdate()
     {
         if (item.playerHeldBy != player || (!UpdateWhenPocketed && item.isPocketed) || !item.isHeld)
         {
-            Logger.LogDebug($"VRItem[{GetType().Name}] (IsLocal: {_isLocal}) is being destroyed");
+            Logger.LogDebug($"VRItem[{GetType().Name}] (IsLocal: {IsLocal}) is being destroyed");
             itemCache.Remove(item);
 
             Destroy(this);

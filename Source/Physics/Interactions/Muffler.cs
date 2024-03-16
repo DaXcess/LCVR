@@ -21,17 +21,16 @@ public class Muffler : MonoBehaviour, VRInteractable
         "TZP-Inhalant"
     ];
 
-    private bool isMuffled;
     private Coroutine stopMuffleCoroutine;
 
     private float counter = 0;
 
     public InteractableFlags Flags => InteractableFlags.BothHands;
-    public bool Muffled => isMuffled;
+    public bool Muffled { get; private set; }
 
-    void Update()
+    private void Update()
     {
-        if (isMuffled)
+        if (Muffled)
             counter = Mathf.Min(counter + Time.deltaTime * 2, MAX_COUNTER);
         else
             counter = Mathf.Max(counter - Time.deltaTime, 0);
@@ -40,29 +39,33 @@ public class Muffler : MonoBehaviour, VRInteractable
     }
 
     public void OnColliderEnter(VRInteractor interactor)
-    {
-        if (interactor.IsRightHand && MUFFLED_ITEMS_IGNORE.Contains(VRSession.Instance.LocalPlayer.PlayerController.currentlyHeldObjectServer?.itemProperties.itemName))
+    {        
+        var heldItem = VRSession.Instance.LocalPlayer.PlayerController.currentlyHeldObjectServer;
+
+        if (heldItem && heldItem.itemProperties.twoHanded)
+            return;
+
+        if (interactor.IsRightHand && heldItem && MUFFLED_ITEMS_IGNORE.Contains(heldItem.itemProperties.itemName))
             return;
 
         if (stopMuffleCoroutine != null)
             StopCoroutine(stopMuffleCoroutine);
 
-        if (isMuffled)
+        if (Muffled)
             return;
 
-        isMuffled = true;
+        Muffled = true;
         DNet.SetMuffled(true);
     }
 
     public void OnColliderExit(VRInteractor interactor)
-    {
+    {            
+        var heldItem = VRSession.Instance.LocalPlayer.PlayerController.currentlyHeldObjectServer;
+
         if (interactor.IsRightHand)
         {
-            switch (VRSession.Instance.LocalPlayer.PlayerController.currentlyHeldObjectServer?.itemProperties.itemName)
-            {
-                case "Walkie-talkie":
-                    return;
-            };
+            if (heldItem && MUFFLED_ITEMS_IGNORE.Contains(heldItem.itemProperties.itemName))
+                return;
         }
 
         if (stopMuffleCoroutine != null)
@@ -75,7 +78,7 @@ public class Muffler : MonoBehaviour, VRInteractable
     {
         yield return new WaitForSeconds(0.5f);
 
-        isMuffled = false;
+        Muffled = false;
         DNet.SetMuffled(false);
     }
 
@@ -102,7 +105,7 @@ internal static class MufflePatches
     /// <summary>
     /// Prevent the voice chat from making audible noise for enemies when muffled
     /// </summary>
-    [HarmonyPatch(typeof(StartOfRound), "DetectVoiceChatAmplitude")]
+    [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.DetectVoiceChatAmplitude))]
     [HarmonyPrefix]
     private static bool MuffleBlockSound()
     {
@@ -126,13 +129,13 @@ internal static class MufflePatches
             if (player == __instance.localPlayerController || player.isPlayerDead)
                 continue;
 
-            if (DNet.IsPlayerMuffled(i))
-            {
-                var occlude = player.currentVoiceChatAudioSource.GetComponent<OccludeAudio>();
+            if (!DNet.IsPlayerMuffled(i))
+                continue;
 
-                occlude.overridingLowPass = true;
-                occlude.lowPassOverride = 1000f;
-            }
+            var occlude = player.currentVoiceChatAudioSource.GetComponent<OccludeAudio>();
+
+            occlude.overridingLowPass = true;
+            occlude.lowPassOverride = 1000f;
         }
     }
 }

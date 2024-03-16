@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace LCVR.Player;
 
-internal class Items
+internal static class Items
 {
     public static readonly Dictionary<string, Type> items = new()
     {

@@ -308,15 +308,16 @@ public class VRNetPlayer : MonoBehaviour
         var leftHand = playerGhost.transform.Find("Hand.L");
         var rightHand = playerGhost.transform.Find("Hand.R");
 
-        if (rig.parentedToShip && !spectatorWasParentedToShip)
+        switch (rig.parentedToShip)
         {
-            playerGhost.transform.SetParent(StartOfRound.Instance.elevatorTransform, true);
-            playerGhost.transform.localPosition = Vector3.zero;
-        }
-        else if (!rig.parentedToShip && spectatorWasParentedToShip)
-        {
-            playerGhost.transform.SetParent(null, true);
-            playerGhost.transform.localPosition = Vector3.zero;
+            case true when !spectatorWasParentedToShip:
+                playerGhost.transform.SetParent(StartOfRound.Instance.elevatorTransform, true);
+                playerGhost.transform.localPosition = Vector3.zero;
+                break;
+            case false when spectatorWasParentedToShip:
+                playerGhost.transform.SetParent(null, true);
+                playerGhost.transform.localPosition = Vector3.zero;
+                break;
         }
 
         spectatorWasParentedToShip = rig.parentedToShip;

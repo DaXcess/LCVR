@@ -1,4 +1,4 @@
-﻿# Compiling
+# Compiling
 
 ## Initial setup
 

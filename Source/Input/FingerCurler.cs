@@ -76,21 +76,21 @@ public class FingerCurler
     {
         return new DNet.Fingers()
         {
-            thumb = thumbFinger.curl,
-            index = indexFinger.curl,
-            middle = middleFinger.curl,
-            ring = ringFinger.curl,
-            pinky = pinkyFinger.curl,
+            thumb = (byte)(thumbFinger.curl * 255f),
+            index = (byte)(indexFinger.curl * 255f),
+            middle = (byte)(middleFinger.curl * 255f),
+            ring = (byte)(ringFinger.curl * 255f),
+            pinky = (byte)(pinkyFinger.curl * 255f),
         };
     }
 
     internal void SetCurls(DNet.Fingers fingers)
     {
-        thumbFinger.curl = fingers.thumb;
-        indexFinger.curl = fingers.index;
-        middleFinger.curl = fingers.middle;
-        ringFinger.curl = fingers.ring;
-        pinkyFinger.curl = fingers.pinky;
+        thumbFinger.curl = fingers.thumb / 255f;
+        indexFinger.curl = fingers.index / 255f;
+        middleFinger.curl = fingers.middle / 255f;
+        ringFinger.curl = fingers.ring / 255f;
+        pinkyFinger.curl = fingers.pinky / 255f;
     }
 
     public virtual void Update()

@@ -66,9 +66,9 @@ public class VRInteractor : MonoBehaviour
             _ => defaultOffset
         };
 
-        debugCube.transform.localPosition = offset.position;
-        debugCube.transform.localRotation = offset.rotation;
-        debugCube.transform.localScale = offset.scale;
+        debugCube.localPosition = offset.position;
+        debugCube.localRotation = offset.rotation;
+        debugCube.localScale = offset.scale;
 
         var center = transform.TransformPoint(offset.OverlapPosition);
         var objects = UnityEngine.Physics.OverlapBox(center, offset.OverlapScale, transform.rotation * offset.OverlapRotation, interactableObjectMask);
@@ -79,18 +79,20 @@ public class VRInteractor : MonoBehaviour
 
     public bool IsPressed()
     {
-        return Actions.Instance[$"Controls/Interact{(IsRightHand ? "" : "Left")}"].IsPressed();
+        var action = Actions.Instance[$"Controls/Interact{(IsRightHand ? "" : "Left")}"];
+
+        return action is not null && action.IsPressed();
     }
 
-    private struct Offset(Vector3 position, Vector3 scale, Quaternion rotation)
+    private readonly struct Offset(Vector3 position, Vector3 scale, Quaternion rotation)
     {
-        public Vector3 position = position;
-        public Vector3 scale = scale;
-        public Quaternion rotation = rotation;
+        public readonly Vector3 position = position;
+        public readonly Vector3 scale = scale;
+        public readonly Quaternion rotation = rotation;
 
-        public readonly Vector3 OverlapPosition => position;
-        public readonly Vector3 OverlapScale => scale / 2;
-        public readonly Quaternion OverlapRotation => rotation;
+        public Vector3 OverlapPosition => position;
+        public Vector3 OverlapScale => scale / 2;
+        public Quaternion OverlapRotation => rotation;
     }
 }
 

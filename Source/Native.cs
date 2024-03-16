@@ -55,6 +55,9 @@ internal static class Native
     [DllImport("advapi32.dll")]
     public static extern int RegCloseKey(IntPtr hKey);
 
+    [DllImport("Shlwapi.dll", CharSet = CharSet.Ansi)]
+    public static extern int ShellMessageBox(IntPtr hAppInst, IntPtr hWnd, string lpcText, string lpcTitle, uint fuStyle);
+
     private delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
     
     private static string GetWindowText(IntPtr hWnd)

@@ -64,9 +64,27 @@ public class Plugin : BaseUnityPlugin
         // Allow disabling VR via config and command line
         var disableVr = Config.DisableVR.Value ||
                         Environment.GetCommandLineArgs().Contains("--disable-vr", StringComparer.OrdinalIgnoreCase);
-
+        
         if (disableVr)
             Logger.LogWarning("VR has been disabled by config or the `--disable-vr` command line flag");
+        else if (Config.AskOnStartup.Value)
+        {
+            var response = Native.ShellMessageBox(IntPtr.Zero, IntPtr.Zero,
+                "Do you want to run Lethal Company in VR mode?\n\nDon't forget to connect your headset first before launching the game in VR.\nLaunching the game without VR will still allow you to see other VR players' arm movements.\n\nPress 'Cancel' to close the game.",
+                "Lethal Company VR Mod", 0x1043);
+
+            switch (response)
+            {
+                case 2:
+                    // Application.Quit crashes the game, presumably since this code runs in the constructor of Application which messes things up
+                    System.Diagnostics.Process.GetCurrentProcess().Kill();
+                    return;
+                
+                case 7:
+                    disableVr = true;
+                    break;
+            } 
+        }
 
         if (Environment.GetCommandLineArgs().Contains("--lcvr-debug-interactables"))
             Flags |= Flags.InteractableDebug;

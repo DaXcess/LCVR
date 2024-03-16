@@ -5,11 +5,8 @@ namespace LCVR.Player;
 /// <summary>
 /// Helper class for getting all the transforms for the player model and IK
 /// </summary>
-/// <param name="player"></param>
 public class Bones(Transform player)
 {
-    private readonly Transform player = player;
-
     public Transform Model => player.Find("ScavengerModel");
     public Transform Metarig => Model.Find("metarig");
 
