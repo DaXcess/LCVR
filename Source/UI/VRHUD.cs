@@ -32,7 +32,7 @@ public class VRHUD : MonoBehaviour
 
     private GameObject spectatorLight;
 
-    void Awake()
+    private void Awake()
     {
         // Create canvasses
         worldInteractionCanvas = new GameObject("World Interaction Canvas").AddComponent<Canvas>();
@@ -142,6 +142,10 @@ public class VRHUD : MonoBehaviour
         }
         else
         {
+            // Self, SelfRed, RedGlowBodyParts = Pos (8, 112, 40) Rot (0 164 0)
+            // SprintMeter = Pos (4, 100, 40) Rot (0 164 0)
+            // WeightUI = Pos (-10 80 40) Rot (0 164 0)
+            
             selfRed.transform.SetParent(leftHandCanvas.transform, false);
             self.transform.SetParent(leftHandCanvas.transform, false);
             sprintMeter.transform.SetParent(leftHandCanvas.transform, false);
@@ -345,13 +349,15 @@ public class VRHUD : MonoBehaviour
         spectatorLight.SetActive(false);
     }
 
-    void LateUpdate()
+    private void LateUpdate()
     {
-        transform.position = VRSession.Instance.MainCamera.transform.position + VRSession.Instance.MainCamera.transform.forward * 0.5f;
-        transform.rotation = VRSession.Instance.MainCamera.transform.rotation;
+        var camTransform = VRSession.Instance.MainCamera.transform;
+        
+        transform.position = camTransform.position + camTransform.forward * 0.5f;
+        transform.rotation = camTransform.rotation;
 
         // Interaction canvas
-        worldInteractionCanvas.transform.rotation = Quaternion.LookRotation(worldInteractionCanvas.transform.position - VRSession.Instance.MainCamera.transform.position);
+        worldInteractionCanvas.transform.rotation = Quaternion.LookRotation(worldInteractionCanvas.transform.position - camTransform.position);
         worldInteractionCanvas.transform.position += worldInteractionCanvas.transform.forward * -0.2f;
 
         scanner.Update();

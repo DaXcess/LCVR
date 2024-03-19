@@ -379,6 +379,14 @@ public class VRPlayer : MonoBehaviour
             isSprinting = false;
         }
 
+        if (!wasInEnemyAnimation && playerController.inAnimationWithEnemy)
+        {
+            var direction = playerController.inAnimationWithEnemy.transform.position - transform.position;
+            var rotation = Quaternion.LookRotation(direction, Vector3.up);
+
+            turningProvider.SetOffset(rotation.eulerAngles.y - mainCamera.transform.localEulerAngles.y);
+        }
+
         var rotationOffset = playerController.jetpackControls switch
         {
             true => Quaternion.Euler(playerController.jetpackTurnCompass.eulerAngles.x, turningProvider.GetRotationOffset(), playerController.jetpackTurnCompass.eulerAngles.z),
@@ -390,14 +398,6 @@ public class VRPlayer : MonoBehaviour
 
         if (!wasInSpecialAnimation && playerController.inSpecialInteractAnimation)
             specialAnimationPositionOffset = new Vector3(-cameraPosAccounted.x * SCALE_FACTOR, 0, -cameraPosAccounted.z * SCALE_FACTOR);
-
-        if (!wasInEnemyAnimation && playerController.inAnimationWithEnemy)
-        {
-            var direction = playerController.inAnimationWithEnemy.transform.position - transform.position;
-            var rotation = Quaternion.LookRotation(direction, Vector3.up);
-
-            turningProvider.SetOffset(rotation.eulerAngles.y - mainCamera.transform.localEulerAngles.y);
-        }
 
         wasInSpecialAnimation = playerController.inSpecialInteractAnimation;
         wasInEnemyAnimation = playerController.inAnimationWithEnemy is not null;

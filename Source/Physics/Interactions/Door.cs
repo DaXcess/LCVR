@@ -257,7 +257,8 @@ internal static class LockerPickerPatches
     [HarmonyPrefix]
     private static bool OnUseItem()
     {
-        return Plugin.Config.DisableDoorInteraction.Value;
+        // Use `IsHovering` to make sure modded doors without interaction support still allow lock picker placement
+        return Plugin.Config.DisableDoorInteraction.Value || VRSession.Instance.LocalPlayer.PrimaryController.IsHovering;
     }
 }
 
@@ -272,6 +273,7 @@ internal static class KeyPatches
     [HarmonyPrefix]
     private static bool OnUseItem()
     {
-        return Plugin.Config.DisableDoorInteraction.Value;
+        // Use `IsHovering` to make sure modded doors without interaction support still allow key usage
+        return Plugin.Config.DisableDoorInteraction.Value || VRSession.Instance.LocalPlayer.PrimaryController.IsHovering;
     }
 }

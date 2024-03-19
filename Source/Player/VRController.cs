@@ -12,7 +12,7 @@ namespace LCVR.Player;
 
 public class VRController : MonoBehaviour
 {
-    private const int interactableObjectsMask = (1 << 6) | (1 << 8) | (1 << 9);
+    private const int INTERACTABLE_OBJECTS_MASK = (1 << 6) | (1 << 8) | (1 << 9);
     
     private static readonly int grabInvalidated = Animator.StringToHash("GrabInvalidated");
     private static readonly int grabValidated = Animator.StringToHash("GrabValidated");
@@ -25,7 +25,6 @@ public class VRController : MonoBehaviour
     private static PlayerControllerB PlayerController => VRSession.Instance.LocalPlayer.PlayerController;
 
     private LineRenderer debugLineRenderer;
-    private bool hitInteractable;
 
     private static string CursorTip
     {
@@ -36,6 +35,7 @@ public class VRController : MonoBehaviour
     }
 
     public Transform InteractOrigin { get; private set; }
+    public bool IsHovering { get; private set; }
 
     private void Awake()
     {
@@ -191,51 +191,59 @@ public class VRController : MonoBehaviour
 
         debugLineRenderer.SetPositions(new[] { origin, end });
 
-        if (PlayerController.isGrabbingObjectAnimation)
-            return;
+        var shouldReset = true;
 
-        var ray = new Ray(InteractOrigin.position, InteractOrigin.forward);
-
-        if (ray.Raycast(out var hit, PlayerController.grabDistance, interactableObjectsMask) && hit.collider.gameObject.layer != 8)
+        try
         {
-            // Place interaction hud on object
-            var position = hit.transform.position;
-            var offsetComponent = hit.transform.gameObject.GetComponent<InteractCanvasPositionOffset>();
-            if (offsetComponent != null)
-            {
-                position = hit.transform.TransformPoint(offsetComponent.offset);
-            }
+            if (PlayerController.isGrabbingObjectAnimation)
+                return;
 
-            if (hit.collider.gameObject.CompareTag("InteractTrigger"))
+            var ray = new Ray(InteractOrigin.position, InteractOrigin.forward);
+
+            if (ray.Raycast(out var hit, PlayerController.grabDistance, INTERACTABLE_OBJECTS_MASK) &&
+                hit.collider.gameObject.layer != 8)
             {
-                var component = hit.transform.gameObject.GetComponent<InteractTrigger>();
-                if (component != PlayerController.previousHoveringOverTrigger && PlayerController.previousHoveringOverTrigger != null)
+                // Place interaction hud on object
+                var position = hit.transform.position;
+                var offsetComponent = hit.transform.gameObject.GetComponent<InteractCanvasPositionOffset>();
+                if (offsetComponent != null)
                 {
-                    PlayerController.previousHoveringOverTrigger.isBeingHeldByPlayer = false;
+                    position = hit.transform.TransformPoint(offsetComponent.offset);
                 }
 
-                // Ignore disabled triggers (like ship lever, charging station, etc)
-                if (disabledInteractTriggers.Contains(component.gameObject.name))
-                    return;
-
-                if (VRSession.Instance.LocalPlayer.PlayerController.isPlayerDead)
+                if (hit.collider.gameObject.CompareTag("InteractTrigger"))
                 {
+                    var component = hit.transform.gameObject.GetComponent<InteractTrigger>();
+                    if (component != PlayerController.previousHoveringOverTrigger &&
+                        PlayerController.previousHoveringOverTrigger != null)
+                    {
+                        PlayerController.previousHoveringOverTrigger.isBeingHeldByPlayer = false;
+                    }
+
+                    // Ignore disabled triggers (like ship lever, charging station, etc)
+                    if (disabledInteractTriggers.Contains(component.gameObject.name))
+                        return;
+
+                    if (VRSession.Instance.LocalPlayer.PlayerController.isPlayerDead)
+                    {
+                        if (component == null)
+                            return;
+
+                        // Only ladders and entrance trigger are allowed
+                        if (!component.isLadder && hit.transform.gameObject.GetComponent<EntranceTeleport>() == null)
+                            return;
+                    }
+
                     if (component == null)
                         return;
 
-                    // Only ladders and entrance trigger are allowed
-                    if (!component.isLadder && hit.transform.gameObject.GetComponent<EntranceTeleport>() == null)
-                        return;
-                }
-
-                if (component != null)
-                {
                     VRSession.Instance.HUD.UpdateInteractCanvasPosition(position);
 
-                    if (!hitInteractable)
+                    if (!IsHovering)
                         VRSession.VibrateController(XRNode.RightHand, 0.1f, 0.2f);
 
-                    hitInteractable = true;
+                    shouldReset = false;
+                    IsHovering = true;
 
                     PlayerController.hoveringOverTrigger = component;
                     if (!component.interactable)
@@ -261,61 +269,66 @@ public class VRController : MonoBehaviour
                         CursorTip = component.hoverTip;
                     }
                 }
-            }
-            else if (hit.collider.gameObject.CompareTag("PhysicsProp"))
-            {
-                if (VRSession.Instance.LocalPlayer.PlayerController.isPlayerDead)
-                    return;
-
-                // Ignore disabled triggers (like ship lever, charging station, etc)
-                if (disabledInteractTriggers.Contains(hit.collider.gameObject.name))
-                    return;
-
-                VRSession.Instance.HUD.UpdateInteractCanvasPosition(position);
-
-                if (!hitInteractable)
-                    VRSession.VibrateController(XRNode.RightHand, 0.1f, 0.2f);
-
-                hitInteractable = true;
-
-                if (PlayerController.FirstEmptyItemSlot() == -1)
+                else if (hit.collider.gameObject.CompareTag("PhysicsProp"))
                 {
-                    CursorTip = "Inventory full!";
-                }
-                else
-                {
-                    var component = hit.collider.gameObject.GetComponent<GrabbableObject>();
-
-                    if (!GameNetworkManager.Instance.gameHasStarted && !component.itemProperties.canBeGrabbedBeforeGameStart)
-                    {
-                        CursorTip = "(Cannot hold until ship has landed)";
+                    if (VRSession.Instance.LocalPlayer.PlayerController.isPlayerDead)
                         return;
-                    }
 
-                    if (component != null && !string.IsNullOrEmpty(component.customGrabTooltip))
-                        CursorTip = component.customGrabTooltip;
+                    // Ignore disabled triggers (like ship lever, charging station, etc)
+                    if (disabledInteractTriggers.Contains(hit.collider.gameObject.name))
+                        return;
+
+                    VRSession.Instance.HUD.UpdateInteractCanvasPosition(position);
+
+                    if (!IsHovering)
+                        VRSession.VibrateController(XRNode.RightHand, 0.1f, 0.2f);
+
+                    shouldReset = false;
+                    IsHovering = true;
+
+                    if (PlayerController.FirstEmptyItemSlot() == -1)
+                    {
+                        CursorTip = "Inventory full!";
+                    }
                     else
-                        CursorTip = "Grab";
+                    {
+                        var component = hit.collider.gameObject.GetComponent<GrabbableObject>();
+
+                        if (!GameNetworkManager.Instance.gameHasStarted &&
+                            !component.itemProperties.canBeGrabbedBeforeGameStart)
+                        {
+                            CursorTip = "(Cannot hold until ship has landed)";
+                            return;
+                        }
+
+                        if (component != null && !string.IsNullOrEmpty(component.customGrabTooltip))
+                            CursorTip = component.customGrabTooltip;
+                        else
+                            CursorTip = "Grab";
+                    }
                 }
             }
         }
-        else
+        finally
         {
-            hitInteractable = false;
+            if (shouldReset)
+            {
+                IsHovering = false;
 
-            PlayerController.cursorIcon.enabled = false;
-            CursorTip = "";
-            if (PlayerController.hoveringOverTrigger != null)
-                PlayerController.previousHoveringOverTrigger = PlayerController.hoveringOverTrigger;
+                PlayerController.cursorIcon.enabled = false;
+                CursorTip = "";
+                if (PlayerController.hoveringOverTrigger != null)
+                    PlayerController.previousHoveringOverTrigger = PlayerController.hoveringOverTrigger;
 
-            PlayerController.hoveringOverTrigger = null;
+                PlayerController.hoveringOverTrigger = null;
+            }
         }
     }
 
     private void BeginGrabObject()
     {
         var ray = new Ray(InteractOrigin.position, InteractOrigin.forward);
-        if (ray.Raycast(out var hit, PlayerController.grabDistance, interactableObjectsMask) && hit.collider.gameObject.layer != 8 && hit.collider.CompareTag("PhysicsProp"))
+        if (ray.Raycast(out var hit, PlayerController.grabDistance, INTERACTABLE_OBJECTS_MASK) && hit.collider.gameObject.layer != 8 && hit.collider.CompareTag("PhysicsProp"))
         {
             if (PlayerController.twoHanded || PlayerController.sinkingValue > 0.73f) return;
 
