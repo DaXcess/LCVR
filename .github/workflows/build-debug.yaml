@@ -24,9 +24,6 @@ jobs:
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
-      - name: Copy build time dependencies
-        run: cp ~/lcvr/Libs/*.dll ./Libs/
-
       - name: Setup Dotnet
         uses: actions/setup-dotnet@v4
         with:
@@ -49,7 +46,7 @@ jobs:
 
           # Copy docs and license
           cp CHANGELOG.md ./package/CHANGELOG.md
-          cp Docs/thunderstore.md ./package/README.md
+          cp Docs/Thunderstore/README.md ./package/README.md
           cp LICENSE ./package/LICENSE
 
           # Update Thunderstore manifest

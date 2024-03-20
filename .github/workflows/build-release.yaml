@@ -23,9 +23,6 @@ jobs:
           version=$(grep -oP '<Version>\K[^<]+' LCVR.csproj)
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
-      - name: Copy build time dependencies
-        run: cp ~/lcvr/Libs/*.dll ./Libs/
-
       - name: Setup Dotnet
         uses: actions/setup-dotnet@v4
         with:
@@ -33,6 +30,13 @@ jobs:
 
       - name: Restore NuGet packages
         run: dotnet restore
+
+      - name: Build NuGet package
+        run: dotnet pack -p:Version='${{ steps.vars.outputs.version }}' -c Release
+
+      - name: Upload NuGet package
+        if: github.event_name == 'push'
+        run: dotnet nuget push bin/Release/*.nupkg --api-key ${{ secrets.NUGET_TOKEN }} --source https://nuget.daxcess.io/v3/index.json
 
       - name: Build app
         run: dotnet build -c Release
@@ -48,7 +52,7 @@ jobs:
 
           # Copy docs and license
           cp CHANGELOG.md ./package/CHANGELOG.md
-          cp Docs/thunderstore.md ./package/README.md
+          cp Docs/Thunderstore/README.md ./package/README.md
           cp LICENSE ./package/LICENSE
 
           # Update Thunderstore manifest

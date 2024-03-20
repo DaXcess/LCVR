@@ -6,7 +6,7 @@
 [![GitHub Version](https://img.shields.io/github/v/release/DaXcess/LCVR?style=for-the-badge&logo=github)](https://github.com/DaXcess/LCVR/releases/latest)
 [![Thunderstore Downloads](https://img.shields.io/thunderstore/dt/DaXcess/LethalCompanyVR?style=for-the-badge&logo=thunderstore&logoColor=white)](https://thunderstore.io/c/lethal-company/p/DaXcess/LethalCompanyVR)
 [![GitHub Downloads](https://img.shields.io/github/downloads/DaXcess/LCVR/total?style=for-the-badge&logo=github)](https://github.com/DaXcess/LCVR/releases/latest)
-<br/>
+<br />
 [![Release Build](https://img.shields.io/github/actions/workflow/status/DaXcess/LCVR/build-release.yaml?branch=main&style=for-the-badge&label=RELEASE)](https://github.com/DaXcess/LCVR/actions/workflows/build-release.yaml)
 [![Debug Build](https://img.shields.io/github/actions/workflow/status/DaXcess/LCVR/build-debug.yaml?branch=dev&style=for-the-badge&label=DEBUG)](https://github.com/DaXcess/LCVR/actions/workflows/build-debug.yaml)
 
@@ -24,54 +24,21 @@ You can join the [LCVR Discord Server](https://discord.gg/2DxNgpPZUF)!
 
 # Compatibility
 
-LCVR should be fully compatible with [MoreCompany](https://github.com/notnotnotswipez/MoreCompany) and has first class compatibility support from this mod. At the time of writing, there are no other mods that have first class compatibility support, however lots of them are compatible out of the box. You can find a compatibility sheet [here](https://docs.google.com/spreadsheets/d/1mSulrvMkQFtjF_BWDeSfGz9rm3UWKMywmUP1yhcgCGo/edit?usp=sharing).
+Due to the amount of changes LCVR makes to the game and gameplay features, some mods might not be compatible with LCVR. For a list of compatible mods, you can refer to the compatibility sheet [here](https://docs.google.com/spreadsheets/d/1mSulrvMkQFtjF_BWDeSfGz9rm3UWKMywmUP1yhcgCGo/edit?usp=sharing). A small handful of mods have been made fully compatible with LCVR, either by custom code inside LCVR, or (preferably) changes within those mods to work properly with the VR mod.
 
-# Using the mod
+# Installing and using the mod
 
-Once you have installed LCVR via your preferred method, you can now start the game. If it is your first time running the game with this mod, you will notice a warning on the first main menu when the game starts up, which is telling you to restart the game if you want to play in VR. If you are using the mod without VR, you can ignore this warning and continue. If you are using the mod **with** VR, restart your game, and VR will be initialized correctly.
+It is recommended to use a mod launcher like r2modman to easily download and install the mod. You can download r2modman [here](https://thunderstore.io/package/ebkr/r2modman/). This mod can be found on thunderstore under the name [LethalCompanyVR](https://thunderstore.io/c/lethal-company/p/DaXcess/LethalCompanyVR). You can also install the mod by manually downloading it in combination with BepInEx.
 
-## Configuring the mod
+Running the mod using r2modman can be done simply by clicking "Launch Modded", which will automagically launch the game with the installed mods.
 
-Before starting the game, you can make changes to the configuration file to streamline your VR experience. If you are using r2modman or Thunderstore Mod Manager <sub><sup>(then please switch to r2modman)</sup></sub>, then you can use their built in configuration editor to make the changes you desire.
+For more documentation on using the mod, check out the [LethalCompanyVR Thunderstore page](https://thunderstore.io/c/lethal-company/p/DaXcess/LethalCompanyVR)
 
-If you are not using a mod manager, then you can find the configuration inside `BepInEx/config/io.daxcess.lcvr.cfg`.
+# For developers
 
-## Navigating the main menu
+If you want to make your mod compatible with LCVR, make sure to check out the [API documentation](Docs/API). While at the time of writing it doesn't contain much, this might be expanded more in the future.
 
-The main menu is controlled by ray interactors. You can use any controller to point towards any UI element and click using the trigger button on the corresponding controller. The only thing that has been changed on the main menu by the mod is that the keybinds settings have been disabled, since these have been hijacked by the mod.
-
-## Basic controls
-
-Once you are in game, you can move around by using the left joystick. You can use the right joystick (left/right) for snap/smooth turning (if enabled) and switching inventory slot (up/down).
-
-To sprint, press the left joystick button.
-
-To crouch, press the right joystick button.
-
-For more keybinds, check out [KEYBINDS.md](KEYBINDS.md).
-
-## The Terminal
-
-Since in VR you don't have access to a keyboard (under normal circumstances), the mod displays a virtual keyboard when you enter the terminal. You can use this keyboard to interact with the terminal like you would on PC.
-
-This keyboard currently features two macros: A confirm and deny button. When pressed, these respectively send "CONFIRM" and "DENY" to the terminal. This makes it easier to switch moons and purchase items since you won't have to input this text every time.
-
-You can exit the terminal by pressing the pause button or by clicking on the close button on the terminal keyboard.
-
-## Spectating
-
-When you die, you'll be sent to a black void with a screen in front of you (not unlike the main menu), which is where you will live out the rest of the day. You can pivot the spectator camera by using the right controller's joystick.
-
-To spectate the next player, you can utilise the right trigger button. To vote to leave early, use the left trigger button.
-
-## VR additions
-
-This mod, in addition to adding VR and motion controls, also adds a few special interactions that you can perform in VR. At the time of writing, these currently are:
-
-- Spray Paint Shaking
-  - When holding the spray paint item, you can physically shake it to shake the can in the game. You can also still use the secondary interact button to shake the can.
-- Shovel/Sign Swinging
-  - If you are holding a shovel or a sign, you'll notice that you are holding it in two hands. If you hold your controllers over your shoulder and bring them down with enough force, the mod will swing the shovel for you, dealing damage to players/entities in front of you.
+Also make sure you know how to use BepInEx Dependencies and assembly referencing properly to make sure that your mod keeps working even when LCVR is not installed _(unless your mod **requires** LCVR to work)_.
 
 # Install from source
 

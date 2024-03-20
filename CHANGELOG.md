@@ -1,3 +1,99 @@
+# 1.2.0
+
+## Settings Menu
+
+In the main menu screen, you will notice a new button being present: **VR settings**.
+This button is visible on both flat screen and in VR, and allows you to change the configuration of the mod without having to use your mod manager, or manually having to edit the configuration using a text editor.
+
+_Most of these settings were already configurable since 1.0.0, it has only been made easier to change them in this update._
+
+You're also able to swap your OpenXR runtime using this settings menu, instead of annoyingly having to change your default OpenXR runtime within their dedicated apps.
+
+## Interactions
+
+LCVR v1.2.0 features a bunch of new interactions that VR players can use to interact with the world around them!
+
+> All of the following interactions can be disabled individually inside the config.
+
+- **Ship Lever**
+
+  You now must physically pull/push the ship lever to land the ship or take off from a planet. The lever, when held, will follow the position of your hand, and this even works for other players who have the mod!
+
+- **Monitor Buttons**
+
+  You may notice that the monitor buttons have been moved next to the lever. This is because you can now physically press the buttons to turn on/off the monitor, or switch to another player on the radar!
+
+- **Charging Station**
+
+  Hate being forced to stand in front of the charging station every time you charge an item? Well now you just hold any item that has a battery, and just hold it up to the charging station. Voila, your item has now been charged. If you pull the item out too quickly though, the charger will not charge your item!
+  _This interaction only works on the right hand, putting your left hand inside the charger will make you just look like an idiot._
+
+- **Ship Door**
+
+  Have an angry dog chasing you around? Just smash the ship door buttons to close or open the ship door.
+
+- **Teleporter**
+
+  Want to inverse into the facility with style? Just flick open the glass cover, and **SMASH** the teleporter button with your fist!
+
+- **Company Bell**
+
+  Delicately place your finger on top of the bell to make it ring... Or just smash it, you do you.
+
+- **Ship Horn**
+
+  Funny little horn with a funny little cord can now be pulled using your funny little hand.
+
+- **Breaker Box**
+
+  Y'all ever had issues with trying to flip the switches on the breaker box in VR? It's so stupid because their hitboxes are gigantic!
+  Anyways, just flick open the door with your hand, and use your finger to toggle the switches.
+  _This interaction only works when you are using your pointer finger, a fist or flat hand will not work_
+
+- **Doors**
+
+  Always had the issue where like a billion people tried to open the same door and it just keeps opening and closing and you can't get through? Well now you actually have to interact with the door handle to open and close the door. Is a door locked? Find out by trying to open the door and listen for the sound cue (or just notice that it doesn't open, whatever). To use a key on a door, interact with the door handle using your right hand while holding a key. Same thing for the lockpicker, however picking up the lockpicker when it is placed on a door also requires you to physically grab it. When the lockpicker is an item on the floor, it will behave normally, and can be picked up from a distance.
+
+- **Face**
+
+  Just want to really scream right into that walkie, begging to be teleported because a Jester is right around the corner? Well, you can now do so without pressing any button! Just hold up any compatible item to your face to use them, but watch out what you all put near your face!
+  _This interaction only works on the right hand, for obvious reasons_
+
+## Muffle
+
+Hate it when you die to a dog because your frantic screaming caused you to lure the canines towards your location? Just hold your hand in front of your mouth, and none of the enemies will be able to hear you anymore! As a bonus, anyone with the VR mod will now hear your voice muffled, as if you got snatched by a snare flea. However be warned, the longer you hold your hand in front of your mouth, the less you will be able to see!
+
+## Fixed broken arms
+
+Replaced the games IK constraints with ones that are properly able to determine the position of the elbow, meaning the arms should no longer bend inwards.
+
+## Fixed controller auto-detection
+
+In versions before 1.2.0, the automatic detection of the type of controller being used happened too early in the loading process, causing a large amount of users to default to the `default` controller profile, which is only meant for Oculus/Meta (or similar ABXY) devices. In version 1.2.0 going forward, this auto-detection keeps running in the background until a match is found, even when already in a level (though the detection should complete once you start using the controllers in the main menu, but maybe some mods bypass the menu screen entirely).
+
+## Locomotion Update
+
+You can now lean over fencing and smaller objects easier without getting pushed back immediately!
+Keep in mind that if you for some reason poke your head inside of a wall, or start moving using your controllers, you will be pushed out of any wall you might be intersecting with!
+
+## Free Roam Spectating
+
+> Free Roam Spectator provided by The Company™ Device©. _"Experience death like nobody has ever before! It's amazing!"_
+
+Hate having to just watch a flat screen where your fellow employees die to the horrors of the facilities? Well fear no more! With the new Company™ Device© you retain the rights to wander the desolate planets even when your physical body is no longer showing signs compatible with life!
+
+_Since the company was a big fan of using Linux for the Device©, the colors look more gray when dead since they cheaped out on the HDR support._
+
+You can teleport to other employees, like you would using the old spectator view, by using the **Interact** _(Default: Right Controller Trigger)_ button. This will cycle through each employee in the lobby that has not yet met their maker. Use this to quickly see how a fellow employee is going about their day, or to get unstuck if you have fallen into a pit.
+
+_Since the Device© is making use of shared simulated consciousness, physical barriers like doors act like air, so you can walk right through them no problem!_
+
+Afraid of the dark? Use the **Drop Item** _(Default: B)_ button to toggle night vision! When enabled, this light will illuminate the world and facilities around you, so that you can see what your still breathing fellow employees can't!
+
+_Another issue of the simulated consciousness is that you can no longer interact with the world around you. You are only able to use ladders and entrance doors, like fire exits and the main entrance. The Company™ has explained in a statement that they are not planning on fixing this issue._
+
+Want to hide that pesky "you are dead lol" interface? Just press the **Secondary Use** _(Default: Left Controller Grip)_ button to toggle the interface.
+
 # 1.1.9
 
 **Bug fixes:**
@@ -45,7 +141,7 @@
 
 - Added HP Reverb as autodetected controller profile
 - Added smooth rotation on the custom camera
-- *Turn around...*
+- _Turn around..._
 
 **Bug fixes:**
 
