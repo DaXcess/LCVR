@@ -4,7 +4,7 @@ using LCVR.UI;
 using Mimics;
 using UnityEngine;
 
-namespace LCVR.Compatibility;
+namespace LCVR.Compatibility.Mimics;
 
 [LCVRPatch(dependency: "Mimics")]
 [HarmonyPatch]

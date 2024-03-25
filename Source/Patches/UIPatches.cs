@@ -79,7 +79,7 @@ internal static class UIPatches
             InjectIntroScreen();
 
         if (Plugin.Compatibility.IsLoaded("MoreCompany"))
-            Compatibility.MoreCompany.SetupMoreCompanyUI();
+            Compatibility.MoreCompany.MoreCompanyCompatibility.SetupMoreCompanyUI();
 
         InitializeKeyboard();
 

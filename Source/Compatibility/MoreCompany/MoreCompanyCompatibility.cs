@@ -1,8 +1,8 @@
 ﻿using UnityEngine;
 
-namespace LCVR.Compatibility;
+namespace LCVR.Compatibility.MoreCompany;
 
-internal static class MoreCompany
+internal static class MoreCompanyCompatibility
 {
     public static void SetupMoreCompanyUI()
     {

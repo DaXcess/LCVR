@@ -28,6 +28,7 @@
   <ItemGroup>
     <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
     <PackageReference Include="BepInEx.Core" Version="5.*" />
+    <PackageReference Include="Diversity" Version="2.0.3" />
     <PackageReference Include="LCVRDeps" Version="1.49.0" />
     <PackageReference Include="Mimics" Version="2.4.1" />
     <PackageReference Include="MoreCompany" Version="1.8.1" />

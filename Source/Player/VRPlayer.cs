@@ -28,6 +28,7 @@ public class VRPlayer : MonoBehaviour
     private Bones bones;
 
     private Coroutine stopSprintingCoroutine;
+    private Coroutine resetHeightCoroutine;
 
     private float cameraFloorOffset;
     private float crouchOffset;
@@ -562,6 +563,10 @@ public class VRPlayer : MonoBehaviour
         {
             RightFingerCurler?.Update();
         }
+
+        var height = cameraFloorOffset + mainCamera.transform.localPosition.y;
+        if (height is > 3f or < 0f)
+            ResetHeight();
     }
     
     private void OnDestroy()
@@ -579,7 +584,10 @@ public class VRPlayer : MonoBehaviour
 
     public void ResetHeight()
     {
-        StartCoroutine(ResetHeightRoutine());
+        if (resetHeightCoroutine is not null)
+            return;
+        
+        resetHeightCoroutine = StartCoroutine(ResetHeightRoutine());
     }
 
     private IEnumerator ResetHeightRoutine()
@@ -587,9 +595,11 @@ public class VRPlayer : MonoBehaviour
         yield return new WaitForSeconds(0.2f);
 
         realHeight = mainCamera.transform.localPosition.y * SCALE_FACTOR;
-        var targetHeight = 2.3f;
+        const float targetHeight = 2.3f;
 
         cameraFloorOffset = targetHeight - realHeight;
+
+        resetHeightCoroutine = null;
     }
 
     private IEnumerator StopSprinting()

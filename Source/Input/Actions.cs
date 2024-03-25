@@ -20,7 +20,7 @@ public class Actions
         { "hp_reverb", AssetManager.Input("HPReverbInputs") },
     };
 
-    public static Actions Instance { get; private set; } = new Actions();
+    public static Actions Instance { get; private set; } = new();
 
     private InputActionAsset allActions;
 
@@ -61,6 +61,9 @@ public class Actions
         {
             InputSystem.onDeviceChange += InputSystem_onDeviceChange;
 
+            if (string.IsNullOrEmpty(Plugin.Config.LastInternalControllerProfile.Value))
+                Plugin.Config.LastInternalControllerProfile.Value = "default";
+
             profile = Plugin.Config.LastInternalControllerProfile.Value;
         }
 
@@ -77,15 +80,15 @@ public class Actions
 
     private void InputSystem_onDeviceChange(InputDevice _1, InputDeviceChange _2)
     {
-        if (DetectControllerProfile(out var profile))
-        {
-            InputSystem.onDeviceChange -= InputSystem_onDeviceChange;
+        if (!DetectControllerProfile(out var profile))
+            return;
 
-            Plugin.Config.LastInternalControllerProfile.Value = profile;
+        InputSystem.onDeviceChange -= InputSystem_onDeviceChange;
 
-            allActions = GetProfile(profile);
-            allActions.Enable();
-        }
+        Plugin.Config.LastInternalControllerProfile.Value = profile;
+
+        allActions = GetProfile(profile);
+        allActions.Enable();
     }
 
     /// <summary>

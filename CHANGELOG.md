@@ -1,3 +1,13 @@
+# 1.2.1
+
+**Bug fixes:**
+
+- Fixed corrupt/improper OpenXR setup causing the settings menu to not load
+- Fixed a benign warning when loading input bindings
+- Reduced impact of playerspace spoofing hacks
+- Fixed an issue where somehow getting the camera out of water would prevent drowning
+- Fixed Diversity custom pass warping rendering when DynRes is enabled
+
 # 1.2.0
 
 ## Settings Menu
