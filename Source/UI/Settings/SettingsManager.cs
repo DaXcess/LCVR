@@ -34,12 +34,12 @@ public class SettingsManager : MonoBehaviour
 
     private bool isInitializing = true;
 
-    void Awake()
+    private void Awake()
     {
         menuManager = FindObjectOfType<MenuManager>();
     }
 
-    void Start()
+    private void Start()
     {
         isInitializing = true;
 
@@ -52,18 +52,23 @@ public class SettingsManager : MonoBehaviour
 
         // Set up OpenXR settings section
         var runtimes = OpenXR.DetectOpenXRRuntimes(out _);
-        var selectedIndex = 0;
 
-        if (!string.IsNullOrEmpty(Plugin.Config.OpenXRRuntimeFile.Value))
-            for (var i = 0; i < runtimes.Count; i++)
-                if (runtimes.ElementAt(i).Value == Plugin.Config.OpenXRRuntimeFile.Value)
-                {
-                    selectedIndex = i + 1;
-                    break;
-                }            
+        if (runtimes != null)
+        {
+            var selectedIndex = 0;
 
-        runtimesDropdown.AddOptions([$"System Default", .. runtimes.Keys]);
-        runtimesDropdown.value = selectedIndex;
+            if (!string.IsNullOrEmpty(Plugin.Config.OpenXRRuntimeFile.Value))
+                for (var i = 0; i < runtimes.Count; i++)
+                    if (runtimes.ElementAt(i).Value == Plugin.Config.OpenXRRuntimeFile.Value)
+                    {
+                        selectedIndex = i + 1;
+                        break;
+                    }
+
+            runtimesDropdown.AddOptions(["System Default", .. runtimes.Keys]);
+            runtimesDropdown.value = selectedIndex;
+        } else
+            runtimesDropdown.AddOptions(["System Default"]);
 
         // Dynamically add sections for other settings
 
@@ -84,7 +89,7 @@ public class SettingsManager : MonoBehaviour
             list.Add(entry);
         }
 
-        foreach ((var category, var settings) in categories)
+        foreach (var (category, settings) in categories)
         {
             var categoryObject = Instantiate(categoryTemplate, content);
             categoryObject.GetComponentInChildren<TextMeshProUGUI>().text = category;
@@ -115,7 +120,7 @@ public class SettingsManager : MonoBehaviour
                     dropdown.AddOptions([.. names]);
                     dropdown.SetValueWithoutNotify(idx);
                 }
-                else if (config.SettingType == typeof(float) && config.Description.AcceptableValues is AcceptableValueRange<float>)
+                else if (config.SettingType == typeof(float) && config.Description.AcceptableValues is AcceptableValueRange<float> values)
                 {
                     var sliderOption = Instantiate(sliderTemplate, categoryObject.transform);
                     var title = sliderOption.GetComponentInChildren<TextMeshProUGUI>();
@@ -130,8 +135,6 @@ public class SettingsManager : MonoBehaviour
                     entry.category = category;
                     entry.name = name;
 
-                    var values = config.Description.AcceptableValues as AcceptableValueRange<float>;
-                    
                     slider.maxValue = values.MaxValue;
                     slider.minValue = values.MinValue;
                     slider.SetValueWithoutNotify((float)config.BoxedValue);
