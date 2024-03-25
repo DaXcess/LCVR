@@ -95,25 +95,27 @@ internal class OpenXR
 
         try
         {
-            if (Native.RegOpenKeyEx(Native.HKEY_LOCAL_MACHINE, "SOFTWARE\\Khronos\\OpenXR\\1", 0, 0x20019, out hKey) != 0)
-                return null;
+            if (Native.RegOpenKeyEx(Native.HKEY_LOCAL_MACHINE, "SOFTWARE\\Khronos\\OpenXR\\1", 0, 0x20019, out hKey) !=
+                0)
+                throw new Exception("Failed to open registry key HKLM\\SOFTWARE\\Khronos\\OpenXR\\1");
 
             if (Native.RegQueryValueEx(hKey, "ActiveRuntime", 0, out var type, null, ref cbData) != 0)
-                return null;
+                throw new Exception("Failed to query ActiveRuntime value");
 
             var data = new StringBuilder((int)cbData);
 
             if (Native.RegQueryValueEx(hKey, "ActiveRuntime", 0, out type, data, ref cbData) != 0)
-                return null;
+                throw new Exception("Failed to query ActiveRuntime value");
 
             var path = data.ToString();
             @default = JsonConvert.DeserializeObject<OpenXRRuntime>(File.ReadAllText(path)).runtime.name;
 
             if (Native.RegOpenKeyEx(hKey, "AvailableRuntimes", 0, 0x20019, out hKey) != 0)
-                return null;
+                throw new Exception("Failed to open AvailableRuntimes registry key");
 
-            if (Native.RegQueryInfoKey(hKey, null, IntPtr.Zero, IntPtr.Zero, out _, out _, out _, out var valueCount, out var maxValueNameLength, out _, IntPtr.Zero, IntPtr.Zero) != 0)
-                return null;
+            if (Native.RegQueryInfoKey(hKey, null, IntPtr.Zero, IntPtr.Zero, out _, out _, out _, out var valueCount,
+                    out var maxValueNameLength, out _, IntPtr.Zero, IntPtr.Zero) != 0)
+                throw new Exception("Failed to query AvailableRuntimes registry key");
 
             var values = new List<string>();
 
@@ -136,7 +138,17 @@ internal class OpenXR
 
             foreach (var file in values)
             {
+                var i = 0;
+                
                 var name = JsonConvert.DeserializeObject<OpenXRRuntime>(File.ReadAllText(file)).runtime.name;
+                var resultName = name;
+                
+                while (list.ContainsKey(resultName))
+                {
+                    i++;
+                    resultName = $"{name} ({i})";
+                }
+                
 
                 list.Add(name, file);
             }

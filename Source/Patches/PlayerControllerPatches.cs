@@ -326,6 +326,30 @@ internal static class PlayerControllerPatches
                 component.enabled = true;
         }
     }
+
+    /// <summary>
+    /// Fix for water suffocation to be calculated from a predetermined offset instead of the camera position,
+    /// which fixes an exploit where being too tall prevents drowning
+    /// </summary>
+    // TODO: Remove debug
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.SetFaceUnderwaterFilters))]
+    [HarmonyTranspiler]
+    [HarmonyDebug]
+    private static IEnumerable<CodeInstruction> UnderwaterExploitFix(IEnumerable<CodeInstruction> instructions)
+    {
+        return new CodeMatcher(instructions)
+            .MatchForward(false, [new CodeMatch(OpCodes.Call, Method(typeof(Bounds), nameof(Bounds.Contains), [typeof(Vector3)]))])
+            .Advance(-3)
+            .RemoveInstructions(3)
+            .InsertAndAdvance(new CodeInstruction(OpCodes.Call, PropertyGetter(typeof(Component), nameof(Component.transform))))
+            .InsertAndAdvance(new CodeInstruction(OpCodes.Callvirt, PropertyGetter(typeof(Transform), nameof(Transform.position))))
+            .InsertAndAdvance(new CodeInstruction(OpCodes.Ldc_R4, 0f))
+            .InsertAndAdvance(new CodeInstruction(OpCodes.Ldc_R4, 2.3f))
+            .InsertAndAdvance(new CodeInstruction(OpCodes.Ldc_R4, 0f))
+            .InsertAndAdvance(new CodeInstruction(OpCodes.Newobj, Constructor(typeof(Vector3), [typeof(float), typeof(float), typeof(float)])))
+            .InsertAndAdvance(new CodeInstruction(OpCodes.Call, Method(typeof(Vector3), "op_Addition", [typeof(Vector3), typeof(Vector3)])))
+            .InstructionEnumeration();
+    }
 }
 
 [LCVRPatch(LCVRPatchTarget.Universal)]

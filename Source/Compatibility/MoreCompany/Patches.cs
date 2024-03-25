@@ -2,11 +2,11 @@
 using LCVR.Patches;
 using MoreCompany.Behaviors;
 using MoreCompany.Cosmetics;
+using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.XR.Interaction.Toolkit;
-using UnityEngine;
 
-namespace LCVR.Compatibility;
+namespace LCVR.Compatibility.MoreCompany;
 
 [LCVRPatch(dependency: "MoreCompany")]
 [HarmonyPatch]
