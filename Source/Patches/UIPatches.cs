@@ -82,10 +82,6 @@ internal static class UIPatches
             Compatibility.MoreCompany.MoreCompanyCompatibility.SetupMoreCompanyUI();
 
         InitializeKeyboard();
-
-        var today = System.DateTime.Today;
-        if (today.Month == 4 && today.Day == 1)
-            InitializeEasterEgg(__instance);
     }
 
     private static void InitMenuScene()
@@ -256,23 +252,6 @@ internal static class UIPatches
         });
 
         vrIntroPanel.SetActive(true);
-    }
-
-    private static void InitializeEasterEgg(MenuManager manager)
-    {
-        manager.menuMusic = AssetManager.menuMusic;
-
-        var container = GameObject.Find("Canvas/MenuContainer/MainButtons").transform;
-
-        var logo = Object.Instantiate(AssetManager.animatedLogo, container);
-        logo.transform.SetSiblingIndex(0);
-        logo.transform.localPosition = new Vector3(0, 135, 0);
-
-        container.Find("HeaderImage").gameObject.SetActive(false);
-
-        var version = GameObject.Find("Canvas/MenuContainer/VersionNum").GetComponent<TextMeshProUGUI>();
-        version.text = " Don't dig up!";
-        version.autoSizeTextContainer = true;
     }
 
     /// <summary>

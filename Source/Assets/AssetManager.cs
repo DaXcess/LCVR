@@ -11,11 +11,9 @@ internal static class AssetManager
     public static GameObject interactable;
     public static GameObject keyboard;
     public static GameObject settingsPanel;
-    public static GameObject animatedLogo;
     public static GameObject volumeManager;
     public static GameObject spectatorLight;
     public static GameObject spectatorGhost;
-
     public static GameObject enemyPrefab;
 
     public static Material splashMaterial;
@@ -34,7 +32,6 @@ internal static class AssetManager
     public static Sprite warningImage;
     public static Sprite settingsImage;
 
-    public static AudioClip menuMusic;
     public static AudioClip doorLocked;
 
     public static bool LoadAssets()
@@ -51,7 +48,6 @@ internal static class AssetManager
         interactable = assetBundle.LoadAsset<GameObject>("VRInteractable");
         keyboard = assetBundle.LoadAsset<GameObject>("NonNativeKeyboard");
         settingsPanel = assetBundle.LoadAsset<GameObject>("Panel");
-        animatedLogo = assetBundle.LoadAsset<GameObject>("AnimatedLogo");
         volumeManager = assetBundle.LoadAsset<GameObject>("Volume Manager");
         enemyPrefab = assetBundle.LoadAsset<GameObject>("DressGirl");
         spectatorLight = assetBundle.LoadAsset<GameObject>("Spectator Light");
@@ -73,7 +69,6 @@ internal static class AssetManager
         localVrMetarig = assetBundle.LoadAsset<RuntimeAnimatorController>("metarig");
         remoteVrMetarig = assetBundle.LoadAsset<RuntimeAnimatorController>("metarigOtherPlayers");
 
-        menuMusic = assetBundle.LoadAsset<AudioClip>("mainmenu");
         doorLocked = assetBundle.LoadAsset<AudioClip>("doorlocked");
 
         return true;

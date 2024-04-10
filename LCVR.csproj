@@ -28,12 +28,25 @@
   <ItemGroup>
     <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
     <PackageReference Include="BepInEx.Core" Version="5.*" />
+    <PackageReference Include="DissonanceVoip" Version="1.0.0-lc" />
     <PackageReference Include="Diversity" Version="2.0.3" />
-    <PackageReference Include="LCVRDeps" Version="1.49.0" />
+    <PackageReference Include="LethalCompany" Version="1.50.0-a" />
     <PackageReference Include="Mimics" Version="2.4.1" />
     <PackageReference Include="MoreCompany" Version="1.8.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+    <PackageReference Include="Unity.Animation.Rigging" Version="1.2.1" />
+    <PackageReference Include="Unity.InputSystem" Version="1.7.0" />
+    <PackageReference Include="Unity.Netcode.Runtime" Version="1.6.0" />
+    <PackageReference Include="Unity.RenderPipelines.Core" Version="14.0.8" />
+    <PackageReference Include="Unity.RenderPipelines.HighDefinition" Version="14.0.8" />
+    <PackageReference Include="Unity.TextMeshPro" Version="3.0.6" />
+    <PackageReference Include="Unity.XR.CoreUtils" Version="2.2.3" />
+    <PackageReference Include="Unity.XR.Interaction.Toolkit" Version="2.5.3" />
+    <PackageReference Include="Unity.XR.Management" Version="4.4.1" />
+    <PackageReference Include="Unity.XR.OpenXR" Version="1.8.2" />
     <PackageReference Include="UnityEngine.Modules" Version="2022.3.9" IncludeAssets="compile" />
+    <PackageReference Include="UnityEngine.SpatialTracking" Version="2.1.10" />
+    <PackageReference Include="UnityEngine.UI" Version="1.0.0" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
