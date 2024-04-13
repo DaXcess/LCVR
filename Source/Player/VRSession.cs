@@ -276,6 +276,8 @@ public class VRSession : MonoBehaviour
         #endregion
 
         #region Apply disable interactions config
+        VRController.ResetDisabledInteractTriggers();
+        
         // Ship Lever
         if (!Plugin.Config.DisableShipLeverInteraction.Value)
             VRController.DisableInteractTrigger("StartGameLever");

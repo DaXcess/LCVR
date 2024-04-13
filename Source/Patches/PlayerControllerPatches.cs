@@ -331,10 +331,8 @@ internal static class PlayerControllerPatches
     /// Fix for water suffocation to be calculated from a predetermined offset instead of the camera position,
     /// which fixes an exploit where being too tall prevents drowning
     /// </summary>
-    // TODO: Remove debug
     [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.SetFaceUnderwaterFilters))]
     [HarmonyTranspiler]
-    [HarmonyDebug]
     private static IEnumerable<CodeInstruction> UnderwaterExploitFix(IEnumerable<CodeInstruction> instructions)
     {
         return new CodeMatcher(instructions)

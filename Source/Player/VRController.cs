@@ -76,6 +76,11 @@ public class VRController : MonoBehaviour
         Actions.Instance["Controls/Interact"].performed -= OnInteractPerformed;
     }
 
+    public static void ResetDisabledInteractTriggers()
+    {
+        disabledInteractTriggers.Clear();
+    }
+    
     public static void EnableInteractTrigger(string objectName)
     {
         disabledInteractTriggers.Remove(objectName);

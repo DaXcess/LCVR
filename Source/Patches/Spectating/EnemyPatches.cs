@@ -74,7 +74,6 @@ internal static class SpectatorEnemyPatches
     /// Fix for the Old Bird enemies to not try to grab dead players
     /// </summary>
     [HarmonyPatch(typeof(RadMechAI), nameof(RadMechAI.AttemptGrabIfClose))]
-    [HarmonyDebug]
     [HarmonyTranspiler]
     private static IEnumerable<CodeInstruction> RadMechDontGrabDeadPlayers(IEnumerable<CodeInstruction> instructions,
         ILGenerator generator)
