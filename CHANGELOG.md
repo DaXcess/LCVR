@@ -1,5 +1,14 @@
 # 1.2.1
 
+### V50 IS HERE
+
+LCVR v1.2.1 brings the joys of V50 into VR.
+
+Due to V50 having changed some important stuff behind the scenes, versions starting from v1.2.1 are no longer supported in V49.
+
+**Additions**:
+- Added support for the cold open cinematic cutscene
+
 **Bug fixes:**
 
 - Fixed corrupt/improper OpenXR setup causing the settings menu to not load
@@ -7,6 +16,14 @@
 - Reduced impact of playerspace spoofing hacks
 - Fixed an issue where somehow getting the camera out of water would prevent drowning
 - Fixed Diversity custom pass warping rendering when DynRes is enabled
+- Fixed the rad mech trying to pick up dead players
+
+**API changes**:
+- Made the arm HUD canvasses public in `VRSession.Instance.HUD`
+
+**Removals:**
+- Removed april fools code & assets
+- Removed support for V49
 
 # 1.2.0
 

@@ -37,14 +37,18 @@ internal static class CutscenePatches
         private Transform cameraContainer;
         private Transform cameraTransform;
 
-        public float initialCameraRotation;
+        private float initialCameraRotation;
+        private Vector3 initialCameraPosition;
         
         private void Awake()
         {
             cameraContainer = GameObject.Find("CameraControllerContainer/CameraController").transform;
             cameraTransform = cameraContainer.Find("MainCamera");
+            
+            // Disable chair since we assume VR players are standing up
+            GameObject.Find("ComputerChairAndShelf")?.SetActive(false);
 
-            StartCoroutine(delayedResetHeight());
+            StartCoroutine(delayedResetHMD());
         }
         
         private void Update()
@@ -58,17 +62,19 @@ internal static class CutscenePatches
             cameraContainer.transform.localEulerAngles = new Vector3(0, -initialCameraRotation, 0);
         }
 
-        private IEnumerator delayedResetHeight()
+        private IEnumerator delayedResetHMD()
         {
             yield return new WaitForSeconds(0.1f);
             
             initialCameraRotation = cameraTransform.localEulerAngles.y;
+            initialCameraPosition = (cameraContainer.localPosition - cameraTransform.localPosition) * 1.8f;
+            
             ResetHeight();
         }
 
         private void ResetHeight()
         {
-            cameraContainer.localPosition = new Vector3(0, -cameraTransform.localPosition.y, 0);
+            cameraContainer.localPosition = new Vector3(initialCameraPosition.x, -cameraTransform.localPosition.y, initialCameraPosition.z);
         }
     }
 }
