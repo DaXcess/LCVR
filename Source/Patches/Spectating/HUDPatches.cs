@@ -1,7 +1,6 @@
 using HarmonyLib;
-using LCVR.Patches;
 
-namespace LCVR.Player.Spectating;
+namespace LCVR.Patches.Spectating;
 
 [LCVRPatch]
 [HarmonyPatch]

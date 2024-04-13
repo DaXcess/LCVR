@@ -3,12 +3,10 @@ using System.Reflection;
 using System.Reflection.Emit;
 using GameNetcodeStuff;
 using HarmonyLib;
-using LCVR.Patches;
 using UnityEngine;
-
 using static HarmonyLib.AccessTools;
 
-namespace LCVR.Player.Spectating;
+namespace LCVR.Patches.Spectating;
 
 /// <summary>
 /// Generic AI patches for the free roam spectator functionality

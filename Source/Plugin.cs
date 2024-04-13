@@ -36,7 +36,7 @@ public class Plugin : BaseUnityPlugin
     public const string PLUGIN_VERSION = "1.2.1";
 
     private readonly string[] GAME_ASSEMBLY_HASHES = [
-        "3EE687F8586F8597BA9E750E5C75141CA353C0076A3FC3C802AE9CE35D876580"  // V49
+        "710F39A9E7610AD0056E463280EB7498810F30239356932AE0ECE4ADE9F68C69"  // V50 Beta @ 4/12/2024
     ];
 
     public new static Config Config { get; private set; }
@@ -46,7 +46,7 @@ public class Plugin : BaseUnityPlugin
     private void Awake()
     {
         // Fix XR not working with non-english PC languages
-        // Again, why the fuck do we need another hack to make shit just work normally?
+        // Why isn't this the default in LC??
         CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
 
         // Reload Unity's Input System plugins since BepInEx in some

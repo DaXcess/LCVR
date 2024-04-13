@@ -1,11 +1,10 @@
+using System.Collections;
 using GameNetcodeStuff;
 using HarmonyLib;
-using LCVR.Patches;
-using System.Collections;
-using LCVR.Assets;
+using LCVR.Player;
 using UnityEngine;
 
-namespace LCVR.Player.Spectating;
+namespace LCVR.Patches.Spectating;
 
 /// <summary>
 /// Generic patches for the free roam spectator functionality

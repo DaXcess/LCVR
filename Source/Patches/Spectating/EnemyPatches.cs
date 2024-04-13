@@ -2,11 +2,10 @@ using System.Collections.Generic;
 using System.Reflection.Emit;
 using GameNetcodeStuff;
 using HarmonyLib;
-using LCVR.Patches;
 using Unity.Netcode;
 using static HarmonyLib.AccessTools;
 
-namespace LCVR.Player.Spectating;
+namespace LCVR.Patches.Spectating;
 
 /// <summary>
 /// Enemy specific patches for the free roam spectator functionality
@@ -29,7 +28,6 @@ internal static class SpectatorEnemyPatches
 
         __result = false;
         return false;
-
     }
 
     /// <summary>
@@ -69,6 +67,36 @@ internal static class SpectatorEnemyPatches
                 new(OpCodes.Ldfld, Field(typeof(PlayerControllerB), nameof(PlayerControllerB.isPlayerDead))),
             ])
             .InsertBranch(OpCodes.Brfalse, 21)
+            .InstructionEnumeration();
+    }
+
+    /// <summary>
+    /// Fix for the Old Bird enemies to not try to grab dead players
+    /// </summary>
+    [HarmonyPatch(typeof(RadMechAI), nameof(RadMechAI.AttemptGrabIfClose))]
+    [HarmonyDebug]
+    [HarmonyTranspiler]
+    private static IEnumerable<CodeInstruction> RadMechDontGrabDeadPlayers(IEnumerable<CodeInstruction> instructions,
+        ILGenerator generator)
+    {
+        return new CodeMatcher(instructions, generator)
+            .MatchForward(false,
+            [
+                new CodeMatch(OpCodes.Ldfld,
+                    Field(typeof(PlayerControllerB), nameof(PlayerControllerB.isPlayerControlled)))
+            ])
+            .Advance(2)
+            .InsertAndAdvance(
+                new CodeInstruction(OpCodes.Call,
+                    PropertyGetter(typeof(StartOfRound), nameof(StartOfRound.Instance))),
+                new CodeInstruction(OpCodes.Ldfld,
+                    Field(typeof(StartOfRound), nameof(StartOfRound.allPlayerScripts))),
+                new CodeInstruction(OpCodes.Ldloc_0),
+                new CodeInstruction(OpCodes.Ldelem_Ref),
+                new CodeInstruction(OpCodes.Ldfld,
+                    Field(typeof(PlayerControllerB), nameof(PlayerControllerB.isPlayerDead)))
+            )
+            .InsertBranchAndAdvance(OpCodes.Brtrue, 78)
             .InstructionEnumeration();
     }
 }

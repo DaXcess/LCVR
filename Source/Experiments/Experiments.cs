@@ -103,13 +103,5 @@ internal static class ExperimentalPatches
 
         return false;
     }
-
-    // TODO: Remove
-    [HarmonyPatch(typeof(InitializeGame), nameof(InitializeGame.Awake))]
-    [HarmonyPostfix]
-    private static void AlwaysCutscene(InitializeGame __instance)
-    {
-        __instance.playColdOpenCinematic = true;
-    }
 }
 #endif
