@@ -1,11 +1,10 @@
 ﻿using System.Collections;
-using GameNetcodeStuff;
-using HarmonyLib;
-using LCVR.Patches;
 using System.Collections.Generic;
 using System.Reflection.Emit;
+using GameNetcodeStuff;
+using HarmonyLib;
 
-namespace LCVR.Player.Spectating;
+namespace LCVR.Patches.Spectating;
 
 /// <summary>
 /// Environment specific patches for the freeroam spectator feature

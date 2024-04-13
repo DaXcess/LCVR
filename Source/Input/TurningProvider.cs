@@ -1,6 +1,6 @@
 ﻿namespace LCVR.Input;
 
-internal interface TurningProvider
+public interface TurningProvider
 {
     void Update();
 

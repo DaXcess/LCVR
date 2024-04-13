@@ -255,7 +255,7 @@ public class VRSession : MonoBehaviour
 
         #region Initialize HUD
         hud = new GameObject("VR HUD").AddComponent<VRHUD>();
-        hud.terminalKeyboard = terminalKeyboard;
+        hud.TerminalKeyboard = terminalKeyboard;
         #endregion
 
         #region Initialize VR-Only interactions
@@ -276,6 +276,8 @@ public class VRSession : MonoBehaviour
         #endregion
 
         #region Apply disable interactions config
+        VRController.ResetDisabledInteractTriggers();
+        
         // Ship Lever
         if (!Plugin.Config.DisableShipLeverInteraction.Value)
             VRController.DisableInteractTrigger("StartGameLever");
@@ -371,7 +373,7 @@ public class VRSession : MonoBehaviour
 
     public void OnEnterTerminal()
     {
-        HUD.terminalKeyboard.PresentKeyboard();
+        HUD.TerminalKeyboard.PresentKeyboard();
 
         LocalPlayer.EnableInteractorVisuals();
         LocalPlayer.PrimaryController.EnableDebugInteractorVisual(false);
@@ -379,8 +381,8 @@ public class VRSession : MonoBehaviour
 
     public void OnExitTerminal()
     {
-        if (HUD.terminalKeyboard.isActiveAndEnabled)
-            HUD.terminalKeyboard.Close();
+        if (HUD.TerminalKeyboard.isActiveAndEnabled)
+            HUD.TerminalKeyboard.Close();
 
         LocalPlayer.EnableInteractorVisuals(false);
         LocalPlayer.PrimaryController.EnableDebugInteractorVisual();
@@ -391,7 +393,7 @@ public class VRSession : MonoBehaviour
         Logger.LogDebug("Opened pause menu");
 
         // Make sure keyboard is closed when pause menu opens
-        HUD.menuKeyboard.Close();
+        HUD.MenuKeyboard.Close();
         SwitchToUICamera();
 
         if (customCameraEnabled)
@@ -406,7 +408,7 @@ public class VRSession : MonoBehaviour
     {
         Logger.LogDebug("Closed pause menu");
 
-        HUD.menuKeyboard.Close();
+        HUD.MenuKeyboard.Close();
         SwitchToGameCamera();
 
         if (customCameraEnabled)

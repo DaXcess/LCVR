@@ -33,20 +33,20 @@ public class Plugin : BaseUnityPlugin
 {
     public const string PLUGIN_GUID = "io.daxcess.lcvr";
     public const string PLUGIN_NAME = "LCVR";
-    public const string PLUGIN_VERSION = "1.2.0";
+    public const string PLUGIN_VERSION = "1.2.1";
 
     private readonly string[] GAME_ASSEMBLY_HASHES = [
-        "3EE687F8586F8597BA9E750E5C75141CA353C0076A3FC3C802AE9CE35D876580"  // V49
+        "7CFABBA203022CC46EF309B0E651276CB59217AF6D38C34E2085E67957DBBCBD"  // V50
     ];
 
-    public static new Config Config { get; private set; }
+    public new static Config Config { get; private set; }
     public static Compat Compatibility { get; private set; }
     public static Flags Flags { get; private set; } = 0;
 
     private void Awake()
     {
         // Fix XR not working with non-english PC languages
-        // Again, why the fuck do we need another hack to make shit just work normally?
+        // Why isn't this the default in LC??
         CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
 
         // Reload Unity's Input System plugins since BepInEx in some

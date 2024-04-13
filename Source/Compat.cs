@@ -9,6 +9,7 @@ public class Compat
     [
         new("MoreCompany", "me.swipez.melonloader.morecompany"),
         new("Mimics", "x753.Mimics"),
+        new("Diversity", "Chaos.Diversity"),
     ];
 
     private static readonly List<string> DetectedMods = [];

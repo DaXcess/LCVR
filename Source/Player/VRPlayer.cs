@@ -28,6 +28,7 @@ public class VRPlayer : MonoBehaviour
     private Bones bones;
 
     private Coroutine stopSprintingCoroutine;
+    private Coroutine resetHeightCoroutine;
 
     private float cameraFloorOffset;
     private float crouchOffset;
@@ -55,8 +56,6 @@ public class VRPlayer : MonoBehaviour
 
     private Vector3 totalMovementSinceLastMove = Vector3.zero;
 
-    private TurningProvider turningProvider;
-
     private VRController mainController;
 
     private VRInteractor leftHandInteractor;
@@ -74,6 +73,7 @@ public class VRPlayer : MonoBehaviour
     #region Public Accessors
     public PlayerControllerB PlayerController => playerController;
     public Bones Bones => bones;
+    public TurningProvider TurningProvider { get; private set; }
 
     public VRController PrimaryController => mainController;
     public VRInteractor LeftHandInteractor => leftHandInteractor;
@@ -164,7 +164,7 @@ public class VRPlayer : MonoBehaviour
         rightControllerRayInteractor.transform.localRotation = Quaternion.Euler(80, 0, 0);
 
         // Add turning provider
-        turningProvider = Plugin.Config.TurnProvider.Value switch
+        TurningProvider = Plugin.Config.TurnProvider.Value switch
         {
             Config.TurnProviderOption.Snap => new SnapTurningProvider(),
             Config.TurnProviderOption.Smooth => new SmoothTurningProvider(),
@@ -375,7 +375,7 @@ public class VRPlayer : MonoBehaviour
         // Make sure player is facing towards the interacted object and that they're not sprinting
         if (!wasInSpecialAnimation && playerController.inSpecialInteractAnimation && playerController.currentTriggerInAnimationWith is not null && playerController.currentTriggerInAnimationWith.playerPositionNode)
         {
-            turningProvider.SetOffset(playerController.currentTriggerInAnimationWith.playerPositionNode.eulerAngles.y - mainCamera.transform.localEulerAngles.y);
+            TurningProvider.SetOffset(playerController.currentTriggerInAnimationWith.playerPositionNode.eulerAngles.y - mainCamera.transform.localEulerAngles.y);
             isSprinting = false;
         }
 
@@ -384,13 +384,13 @@ public class VRPlayer : MonoBehaviour
             var direction = playerController.inAnimationWithEnemy.transform.position - transform.position;
             var rotation = Quaternion.LookRotation(direction, Vector3.up);
 
-            turningProvider.SetOffset(rotation.eulerAngles.y - mainCamera.transform.localEulerAngles.y);
+            TurningProvider.SetOffset(rotation.eulerAngles.y - mainCamera.transform.localEulerAngles.y);
         }
 
         var rotationOffset = playerController.jetpackControls switch
         {
-            true => Quaternion.Euler(playerController.jetpackTurnCompass.eulerAngles.x, turningProvider.GetRotationOffset(), playerController.jetpackTurnCompass.eulerAngles.z),
-            false => Quaternion.Euler(0, turningProvider.GetRotationOffset(), 0)
+            true => Quaternion.Euler(playerController.jetpackTurnCompass.eulerAngles.x, TurningProvider.GetRotationOffset(), playerController.jetpackTurnCompass.eulerAngles.z),
+            false => Quaternion.Euler(0, TurningProvider.GetRotationOffset(), 0)
         };
 
         var movementAccounted = rotationOffset * movement;
@@ -427,7 +427,7 @@ public class VRPlayer : MonoBehaviour
 
         // Update rotation offset after adding movement from frame (if not in build mode)
         if (!ShipBuildModeManager.Instance.InBuildMode && !playerController.inSpecialInteractAnimation)
-            turningProvider.Update();
+            TurningProvider.Update();
 
         var lastOriginPos = xrOrigin.position;
 
@@ -562,6 +562,10 @@ public class VRPlayer : MonoBehaviour
         {
             RightFingerCurler?.Update();
         }
+
+        var height = cameraFloorOffset + mainCamera.transform.localPosition.y;
+        if (height is > 3f or < 0f)
+            ResetHeight();
     }
     
     private void OnDestroy()
@@ -579,7 +583,10 @@ public class VRPlayer : MonoBehaviour
 
     public void ResetHeight()
     {
-        StartCoroutine(ResetHeightRoutine());
+        if (resetHeightCoroutine is not null)
+            return;
+        
+        resetHeightCoroutine = StartCoroutine(ResetHeightRoutine());
     }
 
     private IEnumerator ResetHeightRoutine()
@@ -587,9 +594,11 @@ public class VRPlayer : MonoBehaviour
         yield return new WaitForSeconds(0.2f);
 
         realHeight = mainCamera.transform.localPosition.y * SCALE_FACTOR;
-        var targetHeight = 2.3f;
+        const float targetHeight = 2.3f;
 
         cameraFloorOffset = targetHeight - realHeight;
+
+        resetHeightCoroutine = null;
     }
 
     private IEnumerator StopSprinting()

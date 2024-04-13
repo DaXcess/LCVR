@@ -6,20 +6,14 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.XR.Interaction.Toolkit.UI;
 
+// ReSharper disable MemberCanBePrivate.Global
+
 namespace LCVR.UI;
 
 public class VRHUD : MonoBehaviour
 {
-    private Canvas worldInteractionCanvas;
-    private Canvas leftHandCanvas;
-    private Canvas rightHandCanvas;
-
-    private Canvas spectateCanvas;
-
     private ObjectScanner scanner;
-    public NonNativeKeyboard menuKeyboard;
-    public NonNativeKeyboard terminalKeyboard;
-
+    
     private GameObject selfRed;
     private GameObject self;
     private GameObject sprintMeter;
@@ -31,43 +25,52 @@ public class VRHUD : MonoBehaviour
     private GameObject deathScreen;
 
     private GameObject spectatorLight;
+    
+    public Canvas Canvas { get; private set; }
+    public Canvas WorldInteractionCanvas { get; private set; }
+    public Canvas SpectateCanvas { get; private set; }
+    public Canvas LeftHandCanvas { get; private set; }
+    public Canvas RightHandCanvas { get; private set; }
 
+    public NonNativeKeyboard MenuKeyboard { get; private set; }
+    public NonNativeKeyboard TerminalKeyboard { get; internal set; }
+    
     private void Awake()
     {
         // Create canvasses
-        worldInteractionCanvas = new GameObject("World Interaction Canvas").AddComponent<Canvas>();
-        worldInteractionCanvas.worldCamera = VRSession.Instance.MainCamera;
-        worldInteractionCanvas.renderMode = RenderMode.WorldSpace;
-        worldInteractionCanvas.transform.localScale = Vector3.one * 0.0066f;
-        worldInteractionCanvas.gameObject.layer = LayerMask.NameToLayer("UI");
+        WorldInteractionCanvas = new GameObject("World Interaction Canvas").AddComponent<Canvas>();
+        WorldInteractionCanvas.worldCamera = VRSession.Instance.MainCamera;
+        WorldInteractionCanvas.renderMode = RenderMode.WorldSpace;
+        WorldInteractionCanvas.transform.localScale = Vector3.one * 0.0066f;
+        WorldInteractionCanvas.gameObject.layer = LayerMask.NameToLayer("UI");
 
         var xOffset = Plugin.Config.HUDOffsetX.Value;
         var yOffset = Plugin.Config.HUDOffsetY.Value;
 
         if (!Plugin.Config.DisableArmHUD.Value)
         {
-            leftHandCanvas = new GameObject("Left Hand Canvas").AddComponent<Canvas>();
-            leftHandCanvas.worldCamera = VRSession.Instance.MainCamera;
-            leftHandCanvas.renderMode = RenderMode.WorldSpace;
-            leftHandCanvas.transform.localScale = Vector3.one * 0.001f;
-            leftHandCanvas.gameObject.layer = LayerMask.NameToLayer("UI");
-            leftHandCanvas.transform.SetParent(VRSession.Instance.LocalPlayer.Bones.LocalLeftHand, false);
-            leftHandCanvas.transform.localPosition = new Vector3(0, 0, 0);
-            leftHandCanvas.transform.localRotation = Quaternion.Euler(0, 0, 0);
+            LeftHandCanvas = new GameObject("Left Hand Canvas").AddComponent<Canvas>();
+            LeftHandCanvas.worldCamera = VRSession.Instance.MainCamera;
+            LeftHandCanvas.renderMode = RenderMode.WorldSpace;
+            LeftHandCanvas.transform.localScale = Vector3.one * 0.001f;
+            LeftHandCanvas.gameObject.layer = LayerMask.NameToLayer("UI");
+            LeftHandCanvas.transform.SetParent(VRSession.Instance.LocalPlayer.Bones.LocalLeftHand, false);
+            LeftHandCanvas.transform.localPosition = new Vector3(0, 0, 0);
+            LeftHandCanvas.transform.localRotation = Quaternion.Euler(0, 0, 0);
 
-            rightHandCanvas = new GameObject("Right Hand Canvas").AddComponent<Canvas>();
-            rightHandCanvas.worldCamera = VRSession.Instance.MainCamera;
-            rightHandCanvas.renderMode = RenderMode.WorldSpace;
-            rightHandCanvas.transform.localScale = Vector3.one * 0.001f;
-            rightHandCanvas.gameObject.layer = LayerMask.NameToLayer("UI");
-            rightHandCanvas.transform.SetParent(VRSession.Instance.LocalPlayer.Bones.LocalRightHand, false);
-            rightHandCanvas.transform.localPosition = new Vector3(0, 0, 0);
-            rightHandCanvas.transform.localRotation = Quaternion.Euler(0, 0, 0);
+            RightHandCanvas = new GameObject("Right Hand Canvas").AddComponent<Canvas>();
+            RightHandCanvas.worldCamera = VRSession.Instance.MainCamera;
+            RightHandCanvas.renderMode = RenderMode.WorldSpace;
+            RightHandCanvas.transform.localScale = Vector3.one * 0.001f;
+            RightHandCanvas.gameObject.layer = LayerMask.NameToLayer("UI");
+            RightHandCanvas.transform.SetParent(VRSession.Instance.LocalPlayer.Bones.LocalRightHand, false);
+            RightHandCanvas.transform.localPosition = new Vector3(0, 0, 0);
+            RightHandCanvas.transform.localRotation = Quaternion.Euler(0, 0, 0);
         }
 
-        var canvas = gameObject.AddComponent<Canvas>();
-        canvas.worldCamera = VRSession.Instance.MainCamera;
-        canvas.renderMode = RenderMode.WorldSpace;
+        Canvas = gameObject.AddComponent<Canvas>();
+        Canvas.worldCamera = VRSession.Instance.MainCamera;
+        Canvas.renderMode = RenderMode.WorldSpace;
 
         // Flat Canvas: Add tracked graphic raycaster
         GameObject.Find("Systems").Find("UI/Canvas").AddComponent<TrackedDeviceGraphicRaycaster>();
@@ -92,7 +95,7 @@ public class VRHUD : MonoBehaviour
         // Player cursor: Attach to world interaction canvas
 
         var cursor = GameObject.Find("PlayerCursor");
-        cursor.transform.SetParent(worldInteractionCanvas.transform, false);
+        cursor.transform.SetParent(WorldInteractionCanvas.transform, false);
 
         foreach (var image in cursor.GetComponentsInChildren<Image>())
         {
@@ -146,11 +149,11 @@ public class VRHUD : MonoBehaviour
             // SprintMeter = Pos (4, 100, 40) Rot (0 164 0)
             // WeightUI = Pos (-10 80 40) Rot (0 164 0)
             
-            selfRed.transform.SetParent(leftHandCanvas.transform, false);
-            self.transform.SetParent(leftHandCanvas.transform, false);
-            sprintMeter.transform.SetParent(leftHandCanvas.transform, false);
-            redGlowBodyParts.transform.SetParent(leftHandCanvas.transform, false);
-            weightUi.transform.SetParent(leftHandCanvas.transform, false);
+            selfRed.transform.SetParent(LeftHandCanvas.transform, false);
+            self.transform.SetParent(LeftHandCanvas.transform, false);
+            sprintMeter.transform.SetParent(LeftHandCanvas.transform, false);
+            redGlowBodyParts.transform.SetParent(LeftHandCanvas.transform, false);
+            weightUi.transform.SetParent(LeftHandCanvas.transform, false);
 
             selfRed.transform.localPosition =
                 self.transform.localPosition =
@@ -186,7 +189,7 @@ public class VRHUD : MonoBehaviour
         }
         else
         {
-            clock.transform.SetParent(leftHandCanvas.transform, false);
+            clock.transform.SetParent(LeftHandCanvas.transform, false);
             clock.transform.localPosition = new Vector3(-2, -46, 64);
             clock.transform.localRotation = Quaternion.Euler(0, 164, 0);
             clock.transform.localScale = Vector3.one * 0.7f;
@@ -210,7 +213,7 @@ public class VRHUD : MonoBehaviour
         }
         else
         {
-            battery.transform.SetParent(rightHandCanvas.transform, false);
+            battery.transform.SetParent(RightHandCanvas.transform, false);
             battery.transform.localPosition = new Vector3(12, 130, 40);
             battery.transform.localRotation = Quaternion.Euler(0, 195, -35);
             battery.transform.localScale = Vector3.one * 2;
@@ -234,7 +237,7 @@ public class VRHUD : MonoBehaviour
         }
         else
         {
-            inventory.transform.SetParent(rightHandCanvas.transform, false);
+            inventory.transform.SetParent(RightHandCanvas.transform, false);
             inventory.transform.localPosition = new Vector3(-28, 120, 40);
             inventory.transform.localRotation = Quaternion.Euler(0, 195, 0);
             inventory.transform.localScale = Vector3.one * 0.8f;
@@ -331,12 +334,12 @@ public class VRHUD : MonoBehaviour
         deathScreen.transform.localScale = Vector3.one * 1.1f;
 
         // Player screen (Render texture): World space
-        spectateCanvas = GameObject.Find("Systems/UI/Canvas").GetComponent<Canvas>();
-        spectateCanvas.worldCamera = GameObject.Find("UICamera").GetComponent<Camera>();
-        spectateCanvas.renderMode = RenderMode.WorldSpace;
-        spectateCanvas.transform.position = new Vector3(0, -999, 0);
+        SpectateCanvas = GameObject.Find("Systems/UI/Canvas").GetComponent<Canvas>();
+        SpectateCanvas.worldCamera = GameObject.Find("UICamera").GetComponent<Camera>();
+        SpectateCanvas.renderMode = RenderMode.WorldSpace;
+        SpectateCanvas.transform.position = new Vector3(0, -999, 0);
 
-        var follow = spectateCanvas.gameObject.AddComponent<CanvasTransformFollow>();
+        var follow = SpectateCanvas.gameObject.AddComponent<CanvasTransformFollow>();
         follow.sourceTransform = VRSession.Instance.UICamera.transform;
         follow.heightOffset = -999;
 
@@ -357,15 +360,15 @@ public class VRHUD : MonoBehaviour
         transform.rotation = camTransform.rotation;
 
         // Interaction canvas
-        worldInteractionCanvas.transform.rotation = Quaternion.LookRotation(worldInteractionCanvas.transform.position - camTransform.position);
-        worldInteractionCanvas.transform.position += worldInteractionCanvas.transform.forward * -0.2f;
+        WorldInteractionCanvas.transform.rotation = Quaternion.LookRotation(WorldInteractionCanvas.transform.position - camTransform.position);
+        WorldInteractionCanvas.transform.position += WorldInteractionCanvas.transform.forward * -0.2f;
 
         scanner.Update();
     }
 
     public void UpdateInteractCanvasPosition(Vector3 position)
     {
-        worldInteractionCanvas.transform.position = position;
+        WorldInteractionCanvas.transform.position = position;
     }
 
     public void HideHUD(bool hide)
@@ -410,17 +413,17 @@ public class VRHUD : MonoBehaviour
     private void InitializeKeyboard()
     {
         var canvas = GameObject.Find("Systems/UI/Canvas").GetComponent<Canvas>();
-        menuKeyboard = Instantiate(AssetManager.keyboard).GetComponent<NonNativeKeyboard>();
+        MenuKeyboard = Instantiate(AssetManager.keyboard).GetComponent<NonNativeKeyboard>();
 
-        menuKeyboard.transform.SetParent(canvas.transform, false);
-        menuKeyboard.transform.localPosition = new Vector3(0, -470, -40);
-        menuKeyboard.transform.localEulerAngles = new Vector3(13, 0, 0);
-        menuKeyboard.transform.localScale = Vector3.one * 0.8f;
+        MenuKeyboard.transform.SetParent(canvas.transform, false);
+        MenuKeyboard.transform.localPosition = new Vector3(0, -470, -40);
+        MenuKeyboard.transform.localEulerAngles = new Vector3(13, 0, 0);
+        MenuKeyboard.transform.localScale = Vector3.one * 0.8f;
 
-        menuKeyboard.gameObject.Find("keyboard_Alpha/Deny_Button").SetActive(false);
-        menuKeyboard.gameObject.Find("keyboard_Alpha/Confirm_Button").SetActive(false);
+        MenuKeyboard.gameObject.Find("keyboard_Alpha/Deny_Button").SetActive(false);
+        MenuKeyboard.gameObject.Find("keyboard_Alpha/Confirm_Button").SetActive(false);
 
         var component = canvas.gameObject.AddComponent<Keyboard>();
-        component.keyboard = menuKeyboard;
+        component.keyboard = MenuKeyboard;
     }
 }
