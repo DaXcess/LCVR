@@ -36,7 +36,7 @@ public class Plugin : BaseUnityPlugin
     public const string PLUGIN_VERSION = "1.2.1";
 
     private readonly string[] GAME_ASSEMBLY_HASHES = [
-        "710F39A9E7610AD0056E463280EB7498810F30239356932AE0ECE4ADE9F68C69"  // V50 Beta @ 4/12/2024
+        "7CFABBA203022CC46EF309B0E651276CB59217AF6D38C34E2085E67957DBBCBD"  // V50 Beta @ 4/13/2024
     ];
 
     public new static Config Config { get; private set; }
