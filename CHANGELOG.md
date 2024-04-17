@@ -1,3 +1,14 @@
+# 1.2.2
+
+**Game Version**:
+- Added compatibility with V50 Patch 1
+
+**Bug Fixes**:
+- Fixed visual glitch where VR players would not appear to be sinking in mud
+
+**Mod Compatibility**:
+- Fixed lighting culling issues when CullFactory is installed
+
 # 1.2.1
 
 ### V50 IS HERE
