@@ -1,20 +1,22 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using BepInEx;
 
 namespace LCVR;
 
 public class Compat
 {
-    private static readonly CompatibleMod[] ModCompatibilityList =
+    private readonly CompatibleMod[] ModCompatibilityList =
     [
-        new("MoreCompany", "me.swipez.melonloader.morecompany"),
-        new("Mimics", "x753.Mimics"),
-        new("Diversity", "Chaos.Diversity"),
+        new CompatibleMod("MoreCompany", "me.swipez.melonloader.morecompany"),
+        new CompatibleMod("Mimics", "x753.Mimics"),
+        new CompatibleMod("Diversity", "Chaos.Diversity"),
+        new CompatibleMod("CullFactory", "com.fumiko.CullFactory")
     ];
 
-    private static readonly List<string> DetectedMods = [];
+    private readonly List<string> DetectedMods = [];
 
-    public Compat(BepInEx.PluginInfo[] plugins)
+    public Compat(IEnumerable<PluginInfo> plugins)
     {
         foreach (var plugin in plugins)
         {

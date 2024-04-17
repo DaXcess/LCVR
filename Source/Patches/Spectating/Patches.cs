@@ -232,7 +232,7 @@ internal static class SpectatorPlayerPatches
         __instance.takingFallDamage = false;
     }
 
-    [HarmonyPatch(typeof(PlayerControllerB), "ActivateItem_performed")]
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.ActivateItem_performed))]
     [HarmonyPostfix]
     private static void SpectateNextPlayer(PlayerControllerB __instance)
     {
@@ -287,7 +287,7 @@ internal static class SpectatorPlayerPatches
     /// <summary>
     /// Toggle death screen UI by pressing the secondary use button
     /// </summary>
-    [HarmonyPatch(typeof(PlayerControllerB), "ItemSecondaryUse_performed")]
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.ItemSecondaryUse_performed))]
     [HarmonyPostfix]
     private static void OnToggleDeathScreen(PlayerControllerB __instance)
     {
@@ -300,7 +300,7 @@ internal static class SpectatorPlayerPatches
     /// <summary>
     /// Toggle spectator light by pressing the tertiary use button
     /// </summary>
-    [HarmonyPatch(typeof(PlayerControllerB), "Discard_performed")]
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.Discard_performed))]
     [HarmonyPostfix]
     private static void OnToggleSpectatorLight(PlayerControllerB __instance)
     {

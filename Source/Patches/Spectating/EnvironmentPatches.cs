@@ -113,4 +113,43 @@ internal static class SpectatorEnvironmentPatches
         __result = Utils.NopRoutine();
         return false;
     }
+
+    /// <summary>
+    /// Prevent the spectator camera (which is not used) from triggering the underwater filter
+    /// </summary>
+    [HarmonyPatch(typeof(HUDManager), nameof(HUDManager.UnderwaterScreenFilters))]
+    [HarmonyTranspiler]
+    private static IEnumerable<CodeInstruction> SpectatorCamDontTriggerWater(IEnumerable<CodeInstruction> instructions)
+    {
+        return new CodeMatcher(instructions)
+            .MatchForward(false, [new CodeMatch(OpCodes.Ldc_I4_1)])
+            .SetOpcodeAndAdvance(OpCodes.Ldc_I4_0)
+            .InstructionEnumeration();
+    }
+
+    /// <summary>
+    /// Allow dead players to still experience the underwater filter
+    /// </summary>
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.SetFaceUnderwaterFilters))]
+    [HarmonyTranspiler]
+    private static IEnumerable<CodeInstruction> EnableDeadPlayerUnderwater(IEnumerable<CodeInstruction> instructions)
+    {
+        return new CodeMatcher(instructions)
+            .Advance(1)
+            .RemoveInstructions(4)
+            .InstructionEnumeration();
+    }
+
+    /// <summary>
+    /// Prevent dead players from dying again if they are underwater as a spectator
+    /// </summary>
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.SetFaceUnderwaterFilters))]
+    [HarmonyPostfix]
+    private static void UnderwaterPreventDeath(PlayerControllerB __instance)
+    {
+        if (!__instance.isPlayerDead)
+            return;
+
+        StartOfRound.Instance.drowningTimer = 1;
+    }
 }

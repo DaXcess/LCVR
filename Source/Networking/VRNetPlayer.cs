@@ -16,14 +16,14 @@ public class VRNetPlayer : MonoBehaviour
 {
     private ChainIKConstraintData originalLeftArmConstraintData;
     private ChainIKConstraintData originalRightArmConstraintData;
-    
+
     private GameObject playerGhost;
     private Transform usernameBillboard;
     private CanvasGroup usernameAlpha;
     private TextMeshProUGUI usernameText;
 
     private bool spectatorWasParentedToShip;
-    
+
     private Transform xrOrigin;
     private Transform leftController;
     private Transform rightController;
@@ -46,7 +46,7 @@ public class VRNetPlayer : MonoBehaviour
 
     public PlayerControllerB PlayerController { get; private set; }
     public Bones Bones { get; private set; }
-    
+
     public Transform LeftItemHolder { get; private set; }
     public Transform RightItemHolder { get; private set; }
 
@@ -111,20 +111,20 @@ public class VRNetPlayer : MonoBehaviour
         usernameAlpha = playerGhost.GetComponentInChildren<CanvasGroup>();
 
         playerGhost.GetComponentInChildren<SpectatorGhost>().player = this;
-        
+
         // Disable rendering ghost until player dies
         foreach (var renderer in playerGhost.GetComponentsInChildren<MeshRenderer>())
         {
             renderer.enabled = false;
         }
-        
+
         // Set username text
         if (PlayerController.playerSteamId is 76561198438308784 or 76561199575858981)
         {
             usernameText.color = new Color(0, 1, 1, 1);
             usernameText.fontStyle = FontStyles.Bold;
         }
-        
+
         usernameText.text = $"<noparse>{PlayerController.playerUsername}</noparse>";
     }
 
@@ -195,7 +195,8 @@ public class VRNetPlayer : MonoBehaviour
                 transform.position.z + (modelOffset.z * 1.5f) - (cameraPosAccounted.z * 1.5f)
             );
 
-            Bones.Model.localPosition = transform.InverseTransformPoint(transform.position + modelOffset);
+            Bones.Model.localPosition = transform.InverseTransformPoint(transform.position + modelOffset) +
+                                        Vector3.down * (2.5f * PlayerController.sinkingValue);
         }
         else
         {
@@ -236,7 +237,7 @@ public class VRNetPlayer : MonoBehaviour
         {
             rightFingerCurler?.Update();
         }
-        
+
         // Rotate spectator username billboard
         if (StartOfRound.Instance.localPlayerController.localVisorTargetPoint is not null)
         {
@@ -265,7 +266,7 @@ public class VRNetPlayer : MonoBehaviour
         {
             renderer.enabled = false;
         }
-        
+
         usernameAlpha.alpha = 0f;
     }
 
@@ -279,7 +280,7 @@ public class VRNetPlayer : MonoBehaviour
 
         usernameAlpha.alpha = 1f;
     }
-    
+
     internal void UpdateTargetTransforms(DNet.Rig rig)
     {
         leftController.localPosition = rig.leftHandPosition;
@@ -321,7 +322,7 @@ public class VRNetPlayer : MonoBehaviour
         }
 
         spectatorWasParentedToShip = rig.parentedToShip;
-        
+
         head.localPosition = rig.headPosition;
         head.eulerAngles = rig.headRotation;
 
@@ -343,7 +344,7 @@ public class VRNetPlayer : MonoBehaviour
     void OnDestroy()
     {
         Destroy(playerGhost);
-        
+
         Bones.ResetToPrefabPositions();
 
         Destroy(Bones.LeftArmRig.GetComponent<TwoBoneIKConstraint>());
