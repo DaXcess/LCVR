@@ -28,15 +28,17 @@ namespace LCVR;
 #region Compatibility Dependencies
 [BepInDependency("me.swipez.melonloader.morecompany", DependencyFlags.SoftDependency)]
 [BepInDependency("x753.Mimics", DependencyFlags.SoftDependency)]
+[BepInDependency("com.fumiko.CullFactory", DependencyFlags.SoftDependency)]
 #endregion
 public class Plugin : BaseUnityPlugin
 {
     public const string PLUGIN_GUID = "io.daxcess.lcvr";
     public const string PLUGIN_NAME = "LCVR";
-    public const string PLUGIN_VERSION = "1.2.1";
+    public const string PLUGIN_VERSION = "1.2.2";
 
     private readonly string[] GAME_ASSEMBLY_HASHES = [
-        "7CFABBA203022CC46EF309B0E651276CB59217AF6D38C34E2085E67957DBBCBD"  // V50
+        "7CFABBA203022CC46EF309B0E651276CB59217AF6D38C34E2085E67957DBBCBD",  // V50
+        "4C265CECBC1A075E52D9E1FA458C67AA25C087362B472DF66DF370B9A0676A67",  // V50 Patch 1
     ];
 
     public new static Config Config { get; private set; }

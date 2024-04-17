@@ -19,10 +19,10 @@ internal class VRFlashlight : VRItem<FlashlightItem>
         if (IsLocal)
             return;
 
-        var isHoldingActiveFlashlight = (player.currentlyHeldObjectServer?.itemProperties.itemId == 1 || player.currentlyHeldObjectServer?.itemProperties.itemId == 6)
-                                            && player.currentlyHeldObjectServer.isBeingUsed;
-        // currentlyHeldObjectServer is guaranteed to not be null at this point
-
+        var isHoldingActiveFlashlight =
+            player.currentlyHeldObjectServer is { isBeingUsed: true } and ({ itemProperties.itemId: 1 } or
+                { itemProperties.itemId: 6 });
+        
         if (!item.isPocketed)
         {
             // Update flashlight offsets

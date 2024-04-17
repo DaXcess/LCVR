@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>LCVR</AssemblyName>
     <Description>Collecting Scrap in VR</Description>
-    <Version>1.2.1</Version>
+    <Version>1.2.2</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>12.0</LangVersion>
     <Title>LethalCompanyVR</Title>
@@ -28,6 +28,7 @@
   <ItemGroup>
     <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
     <PackageReference Include="BepInEx.Core" Version="5.*" />
+    <PackageReference Include="CullFactory" Version="1.0.4" />
     <PackageReference Include="DissonanceVoip" Version="1.50.0-lc.1" />
     <PackageReference Include="Diversity" Version="2.0.3" />
     <PackageReference Include="LethalCompany" Version="1.50.0-beta.1" />

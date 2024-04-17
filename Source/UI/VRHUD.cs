@@ -350,6 +350,9 @@ public class VRHUD : MonoBehaviour
         // Set up a global light for spectators to be able to toggle
         spectatorLight = Instantiate(AssetManager.spectatorLight, transform);
         spectatorLight.SetActive(false);
+        
+        // Prevents CullFactory from culling the light
+        spectatorLight.hideFlags |= HideFlags.DontSave;
     }
 
     private void LateUpdate()
@@ -385,14 +388,14 @@ public class VRHUD : MonoBehaviour
         inventory.SetActive(!hide);
     }
 
-    public void ToggleDeathScreen(bool? enabled = null)
+    public void ToggleDeathScreen(bool? visible = null)
     {
         if (!deathScreen)
             return;
 
-        if (enabled != null)
+        if (visible != null)
         {
-            deathScreen.transform.localScale = Vector3.one * (enabled == true ? 1.1f : 0f);
+            deathScreen.transform.localScale = Vector3.one * (visible == true ? 1.1f : 0f);
             return;
         }
 
@@ -402,9 +405,12 @@ public class VRHUD : MonoBehaviour
             deathScreen.transform.localScale = Vector3.one * 1.1f;
     }
 
-    public void ToggleSpectatorLight(bool? enabled = null)
+    public void ToggleSpectatorLight(bool? active = null)
     {
-        spectatorLight?.SetActive(enabled ?? !spectatorLight.activeSelf);
+        if (spectatorLight is not { } light)
+            return;
+        
+        light.SetActive(active ?? !light.activeSelf);
     }
 
     /// <summary>
