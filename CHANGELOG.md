@@ -5,6 +5,7 @@
 
 **Bug Fixes**:
 - Fixed visual glitch where VR players would not appear to be sinking in mud
+- Fixed visual glitch where VR players who died in water got the underwater filter applied sporadically
 
 **Mod Compatibility**:
 - Fixed lighting culling issues when CullFactory is installed
