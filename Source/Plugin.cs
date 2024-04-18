@@ -139,7 +139,7 @@ public class Plugin : BaseUnityPlugin
 
     private bool VerifyGameVersion()
     {
-        var location = typeof(PlayerControllerB).Assembly.Location;
+        var location = Path.Combine(Paths.ManagedPath, "Assembly-CSharp.dll");
         var shasum = BitConverter.ToString(Utils.ComputeHash(File.ReadAllBytes(location))).Replace("-", "");
 
         return GAME_ASSEMBLY_HASHES.Contains(shasum);
