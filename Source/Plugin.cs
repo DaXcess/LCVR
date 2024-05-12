@@ -34,7 +34,7 @@ public class Plugin : BaseUnityPlugin
 {
     public const string PLUGIN_GUID = "io.daxcess.lcvr";
     public const string PLUGIN_NAME = "LCVR";
-    public const string PLUGIN_VERSION = "1.2.2";
+    public const string PLUGIN_VERSION = "1.2.3";
 
     private readonly string[] GAME_ASSEMBLY_HASHES = [
         "7CFABBA203022CC46EF309B0E651276CB59217AF6D38C34E2085E67957DBBCBD",  // V50
@@ -139,7 +139,7 @@ public class Plugin : BaseUnityPlugin
 
     private bool VerifyGameVersion()
     {
-        var location = typeof(PlayerControllerB).Assembly.Location;
+        var location = Path.Combine(Paths.ManagedPath, "Assembly-CSharp.dll");
         var shasum = BitConverter.ToString(Utils.ComputeHash(File.ReadAllBytes(location))).Replace("-", "");
 
         return GAME_ASSEMBLY_HASHES.Contains(shasum);
