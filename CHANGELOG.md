@@ -1,3 +1,15 @@
+# 1.2.3
+
+**Bug Fixes**:
+- Fixed issues with enemy collision that was causing error spam and potential other issues
+- Changed the way `VerifyGameVersion` finds the game assembly, fixing some mod compatibility issues
+
+**Additions**:
+- Added configuration option to disable the settings button on the main menu
+
+**Development Changes**:
+- Added debug symbols in the assembly output if the mod is compiled in debug, which helps with tracking down errors
+
 # 1.2.2
 
 **Game Version**:

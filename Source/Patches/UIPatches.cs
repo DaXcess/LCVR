@@ -320,6 +320,9 @@ internal static class UniversalUIPatches
 
     private static void InjectSettingsScreen()
     {
+        if (Plugin.Config.DisableSettingsButton.Value)
+            return;
+        
         // Add button to main menu
         var container = GameObject.Find("Canvas/MenuContainer");
         var mainButtons = container.Find("MainButtons");

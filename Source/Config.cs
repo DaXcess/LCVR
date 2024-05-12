@@ -68,7 +68,9 @@ public class Config(ConfigFile file)
 
     public ConfigEntry<string> LastInternalControllerProfile { get; } = file.Bind("Internal", "LastInternalControllerProfile", "", "FOR INTERNAL USE ONLY, DO NOT EDIT");
     public ConfigEntry<string> OpenXRRuntimeFile { get; } = file.Bind("Internal", "OpenXRRuntimeFile", "", "FOR INTERNAL USE ONLY, DO NOT EDIT");
-
+    public ConfigEntry<bool> DisableSettingsButton { get; } = file.Bind("Internal", "DisableSettingsButton", false,
+        "Disables the settings button on the main menu screen");
+    
     public enum TurnProviderOption
     {
         Snap,

@@ -389,7 +389,8 @@ public class VRPlayer : MonoBehaviour
 
         var rotationOffset = playerController.jetpackControls switch
         {
-            true => Quaternion.Euler(playerController.jetpackTurnCompass.eulerAngles.x, TurningProvider.GetRotationOffset(), playerController.jetpackTurnCompass.eulerAngles.z),
+            true => Quaternion.Euler(playerController.jetpackTurnCompass.eulerAngles.x,
+                TurningProvider.GetRotationOffset(), playerController.jetpackTurnCompass.eulerAngles.z),
             false => Quaternion.Euler(0, TurningProvider.GetRotationOffset(), 0)
         };
 

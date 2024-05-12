@@ -92,7 +92,7 @@ internal static class SpectatorAIPatches
     /// <summary>
     /// Prevent collision detection on dead players
     /// </summary>
-    [HarmonyPatch(typeof(EnemyAICollisionDetect), "OnTriggerStay")]
+    [HarmonyPatch(typeof(EnemyAICollisionDetect), nameof(EnemyAICollisionDetect.OnTriggerStay))]
     [HarmonyTranspiler]
     private static IEnumerable<CodeInstruction> OnCollidePlayerTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
     {
@@ -100,11 +100,15 @@ internal static class SpectatorAIPatches
             .MatchForward(false, new CodeMatch(OpCodes.Brfalse))
             .Advance(1)
             .InsertAndAdvance(new CodeInstruction(OpCodes.Ldarg_1))
-            .InsertAndAdvance(new CodeInstruction(OpCodes.Callvirt, PropertyGetter(typeof(Component), nameof(Component.gameObject))))
-            .InsertAndAdvance(new CodeInstruction(OpCodes.Callvirt, Method(typeof(GameObject), nameof(GameObject.GetComponent)).MakeGenericMethod([typeof(PlayerControllerB)])))
-            .InsertAndAdvance(new CodeInstruction(OpCodes.Ldfld, Field(typeof(PlayerControllerB), nameof(PlayerControllerB.isPlayerDead))))
-            .InsertBranchAndAdvance(OpCodes.Brfalse_S, 8)
+            .InsertAndAdvance(new CodeInstruction(OpCodes.Call, Method(typeof(SpectatorAIPatches), nameof(IsPlayerDead))))
+            .InsertBranchAndAdvance(OpCodes.Brfalse_S, 6)
             .InsertAndAdvance(new CodeInstruction(OpCodes.Ret))
             .InstructionEnumeration();
+    }
+
+    private static bool IsPlayerDead(Component other)
+    {
+        var player = other.GetComponent<PlayerControllerB>();
+        return player && player.isPlayerDead;
     }
 }
