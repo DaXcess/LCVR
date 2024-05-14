@@ -61,6 +61,8 @@ public class Config(ConfigFile file)
     public ConfigEntry<bool> DisableBreakerBoxInteraction { get; } = file.Bind("Interaction", "DisableBreakerBoxInteraction", false, "Disabled needing to physically open the breaker box and flip the switches with your finger.");
     public ConfigEntry<bool> DisableDoorInteraction { get; } = file.Bind("Interaction", "DisableDoorInteraction", false, "Disable needing to physically open and close doors by interacting with the door handles. Will also disable the need to use keys and lockpickers physically on the door handle.");
 
+    public ConfigEntry<bool> DisableHangarLeverInteraction { get; } = file.Bind("Interaction", "DisableHangarLeverInteraction", false, "Disable needing to physically pull the lever for the big doors on Artiface");
+    
     public ConfigEntry<bool> DisableMuffleInteraction { get; } = file.Bind("Interaction", "DisableMuffleInteraction", false, "Disables the self-muffling feature, which makes it so that holding your hand in front of your mouth will no longer make you inaudible to enemies.");
     public ConfigEntry<bool> DisableFaceInteractions { get; } = file.Bind("Interaction", "DisableFaceInteractions", false, "Disables the functionality to hold certain items up to your face to use them.");
 

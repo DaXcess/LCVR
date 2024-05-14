@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using HarmonyLib;
 using LCVR.Assets;
 using LCVR.Patches;
@@ -15,8 +16,9 @@ public class Door : MonoBehaviour, VRInteractable
 {
     internal static readonly Dictionary<string, (Vector3, Vector3, Vector3)> registeredDoorHandles = new()
     {
-        ["SteelDoorMapModel"] = (new(-0.29f, 0.2336f, -0.025f), Vector3.zero, new(1, 0.15f, 0.025f)),
-        ["FancyDoorMapModel"] = (new(-0.29f, 0.2836f, -0.055f), Vector3.zero, new(1, 0.09f, 0.155f))
+        ["TestRoom"] = (new Vector3(-0.29f, 0.2336f, -0.025f), Vector3.zero, new Vector3(1, 0.15f, 0.025f)),
+        ["SteelDoorMapModel"] = (new Vector3(-0.29f, 0.2336f, -0.025f), Vector3.zero, new Vector3(1, 0.15f, 0.025f)),
+        ["FancyDoorMapModel"] = (new Vector3(-0.29f, 0.2836f, -0.055f), Vector3.zero, new Vector3(1, 0.09f, 0.155f))
     };
 
     internal DoorLock door;
@@ -182,17 +184,12 @@ internal static class DoorPatches
 
         if (!Door.registeredDoorHandles.TryGetValue(__instance.NetworkObject.name, out var offsets))
         {
-            var idx = __instance.NetworkObject.name.LastIndexOf("(Clone)", StringComparison.Ordinal);
-
-            if (idx < 0)
-                return;
-
-            var name = __instance.NetworkObject.name.Remove(idx, 7);
-
+            var rx = new Regex("\\(.+\\)");
+            var name = rx.Replace(__instance.NetworkObject.name, "").TrimEnd();
+            
             if (!Door.registeredDoorHandles.TryGetValue(name, out offsets))
                 return;
         }
-
 
         var (position, rotation, scale) = offsets;
 

@@ -1,3 +1,13 @@
+# 1.2.4
+
+**Bug Fixes**:
+- Fixed some of the doors on Artiface not using the new VR interactions
+- Leaving the game while spectating will no longer prevent spectating to work in the next game
+
+**Additions**:
+- Added VR motion controls to the knife (you can now stabby stab)
+- Added VR interactions to the big doors on Artiface
+
 # 1.2.3
 
 **Bug Fixes**:

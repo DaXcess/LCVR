@@ -324,6 +324,10 @@ public class VRSession : MonoBehaviour
             VRController.DisableInteractTrigger("DoorInteractable");
             VRController.DisableInteractTrigger("LockPickerInteractable");
         }
+        
+        // Hangar Lever
+        if (!Plugin.Config.DisableHangarLeverInteraction.Value)
+            VRController.DisableInteractTrigger("LeverSwitchInteractable");
         #endregion
 
 #if DEBUG
