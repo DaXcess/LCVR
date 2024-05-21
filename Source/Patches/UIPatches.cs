@@ -72,6 +72,9 @@ internal static class UIPatches
         
         InitMenuScene(canvas);
 
+        if (Plugin.Compatibility.IsLoaded("MoreCompany"))
+            Compatibility.MoreCompany.MoreCompanyCompatibility.SetupMoreCompanyUI();
+
         if (__instance.isInitScene)
             return;
 
@@ -79,9 +82,6 @@ internal static class UIPatches
 
         if (!Plugin.Config.IntroScreenSeen.Value)
             InjectIntroScreen();
-
-        if (Plugin.Compatibility.IsLoaded("MoreCompany"))
-            Compatibility.MoreCompany.MoreCompanyCompatibility.SetupMoreCompanyUI();
 
         InitializeKeyboard(canvas);
     }
