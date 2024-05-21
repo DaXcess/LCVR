@@ -22,18 +22,18 @@ internal static class UIPatches
     /// </summary>
     [HarmonyPatch(typeof(PreInitSceneScript), nameof(PreInitSceneScript.Start))]
     [HarmonyPostfix]
-    private static void OnPreInitMenuShown()
+    private static void OnPreInitMenuShown(PreInitSceneScript __instance)
     {
-        InitMenuScene();
-
-        var canvas = GameObject.Find("Canvas");
+        var canvas = __instance.launchSettingsPanelsContainer.GetComponentInParent<Canvas>();
+        
+        InitMenuScene(canvas);
 
         if (Plugin.Flags.HasFlag(Flags.UnityExplorerDetected))
         {
-            var textObject = Object.Instantiate(canvas.Find("GameObject/LANOrOnline/OnlineButton/Text (TMP) (1)"));
+            var textObject = Object.Instantiate(canvas.gameObject.Find("GameObject/LANOrOnline/OnlineButton/Text (TMP) (1)"));
             var text = textObject.GetComponent<TextMeshProUGUI>();
 
-            text.transform.parent = canvas.Find("GameObject").transform;
+            text.transform.parent = __instance.launchSettingsPanelsContainer.transform;
             text.transform.localPosition = new Vector3(200, -100, 0);
             text.transform.localScale = Vector3.one;
             text.text = "Unity Explorer Detected!\nUI controls are most likely nonfunctional!";
@@ -46,10 +46,10 @@ internal static class UIPatches
 
         if (Plugin.Flags.HasFlag(Flags.InvalidGameAssembly))
         {
-            var textObject = Object.Instantiate(canvas.Find("GameObject/LANOrOnline/OnlineButton/Text (TMP) (1)"));
+            var textObject = Object.Instantiate(canvas.gameObject.Find("GameObject/LANOrOnline/OnlineButton/Text (TMP) (1)"));
             var text = textObject.GetComponent<TextMeshProUGUI>();
 
-            text.transform.parent = canvas.Find("GameObject").transform;
+            text.transform.parent = __instance.launchSettingsPanelsContainer.transform;
             text.transform.localPosition = new Vector3(200, -30, 0);
             text.transform.localScale = Vector3.one;
             text.text = "Invalid Game Assembly Detected!\nYou are using an unsupported version of the game!";
@@ -68,7 +68,9 @@ internal static class UIPatches
     [HarmonyPrefix]
     private static void OnMainMenuShown(MenuManager __instance)
     {
-        InitMenuScene();
+        var canvas = __instance.menuButtons.GetComponentInParent<Canvas>();
+        
+        InitMenuScene(canvas);
 
         if (__instance.isInitScene)
             return;
@@ -81,12 +83,11 @@ internal static class UIPatches
         if (Plugin.Compatibility.IsLoaded("MoreCompany"))
             Compatibility.MoreCompany.MoreCompanyCompatibility.SetupMoreCompanyUI();
 
-        InitializeKeyboard();
+        InitializeKeyboard(canvas);
     }
 
-    private static void InitMenuScene()
+    private static void InitMenuScene(Canvas canvas)
     {
-        var canvas = GameObject.Find("Canvas")?.GetComponent<Canvas>();
         var input = GameObject.Find("EventSystem")?.GetComponent<InputSystemUIInputModule>();
 
         if (input != null)
@@ -149,9 +150,8 @@ internal static class UIPatches
     /// <summary>
     /// Add a keyboard to the main menu
     /// </summary>
-    private static void InitializeKeyboard()
+    private static void InitializeKeyboard(Canvas canvas)
     {
-        var canvas = GameObject.Find("Canvas")?.GetComponent<Canvas>();
         var keyboard = Object.Instantiate(AssetManager.keyboard).GetComponent<NonNativeKeyboard>();
 
         keyboard.transform.SetParent(canvas.transform, false);
@@ -277,12 +277,12 @@ internal static class UniversalUIPatches
     /// </summary>
     [HarmonyPatch(typeof(PreInitSceneScript), nameof(PreInitSceneScript.Start))]
     [HarmonyPostfix]
-    private static void OnPreInitMenuShown()
+    private static void OnPreInitMenuShown(PreInitSceneScript __instance)
     {
         if (!Plugin.Flags.HasFlag(Flags.RestartRequired))
             return;
 
-        var canvas = GameObject.Find("Canvas");
+        var canvas = __instance.launchSettingsPanelsContainer.GetComponentInParent<Canvas>().gameObject;
         var textObject = Object.Instantiate(canvas.Find("GameObject/LANOrOnline/OnlineButton/Text (TMP) (1)"));
         var text = textObject.GetComponent<TextMeshProUGUI>();
 
