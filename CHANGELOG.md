@@ -8,6 +8,15 @@
 - Added VR motion controls to the knife (you can now stabby stab)
 - Added VR interactions to the big doors on Artiface
 
+**Changes**:
+- Changed the mod package layout, dropping the `RuntimeDeps`
+- Reworked the OpenXR loader, which will now attempt every runtime instead of only the default/preconfigured runtime
+- Game no longer needs to be restarted if the VR mod was installed for the first time
+
+**Removals**:
+- Removed detection for `UnityExplorer`
+- Removed ghost girl from the main/pause menus
+
 # 1.2.3
 
 **Bug Fixes**:

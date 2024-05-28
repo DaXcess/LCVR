@@ -49,7 +49,7 @@ internal static class AssetManager
         keyboard = assetBundle.LoadAsset<GameObject>("NonNativeKeyboard");
         settingsPanel = assetBundle.LoadAsset<GameObject>("Panel");
         volumeManager = assetBundle.LoadAsset<GameObject>("Volume Manager");
-        enemyPrefab = assetBundle.LoadAsset<GameObject>("DressGirl");
+        enemyPrefab = assetBundle.LoadAsset<GameObject>("Flowerman");
         spectatorLight = assetBundle.LoadAsset<GameObject>("Spectator Light");
         spectatorGhost = assetBundle.LoadAsset<GameObject>("SpectatorGhost");
 
