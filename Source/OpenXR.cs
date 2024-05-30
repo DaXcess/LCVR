@@ -17,7 +17,7 @@ using UnityEngine.XR.OpenXR.Features.Interactions;
 
 namespace LCVR;
 
-internal class OpenXR
+internal static class OpenXR
 {
     [DllImport("UnityOpenXR", EntryPoint = "NativeConfig_GetRuntimeName")]
     private static extern bool Internal_GetRuntimeName(out IntPtr runtimeNamePtr);
@@ -260,7 +260,7 @@ internal class OpenXR
                     return true;
             }
 
-            Logger.LogError("All available runtimes where attempted but none worked. Aborting...");
+            Logger.LogError("All available runtimes were attempted but none worked. Aborting...");
             return false;
         }
 

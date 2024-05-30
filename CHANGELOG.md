@@ -3,6 +3,7 @@
 **Bug Fixes**:
 - Fixed some of the doors on Artiface not using the new VR interactions
 - Leaving the game while spectating will no longer prevent spectating to work in the next game
+- Fixed some issues on the main menu when certain mods are active
 
 **Additions**:
 - Added VR motion controls to the knife (you can now stabby stab)
