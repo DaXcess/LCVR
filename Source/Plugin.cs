@@ -6,6 +6,7 @@ using System;
 using System.Collections;
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -60,6 +61,16 @@ public class Plugin : BaseUnityPlugin
         Compatibility = new Compat([.. Chainloader.PluginInfos.Values]);
 
         Logger.LogInfo($"Plugin {PLUGIN_NAME} is starting...");
+
+        // Extract LCVR dependencies
+        if (!ExtractPackage(out var mustRestart))
+        {
+            Logger.LogError("Failed to extract LCVR dependencies, disabling mod");
+            return;
+        }
+        
+        if (mustRestart)
+            Flags |= Flags.RestartRequired;
 
         // Allow disabling VR via config and command line
         var disableVr = Config.DisableVR.Value ||
@@ -117,6 +128,7 @@ public class Plugin : BaseUnityPlugin
         if (!disableVr && InitializeVR())
         {
             Flags |= Flags.VR;
+            Flags &= ~Flags.RestartRequired;
 
             StartCoroutine(HijackSplashScreen());
         }
@@ -135,6 +147,53 @@ public class Plugin : BaseUnityPlugin
         var shasum = BitConverter.ToString(Utils.ComputeHash(File.ReadAllBytes(location))).Replace("-", "");
 
         return GAME_ASSEMBLY_HASHES.Contains(shasum);
+    }
+
+    /// <summary>
+    /// Verifies and extracts the LCVR dependencies (if necessary), returning whether the game needs to restart
+    /// </summary>
+    private bool ExtractPackage(out bool mustRestart)
+    {
+        mustRestart = false;
+
+        try
+        {
+            var basePath = Path.Combine(Paths.GameRootPath, "Lethal Company_Data");
+            using var zip = ZipFile.OpenRead(Path.Combine(Info.Location, "package"));
+
+            foreach (var entry in zip.Entries.Where(entry =>
+                         !entry.FullName.EndsWith('/') || !string.IsNullOrEmpty(entry.Name)))
+            {
+                var fullPath = Path.Combine(basePath, entry.FullName);
+                var directoryName = Path.GetDirectoryName(fullPath)!;
+
+                if (!Directory.Exists(directoryName))
+                {
+                    Directory.CreateDirectory(directoryName);
+                    mustRestart = true;
+                }
+
+                using var stream = entry.Open();
+                using var reader = new BinaryReader(stream);
+
+                var bytes = reader.ReadBytes((int)entry.Length);
+
+                // Check if file is up-to-date
+                if (File.Exists(fullPath) &&
+                    Utils.ComputeHash(bytes).SequenceEqual(Utils.ComputeHash(File.ReadAllBytes(fullPath)))) continue;
+
+                File.WriteAllBytes(fullPath, bytes);
+
+                mustRestart = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Failed to validate and extract LCVR package: {ex.Message}");
+            return false;
+        }
+
+        return true;
     }
 
     private bool InitializeVR()
@@ -169,6 +228,10 @@ public class Plugin : BaseUnityPlugin
         settings.dynamicResolutionSettings.minPercentage = settings.dynamicResolutionSettings.maxPercentage =
             Config.DynamicResolutionPercentage.Value;
         settings.supportMotionVectors = true;
+
+        if (Config.EnableDLSS.Value)
+            Logger.LogWarning(
+                "DLSS has been deprecated, and will be removed in a future release. Please switch over to the Dynamic Resolution and Camera Resolution configuration to enhance your performance.");
 
         settings.xrSettings.occlusionMesh = false;
         settings.xrSettings.singlePass = false;
@@ -209,6 +272,7 @@ public class Plugin : BaseUnityPlugin
 public enum Flags
 {
     VR = 1 << 0,
-    InvalidGameAssembly = 1 << 3,
-    InteractableDebug = 1 << 4,
+    RestartRequired = 1 << 1,
+    InvalidGameAssembly = 1 << 2,
+    InteractableDebug = 1 << 3,
 }

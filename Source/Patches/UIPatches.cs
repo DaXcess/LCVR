@@ -242,6 +242,31 @@ internal static class UIPatches
 [HarmonyPatch]
 internal static class UniversalUIPatches
 {
+    /// <summary>
+    /// This function runs when the pre-init menu is shown
+    /// </summary>
+    [HarmonyPatch(typeof(PreInitSceneScript), nameof(PreInitSceneScript.Start))]
+    [HarmonyPostfix]
+    private static void OnPreInitMenuShown(PreInitSceneScript __instance)
+    {
+        if (!Plugin.Flags.HasFlag(Flags.RestartRequired))
+            return;
+
+        var canvas = __instance.launchSettingsPanelsContainer.GetComponentInParent<Canvas>().gameObject;
+        var textObject = Object.Instantiate(canvas.Find("GameObject/LANOrOnline/OnlineButton/Text (TMP) (1)"));
+        var text = textObject.GetComponent<TextMeshProUGUI>();
+
+        text.transform.parent = canvas.Find("GameObject").transform;
+        text.transform.localPosition = new Vector3(200, -170, 0);
+        text.transform.localScale = Vector3.one;
+        text.text = "VR Setup Complete!\nYou must restart your game to go into VR!\nIgnore this if you want to play without VR.";
+        text.autoSizeTextContainer = true;
+        text.color = new Color(0.9434f, 0.0434f, 0.0434f, 1);
+        text.alignment = TextAlignmentOptions.Center;
+        text.fontSize = 18;
+        text.raycastTarget = false;
+    }
+    
 #if DEBUG
     internal static bool debugScreenSeen;
 #endif
