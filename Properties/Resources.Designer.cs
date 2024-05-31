@@ -69,5 +69,28 @@ namespace LCVR.Properties {
                 return ((byte[])(obj));
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {
+        ///        &quot;name&quot;: &quot;OpenXR XR Plugin&quot;,
+        ///        &quot;version&quot;: &quot;1.8.2&quot;,
+        ///        &quot;libraryName&quot;: &quot;UnityOpenXR&quot;,
+        ///        &quot;displays&quot;: [
+        ///                {
+        ///                        &quot;id&quot;: &quot;OpenXR Display&quot;
+        ///                }
+        ///        ],
+        ///        &quot;inputs&quot;: [
+        ///                {
+        ///                        &quot;id&quot;: &quot;OpenXR Input&quot;
+        ///                }
+        ///        ]
+        ///}.
+        /// </summary>
+        internal static string UnitySubsystemsManifest {
+            get {
+                return ResourceManager.GetString("UnitySubsystemsManifest", resourceCulture);
+            }
+        }
     }
 }

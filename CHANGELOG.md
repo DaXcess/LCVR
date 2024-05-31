@@ -10,7 +10,6 @@
 - Added VR interactions to the big doors on Artiface
 
 **Changes**:
-- Changed the mod package layout, dropping the `RuntimeDeps` in favor of `package`
 - Reworked the OpenXR loader, which will now attempt every runtime instead of only the default/preconfigured runtime
 - Moved startup logic to a prefix, fixing an issue where occasionally the camera would be black when loading in
 

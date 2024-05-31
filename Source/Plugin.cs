@@ -6,8 +6,8 @@ using System;
 using System.Collections;
 using System.Globalization;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
@@ -51,9 +51,6 @@ public class Plugin : BaseUnityPlugin
         // configurations runs after the Input System has already been initialized
         InputSystem.PerformDefaultPluginInitialization();
 
-        // Force the XR Interaction Toolkit assembly to load before we load asset bundles
-        _ = TrackedDeviceGraphicRaycaster.s_Corners;
-
         // Plugin startup logic
         LCVR.Logger.SetSource(Logger);
 
@@ -61,16 +58,6 @@ public class Plugin : BaseUnityPlugin
         Compatibility = new Compat([.. Chainloader.PluginInfos.Values]);
 
         Logger.LogInfo($"Plugin {PLUGIN_NAME} is starting...");
-
-        // Extract LCVR dependencies
-        if (!ExtractPackage(out var mustRestart))
-        {
-            Logger.LogError("Failed to extract LCVR dependencies, disabling mod");
-            return;
-        }
-        
-        if (mustRestart)
-            Flags |= Flags.RestartRequired;
 
         // Allow disabling VR via config and command line
         var disableVr = Config.DisableVR.Value ||
@@ -118,6 +105,12 @@ public class Plugin : BaseUnityPlugin
                 return;
             }
         }
+        
+        if (!LoadEarlyRuntimeDependencies())
+        {
+            Logger.LogError("Disabling mod because required runtime dependencies could not be loaded!");
+            return;
+        }
 
         if (!AssetManager.LoadAssets())
         {
@@ -149,56 +142,113 @@ public class Plugin : BaseUnityPlugin
         return GAME_ASSEMBLY_HASHES.Contains(shasum);
     }
 
-    /// <summary>
-    /// Verifies and extracts the LCVR dependencies (if necessary), returning whether the game needs to restart
-    /// </summary>
-    private bool ExtractPackage(out bool mustRestart)
+    private bool LoadEarlyRuntimeDependencies()
     {
-        mustRestart = false;
-
         try
         {
-            var basePath = Path.Combine(Paths.GameRootPath, "Lethal Company_Data");
-            using var zip = ZipFile.OpenRead(Path.Combine(Info.Location, "package"));
+            var deps = Path.Combine(Path.GetDirectoryName(Info.Location)!, "RuntimeDeps");
 
-            foreach (var entry in zip.Entries.Where(entry =>
-                         !entry.FullName.EndsWith('/') || !string.IsNullOrEmpty(entry.Name)))
+            foreach (var file in Directory.GetFiles(deps, "*.dll"))
             {
-                var fullPath = Path.Combine(basePath, entry.FullName);
-                var directoryName = Path.GetDirectoryName(fullPath)!;
+                var filename = Path.GetFileName(file);
 
-                if (!Directory.Exists(directoryName))
+                // Ignore known unmanaged libraries
+                if (filename == "UnityOpenXR.dll" || filename == "openxr_loader.dll")
+                    continue;
+
+                Logger.LogDebug($"Early loading {filename}");
+
+                try
                 {
-                    Directory.CreateDirectory(directoryName);
-                    mustRestart = true;
+                    Assembly.LoadFile(file);
                 }
-
-                using var stream = entry.Open();
-                using var reader = new BinaryReader(stream);
-
-                var bytes = reader.ReadBytes((int)entry.Length);
-
-                // Check if file is up-to-date
-                if (File.Exists(fullPath) &&
-                    Utils.ComputeHash(bytes).SequenceEqual(Utils.ComputeHash(File.ReadAllBytes(fullPath)))) continue;
-
-                File.WriteAllBytes(fullPath, bytes);
-
-                mustRestart = true;
+                catch (Exception ex)
+                {
+                    Logger.LogWarning($"Failed to early load {filename}: {ex.Message}");
+                }
             }
         }
         catch (Exception ex)
         {
-            Logger.LogError($"Failed to validate and extract LCVR package: {ex.Message}");
+            Logger.LogError($"Unexpected error occured while loading early runtime dependencies (incorrect folder structure?): {ex.Message}");
             return false;
         }
 
+
         return true;
+    }
+    
+     /// <summary>
+    /// Helper function for SetupRuntimeAssets() to copy resource files and return false if the source does not exist
+    /// </summary>
+    private bool CopyResourceFile(string sourceFile, string destinationFile)
+    {
+        if (!File.Exists(sourceFile))
+            return false;
+
+        if (File.Exists(destinationFile))
+        {
+            var sourceHash = Utils.ComputeHash(File.ReadAllBytes(sourceFile));
+            var destHash = Utils.ComputeHash(File.ReadAllBytes(destinationFile));
+
+            if (sourceHash.SequenceEqual(destHash))
+                return true;
+        }
+
+        File.Copy(sourceFile, destinationFile, true);
+
+        return true;
+    }
+
+    /// <summary>
+    /// Place required runtime libraries and configuration in the game files to allow VR to be started
+    /// </summary>
+    private bool SetupRuntimeAssets()
+    {
+        var mustRestart = false;
+
+        var root = Path.Combine(Paths.GameRootPath, "Lethal Company_Data");
+        var subsystems = Path.Combine(root, "UnitySubsystems");
+        if (!Directory.Exists(subsystems))
+            Directory.CreateDirectory(subsystems);
+
+        var openXr = Path.Combine(subsystems, "UnityOpenXR");
+        if (!Directory.Exists(openXr))
+            Directory.CreateDirectory(openXr);
+
+        var manifest = Path.Combine(openXr, "UnitySubsystemsManifest.json");
+        if (!File.Exists(manifest))
+        {
+            File.WriteAllText(manifest, Properties.Resources.UnitySubsystemsManifest);
+            mustRestart = true;
+        }
+
+        var plugins = Path.Combine(root, "Plugins");
+        var uoxrTarget = Path.Combine(plugins, "UnityOpenXR.dll");
+        var oxrLoaderTarget = Path.Combine(plugins, "openxr_loader.dll");
+
+        var current = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        var uoxr = Path.Combine(current, "RuntimeDeps/UnityOpenXR.dll");
+        var oxrLoader = Path.Combine(current, "RuntimeDeps/openxr_loader.dll");
+
+        if (!CopyResourceFile(uoxr, uoxrTarget))
+            Logger.LogWarning("Could not find UnityOpenXR.dll to copy to the game, VR might not work!");
+
+        if (!CopyResourceFile(oxrLoader, oxrLoaderTarget))
+            Logger.LogWarning("Could not find openxr_loader.dll to copy to the game, VR might not work!");
+
+        return mustRestart;
     }
 
     private bool InitializeVR()
     {
         Logger.LogInfo("Loading VR...");
+        
+        if (SetupRuntimeAssets())
+        {
+            Logger.LogWarning("You might have to restart the game to allow VR to function properly");
+            Flags |= Flags.RestartRequired;
+        }
 
         if (!OpenXR.Loader.InitializeXR())
         {
