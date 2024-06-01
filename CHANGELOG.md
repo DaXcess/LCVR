@@ -1,3 +1,22 @@
+# 1.2.4
+
+**Bug Fixes**:
+- Fixed some of the doors on Artiface not using the new VR interactions
+- Leaving the game while spectating will no longer prevent spectating to work in the next game
+- Fixed some issues on the main menu when certain mods are active
+
+**Additions**:
+- Added VR motion controls to the knife (you can now stabby stab)
+- Added VR interactions to the big doors on Artiface
+
+**Changes**:
+- Reworked the OpenXR loader, which will now attempt every runtime instead of only the default/preconfigured runtime
+- Moved startup logic to a prefix, fixing an issue where occasionally the camera would be black when loading in
+
+**Removals**:
+- Removed detection for `UnityExplorer`
+- Removed ghost girl from the main/pause menus
+
 # 1.2.3
 
 **Bug Fixes**:

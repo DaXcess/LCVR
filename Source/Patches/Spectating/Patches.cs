@@ -25,6 +25,16 @@ internal static class SpectatorPlayerPatches
     private static int lastSpectatedIndex = -1;
 
     private static bool allowSpectatorActions;
+
+    /// <summary>
+    /// Initialize values when joining a new game, since this class is static and values persist across games
+    /// </summary>
+    [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.Start))]
+    [HarmonyPatch]
+    private static void OnGameJoined()
+    {
+        isSpectating = false;
+    }
     
     /// <summary>
     /// Store some fields that need to be restored after death
@@ -48,8 +58,6 @@ internal static class SpectatorPlayerPatches
     [HarmonyPostfix]
     private static void OnPlayerDeath(PlayerControllerB __instance)
     {
-        Logger.LogDebug($"{__instance.IsOwner}, {isSpectating}, {__instance.AllowPlayerDeath()}");
-        
         if (!__instance.IsOwner || isSpectating || !__instance.AllowPlayerDeath())
             return;
 

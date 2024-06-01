@@ -1,173 +1,125 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Text.RegularExpressions;
+using BepInEx.Logging;
+using JetBrains.Annotations;
+using Newtonsoft.Json.Linq;
+using UnityEngine;
+using UnityEngine.XR;
+using UnityEngine.XR.Management;
+using UnityEngine.XR.OpenXR;
+using UnityEngine.XR.OpenXR.Features.Interactions;
 
 namespace LCVR;
 
-internal class OpenXR
+internal static class OpenXR
 {
-    [DllImport("UnityOpenXR", EntryPoint = "DiagnosticReport_GenerateReport")]
-    private static extern IntPtr Internal_GenerateReport();
-
-    [DllImport("UnityOpenXR", EntryPoint = "DiagnosticReport_ReleaseReport")]
-    private static extern void Internal_ReleaseReport(IntPtr report);
-
     [DllImport("UnityOpenXR", EntryPoint = "NativeConfig_GetRuntimeName")]
     private static extern bool Internal_GetRuntimeName(out IntPtr runtimeNamePtr);
 
     [DllImport("UnityOpenXR", EntryPoint = "NativeConfig_GetRuntimeVersion")]
     private static extern bool Internal_GetRuntimeVersion(out ushort major, out ushort minor, out ushort patch);
 
-    public static string GenerateReport()
+    /// <summary>
+    /// Attempt to enumerate installed OpenXR runtimes as described by the <a href="https://registry.khronos.org/OpenXR/specs/1.1/loader.html#runtime-discovery">OpenXR standard</a>.
+    /// </summary>
+    public static bool GetRuntimes(out Runtimes runtimes)
     {
-        string result = "";
-        IntPtr intPtr = Internal_GenerateReport();
-        if (intPtr != IntPtr.Zero)
-        {
-            result = Marshal.PtrToStringAnsi(intPtr);
-            Internal_ReleaseReport(intPtr);
-        }
+        runtimes = null;
 
-        return result;
-    }
-
-    public static bool GetDiagnosticReport(out OpenXRReport report)
-    {
-        report = null;
-
-        var sectionRegex = new Regex("^==== ([A-z0-9-_ ]+) ====$", RegexOptions.Multiline);
-        var errorRegex = new Regex("^\\[FAILURE\\] [A-z]+: ([A-Z_]+) \\(\\d+x\\)$");
-
-        string raw = GenerateReport();
-
-        var rawSections = sectionRegex.Split(raw).Skip(1).Select(v => v.Trim()).ToArray();
-        var sections = new Dictionary<string, string>();
-
-        for (var i = 0; i < rawSections.Length; i += 2)
-            sections.Add(rawSections[i], rawSections[i + 1]);
-
-        if (!sections.TryGetValue("OpenXR Runtime Info", out string section))
+        if (Native.RegOpenKeyEx(Native.HKEY_LOCAL_MACHINE, "SOFTWARE\\Khronos\\OpenXR\\1", 0, 0x20019, out var hKey) != 0)
             return false;
 
-        var lines = section.Split('\n');
+        var defaultRuntimePath = "";
 
-        var runtimeName = lines.FirstOrDefault(line => line.StartsWith("Runtime Name: "));
-        var runtimeVersion = lines.FirstOrDefault(line => line.StartsWith("Runtime Version: "));
-
-        if (runtimeName == default || runtimeVersion == default)
+        var cbData = 0u;
+        if (Native.RegQueryValueEx(hKey, "ActiveRuntime", 0, out var type, null, ref cbData) == 0 && type == 0x1)
         {
-            runtimeName = "<Missing>";
-            runtimeVersion = "<Missing>";
-        }
-        else
-        {
-            runtimeName = runtimeName.Split(": ")[1];
-            runtimeVersion = runtimeVersion.Split(": ")[1];
+            var data = new StringBuilder((int)cbData);
+            if (Native.RegQueryValueEx(hKey, "ActiveRuntime", 0, out type, data, ref cbData) == 0)
+                defaultRuntimePath = data.ToString();
         }
 
-        if (!sections.TryGetValue("Last 20 non-XR_SUCCESS returns", out section))
-            return false;
+        var files = new List<string>();
+        if (!Native.RegOpenSubKey(ref hKey, "AvailableRuntimes", 0x20019) || !EnumRuntimeFiles(hKey, files))
+        {
+            // Only return the default runtime
 
-        var match = errorRegex.Match(section.Split('\n')[0].Trim());
-        if (match == null)
-            return false;
+            try
+            {
+                var runtimeInfo = JsonConvert.DeserializeObject<JToken>(File.ReadAllText(defaultRuntimePath))["runtime"];
 
-        var error = match.Groups[1].Value;
+                runtimes = new Runtimes([
+                    new Runtime()
+                    {
+                        Name = runtimeInfo?["name"]?.ToObject<string>(),
+                        Path = defaultRuntimePath,
+                        Default = true
+                    }
+                ]);
 
-        report = new OpenXRReport(runtimeName, runtimeVersion, error);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        if (!files.Contains(defaultRuntimePath))
+            files.Add(defaultRuntimePath);
+
+        var rtList = new List<Runtime>();
+        foreach (var file in files)
+        {
+            try
+            {
+                var runtimeInfo = JsonConvert.DeserializeObject<JToken>(File.ReadAllText(file))["runtime"];
+                
+                rtList.Add(new Runtime()
+                {
+                    Name = runtimeInfo?["name"]?.ToObject<string>(),
+                    Path = file,
+                    Default = file == defaultRuntimePath
+                });
+            }
+            catch
+            {
+                // ignore errors
+            }
+        }
+
+        runtimes = new Runtimes(rtList.ToArray());
 
         return true;
     }
 
-    public static Dictionary<string, string> DetectOpenXRRuntimes(out string @default)
+    private static bool EnumRuntimeFiles(IntPtr hKey, List<string> files)
     {
-        var list = new Dictionary<string, string>();
+        if (Native.RegQueryInfoKey(hKey, null, IntPtr.Zero, IntPtr.Zero, out _, out _, out _, out var valueCount,
+                out var maxValueNameLength, out _, IntPtr.Zero, IntPtr.Zero) != 0)
+            return false;
 
-        @default = null;
-
-        var hKey = IntPtr.Zero;
-        var cbData = 0u;
-
-        try
+        for (uint i = 0; i < valueCount; i++)
         {
-            if (Native.RegOpenKeyEx(Native.HKEY_LOCAL_MACHINE, "SOFTWARE\\Khronos\\OpenXR\\1", 0, 0x20019, out hKey) !=
-                0)
-                throw new Exception("Failed to open registry key HKLM\\SOFTWARE\\Khronos\\OpenXR\\1");
+            var valueName = new StringBuilder((int)maxValueNameLength + 1);
+            var cbValueName = maxValueNameLength + 1;
 
-            if (Native.RegQueryValueEx(hKey, "ActiveRuntime", 0, out var type, null, ref cbData) != 0)
-                throw new Exception("Failed to query ActiveRuntime value");
+            if (Native.RegEnumValue(hKey, i, valueName, ref cbValueName, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero) != 0)
+                continue;
 
-            var data = new StringBuilder((int)cbData);
-
-            if (Native.RegQueryValueEx(hKey, "ActiveRuntime", 0, out type, data, ref cbData) != 0)
-                throw new Exception("Failed to query ActiveRuntime value");
-
-            var path = data.ToString();
-            @default = JsonConvert.DeserializeObject<OpenXRRuntime>(File.ReadAllText(path)).runtime.name;
-
-            if (Native.RegOpenKeyEx(hKey, "AvailableRuntimes", 0, 0x20019, out hKey) != 0)
-                throw new Exception("Failed to open AvailableRuntimes registry key");
-
-            if (Native.RegQueryInfoKey(hKey, null, IntPtr.Zero, IntPtr.Zero, out _, out _, out _, out var valueCount,
-                    out var maxValueNameLength, out _, IntPtr.Zero, IntPtr.Zero) != 0)
-                throw new Exception("Failed to query AvailableRuntimes registry key");
-
-            var values = new List<string>();
-
-            for (uint i = 0; i < valueCount; i++)
-            {
-                try
-                {
-                    var valueName = new StringBuilder((int)maxValueNameLength + 1);
-                    var cbValueName = maxValueNameLength + 1;
-
-                    int result = Native.RegEnumValue(hKey, i, valueName, ref cbValueName, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
-
-                    if (result != 0)
-                        continue;
-
-                    values.Add(valueName.ToString());
-                }
-                catch { }
-            }
-
-            foreach (var file in values)
-            {
-                var i = 0;
-                
-                var name = JsonConvert.DeserializeObject<OpenXRRuntime>(File.ReadAllText(file)).runtime.name;
-                var resultName = name;
-                
-                while (list.ContainsKey(resultName))
-                {
-                    i++;
-                    resultName = $"{name} ({i})";
-                }
-                
-
-                list.Add(name, file);
-            }
-
-            return list;
+            files.Add(valueName.ToString());
         }
-        catch (Exception ex)
-        {
-            Logger.LogWarning($"Failed to query runtimes: {ex.Message}");
-            return null;
-        }
-        finally
-        {
-            if (hKey != IntPtr.Zero)
-                Native.RegCloseKey(hKey);
-        }
+
+        return true;
     }
 
-    public static bool GetRuntimeName(out string name)
+    public static bool GetActiveRuntimeName(out string name)
     {
         name = null;
 
@@ -182,27 +134,207 @@ internal class OpenXR
         return true;
     }
 
-    public static bool GetRuntimeVersion(out ushort major, out ushort minor, out ushort patch)
+    public static bool GetActiveRuntimeVersion(out ushort major, out ushort minor, out ushort patch)
     {
         return Internal_GetRuntimeVersion(out major, out minor, out patch);
     }
 
-    public class OpenXRReport(string runtimeName, string runtimeVersion, string error)
+    public class Runtimes(Runtime[] runtimes) : IReadOnlyCollection<Runtime>
     {
-        public string RuntimeName { get; } = runtimeName;
-        public string RuntimeVersion { get; } = runtimeVersion;
-        public string Error { get; } = error;
+        public Runtime Default => runtimes.First(rt => rt.Default);
+        public int Count => runtimes.Length;
+
+        public bool TryGetRuntime(string name, out Runtime runtime)
+        {
+            runtime = default;
+
+            try
+            {
+                runtime = runtimes.First(rt => rt.Name == name);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public bool TryGetRuntimeByPath(string path, out Runtime runtime)
+        {
+            runtime = default;
+
+            try
+            {
+                runtime = runtimes.First(rt => rt.Path == path);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public IEnumerator<Runtime> GetEnumerator()
+        {
+            // ReSharper disable once NotDisposedResourceIsReturned
+            return ((IEnumerable<Runtime>)runtimes).GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
     }
 
-    [Serializable]
-    private struct OpenXRRuntime
+    public struct Runtime
     {
-        public RuntimeInfo runtime;
+        public string Name { get; set; }
+        public string Path { get; set; }
+        public bool Default { get; set; }
     }
 
-    [Serializable]
-    private struct RuntimeInfo
+    public static class Loader
     {
-        public string name;
+        private static XRGeneralSettings xrGeneralSettings;
+        private static XRManagerSettings xrManagerSettings;
+        private static OpenXRLoader xrLoader;
+        
+        private static readonly ManualLogSource Logger = new("OpenXR Loader");
+
+        static Loader()
+        {
+            BepInEx.Logging.Logger.Sources.Add(Logger);
+        }
+
+        public static bool InitializeXR()
+        {
+            InitializeScripts();
+            
+            if (Native.IsElevated())
+            {
+                Logger.LogWarning(
+                    "Application is elevated! Unable to override the XR runtime! Only the system default OpenXR runtime will be available.");
+
+                return InitializeXR(null);
+            }
+
+            if (!GetRuntimes(out var runtimes))
+            {
+                // On failure, revert back to pre 1.2.4 behavior (Default runtime or the one specified by the config)
+                return InitializeXR(string.IsNullOrEmpty(Plugin.Config.OpenXRRuntimeFile.Value)
+                    ? null
+                    : new Runtime()
+                    {
+                        Name = "LCVR OpenXR Override",
+                        Path = Plugin.Config.OpenXRRuntimeFile.Value
+                    });
+            }
+
+            if (!string.IsNullOrEmpty(Plugin.Config.OpenXRRuntimeFile.Value))
+            {
+                var rtFound = runtimes.TryGetRuntimeByPath(Plugin.Config.OpenXRRuntimeFile.Value, out var rt);
+
+                if (InitializeXR(rtFound
+                        ? rt
+                        : new Runtime()
+                        {
+                            Name = "LCVR OpenXR Override",
+                            Path = Plugin.Config.OpenXRRuntimeFile.Value
+                        }))
+                    return true;
+
+                Logger.LogWarning("Loading OpenXR using override failed, falling back to automatic enumeration...");
+            }
+
+            // Make sure the default runtime is first (unless it's the override which already failed at this point)
+            if (runtimes.Default.Path != Plugin.Config.OpenXRRuntimeFile.Value)
+            {
+                if (InitializeXR(runtimes.Default))
+                    return true;
+            }
+
+            foreach (var runtime in runtimes.Where(
+                         rt => rt.Path != Plugin.Config.OpenXRRuntimeFile.Value && !rt.Default))
+            {
+                if (InitializeXR(runtime))
+                    return true;
+            }
+
+            Logger.LogError("All available runtimes were attempted but none worked. Aborting...");
+            return false;
+        }
+
+        public static void DeinitializeXR()
+        {
+            xrManagerSettings.DeinitializeLoader();
+            xrGeneralSettings.StopXRSDK();
+        }
+
+        private static bool InitializeXR(Runtime? runtime)
+        {
+            if (runtime is { } rt)
+            {
+                Logger.LogInfo($"Attempting to initialize OpenXR on {rt.Name}");
+                Environment.SetEnvironmentVariable("XR_RUNTIME_JSON", rt.Path);
+            }
+            else
+            {
+                Logger.LogInfo("Attempting to initialize OpenXR using default runtime");
+                Environment.SetEnvironmentVariable("XR_RUNTIME_JSON", null);
+            }
+
+            xrGeneralSettings.InitXRSDK();
+            xrGeneralSettings.Start();
+
+            var displays = new List<XRDisplaySubsystem>();
+            SubsystemManager.GetInstances(displays);
+
+            return displays.Count > 0;
+        }
+
+        private static void InitializeScripts()
+        {
+            xrGeneralSettings ??= ScriptableObject.CreateInstance<XRGeneralSettings>();
+            xrManagerSettings ??= ScriptableObject.CreateInstance<XRManagerSettings>();
+            xrLoader ??= ScriptableObject.CreateInstance<OpenXRLoader>();
+
+            xrGeneralSettings.Manager = xrManagerSettings;
+
+            ((List<XRLoader>)xrManagerSettings.activeLoaders).Clear();
+            ((List<XRLoader>)xrManagerSettings.activeLoaders).Add(xrLoader);
+
+            OpenXRSettings.Instance.renderMode = OpenXRSettings.RenderMode.MultiPass;
+            OpenXRSettings.Instance.depthSubmissionMode = OpenXRSettings.DepthSubmissionMode.None;
+
+            if (OpenXRSettings.Instance.features.Length != 0)
+                return;
+            
+            var valveIndex = ScriptableObject.CreateInstance<ValveIndexControllerProfile>();
+            var hpReverb = ScriptableObject.CreateInstance<HPReverbG2ControllerProfile>();
+            var htcVive = ScriptableObject.CreateInstance<HTCViveControllerProfile>();
+            var mmController = ScriptableObject.CreateInstance<MicrosoftMotionControllerProfile>();
+            var khrSimple = ScriptableObject.CreateInstance<KHRSimpleControllerProfile>();
+            var metaQuestTouch = ScriptableObject.CreateInstance<MetaQuestTouchProControllerProfile>();
+            var oculusTouch = ScriptableObject.CreateInstance<OculusTouchControllerProfile>();
+
+            valveIndex.enabled = true;
+            hpReverb.enabled = true;
+            htcVive.enabled = true;
+            mmController.enabled = true;
+            khrSimple.enabled = true;
+            metaQuestTouch.enabled = true;
+            oculusTouch.enabled = true;
+
+            OpenXRSettings.Instance.features =
+            [
+                valveIndex,
+                hpReverb,
+                htcVive,
+                mmController,
+                khrSimple,
+                metaQuestTouch,
+                oculusTouch
+            ];
+        }
     }
 }

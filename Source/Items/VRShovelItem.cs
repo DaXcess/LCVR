@@ -14,10 +14,10 @@ internal class VRShovelItem : VRItem<Shovel>
     private readonly Queue<Vector3> positions = new();
     private Vector3 lastPosition = Vector3.zero;
 
-    private bool isHitting = false;
-    private bool hasSwung = false;
-    private float lastActionTime = 0;
-    private float timeNotReeledUp = 0;
+    private bool isHitting;
+    private bool hasSwung;
+    private float lastActionTime;
+    private float timeNotReeledUp;
 
     private new void Awake()
     {

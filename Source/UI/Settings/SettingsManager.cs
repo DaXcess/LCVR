@@ -51,21 +51,19 @@ public class SettingsManager : MonoBehaviour
 #endif
 
         // Set up OpenXR settings section
-        var runtimes = OpenXR.DetectOpenXRRuntimes(out _);
-
-        if (runtimes != null)
+        if (OpenXR.GetRuntimes(out var runtimes))
         {
             var selectedIndex = 0;
 
             if (!string.IsNullOrEmpty(Plugin.Config.OpenXRRuntimeFile.Value))
                 for (var i = 0; i < runtimes.Count; i++)
-                    if (runtimes.ElementAt(i).Value == Plugin.Config.OpenXRRuntimeFile.Value)
+                    if (runtimes.ElementAt(i).Path == Plugin.Config.OpenXRRuntimeFile.Value)
                     {
                         selectedIndex = i + 1;
                         break;
                     }
 
-            runtimesDropdown.AddOptions(["System Default", .. runtimes.Keys]);
+            runtimesDropdown.AddOptions(["System Default", .. runtimes.Select(rt => rt.Name)]);
             runtimesDropdown.value = selectedIndex;
         } else
             runtimesDropdown.AddOptions(["System Default"]);
@@ -222,15 +220,15 @@ public class SettingsManager : MonoBehaviour
         }
 
         var name = runtimesDropdown.options[index].text;
-        var runtimes = OpenXR.DetectOpenXRRuntimes(out _);
+        OpenXR.GetRuntimes(out var runtimes);
 
-        if (!runtimes.TryGetValue(name, out var runtimeFile))
+        if (!runtimes.TryGetRuntime(name, out var runtime))
         {
             menuManager.DisplayMenuNotification("Failed to update OpenXR runtime", "[ Close ]");
             return;
         }
 
-        Plugin.Config.OpenXRRuntimeFile.Value = runtimeFile;
+        Plugin.Config.OpenXRRuntimeFile.Value = runtime.Path;
     }
 
     public void UpdateValue(string category, string name, object value)

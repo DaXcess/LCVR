@@ -22,34 +22,19 @@ internal static class UIPatches
     /// </summary>
     [HarmonyPatch(typeof(PreInitSceneScript), nameof(PreInitSceneScript.Start))]
     [HarmonyPostfix]
-    private static void OnPreInitMenuShown()
+    private static void OnPreInitMenuShown(PreInitSceneScript __instance)
     {
-        InitMenuScene();
+        var canvas = __instance.launchSettingsPanelsContainer.GetComponentInParent<Canvas>();
 
-        var canvas = GameObject.Find("Canvas");
-
-        if (Plugin.Flags.HasFlag(Flags.UnityExplorerDetected))
-        {
-            var textObject = Object.Instantiate(canvas.Find("GameObject/LANOrOnline/OnlineButton/Text (TMP) (1)"));
-            var text = textObject.GetComponent<TextMeshProUGUI>();
-
-            text.transform.parent = canvas.Find("GameObject").transform;
-            text.transform.localPosition = new Vector3(200, -100, 0);
-            text.transform.localScale = Vector3.one;
-            text.text = "Unity Explorer Detected!\nUI controls are most likely nonfunctional!";
-            text.autoSizeTextContainer = true;
-            text.color = new Color(0.9434f, 0.9434f, 0.0434f, 1);
-            text.alignment = TextAlignmentOptions.Center;
-            text.fontSize = 18;
-            text.raycastTarget = false;
-        }
+        InitMenuScene(canvas);
 
         if (Plugin.Flags.HasFlag(Flags.InvalidGameAssembly))
         {
-            var textObject = Object.Instantiate(canvas.Find("GameObject/LANOrOnline/OnlineButton/Text (TMP) (1)"));
+            var textObject =
+                Object.Instantiate(canvas.gameObject.Find("GameObject/LANOrOnline/OnlineButton/Text (TMP) (1)"));
             var text = textObject.GetComponent<TextMeshProUGUI>();
 
-            text.transform.parent = canvas.Find("GameObject").transform;
+            text.transform.parent = __instance.launchSettingsPanelsContainer.transform;
             text.transform.localPosition = new Vector3(200, -30, 0);
             text.transform.localScale = Vector3.one;
             text.text = "Invalid Game Assembly Detected!\nYou are using an unsupported version of the game!";
@@ -68,25 +53,24 @@ internal static class UIPatches
     [HarmonyPrefix]
     private static void OnMainMenuShown(MenuManager __instance)
     {
-        InitMenuScene();
+        var canvas = __instance.menuButtons.GetComponentInParent<Canvas>();
 
-        if (__instance.isInitScene)
-            return;
-
-        DisableKeybindsSetting();
-
-        if (!Plugin.Config.IntroScreenSeen.Value)
-            InjectIntroScreen();
+        InitMenuScene(canvas);
 
         if (Plugin.Compatibility.IsLoaded("MoreCompany"))
             Compatibility.MoreCompany.MoreCompanyCompatibility.SetupMoreCompanyUI();
 
-        InitializeKeyboard();
+        if (__instance.isInitScene)
+            return;
+
+        if (!Plugin.Config.IntroScreenSeen.Value)
+            InjectIntroScreen();
+
+        InitializeKeyboard(canvas);
     }
 
-    private static void InitMenuScene()
+    private static void InitMenuScene(Canvas canvas)
     {
-        var canvas = GameObject.Find("Canvas")?.GetComponent<Canvas>();
         var input = GameObject.Find("EventSystem")?.GetComponent<InputSystemUIInputModule>();
 
         if (input != null)
@@ -135,23 +119,11 @@ internal static class UIPatches
         rightControllerInteractor.rayOriginTransform.localRotation = Quaternion.Euler(60, 347, 270);
     }
 
-    private static void DisableKeybindsSetting()
-    {
-        var menuContainer = GameObject.Find("MenuContainer");
-        var keybindingsButton = menuContainer.Find("SettingsPanel/KeybindingsButton")?.GetComponent<Button>();
-        var keybindingsText = keybindingsButton.GetComponentInChildren<TextMeshProUGUI>();
-
-        keybindingsButton.enabled = false;
-        keybindingsText.color = new Color(0.5f, 0.5f, 0.5f);
-        keybindingsText.text = "> Change keybinds (Disabled in VR)";
-    }
-
     /// <summary>
     /// Add a keyboard to the main menu
     /// </summary>
-    private static void InitializeKeyboard()
+    private static void InitializeKeyboard(Canvas canvas)
     {
-        var canvas = GameObject.Find("Canvas")?.GetComponent<Canvas>();
         var keyboard = Object.Instantiate(AssetManager.keyboard).GetComponent<NonNativeKeyboard>();
 
         keyboard.transform.SetParent(canvas.transform, false);
@@ -172,9 +144,8 @@ internal static class UIPatches
     {
         var menuContainer = GameObject.Find("MenuContainer");
 
-        var vrIntroPanel = Object.Instantiate(menuContainer.Find("NewsPanel"));
+        var vrIntroPanel = Object.Instantiate(menuContainer.Find("NewsPanel"), menuContainer.transform);
         vrIntroPanel.name = "VRIntoPanel";
-        vrIntroPanel.transform.parent = menuContainer.transform;
         vrIntroPanel.transform.localPosition = new Vector3(-4.8199f, -1.78f, 1.4412f);
         vrIntroPanel.transform.localEulerAngles = Vector3.zero;
         vrIntroPanel.transform.localScale = Vector3.one;
@@ -186,7 +157,8 @@ internal static class UIPatches
         var description = vrIntroPanel.Find("Panel/DemoText").GetComponent<TextMeshProUGUI>();
 
         title.text = "Welcome to LCVR!";
-        description.text = "Welcome! Thank you for downloading LCVR!\nIf you run into any issues, you can always hop on in the LCVR Discord server. Make sure to check if the mods you are using are compatible with LCVR.\n\nThis mod has taken a lot of time to write and is available completely for free, but if you'd like to donate to help support further development, you can do so with the button below.\n\n- DaXcess";
+        description.text =
+            "Welcome! Thank you for downloading LCVR!\nIf you run into any issues, you can always hop on in the LCVR Discord server. Make sure to check if the mods you are using are compatible with LCVR.\n\nThis mod has taken a lot of time to write and is available completely for free, but if you'd like to donate to help support further development, you can do so with the button below.\n\n- DaXcess";
 
         var githubButtonObject = new GameObject("GithubLink");
         var kofiButtonObject = new GameObject("KofiLink");
@@ -225,11 +197,11 @@ internal static class UIPatches
 
         githubButtonColors.highlightedColor =
             kofiButtonColors.highlightedColor =
-            discordButtonColors.highlightedColor = new Color(0.7f, 0.7f, 0.7f);
+                discordButtonColors.highlightedColor = new Color(0.7f, 0.7f, 0.7f);
 
         githubButtonColors.pressedColor =
             kofiButtonColors.pressedColor =
-            discordButtonColors.pressedColor = new Color(0.6f, 0.6f, 0.6f);
+                discordButtonColors.pressedColor = new Color(0.6f, 0.6f, 0.6f);
 
         githubButton.colors = githubButtonColors;
         kofiButton.colors = kofiButtonColors;
@@ -262,9 +234,7 @@ internal static class UIPatches
     private static void ForceNewInputSystem(XRUIInputModule __instance)
     {
         if (__instance.activeInputMode != XRUIInputModule.ActiveInputMode.InputSystemActions)
-        {
             __instance.activeInputMode = XRUIInputModule.ActiveInputMode.InputSystemActions;
-        }
     }
 }
 
@@ -277,28 +247,28 @@ internal static class UniversalUIPatches
     /// </summary>
     [HarmonyPatch(typeof(PreInitSceneScript), nameof(PreInitSceneScript.Start))]
     [HarmonyPostfix]
-    private static void OnPreInitMenuShown()
+    private static void OnPreInitMenuShown(PreInitSceneScript __instance)
     {
         if (!Plugin.Flags.HasFlag(Flags.RestartRequired))
             return;
 
-        var canvas = GameObject.Find("Canvas");
+        var canvas = __instance.launchSettingsPanelsContainer.GetComponentInParent<Canvas>().gameObject;
         var textObject = Object.Instantiate(canvas.Find("GameObject/LANOrOnline/OnlineButton/Text (TMP) (1)"));
         var text = textObject.GetComponent<TextMeshProUGUI>();
 
         text.transform.parent = canvas.Find("GameObject").transform;
         text.transform.localPosition = new Vector3(200, -170, 0);
         text.transform.localScale = Vector3.one;
-        text.text = "VR Setup Complete!\nYou must restart your game to go into VR!\nYou can continue if you want to play without VR.";
+        text.text = "VR Setup Complete!\nYou must restart your game to go into VR!\nIgnore this if you want to play without VR.";
         text.autoSizeTextContainer = true;
         text.color = new Color(0.9434f, 0.0434f, 0.0434f, 1);
         text.alignment = TextAlignmentOptions.Center;
         text.fontSize = 18;
         text.raycastTarget = false;
     }
-
+    
 #if DEBUG
-    internal static bool debugScreenSeen = false;
+    internal static bool debugScreenSeen;
 #endif
 
     /// <summary>
@@ -322,14 +292,15 @@ internal static class UniversalUIPatches
     {
         if (Plugin.Config.DisableSettingsButton.Value)
             return;
-        
+
         // Add button to main menu
         var container = GameObject.Find("Canvas/MenuContainer");
         var mainButtons = container.Find("MainButtons");
         var settingsObject = new GameObject("LCVRSettings");
 
         settingsObject.transform.parent = mainButtons.transform;
-        settingsObject.transform.localPosition = new Vector3(370, -130 + (Chainloader.PluginInfos.ContainsKey("ainavt.lc.lethalconfig") ? -38.5f : 0f), 0);
+        settingsObject.transform.localPosition = new Vector3(370,
+            -130 + (Chainloader.PluginInfos.ContainsKey("ainavt.lc.lethalconfig") ? -38.5f : 0f), 0);
         settingsObject.transform.localEulerAngles = Vector3.zero;
         settingsObject.transform.localScale = Vector3.one * 0.7f;
 
@@ -345,9 +316,8 @@ internal static class UniversalUIPatches
         settingsButton.colors = settingsButtonColors;
 
         // Insert settings panel
-        var settingsPanel = Object.Instantiate(AssetManager.settingsPanel);
+        var settingsPanel = Object.Instantiate(AssetManager.settingsPanel, container.transform);
 
-        settingsPanel.transform.parent = container.transform;
         settingsPanel.transform.localPosition = Vector3.zero;
         settingsPanel.transform.localEulerAngles = Vector3.zero;
         settingsPanel.transform.localScale = Vector3.one;
@@ -370,9 +340,8 @@ internal static class UniversalUIPatches
             return;
 
         var menuContainer = GameObject.Find("MenuContainer");
-        var modDebugPanel = Object.Instantiate(menuContainer.Find("NewsPanel"));
+        var modDebugPanel = Object.Instantiate(menuContainer.Find("NewsPanel"), menuContainer.transform);
         modDebugPanel.name = "ModDebugPanel";
-        modDebugPanel.transform.parent = menuContainer.transform;
         modDebugPanel.transform.localPosition = new Vector3(-4.8199f, -1.78f, 1.4412f);
         modDebugPanel.transform.localEulerAngles = Vector3.zero;
         modDebugPanel.transform.localScale = Vector3.one;
@@ -384,7 +353,8 @@ internal static class UniversalUIPatches
         var description = modDebugPanel.Find("Panel/DemoText").GetComponent<TextMeshProUGUI>();
 
         title.text = "LCVR DEBUG BUILD!";
-        description.text = "You are using a development version of LCVR! This means that some features might not work as advertised, or gameplay being affected in unexpected ways. Do not use this version if you wish to keep your save files intact!";
+        description.text =
+            "You are using a development version of LCVR! This means that some features might not work as advertised, or gameplay being affected in unexpected ways. Do not use this version if you wish to keep your save files intact!";
 
         var picture = modDebugPanel.Find("Panel/Picture").GetComponent<Image>();
         picture.transform.SetSiblingIndex(0);
@@ -395,10 +365,7 @@ internal static class UniversalUIPatches
         modDebugPanel.SetActive(!VRSession.InVR || Plugin.Config.IntroScreenSeen.Value);
 
         var continueButton = modDebugPanel.Find("Panel/ResponseButton").GetComponent<Button>();
-        continueButton.onClick.AddListener(() =>
-        {
-            debugScreenSeen = true;
-        });
+        continueButton.onClick.AddListener(() => { debugScreenSeen = true; });
     }
 #endif
 }
