@@ -13,7 +13,6 @@ using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.SceneManagement;
-using UnityEngine.XR.Interaction.Toolkit.UI;
 
 using DependencyFlags = BepInEx.BepInDependency.DependencyFlags;
 
@@ -29,7 +28,7 @@ public class Plugin : BaseUnityPlugin
 {
     public const string PLUGIN_GUID = "io.daxcess.lcvr";
     public const string PLUGIN_NAME = "LCVR";
-    public const string PLUGIN_VERSION = "1.2.4";
+    public const string PLUGIN_VERSION = "1.2.5";
 
     private readonly string[] GAME_ASSEMBLY_HASHES =
     [

@@ -1,3 +1,8 @@
+# 1.2.5
+
+**Bug Fixes**:
+- Fixed corrupt/unreadable OpenXR default runtimes preventing VR to launch properly
+
 # 1.2.4
 
 **Bug Fixes**:

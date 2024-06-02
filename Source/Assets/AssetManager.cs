@@ -64,7 +64,7 @@ internal static class AssetManager
         kofiImage = assetBundle.LoadAsset<Sprite>("Ko-Fi");
         discordImage = assetBundle.LoadAsset<Sprite>("Discord");
         warningImage = assetBundle.LoadAsset<Sprite>("Warning");
-        settingsImage = assetBundle.LoadAsset<Sprite>("lcsettings-icon");
+        settingsImage = assetBundle.LoadAsset<Sprite>("lcsettings-icon-2");
 
         localVrMetarig = assetBundle.LoadAsset<RuntimeAnimatorController>("metarig");
         remoteVrMetarig = assetBundle.LoadAsset<RuntimeAnimatorController>("metarigOtherPlayers");

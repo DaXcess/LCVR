@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -88,9 +89,9 @@ internal static class OpenXR
                     Default = file == defaultRuntimePath
                 });
             }
-            catch
+            catch (Exception ex)
             {
-                // ignore errors
+                Logger.LogWarning($"Failed to parse {file}: {ex.Message}. Runtime will not be used.");
             }
         }
 
@@ -141,7 +142,7 @@ internal static class OpenXR
 
     public class Runtimes(Runtime[] runtimes) : IReadOnlyCollection<Runtime>
     {
-        public Runtime Default => runtimes.First(rt => rt.Default);
+        public Runtime? Default => runtimes.Select(rt => (Runtime?)rt).FirstOrDefault(rt => rt.Value.Default);
         public int Count => runtimes.Length;
 
         public bool TryGetRuntime(string name, out Runtime runtime)
@@ -218,8 +219,10 @@ internal static class OpenXR
                 return InitializeXR(null);
             }
 
-            if (!GetRuntimes(out var runtimes))
+            if (!GetRuntimes(out var runtimes) || runtimes.Count == 0)
             {
+                Logger.LogWarning("Failed to query runtimes, or no runtimes were found. Falling back to old behavior.");
+                
                 // On failure, revert back to pre 1.2.4 behavior (Default runtime or the one specified by the config)
                 return InitializeXR(string.IsNullOrEmpty(Plugin.Config.OpenXRRuntimeFile.Value)
                     ? null
@@ -247,9 +250,9 @@ internal static class OpenXR
             }
 
             // Make sure the default runtime is first (unless it's the override which already failed at this point)
-            if (runtimes.Default.Path != Plugin.Config.OpenXRRuntimeFile.Value)
+            if (runtimes.Default is {} @default && @default.Path != Plugin.Config.OpenXRRuntimeFile.Value)
             {
-                if (InitializeXR(runtimes.Default))
+                if (InitializeXR(@default))
                     return true;
             }
 
