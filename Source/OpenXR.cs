@@ -33,13 +33,14 @@ internal static class OpenXR
     {
         runtimes = null;
 
-        if (Native.RegOpenKeyEx(Native.HKEY_LOCAL_MACHINE, "SOFTWARE\\Khronos\\OpenXR\\1", 0, 0x20019, out var hKey) != 0)
+        if (Native.RegOpenKeyEx(Native.HKEY_LOCAL_MACHINE, "SOFTWARE\\Khronos\\OpenXR\\1", 0, 0x20019, out var hKey) !=
+            0)
             return false;
 
         var defaultRuntimePath = "";
 
         var cbData = 0u;
-        if (Native.RegQueryValueEx(hKey, "ActiveRuntime", 0, out var type, null, ref cbData) == 0 && type == 0x1)
+        if (Native.RegQueryValueEx(hKey, "ActiveRuntime", 0, out var type, null, ref cbData) == 0 && type is 0x1 or 0x2)
         {
             var data = new StringBuilder((int)cbData);
             if (Native.RegQueryValueEx(hKey, "ActiveRuntime", 0, out type, data, ref cbData) == 0)
@@ -53,7 +54,8 @@ internal static class OpenXR
 
             try
             {
-                var runtimeInfo = JsonConvert.DeserializeObject<JToken>(File.ReadAllText(defaultRuntimePath))["runtime"];
+                var runtimeInfo =
+                    JsonConvert.DeserializeObject<JToken>(File.ReadAllText(defaultRuntimePath))["runtime"];
 
                 runtimes = new Runtimes([
                     new Runtime()
@@ -81,7 +83,7 @@ internal static class OpenXR
             try
             {
                 var runtimeInfo = JsonConvert.DeserializeObject<JToken>(File.ReadAllText(file))["runtime"];
-                
+
                 rtList.Add(new Runtime()
                 {
                     Name = runtimeInfo?["name"]?.ToObject<string>(),
@@ -111,7 +113,8 @@ internal static class OpenXR
             var valueName = new StringBuilder((int)maxValueNameLength + 1);
             var cbValueName = maxValueNameLength + 1;
 
-            if (Native.RegEnumValue(hKey, i, valueName, ref cbValueName, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero) != 0)
+            if (Native.RegEnumValue(hKey, i, valueName, ref cbValueName, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero,
+                    IntPtr.Zero) != 0)
                 continue;
 
             files.Add(valueName.ToString());
@@ -199,7 +202,7 @@ internal static class OpenXR
         private static XRGeneralSettings xrGeneralSettings;
         private static XRManagerSettings xrManagerSettings;
         private static OpenXRLoader xrLoader;
-        
+
         private static readonly ManualLogSource Logger = new("OpenXR Loader");
 
         static Loader()
@@ -210,7 +213,7 @@ internal static class OpenXR
         public static bool InitializeXR()
         {
             InitializeScripts();
-            
+
             if (Native.IsElevated())
             {
                 Logger.LogWarning(
@@ -222,7 +225,7 @@ internal static class OpenXR
             if (!GetRuntimes(out var runtimes) || runtimes.Count == 0)
             {
                 Logger.LogWarning("Failed to query runtimes, or no runtimes were found. Falling back to old behavior.");
-                
+
                 // On failure, revert back to pre 1.2.4 behavior (Default runtime or the one specified by the config)
                 return InitializeXR(string.IsNullOrEmpty(Plugin.Config.OpenXRRuntimeFile.Value)
                     ? null
@@ -250,7 +253,7 @@ internal static class OpenXR
             }
 
             // Make sure the default runtime is first (unless it's the override which already failed at this point)
-            if (runtimes.Default is {} @default && @default.Path != Plugin.Config.OpenXRRuntimeFile.Value)
+            if (runtimes.Default is { } @default && @default.Path != Plugin.Config.OpenXRRuntimeFile.Value)
             {
                 if (InitializeXR(@default))
                     return true;
@@ -311,7 +314,7 @@ internal static class OpenXR
 
             if (OpenXRSettings.Instance.features.Length != 0)
                 return;
-            
+
             var valveIndex = ScriptableObject.CreateInstance<ValveIndexControllerProfile>();
             var hpReverb = ScriptableObject.CreateInstance<HPReverbG2ControllerProfile>();
             var htcVive = ScriptableObject.CreateInstance<HTCViveControllerProfile>();

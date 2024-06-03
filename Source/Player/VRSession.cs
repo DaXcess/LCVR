@@ -115,6 +115,9 @@ public class VRSession : MonoBehaviour
 
         helmetContainer.transform.localPosition = Vector3.zero;
         helmetContainer.transform.localEulerAngles = Vector3.zero;
+        
+        // Disable shadows on the helmet models
+        helmetContainer.GetComponentsInChildren<MeshRenderer>().Do(renderer => renderer.shadowCastingMode = ShadowCastingMode.Off);
 
         helmetTarget.localPosition = new Vector3(0.01f, -0.068f, -0.073f);
         helmetTarget.localScale = Vector3.one;
