@@ -4,13 +4,13 @@ namespace LCVR.Input;
 
 internal class SnapTurningProvider : TurningProvider
 {
-    private bool turnedLastInput = false;
-    private float offset = 0;
+    private bool turnedLastInput;
+    private float offset;
 
     public void Update()
     {
-        var value = Actions.Instance["Controls/Turn"].ReadValue<float>();
-        bool shouldExecute = MathF.Abs(value) > 0.75;
+        var value = Actions.Instance["Turn"].ReadValue<float>();
+        var shouldExecute = MathF.Abs(value) > 0.75;
 
         if (shouldExecute)
         {

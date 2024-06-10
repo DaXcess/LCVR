@@ -99,7 +99,7 @@ public class VRPlayer : MonoBehaviour
         mainCamera = VRSession.Instance.MainCamera;
 
         // Fool the animator (this removes console error spam)
-        new GameObject("MainCamera").transform.parent = Find("ScavengerModel/metarig/CameraContainer").transform;
+        new GameObject("MainCamera").transform.parent = transform.Find("ScavengerModel/metarig/CameraContainer");
 
         // Unparent camera container
         mainCamera.transform.parent = xrOrigin;
@@ -173,9 +173,8 @@ public class VRPlayer : MonoBehaviour
         };
 
         // Input actions
-        Actions.Instance.OnReload += OnReloadActions;
-        Actions.Instance["Controls/Reset Height"].performed += ResetHeight_performed;
-        Actions.Instance["Controls/Sprint"].performed += Sprint_performed;
+        Actions.Instance["Reset Height"].performed += ResetHeight_performed;
+        Actions.Instance["Sprint"].performed += Sprint_performed;
         
         ResetHeight();
 
@@ -210,8 +209,9 @@ public class VRPlayer : MonoBehaviour
         // ARMS ONLY RIG
 
         // Set up rigging
-        var model = Find("ScavengerModel/metarig/ScavengerModelArmsOnly", true).gameObject;
-
+        var model = transform.Find("ScavengerModel/metarig/ScavengerModelArmsOnly").gameObject;
+        model.transform.localPosition = Vector3.zero;
+        
         // Why are these even nonzero in the first place?
         bones.LocalMetarig.localPosition = Vector3.zero;
         bones.LocalArmsRig.localPosition = Vector3.zero;
@@ -283,7 +283,8 @@ public class VRPlayer : MonoBehaviour
         // FULL BODY RIG
 
         // Set up rigging
-        var fullModel = Find("ScavengerModel", true).gameObject;
+        var fullModel = transform.Find("ScavengerModel").gameObject;
+        fullModel.transform.localPosition = Vector3.zero;
 
         bones.Metarig.localPosition = Vector3.zero;
 
@@ -357,15 +358,6 @@ public class VRPlayer : MonoBehaviour
         if (obj.performed)
             ResetHeight();
     }
-
-    private void OnReloadActions(InputActionAsset oldActions, InputActionAsset newActions)
-    {
-        oldActions["Controls/Reset Height"].performed -= ResetHeight_performed;
-        oldActions["Controls/Sprint"].performed -= Sprint_performed;
-        
-        newActions["Controls/Reset Height"].performed += ResetHeight_performed;
-        newActions["Controls/Sprint"].performed += Sprint_performed;
-    }
     
     private void Update()
     {
@@ -408,7 +400,7 @@ public class VRPlayer : MonoBehaviour
         else
             totalMovementSinceLastMove += movementAccounted;
 
-        var controllerMovement = Actions.Instance["Movement/Move"].ReadValue<Vector2>();
+        var controllerMovement = Actions.Instance["Move"].ReadValue<Vector2>();
         var moved = controllerMovement.x > 0 || controllerMovement.y > 0;
         var hit = UnityEngine.Physics
             .OverlapBox(mainCamera.transform.position, Vector3.one * 0.1f, Quaternion.identity, CAMERA_CLIP_MASK)
@@ -482,7 +474,7 @@ public class VRPlayer : MonoBehaviour
             if (playerController.isExhausted)
                 isSprinting = false;
 
-            var move = playerController.isCrouching ? Vector2.zero : Actions.Instance["Movement/Move"].ReadValue<Vector2>();
+            var move = playerController.isCrouching ? Vector2.zero : Actions.Instance["Move"].ReadValue<Vector2>();
             if (move.x == 0 && move.y == 0 && stopSprintingCoroutine == null && isSprinting)
                 stopSprintingCoroutine = StartCoroutine(StopSprinting());
             else if ((move.x != 0 || move.y != 0) && stopSprintingCoroutine != null)
@@ -495,7 +487,7 @@ public class VRPlayer : MonoBehaviour
             PlayerControllerB_Sprint_Patch.sprint = !isRoomCrouching && !playerController.isCrouching && isSprinting ? 1 : 0;
         }
         else
-            PlayerControllerB_Sprint_Patch.sprint = !isRoomCrouching && Actions.Instance["Controls/Sprint"].IsPressed() ? 1 : 0;
+            PlayerControllerB_Sprint_Patch.sprint = !isRoomCrouching && Actions.Instance["Sprint"].IsPressed() ? 1 : 0;
         
         if (!playerController.isPlayerDead)
             DNet.BroadcastRig(new DNet.Rig()
@@ -571,15 +563,14 @@ public class VRPlayer : MonoBehaviour
     
     private void OnDestroy()
     {
-        Actions.Instance.OnReload -= OnReloadActions;
-        Actions.Instance["Controls/Sprint"].performed -= Sprint_performed;
-        Actions.Instance["Controls/Reset Height"].performed -= ResetHeight_performed;
+        Actions.Instance["Sprint"].performed -= Sprint_performed;
+        Actions.Instance["Reset Height"].performed -= ResetHeight_performed;
     }
     
-    public void EnableInteractorVisuals(bool enabled = true)
+    public void EnableInteractorVisuals(bool visible = true)
     {
-        leftControllerRayInteractor.GetComponent<XRInteractorLineVisual>().enabled = enabled;
-        rightControllerRayInteractor.GetComponent<XRInteractorLineVisual>().enabled = enabled;
+        leftControllerRayInteractor.GetComponent<XRInteractorLineVisual>().enabled = visible;
+        rightControllerRayInteractor.GetComponent<XRInteractorLineVisual>().enabled = visible;
     }
 
     public void ResetHeight()
@@ -619,17 +610,6 @@ public class VRPlayer : MonoBehaviour
     private float GetBodyToCameraAngle()
     {
         return Quaternion.Angle(Quaternion.Euler(0, transform.eulerAngles.y, 0), Quaternion.Euler(0, mainCamera.transform.eulerAngles.y, 0));
-    }
-
-    private Transform Find(string name, bool resetLocalPosition = false)
-    {
-        var transform = this.transform.Find(name);
-        if (transform == null) return null;
-
-        if (resetLocalPosition)
-            transform.localPosition = Vector3.zero;
-
-        return transform;
     }
 }
 

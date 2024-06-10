@@ -32,7 +32,6 @@ public class Config(ConfigFile file)
     public ConfigEntry<float> SnapTurnSize { get; } = file.Bind("Input", "SnapTurnSize", 45f, new ConfigDescription("The amount of rotation that is applied when performing a snap turn. Requires turn provider to be set to snap.", new AcceptableValueRange<float>(10, 180)));
     public ConfigEntry<bool> ToggleSprint { get; } = file.Bind("Input", "ToggleSprint", false, "Whether the sprint button should toggle sprint instead of having to hold it down.");
     public ConfigEntry<float> MovementSprintToggleCooldown { get; } = file.Bind("Input", "MovementSprintToggleCooldown", 1f, new ConfigDescription("The amount of seconds that you need to stand still for sprint to be toggled off automatically. Requires sprint toggle to be enabled.", new AcceptableValueRange<float>(0, 60)));
-    public ConfigEntry<string> ControllerBindingsOverrideProfile { get; } = file.Bind("Input", "ControllerBindingsOverrideProfile", "", "Specify the name of a controler profile you would like to use. Keep empty to use the built-in controller profiles. You can find a list of available controller profiles on https://github.com/DaXcess/LCVR-Controller-Profiles. To test a local profile, specify a path using the file protocol (e.g. file:///C:/Users/.../profile.inputactions)");
 
     // UI configuration
 
@@ -68,7 +67,7 @@ public class Config(ConfigFile file)
 
     // Internal configuration
 
-    public ConfigEntry<string> LastInternalControllerProfile { get; } = file.Bind("Internal", "LastInternalControllerProfile", "", "FOR INTERNAL USE ONLY, DO NOT EDIT");
+    public ConfigEntry<string> ControllerBindingsOverride { get; } = file.Bind("Internal", "ControllerBindingsOverride", "", "FOR INTERNAL USE ONLY, DO NOT EDIT");
     public ConfigEntry<string> OpenXRRuntimeFile { get; } = file.Bind("Internal", "OpenXRRuntimeFile", "", "FOR INTERNAL USE ONLY, DO NOT EDIT");
     public ConfigEntry<bool> DisableSettingsButton { get; } = file.Bind("Internal", "DisableSettingsButton", false,
         "Disables the settings button on the main menu screen");

@@ -1,3 +1,4 @@
+using LCVR.Input;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -20,8 +21,11 @@ internal static class AssetManager
     public static Material defaultRayMat;
     public static Material alwaysOnTopMat;
 
-    public static InputActionAsset defaultInputActions;
-    public static InputActionAsset nullInputActions;
+    public static InputActionAsset VRActions;
+    public static InputActionAsset TrackingActions;
+    public static InputActionAsset NullActions;
+
+    public static RemappableControls RemappableControls;
 
     public static RuntimeAnimatorController localVrMetarig;
     public static RuntimeAnimatorController remoteVrMetarig;
@@ -52,10 +56,13 @@ internal static class AssetManager
         enemyPrefab = assetBundle.LoadAsset<GameObject>("Flowerman");
         spectatorLight = assetBundle.LoadAsset<GameObject>("Spectator Light");
         spectatorGhost = assetBundle.LoadAsset<GameObject>("SpectatorGhost");
+        
+        VRActions = assetBundle.LoadAsset<InputActionAsset>("VRActions");
+        TrackingActions = assetBundle.LoadAsset<InputActionAsset>("TrackingActions");
+        NullActions = assetBundle.LoadAsset<InputActionAsset>("NullPlayerActions");
 
-        defaultInputActions = assetBundle.LoadAsset<InputActionAsset>("XR Input Actions");
-        nullInputActions = assetBundle.LoadAsset<InputActionAsset>("NullPlayerActions");
-
+        RemappableControls = assetBundle.LoadAsset<GameObject>("Remappable Controls").GetComponent<RemappableControls>();
+        
         splashMaterial = assetBundle.LoadAsset<Material>("Splash");
         defaultRayMat = assetBundle.LoadAsset<Material>("Default Ray");
         alwaysOnTopMat = assetBundle.LoadAsset<Material>("Always On Top");

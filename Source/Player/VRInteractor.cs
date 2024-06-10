@@ -27,34 +27,35 @@ public class VRInteractor : MonoBehaviour
     public bool IsRightHand { get; private set; }
     public VRFingerCurler FingerCurler { get; private set; }
 
-    void Start()
+    private void Start()
     {
-        if (gameObject.name == "hand.R")
+        switch (gameObject.name)
         {
-            defaultOffset = rightHandDefaultOffset;
-            fingerOffset = rightHandFingerOffset;
-            fistOffset = rightHandFistOffset;
+            case "hand.R":
+                defaultOffset = rightHandDefaultOffset;
+                fingerOffset = rightHandFingerOffset;
+                fistOffset = rightHandFistOffset;
             
-            IsRightHand = true;
-            FingerCurler = VRSession.Instance.LocalPlayer.RightFingerCurler;
-        }
-        else if (gameObject.name == "hand.L")
-        {
-            defaultOffset = leftHandDefaultOffset;
-            fingerOffset = leftHandFingerOffset;
-            fistOffset = leftHandFistOffset;
+                IsRightHand = true;
+                FingerCurler = VRSession.Instance.LocalPlayer.RightFingerCurler;
+                break;
+            case "hand.L":
+                defaultOffset = leftHandDefaultOffset;
+                fingerOffset = leftHandFingerOffset;
+                fistOffset = leftHandFistOffset;
 
-            IsRightHand = false;
-            FingerCurler = VRSession.Instance.LocalPlayer.LeftFingerCurler;
-        }
-        else
-            throw new System.Exception($"Attached to unknown object: {gameObject.name}"); 
+                IsRightHand = false;
+                FingerCurler = VRSession.Instance.LocalPlayer.LeftFingerCurler;
+                break;
+            default:
+                throw new System.Exception($"Attached to unknown object: {gameObject.name}");
+        } 
 
         debugCube = Instantiate(AssetManager.interactable, transform).transform;
         debugCube.localScale = Vector3.zero;
     }
 
-    void Update()
+    private void Update()
     {
         var index = FingerCurler.indexFinger.curl > 0.75f;
         var grip = FingerCurler.middleFinger.curl > 0.75f;
@@ -79,7 +80,7 @@ public class VRInteractor : MonoBehaviour
 
     public bool IsPressed()
     {
-        var action = Actions.Instance[$"Controls/Interact{(IsRightHand ? "" : "Left")}"];
+        var action = Actions.Instance[$"Interact{(IsRightHand ? "" : "Left")}"];
 
         return action is not null && action.IsPressed();
     }

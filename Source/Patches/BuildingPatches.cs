@@ -4,9 +4,9 @@ using LCVR.Input;
 using LCVR.Player;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Reflection.Emit;
 using UnityEngine;
+using static HarmonyLib.AccessTools;
 
 namespace LCVR.Patches;
 
@@ -27,8 +27,10 @@ internal static class ShipBuildModeManagerPatches
         if (!__instance.InBuildMode)
             return;
 
-        var pivotAmount = Actions.Instance["Controls/Pivot"].ReadValue<Vector2>().x * 150;
-        __instance.ghostObject.eulerAngles = new Vector3(__instance.ghostObject.eulerAngles.x, __instance.ghostObject.eulerAngles.y + Time.deltaTime * pivotAmount * 1f, __instance.ghostObject.eulerAngles.z);
+        var pivotAmount = Actions.Instance["Pivot"].ReadValue<Vector2>().x * 150;
+        __instance.ghostObject.eulerAngles = new Vector3(__instance.ghostObject.eulerAngles.x,
+            __instance.ghostObject.eulerAngles.y + Time.deltaTime * pivotAmount * 1f,
+            __instance.ghostObject.eulerAngles.z);
     }
 
     /// <summary>
@@ -38,16 +40,17 @@ internal static class ShipBuildModeManagerPatches
     [HarmonyTranspiler]
     private static IEnumerable<CodeInstruction> ShipBuilderRayFromHand(IEnumerable<CodeInstruction> instructions)
     {
-        foreach (var instruction in instructions)
-        {
-            yield return instruction;
-
-            if (instruction.opcode == OpCodes.Stfld && (FieldInfo)instruction.operand == AccessTools.Field(typeof(ShipBuildModeManager), "playerCameraRay"))
-            {
-                yield return new CodeInstruction(OpCodes.Ldarg_0);
-                yield return new CodeInstruction(OpCodes.Call, ((Action<ShipBuildModeManager>)UpdateRay).Method);
-            }
-        }
+        return new CodeMatcher(instructions)
+            .MatchForward(true,
+            [
+                new CodeMatch(OpCodes.Stfld, Field(typeof(ShipBuildModeManager), nameof(ShipBuildModeManager.playerCameraRay))),
+            ])
+            .Advance(1)
+            .Insert(
+                new CodeInstruction(OpCodes.Ldarg_0),
+                new CodeInstruction(OpCodes.Call, ((Action<ShipBuildModeManager>)UpdateRay).Method)
+            )
+            .InstructionEnumeration();
     }
 
     private static void UpdateRay(ShipBuildModeManager manager)

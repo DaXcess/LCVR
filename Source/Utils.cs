@@ -155,17 +155,17 @@ internal static class Utils
         controller.trackingStateAction = new InputActionProperty(hand.TrackingState());
 
         controller.enableInputActions = actionsEnabled;
-        controller.selectAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Select"));
-        controller.selectActionValue = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Select Value"));
-        controller.activateAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Activate"));
-        controller.activateActionValue = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Activate Value"));
-        controller.uiPressAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/UI Press"));
-        controller.uiPressActionValue = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/UI Press Value"));
-        controller.uiScrollAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/UI Scroll"));
-        controller.rotateAnchorAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Rotate Anchor"));
-        controller.translateAnchorAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Translate Anchor"));
-        controller.scaleToggleAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Scale Toggle"));
-        controller.scaleDeltaAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Scale Delta"));
+        controller.selectAction = new InputActionProperty(AssetManager.TrackingActions.FindAction($"{hand}/Select"));
+        controller.selectActionValue = new InputActionProperty(AssetManager.TrackingActions.FindAction($"{hand}/Select Value"));
+        controller.activateAction = new InputActionProperty(AssetManager.TrackingActions.FindAction($"{hand}/Activate"));
+        controller.activateActionValue = new InputActionProperty(AssetManager.TrackingActions.FindAction($"{hand}/Activate Value"));
+        controller.uiPressAction = new InputActionProperty(AssetManager.TrackingActions.FindAction($"{hand}/UI Press"));
+        controller.uiPressActionValue = new InputActionProperty(AssetManager.TrackingActions.FindAction($"{hand}/UI Press Value"));
+        controller.uiScrollAction = new InputActionProperty(AssetManager.TrackingActions.FindAction($"{hand}/UI Scroll"));
+        controller.rotateAnchorAction = new InputActionProperty(AssetManager.TrackingActions.FindAction($"{hand}/Rotate Anchor"));
+        controller.translateAnchorAction = new InputActionProperty(AssetManager.TrackingActions.FindAction($"{hand}/Translate Anchor"));
+        controller.scaleToggleAction = new InputActionProperty(AssetManager.TrackingActions.FindAction($"{hand}/Scale Toggle"));
+        controller.scaleDeltaAction = new InputActionProperty(AssetManager.TrackingActions.FindAction($"{hand}/Scale Delta"));
     }
 
     public static bool Raycast(this Ray ray, out RaycastHit hit, float maxDistance = Mathf.Infinity, int layerMask = UnityEngine.Physics.DefaultRaycastLayers)

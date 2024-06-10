@@ -21,7 +21,7 @@ public class VRController : MonoBehaviour
     
     private static readonly HashSet<string> disabledInteractTriggers = [];
 
-    private static InputAction GrabAction => Actions.Instance["Controls/Interact"];
+    private static InputAction GrabAction => Actions.Instance["Interact"];
     private static PlayerControllerB PlayerController => VRSession.Instance.LocalPlayer.PlayerController;
 
     private LineRenderer debugLineRenderer;
@@ -60,20 +60,12 @@ public class VRController : MonoBehaviour
         debugLineRenderer.SetMaterials([AssetManager.defaultRayMat]);
         debugLineRenderer.enabled = Plugin.Config.EnableInteractRay.Value;
 
-        Actions.Instance.OnReload += OnReloadActions;
-        Actions.Instance["Controls/Interact"].performed += OnInteractPerformed;
-    }
-
-    private void OnReloadActions(InputActionAsset oldActions, InputActionAsset newActions)
-    {
-        oldActions["Controls/Interact"].performed -= OnInteractPerformed;
-        newActions["Controls/Interact"].performed += OnInteractPerformed;
+        Actions.Instance["Interact"].performed += OnInteractPerformed;
     }
 
     private void OnDestroy()
     {
-        Actions.Instance.OnReload -= OnReloadActions;
-        Actions.Instance["Controls/Interact"].performed -= OnInteractPerformed;
+        Actions.Instance["Interact"].performed -= OnInteractPerformed;
     }
 
     public static void ResetDisabledInteractTriggers()

@@ -120,11 +120,11 @@ public class VRFingerCurler(Transform hand, bool isLeft) : FingerCurler(hand, is
     private const float THUMB_STATE_DEFAULT = 0.5f;
     private const float THUMB_STATE_DOWN = 1f;
 
-    private readonly string actionMap = isLeft ? "Left Hand Fingers" : "Right Hand Fingers";
+    private readonly string hand = isLeft ? "L" : "R";
 
-    private InputAction ThumbAction => Actions.Instance[$"{actionMap}/Thumb"];
-    private InputAction IndexAction => Actions.Instance[$"{actionMap}/Index"];
-    private InputAction OthersAction => Actions.Instance[$"{actionMap}/Others"];
+    private InputAction ThumbAction => Actions.Instance[$"Thumb{hand}"];
+    private InputAction IndexAction => Actions.Instance[$"Index{hand}"];
+    private InputAction OthersAction => Actions.Instance[$"Others{hand}"];
 
     private bool forceFist;
 

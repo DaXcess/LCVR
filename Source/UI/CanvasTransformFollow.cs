@@ -21,24 +21,16 @@ internal class CanvasTransformFollow : MonoBehaviour
 
     private void Awake()
     {
-        Actions.Instance.OnReload += OnReloadActions;
-        Actions.Instance["Controls/Reset Height"].performed += OnResetHeight;
+        Actions.Instance["Reset Height"].performed += OnResetHeight;
 
         enemyTransform = Instantiate(AssetManager.enemyPrefab).transform;
 
         StartCoroutine(Init());
     }
 
-    private void OnReloadActions(InputActionAsset oldActions, InputActionAsset newActions)
-    {
-        oldActions["Controls/Reset Height"].performed -= OnResetHeight;
-        newActions["Controls/Reset Height"].performed += OnResetHeight;
-    }
-
     private void OnDestroy()
     {
-        Actions.Instance.OnReload -= OnReloadActions;
-        Actions.Instance["Controls/Reset Height"].performed -= OnResetHeight;
+        Actions.Instance["Reset Height"].performed -= OnResetHeight;
     }
 
     private void Update()

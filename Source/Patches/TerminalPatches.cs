@@ -41,8 +41,7 @@ internal class TerminalPatches
     {
         openMenuDelegate = (Action<InputAction.CallbackContext>)Delegate.CreateDelegate(typeof(Action<InputAction.CallbackContext>), __instance, AccessTools.Method(typeof(Terminal), "PressESC"));
 
-        Actions.Instance["Movement/OpenMenu"].performed += openMenuDelegate;
-        Actions.Instance.OnReload += OnReloadActions;
+        Actions.Instance["OpenMenu"].performed += openMenuDelegate;
     }
 
     /// <summary>
@@ -55,13 +54,6 @@ internal class TerminalPatches
         if (openMenuDelegate == null || (Terminal)openMenuDelegate.Target != __instance)
             return;
 
-        Actions.Instance.OnReload -= OnReloadActions;
-        Actions.Instance["Movement/OpenMenu"].performed -= openMenuDelegate;
-    }
-
-    private static void OnReloadActions(InputActionAsset oldActions, InputActionAsset newActions)
-    {
-        oldActions["Movement/OpenMenu"].performed -= openMenuDelegate;
-        newActions["Movement/OpenMenu"].performed += openMenuDelegate;
+        Actions.Instance["OpenMenu"].performed -= openMenuDelegate;
     }
 }
