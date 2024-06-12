@@ -103,7 +103,7 @@ public class VRNetPlayer : MonoBehaviour
         BuildVRRig();
 
         // Create spectating player
-        playerGhost = Instantiate(AssetManager.spectatorGhost, VRSession.Instance.transform);
+        playerGhost = Instantiate(AssetManager.SpectatorGhost, VRSession.Instance.transform);
         playerGhost.name = $"Spectating Player: {PlayerController.playerUsername}";
 
         usernameBillboard = playerGhost.GetComponentInChildren<Canvas>().transform;

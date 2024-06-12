@@ -23,13 +23,13 @@ public class VRKnife : VRItem<KnifeItem>
         if (!IsLocal)
             return;
 
-        interactionTarget = Instantiate(AssetManager.interactable, VRSession.Instance.MainCamera.transform);
+        interactionTarget = Instantiate(AssetManager.Interactable, VRSession.Instance.MainCamera.transform);
         interactionTarget.transform.localPosition = new Vector3(0, 0, 0.5f);
         interactionTarget.transform.localScale = Vector3.one * 0.3f;
         interactionTarget.AddComponent<KnifeInteractor>();
         interactionTarget.AddComponent<Rigidbody>().isKinematic = true;
 
-        knifeCollider = Instantiate(AssetManager.interactable, transform);
+        knifeCollider = Instantiate(AssetManager.Interactable, transform);
         knifeCollider.transform.localPosition = new Vector3(0, 0, 7.25f);
         knifeCollider.transform.localScale = new Vector3(1.2f, 3, 12.9f);
 

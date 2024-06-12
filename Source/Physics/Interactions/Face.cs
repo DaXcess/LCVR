@@ -100,7 +100,7 @@ public class Face : MonoBehaviour, VRInteractable
         if (Plugin.Config.DisableFaceInteractions.Value)
             return null;
 
-        var interactableObject = Instantiate(AssetManager.interactable, VRSession.Instance.MainCamera.transform);
+        var interactableObject = Instantiate(AssetManager.Interactable, VRSession.Instance.MainCamera.transform);
         interactableObject.transform.localPosition = new Vector3(0, -0.1f, 0.1f);
         interactableObject.transform.localScale = new Vector3(0.225f, 0.2f, 0.225f);
 

@@ -20,7 +20,7 @@ internal class ObjectScanner
             canvas.renderMode = RenderMode.WorldSpace;
 
             // Render all object scanner stuff on top
-            child.GetComponentsInChildren<Image>().Do(image => image.material = AssetManager.alwaysOnTopMat);
+            child.GetComponentsInChildren<Image>().Do(image => image.material = AssetManager.AlwaysOnTopMat);
             child.GetComponentsInChildren<TextMeshProUGUI>().Do(text =>
             {
                 text.fontSharedMaterial = new Material(text.fontSharedMaterial);

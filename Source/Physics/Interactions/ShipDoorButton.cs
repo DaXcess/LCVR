@@ -41,8 +41,8 @@ internal class ShipDoorButton : MonoBehaviour, VRInteractable
         var openDoorButtonObject = GameObject.Find("HangarDoorButtonPanel/StartButton");
         var closeDoorButtonObject = GameObject.Find("HangarDoorButtonPanel/StopButton");
 
-        var openDoorInteractableObject = Instantiate(AssetManager.interactable, openDoorButtonObject.transform.GetChild(0));
-        var closeDoorInteractableObject = Instantiate(AssetManager.interactable, closeDoorButtonObject.transform.GetChild(0));
+        var openDoorInteractableObject = Instantiate(AssetManager.Interactable, openDoorButtonObject.transform.GetChild(0));
+        var closeDoorInteractableObject = Instantiate(AssetManager.Interactable, closeDoorButtonObject.transform.GetChild(0));
 
         openDoorInteractableObject.transform.localPosition = new Vector3(-0.04f, 0, -0.11f);
         openDoorInteractableObject.transform.localScale = new Vector3(0.3f, 1, 0.5f);

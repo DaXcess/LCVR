@@ -99,7 +99,7 @@ public class VRHUD : MonoBehaviour
 
         foreach (var image in cursor.GetComponentsInChildren<Image>())
         {
-            image.material = AssetManager.alwaysOnTopMat;
+            image.material = AssetManager.AlwaysOnTopMat;
         }
 
         foreach (var text in cursor.GetComponentsInChildren<TextMeshProUGUI>())
@@ -348,7 +348,7 @@ public class VRHUD : MonoBehaviour
         InitializeKeyboard();
 
         // Set up a global light for spectators to be able to toggle
-        spectatorLight = Instantiate(AssetManager.spectatorLight, transform);
+        spectatorLight = Instantiate(AssetManager.SpectatorLight, transform);
         spectatorLight.SetActive(false);
         
         // Prevents CullFactory from culling the light
@@ -419,7 +419,7 @@ public class VRHUD : MonoBehaviour
     private void InitializeKeyboard()
     {
         var canvas = GameObject.Find("Systems/UI/Canvas").GetComponent<Canvas>();
-        MenuKeyboard = Instantiate(AssetManager.keyboard).GetComponent<NonNativeKeyboard>();
+        MenuKeyboard = Instantiate(AssetManager.Keyboard).GetComponent<NonNativeKeyboard>();
 
         MenuKeyboard.transform.SetParent(canvas.transform, false);
         MenuKeyboard.transform.localPosition = new Vector3(0, -470, -40);

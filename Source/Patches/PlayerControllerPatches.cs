@@ -196,7 +196,7 @@ internal static class PlayerControllerPatches
             return;
 
         if (__instance.isPlayerControlled)
-            __instance.playerBodyAnimator.runtimeAnimatorController = AssetManager.localVrMetarig;
+            __instance.playerBodyAnimator.runtimeAnimatorController = AssetManager.LocalVrMetarig;
     }
 
     /// <summary>
@@ -365,9 +365,9 @@ internal static class UniversalPlayerControllerPatches
         {
             var networkPlayer = __instance.GetComponent<VRNetPlayer>();
             if (networkPlayer != null)
-                __instance.playerBodyAnimator.runtimeAnimatorController = AssetManager.remoteVrMetarig;
+                __instance.playerBodyAnimator.runtimeAnimatorController = AssetManager.RemoteVrMetarig;
             // Used to restore the original metarig if a VR player leaves and a non-vr players join in their place
-            else if (__instance.playerBodyAnimator.runtimeAnimatorController == AssetManager.remoteVrMetarig)
+            else if (__instance.playerBodyAnimator.runtimeAnimatorController == AssetManager.RemoteVrMetarig)
                 __instance.playerBodyAnimator.runtimeAnimatorController = __instance.playersManager.otherClientsAnimatorController;
         }
     }

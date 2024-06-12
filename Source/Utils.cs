@@ -140,7 +140,7 @@ internal static class Utils
         };
         visual.enabled = rayVisible;
 
-        renderer.material = AssetManager.defaultRayMat;
+        renderer.material = AssetManager.DefaultRayMat;
 
         controller.AddActionBasedControllerBinds(hand, trackingEnabled, actionsEnabled);
 

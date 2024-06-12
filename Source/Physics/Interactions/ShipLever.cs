@@ -145,7 +145,7 @@ public class ShipLever : MonoBehaviour
         if (VRSession.InVR)
         {
             var leverObject = startMatch.leverAnimatorObject.gameObject;
-            var interactable = Instantiate(AssetManager.interactable, leverObject.transform);
+            var interactable = Instantiate(AssetManager.Interactable, leverObject.transform);
 
             interactable.transform.localPosition = new Vector3(0.2327f, 0.0404f, 11.6164f);
             interactable.transform.localScale = new Vector3(1, 1, 4);

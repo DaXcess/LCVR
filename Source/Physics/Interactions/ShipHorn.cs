@@ -81,7 +81,7 @@ internal static class ShipAlarmCordPatches
 
         __instance.gameObject.name = "ShipHornPullInteractable";
 
-        var interactableObject = Object.Instantiate(AssetManager.interactable, __instance.transform);
+        var interactableObject = Object.Instantiate(AssetManager.Interactable, __instance.transform);
 
         interactableObject.transform.localPosition = new Vector3(0, 0, -0.28f);
         interactableObject.transform.localScale = Vector3.one * 0.33f;

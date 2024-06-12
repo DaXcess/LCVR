@@ -23,7 +23,7 @@ internal class CanvasTransformFollow : MonoBehaviour
     {
         Actions.Instance["Reset Height"].performed += OnResetHeight;
 
-        enemyTransform = Instantiate(AssetManager.enemyPrefab).transform;
+        enemyTransform = Instantiate(AssetManager.EnemyPrefab).transform;
 
         StartCoroutine(Init());
     }
