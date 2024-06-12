@@ -77,7 +77,8 @@ LCVR attempts to automatically detect which type of controller you are using, an
 
 The current list of built-in controller profiles are:
 
-- Oculus (Rift S, Quest 2, Quest 3) - Default Fallback
+- Oculus (Rift S, Quest 2) - Default Fallback
+- Meta Quest (Quest 3)
 - Valve Index
 - HTC Vive
 - HP Reverb G2
@@ -87,11 +88,12 @@ For a list of all controls for your specific controllers, check out the `control
 
 # How to change controls
 
-Check out the [LCVR Controller Profiles](https://github.com/DaXcess/LCVR-Controller-Profiles) GitHub page to find a list of available controller bindings.
+You can change controller bindings just like you would normally in Lethal Company.
 
-In the mod's configuration, set the `ControllerBindingsOverrideProfile` option to the name of the profile binding you would like to use. This does however require an active internet connection, since these profiles are downloaded directly from this GitHub repository and will allow the use of new profiles without having to update the mod.
+Go to the settings, then press "Change keybinds", and scroll all the way down to the VR controls section.
 
-> Setting `ControllerBindingsOverrideProfile` will override the controller auto-detection
+> You must be in VR to change VR controller bindings. <br/>
+> Resetting the bindings will only reset the VR bindings, and will not touch keyboard/gamepad bindings.
 
 # Main Menu
 

@@ -28,7 +28,7 @@ public class Plugin : BaseUnityPlugin
 {
     public const string PLUGIN_GUID = "io.daxcess.lcvr";
     public const string PLUGIN_NAME = "LCVR";
-    public const string PLUGIN_VERSION = "1.2.5";
+    public const string PLUGIN_VERSION = "1.2.6";
 
     private readonly string[] GAME_ASSEMBLY_HASHES =
     [
@@ -152,7 +152,7 @@ public class Plugin : BaseUnityPlugin
                 var filename = Path.GetFileName(file);
 
                 // Ignore known unmanaged libraries
-                if (filename == "UnityOpenXR.dll" || filename == "openxr_loader.dll")
+                if (filename is "UnityOpenXR.dll" or "openxr_loader.dll")
                     continue;
 
                 Logger.LogDebug($"Early loading {filename}");
