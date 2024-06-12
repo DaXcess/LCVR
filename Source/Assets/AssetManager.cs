@@ -78,6 +78,12 @@ internal static class AssetManager
 
         doorLocked = assetBundle.LoadAsset<AudioClip>("doorlocked");
 
+        if (RemappableControls == null || RemappableControls.controls == null)
+        {
+            Logger.LogError("Unity failed to deserialize some assets. Are you missing the FixPluginTypesSerialization mod?");
+            return false;
+        }
+
         return true;
     }
 
