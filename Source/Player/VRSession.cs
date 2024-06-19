@@ -213,7 +213,7 @@ public class VRSession : MonoBehaviour
         // Add keyboard to Terminal
         var terminal = FindObjectOfType<Terminal>();
 
-        var terminalKeyboardObject = Instantiate(AssetManager.keyboard, terminal.transform.parent.parent);
+        var terminalKeyboardObject = Instantiate(AssetManager.Keyboard, terminal.transform.parent.parent);
         terminalKeyboardObject.transform.localPosition = new Vector3(-0.584f, 0.333f, 0.791f);
         terminalKeyboardObject.transform.localEulerAngles = new Vector3(0, 90, 90);
         terminalKeyboardObject.transform.localScale = Vector3.one * 0.0009f;
@@ -338,7 +338,7 @@ public class VRSession : MonoBehaviour
 #endif
 
         // Misc
-        VolumeManager = Instantiate(AssetManager.volumeManager, transform).GetComponent<Rendering.VolumeManager>();
+        VolumeManager = Instantiate(AssetManager.VolumeManager, transform).GetComponent<Rendering.VolumeManager>();
 
         Items.UpdateVRControlsItemsOffsets();
     }

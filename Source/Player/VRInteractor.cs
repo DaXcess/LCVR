@@ -51,7 +51,7 @@ public class VRInteractor : MonoBehaviour
                 throw new System.Exception($"Attached to unknown object: {gameObject.name}");
         } 
 
-        debugCube = Instantiate(AssetManager.interactable, transform).transform;
+        debugCube = Instantiate(AssetManager.Interactable, transform).transform;
         debugCube.localScale = Vector3.zero;
     }
 

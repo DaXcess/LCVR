@@ -55,8 +55,8 @@ internal class MonitorButton : MonoBehaviour, VRInteractable
         cameraSwitchButtonObject.transform.localPosition = new Vector3(-1.3456f, -1.1547f, -1.1147f);
         cameraSwitchButtonObject.transform.localEulerAngles = new Vector3(0, 82, 270);
 
-        var onOffInteractableObject = Instantiate(AssetManager.interactable, cameraOnButtonObject.transform.GetChild(0));
-        var switchInteractableObject = Instantiate(AssetManager.interactable, cameraSwitchButtonObject.transform.GetChild(0));
+        var onOffInteractableObject = Instantiate(AssetManager.Interactable, cameraOnButtonObject.transform.GetChild(0));
+        var switchInteractableObject = Instantiate(AssetManager.Interactable, cameraSwitchButtonObject.transform.GetChild(0));
 
         onOffInteractableObject.transform.localEulerAngles = switchInteractableObject.transform.localEulerAngles = new Vector3(0, 10, 0);
         onOffInteractableObject.transform.localScale = switchInteractableObject.transform.localScale = new Vector3(0.5f, 1, 0.5f);

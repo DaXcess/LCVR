@@ -48,7 +48,7 @@ internal static class DepositItemsDeskPatches
         var bellObject = GameObject.Find("BellDinger/Trigger");
         bellObject.name = "CompanyBellTrigger";
 
-        var bellInteractableObject = Object.Instantiate(AssetManager.interactable, bellObject.transform);
+        var bellInteractableObject = Object.Instantiate(AssetManager.Interactable, bellObject.transform);
 
         bellInteractableObject.transform.localPosition = new Vector3(-0.135f, -0.06f, 0);
         bellInteractableObject.transform.localScale = Vector3.one * 0.5f;

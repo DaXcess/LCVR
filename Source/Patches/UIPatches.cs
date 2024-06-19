@@ -124,7 +124,7 @@ internal static class UIPatches
     /// </summary>
     private static void InitializeKeyboard(Canvas canvas)
     {
-        var keyboard = Object.Instantiate(AssetManager.keyboard).GetComponent<NonNativeKeyboard>();
+        var keyboard = Object.Instantiate(AssetManager.Keyboard).GetComponent<NonNativeKeyboard>();
 
         keyboard.transform.SetParent(canvas.transform, false);
         keyboard.transform.localPosition = new Vector3(0, -470, -40);
@@ -183,9 +183,9 @@ internal static class UIPatches
         var kofiImage = kofiButtonObject.AddComponent<Image>();
         var discordImage = discordButtonObject.AddComponent<Image>();
 
-        githubImage.sprite = AssetManager.githubImage;
-        kofiImage.sprite = AssetManager.kofiImage;
-        discordImage.sprite = AssetManager.discordImage;
+        githubImage.sprite = AssetManager.GithubImage;
+        kofiImage.sprite = AssetManager.KofiImage;
+        discordImage.sprite = AssetManager.DiscordImage;
 
         var githubButton = githubButtonObject.AddComponent<Button>();
         var kofiButton = kofiButtonObject.AddComponent<Button>();
@@ -308,7 +308,7 @@ internal static class UniversalUIPatches
         var settingsButton = settingsObject.AddComponent<Button>();
         var settingsButtonColors = settingsButton.colors;
 
-        settingsImage.sprite = AssetManager.settingsImage;
+        settingsImage.sprite = AssetManager.SettingsImage;
         settingsButtonColors.highlightedColor = new Color(0.8f, 0.8f, 0.8f);
         settingsButtonColors.pressedColor = new Color(0.7f, 0.7f, 0.7f);
         settingsButtonColors.fadeDuration = 0.1f;
@@ -316,7 +316,7 @@ internal static class UniversalUIPatches
         settingsButton.colors = settingsButtonColors;
 
         // Insert settings panel
-        var settingsPanel = Object.Instantiate(AssetManager.settingsPanel, container.transform);
+        var settingsPanel = Object.Instantiate(AssetManager.SettingsPanel, container.transform);
 
         settingsPanel.transform.localPosition = Vector3.zero;
         settingsPanel.transform.localEulerAngles = Vector3.zero;
@@ -360,7 +360,7 @@ internal static class UniversalUIPatches
         picture.transform.SetSiblingIndex(0);
         picture.transform.localScale = Vector3.one * 0.4f;
         picture.transform.localPosition = new Vector3(196, 59, 1);
-        picture.sprite = AssetManager.warningImage;
+        picture.sprite = AssetManager.WarningImage;
 
         modDebugPanel.SetActive(!VRSession.InVR || Plugin.Config.IntroScreenSeen.Value);
 

@@ -71,7 +71,7 @@ public class Door : MonoBehaviour, VRInteractable
                 lockpicker.PlaceOnDoor(door, lockpicker.placeOnLockPicker1);
             }
             else
-                door.doorLockSFX.PlayOneShot(AssetManager.doorLocked);
+                door.doorLockSFX.PlayOneShot(AssetManager.DoorLocked);
 
             return true;
         }
@@ -196,7 +196,7 @@ internal static class DoorPatches
         // Make sure default ray based interaction no longer works for this door
         __instance.gameObject.name = "DoorInteractable";
 
-        var interactableObject = Object.Instantiate(AssetManager.interactable, __instance.transform);
+        var interactableObject = Object.Instantiate(AssetManager.Interactable, __instance.transform);
         interactableObject.transform.localPosition = position;
         interactableObject.transform.localEulerAngles = rotation;
         interactableObject.transform.localScale = scale * (__instance.isDoorOpened ? 4f : 1f);
@@ -221,7 +221,7 @@ internal static class LockerPickerPatches
         // Do **not** yet disable the ray based interactor. Only disable when placed on door!
         __instance.gameObject.name = "LockPicker";
 
-        var interactableObject = Object.Instantiate(AssetManager.interactable, __instance.transform);
+        var interactableObject = Object.Instantiate(AssetManager.Interactable, __instance.transform);
         interactableObject.transform.localScale = new Vector3(2f, 4f, 2.5f);
         interactableObject.AddComponent<LockPickerInteractable>();
     }

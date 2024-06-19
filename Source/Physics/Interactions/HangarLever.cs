@@ -122,7 +122,7 @@ internal static class LeverSwitchPatches
         
         __instance.gameObject.name = "LeverSwitchInteractable";
 
-        var interactableObject = Object.Instantiate(AssetManager.interactable, __instance.transform);
+        var interactableObject = Object.Instantiate(AssetManager.Interactable, __instance.transform);
 
         interactableObject.transform.localPosition = new Vector3(0.0044f, -0.0513f, 0.2529f);
         interactableObject.transform.localScale = new Vector3(0.0553f, 0.1696f, 0.0342f);

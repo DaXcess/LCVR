@@ -57,7 +57,7 @@ public class VRController : MonoBehaviour
         debugLineRenderer.shadowBias = 0.5f;
         debugLineRenderer.useWorldSpace = true;
         debugLineRenderer.maskInteraction = SpriteMaskInteraction.None;
-        debugLineRenderer.SetMaterials([AssetManager.defaultRayMat]);
+        debugLineRenderer.SetMaterials([AssetManager.DefaultRayMat]);
         debugLineRenderer.enabled = Plugin.Config.EnableInteractRay.Value;
 
         Actions.Instance["Interact"].performed += OnInteractPerformed;

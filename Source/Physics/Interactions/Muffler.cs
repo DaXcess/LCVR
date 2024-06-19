@@ -90,7 +90,7 @@ public class Muffler : MonoBehaviour, VRInteractable
         if (Plugin.Config.DisableMuffleInteraction.Value)
             return null;
 
-        var interactableObject = Instantiate(AssetManager.interactable, VRSession.Instance.MainCamera.transform);
+        var interactableObject = Instantiate(AssetManager.Interactable, VRSession.Instance.MainCamera.transform);
         interactableObject.transform.localPosition = new Vector3(0, -0.1f, 0.1f);
         interactableObject.transform.localScale = new Vector3(0.1f, 0.05f, 0.1f);
 

@@ -107,8 +107,8 @@ internal static class TeleporterPatches
         var button = __instance.buttonTrigger.gameObject;
         var glass = button.transform.parent.Find("ButtonGlass").gameObject;
 
-        var buttonInteractableObject = Object.Instantiate(AssetManager.interactable, button.transform);
-        var glassInteractableObject = Object.Instantiate(AssetManager.interactable, glass.transform);
+        var buttonInteractableObject = Object.Instantiate(AssetManager.Interactable, button.transform);
+        var glassInteractableObject = Object.Instantiate(AssetManager.Interactable, glass.transform);
 
         buttonInteractableObject.transform.localPosition = new Vector3(0, -0.12f, 1.2f);
         buttonInteractableObject.transform.localScale = new Vector3(1.1f, 1.2f, 2);

@@ -74,7 +74,7 @@ public class ChargeStation : MonoBehaviour, VRInteractable
         var charger = FindObjectOfType<ItemCharger>();
         charger.name = "ChargingStationTrigger";
 
-        var interactable = Instantiate(AssetManager.interactable, charger.gameObject.transform);
+        var interactable = Instantiate(AssetManager.Interactable, charger.gameObject.transform);
         var station = interactable.AddComponent<ChargeStation>();
 
         interactable.transform.localScale = Vector3.one * 0.7f;

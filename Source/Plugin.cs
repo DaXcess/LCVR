@@ -313,7 +313,7 @@ public class Plugin : BaseUnityPlugin
 
         var mesh = GameObject.Find("SplashRootObject/Quad").GetComponent<MeshRenderer>();
 
-        mesh.material = AssetManager.splashMaterial;
+        mesh.material = AssetManager.SplashMaterial;
     }
 }
 

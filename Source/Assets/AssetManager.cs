@@ -8,18 +8,20 @@ internal static class AssetManager
 {
     private static AssetBundle assetBundle;
 
-    public static GameObject aLiteralCube;
-    public static GameObject interactable;
-    public static GameObject keyboard;
-    public static GameObject settingsPanel;
-    public static GameObject volumeManager;
-    public static GameObject spectatorLight;
-    public static GameObject spectatorGhost;
-    public static GameObject enemyPrefab;
+#if DEBUG
+    public static GameObject Cube;
+#endif
+    public static GameObject Interactable;
+    public static GameObject Keyboard;
+    public static GameObject SettingsPanel;
+    public static GameObject VolumeManager;
+    public static GameObject SpectatorLight;
+    public static GameObject SpectatorGhost;
+    public static GameObject EnemyPrefab;
 
-    public static Material splashMaterial;
-    public static Material defaultRayMat;
-    public static Material alwaysOnTopMat;
+    public static Material SplashMaterial;
+    public static Material DefaultRayMat;
+    public static Material AlwaysOnTopMat;
 
     public static InputActionAsset VRActions;
     public static InputActionAsset TrackingActions;
@@ -27,62 +29,65 @@ internal static class AssetManager
 
     public static RemappableControls RemappableControls;
 
-    public static RuntimeAnimatorController localVrMetarig;
-    public static RuntimeAnimatorController remoteVrMetarig;
+    public static RuntimeAnimatorController LocalVrMetarig;
+    public static RuntimeAnimatorController RemoteVrMetarig;
 
-    public static Sprite githubImage;
-    public static Sprite kofiImage;
-    public static Sprite discordImage;
-    public static Sprite warningImage;
-    public static Sprite settingsImage;
+    public static Sprite GithubImage;
+    public static Sprite KofiImage;
+    public static Sprite DiscordImage;
+    public static Sprite WarningImage;
+    public static Sprite SettingsImage;
 
-    public static AudioClip doorLocked;
+    public static AudioClip DoorLocked;
 
     public static bool LoadAssets()
     {
         assetBundle = AssetBundle.LoadFromMemory(Properties.Resources.lethalcompanyvr);
-        
+
         if (assetBundle == null)
         {
             Logger.LogError("Failed to load asset bundle!");
             return false;
         }
 
-        aLiteralCube = assetBundle.LoadAsset<GameObject>("ALiteralCube");
-        interactable = assetBundle.LoadAsset<GameObject>("VRInteractable");
-        keyboard = assetBundle.LoadAsset<GameObject>("NonNativeKeyboard");
-        settingsPanel = assetBundle.LoadAsset<GameObject>("Panel");
-        volumeManager = assetBundle.LoadAsset<GameObject>("Volume Manager");
-        enemyPrefab = assetBundle.LoadAsset<GameObject>("Flowerman");
-        spectatorLight = assetBundle.LoadAsset<GameObject>("Spectator Light");
-        spectatorGhost = assetBundle.LoadAsset<GameObject>("SpectatorGhost");
-        
+        Cube = assetBundle.LoadAsset<GameObject>("ALiteralCube");
+        Interactable = assetBundle.LoadAsset<GameObject>("VRInteractable");
+        Keyboard = assetBundle.LoadAsset<GameObject>("NonNativeKeyboard");
+        SettingsPanel = assetBundle.LoadAsset<GameObject>("Panel");
+        VolumeManager = assetBundle.LoadAsset<GameObject>("Volume Manager");
+        EnemyPrefab = assetBundle.LoadAsset<GameObject>("Flowerman");
+        SpectatorLight = assetBundle.LoadAsset<GameObject>("Spectator Light");
+        SpectatorGhost = assetBundle.LoadAsset<GameObject>("SpectatorGhost");
+
         VRActions = assetBundle.LoadAsset<InputActionAsset>("VRActions");
         TrackingActions = assetBundle.LoadAsset<InputActionAsset>("TrackingActions");
         NullActions = assetBundle.LoadAsset<InputActionAsset>("NullPlayerActions");
 
-        RemappableControls = assetBundle.LoadAsset<GameObject>("Remappable Controls").GetComponent<RemappableControls>();
-        
-        splashMaterial = assetBundle.LoadAsset<Material>("Splash");
-        defaultRayMat = assetBundle.LoadAsset<Material>("Default Ray");
-        alwaysOnTopMat = assetBundle.LoadAsset<Material>("Always On Top");
+        RemappableControls =
+            assetBundle.LoadAsset<GameObject>("Remappable Controls").GetComponent<RemappableControls>();
 
-        githubImage = assetBundle.LoadAsset<Sprite>("Github");
-        kofiImage = assetBundle.LoadAsset<Sprite>("Ko-Fi");
-        discordImage = assetBundle.LoadAsset<Sprite>("Discord");
-        warningImage = assetBundle.LoadAsset<Sprite>("Warning");
-        settingsImage = assetBundle.LoadAsset<Sprite>("lcsettings-icon-2");
+        SplashMaterial = assetBundle.LoadAsset<Material>("Splash");
+        DefaultRayMat = assetBundle.LoadAsset<Material>("Default Ray");
+        AlwaysOnTopMat = assetBundle.LoadAsset<Material>("Always On Top");
 
-        localVrMetarig = assetBundle.LoadAsset<RuntimeAnimatorController>("metarig");
-        remoteVrMetarig = assetBundle.LoadAsset<RuntimeAnimatorController>("metarigOtherPlayers");
+        GithubImage = assetBundle.LoadAsset<Sprite>("Github");
+        KofiImage = assetBundle.LoadAsset<Sprite>("Ko-Fi");
+        DiscordImage = assetBundle.LoadAsset<Sprite>("Discord");
+        WarningImage = assetBundle.LoadAsset<Sprite>("Warning");
+        SettingsImage = assetBundle.LoadAsset<Sprite>("lcsettings-icon-2");
 
-        doorLocked = assetBundle.LoadAsset<AudioClip>("doorlocked");
+        LocalVrMetarig = assetBundle.LoadAsset<RuntimeAnimatorController>("metarig");
+        RemoteVrMetarig = assetBundle.LoadAsset<RuntimeAnimatorController>("metarigOtherPlayers");
+
+        DoorLocked = assetBundle.LoadAsset<AudioClip>("doorlocked");
+
+        if (RemappableControls == null || RemappableControls.controls == null)
+        {
+            Logger.LogError(
+                "Unity failed to deserialize some assets. Are you missing the FixPluginTypesSerialization mod?");
+            return false;
+        }
 
         return true;
-    }
-
-    public static InputActionAsset Input(string name)
-    {
-        return assetBundle.LoadAsset<InputActionAsset>(name);
     }
 }
