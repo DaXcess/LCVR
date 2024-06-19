@@ -34,7 +34,7 @@ public class InputPatches
     }
     
     /// <summary>
-    /// Reload the bindings when the in-game player settings get loaded
+    /// Use custom rebind logic when we're trying to rebind a key
     /// </summary>
     [HarmonyPatch(typeof(IngamePlayerSettings), nameof(IngamePlayerSettings.RebindKey))]
     [HarmonyPrefix]
@@ -44,6 +44,9 @@ public class InputPatches
         return false;
     }
 
+    /// <summary>
+    /// Use custom rebinding reset logic when the reset binding button is pressed
+    /// </summary>
     [HarmonyPatch(typeof(IngamePlayerSettings), nameof(IngamePlayerSettings.ResetAllKeybinds))]
     [HarmonyPrefix]
     private static bool OnResetBindings()

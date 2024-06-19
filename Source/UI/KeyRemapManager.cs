@@ -70,7 +70,7 @@ public class KeyRemapManager : MonoBehaviour
             new Vector2(-40, -panel.verticalOffset * vertOffset);
         sectionText = sectionTextObj.GetComponentInChildren<TextMeshProUGUI>();
         sectionText.text = string.IsNullOrEmpty(playerInput.currentControlScheme)
-            ? "NO VR CONTROLLERS DETECTED"
+            ? "PLEASE CONNECT BOTH CONTROLLERS"
             : $"VR CONTROLLERS ({playerInput.currentControlScheme})";
         panel.keySlots.Add(sectionTextObj);
 
