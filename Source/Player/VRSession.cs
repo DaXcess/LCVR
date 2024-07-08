@@ -22,13 +22,9 @@ public class VRSession : MonoBehaviour
     public static VRSession Instance { get; private set; }
 
     /// <summary>
-    /// Whether or not the game has VR enabled. This field will only be populated after LCVR has loaded.
+    /// Whether the game has VR enabled. This field will only be populated after LCVR has loaded.
     /// </summary>
     public static bool InVR => Plugin.Flags.HasFlag(Flags.VR);
-
-    #region Controllers
-
-    #endregion
 
     #region Custom Camera
 

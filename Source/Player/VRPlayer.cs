@@ -417,8 +417,9 @@ public class VRPlayer : MonoBehaviour
         {
             var wasGrounded = characterController.isGrounded;
 
-            characterController.Move(transform.parent.localRotation * new Vector3(
-                totalMovementSinceLastMove.x * SCALE_FACTOR, 0f, totalMovementSinceLastMove.z * SCALE_FACTOR));
+            characterController.Move(transform.parent.localRotation * Vector3.Scale(new Vector3(
+                totalMovementSinceLastMove.x * SCALE_FACTOR, 0f,
+                totalMovementSinceLastMove.z * SCALE_FACTOR), transform.parent.localScale));
             totalMovementSinceLastMove = Vector3.zero;
 
             if (!characterController.isGrounded && wasGrounded)
@@ -459,7 +460,7 @@ public class VRPlayer : MonoBehaviour
         crouchOffset = Mathf.Lerp(crouchOffset, !IsRoomCrouching && PlayerController.isCrouching ? -1 : 0, 0.2f);
         
         // Apply car animation offset
-        var carOffset = PlayerController.inVehicleAnimation ? -1f : 0f;
+        var carOffset = PlayerController.inVehicleAnimation ? -0.5f : 0f;
 
         // Apply height and rotation offsets
         xrOrigin.localPosition += new Vector3(0,
@@ -591,12 +592,23 @@ public class VRPlayer : MonoBehaviour
 
     private IEnumerator ResetHeightRoutine()
     {
+        const float targetHeight = 2.3f;
+        
         yield return new WaitForSeconds(0.2f);
 
         realHeight = mainCamera.transform.localPosition.y * SCALE_FACTOR;
-        const float targetHeight = 2.3f;
-
         cameraFloorOffset = targetHeight - realHeight;
+
+        if (PlayerController.inVehicleAnimation)
+        {
+            var offset = PlayerController.currentTriggerInAnimationWith.playerPositionNode.eulerAngles.y -
+                         mainCamera.transform.localEulerAngles.y;
+
+            TurningProvider.SetOffset(offset);
+            specialAnimationPositionOffset = Quaternion.Euler(0, offset, 0) *
+                                             new Vector3(mainCamera.transform.localPosition.x, 0,
+                                                 mainCamera.transform.localPosition.z) * -SCALE_FACTOR;
+        }
 
         resetHeightCoroutine = null;
     }
