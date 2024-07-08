@@ -66,7 +66,7 @@ internal class BreakerBoxDoor : MonoBehaviour, VRInteractable
 [HarmonyPatch]
 internal static class BreakerBoxPatches
 {
-    [HarmonyPatch(typeof(BreakerBox), "Start")]
+    [HarmonyPatch(typeof(BreakerBox), nameof(BreakerBox.Start))]
     [HarmonyPostfix]
     private static void OnCreateBreakerBox(BreakerBox __instance)
     {

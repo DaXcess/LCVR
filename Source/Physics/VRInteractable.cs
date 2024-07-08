@@ -37,6 +37,12 @@ namespace LCVR.Physics
     {
         LeftHand = 1 << 0,
         RightHand = 1 << 1,
+        
+        /// <summary>
+        /// Prevent this interactable from triggering events from an interactor that is being held by another
+        /// interactable 
+        /// </summary>
+        NotWhileHeld = 1 << 2,
 
         BothHands = LeftHand | RightHand
     }

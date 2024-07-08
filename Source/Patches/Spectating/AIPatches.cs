@@ -90,6 +90,20 @@ internal static class SpectatorAIPatches
     }
 
     /// <summary>
+    /// Force <see cref="EnemyAI.targetPlayer"/> to become null if the target player is dead
+    /// </summary>
+    [HarmonyPatch(typeof(EnemyAI), nameof(EnemyAI.TargetClosestPlayer))]
+    [HarmonyPostfix]
+    private static void OnTargetClosestPlayer(EnemyAI __instance, ref bool __result)
+    {
+        if (__instance.targetPlayer is null || !__instance.targetPlayer.isPlayerDead)
+            return;
+        
+        __instance.targetPlayer = null;
+        __result = false;
+    }
+
+    /// <summary>
     /// Prevent collision detection on dead players
     /// </summary>
     [HarmonyPatch(typeof(EnemyAICollisionDetect), nameof(EnemyAICollisionDetect.OnTriggerStay))]

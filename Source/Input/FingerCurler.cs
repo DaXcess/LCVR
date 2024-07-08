@@ -132,8 +132,13 @@ public class VRFingerCurler(Transform hand, bool isLeft) : FingerCurler(hand, is
     public bool IsPointer => indexFinger.curl <= 0.75f && middleFinger.curl > 0.75f;
     public bool IsHand => middleFinger.curl <= 0.75f;
 
+    public bool Enabled { get; set; } = true;
+
     public override void Update()
     {
+        if (!Enabled)
+            return;
+        
         UpdateCurls();
 
         base.Update();

@@ -10,6 +10,7 @@ using UnityEngine.XR.Interaction.Toolkit;
 using LCVR.Patches;
 using UnityEngine.Animations.Rigging;
 using System.Linq;
+using UnityEngine.Serialization;
 using CrouchState = LCVR.Networking.DNet.Rig.CrouchState;
 
 namespace LCVR.Player;
@@ -23,10 +24,6 @@ public class VRPlayer : MonoBehaviour
     private const float TURN_ANGLE_THRESHOLD = 120.0f;
     private const float TURN_WEIGHT_SHARP = 15.0f;
 
-    private PlayerControllerB playerController;
-    private CharacterController characterController;
-    private Bones bones;
-
     private Coroutine stopSprintingCoroutine;
     private Coroutine resetHeightCoroutine;
 
@@ -35,14 +32,14 @@ public class VRPlayer : MonoBehaviour
     private float realHeight = 2.3f;
 
     private bool isSprinting;
-    private bool isRoomCrouching;
 
     private bool wasInSpecialAnimation;
     private bool wasInEnemyAnimation;
     private Vector3 specialAnimationPositionOffset = Vector3.zero;
 
     private Camera mainCamera;
-
+    private CharacterController characterController;
+    
     private GameObject leftController;
     private GameObject rightController;
 
@@ -61,35 +58,36 @@ public class VRPlayer : MonoBehaviour
     private VRInteractor leftHandInteractor;
     private VRInteractor rightHandInteractor;
 
-    public VRFingerCurler LeftFingerCurler { get; private set; }
-    public VRFingerCurler RightFingerCurler { get; private set; }
-
-    private GameObject leftHandVRTarget;
-    private GameObject rightHandVRTarget;
-
     public Transform leftItemHolder;
     public Transform rightItemHolder;
 
     #region Public Accessors
-    public PlayerControllerB PlayerController => playerController;
-    public Bones Bones => bones;
+    public PlayerControllerB PlayerController { get; private set; }
+    public Bones Bones { get; private set; }
     public TurningProvider TurningProvider { get; private set; }
+    public RigTracker RigTracker { get; private set; }
+    public RigTracker RigTrackerLocal { get; private set; }
 
     public VRController PrimaryController => mainController;
     public VRInteractor LeftHandInteractor => leftHandInteractor;
     public VRInteractor RightHandInteractor => rightHandInteractor;
+    public VRFingerCurler LeftFingerCurler { get; private set; }
+    public VRFingerCurler RightFingerCurler { get; private set; }
+    
+    public Transform LeftHandVRTarget { get; private set; }
+    public Transform RightHandVRTarget { get; private set; }
+    
+    public bool IsRoomCrouching { get; private set; }
 
-    public bool IsDead => playerController.isPlayerDead;
-    public bool IsRoomCrouching => isRoomCrouching;
     #endregion
 
     private void Awake()
     {
         Logger.LogDebug("Going to intialize XR Rig");
         
-        playerController = GetComponent<PlayerControllerB>();
+        PlayerController = GetComponent<PlayerControllerB>();
         characterController = GetComponent<CharacterController>();
-        bones = new Bones(transform);
+        Bones = new Bones(transform);
 
         // Prevent walking through walls
         GetComponent<Rigidbody>().collisionDetectionMode = CollisionDetectionMode.Continuous;
@@ -105,7 +103,7 @@ public class VRPlayer : MonoBehaviour
         mainCamera.transform.parent = xrOrigin;
         xrOrigin.localPosition = Vector3.zero;
         xrOrigin.localRotation = Quaternion.Euler(0, 0, 0);
-        xrOrigin.localScale = Vector3.one;
+        xrOrigin.localScale = Vector3.one * SCALE_FACTOR;
 
         // Create controller objects
         rightController = new GameObject("Right Controller");
@@ -129,26 +127,26 @@ public class VRPlayer : MonoBehaviour
 
         // Set up IK Rig VR targets
         var headVRTarget = new GameObject("Head VR Target");
-        rightHandVRTarget = new GameObject("Right Hand VR Target");
-        leftHandVRTarget = new GameObject("Left Hand VR Target");
+        RightHandVRTarget = new GameObject("Right Hand VR Target").transform;
+        LeftHandVRTarget = new GameObject("Left Hand VR Target").transform;
 
         headVRTarget.transform.parent = mainCamera.transform;
-        rightHandVRTarget.transform.parent = rightController.transform;
-        leftHandVRTarget.transform.parent = leftController.transform;
+        RightHandVRTarget.parent = rightController.transform;
+        LeftHandVRTarget.parent = leftController.transform;
 
         // Head defintely does need to have offsets (in this case an offset of 0, 0, 0)
         headVRTarget.transform.localPosition = Vector3.zero;
 
-        rightHandVRTarget.transform.localPosition = new Vector3(0.0279f, 0.0353f, -0.0044f);
-        rightHandVRTarget.transform.localRotation = Quaternion.Euler(0, 90, 168);
+        RightHandVRTarget.localPosition = new Vector3(0.0279f, 0.0353f, -0.0044f);
+        RightHandVRTarget.localRotation = Quaternion.Euler(0, 90, 168);
 
-        leftHandVRTarget.transform.localPosition = new Vector3(-0.0279f, 0.0353f, 0.0044f);
-        leftHandVRTarget.transform.localRotation = Quaternion.Euler(0, 270, 192);
+        LeftHandVRTarget.localPosition = new Vector3(-0.0279f, 0.0353f, 0.0044f);
+        LeftHandVRTarget.localRotation = Quaternion.Euler(0, 270, 192);
 
         // Add controller interactors
         mainController = rightController.AddComponent<VRController>();
-        leftHandInteractor = bones.LocalLeftHand.gameObject.AddComponent<VRInteractor>();
-        rightHandInteractor = bones.LocalRightHand.gameObject.AddComponent<VRInteractor>();
+        leftHandInteractor = Bones.LocalLeftHand.gameObject.AddComponent<VRInteractor>();
+        rightHandInteractor = Bones.LocalRightHand.gameObject.AddComponent<VRInteractor>();
 
         // Add ray interactors for VR keyboard
         leftControllerRayInteractor = new GameObject("Left Ray Interactor").CreateInteractorController(Utils.Hand.Left, false, false);
@@ -183,18 +181,18 @@ public class VRPlayer : MonoBehaviour
         var rightHolder = new GameObject("Right Hand Item Holder");
 
         leftItemHolder = leftHolder.transform;
-        leftItemHolder.SetParent(bones.LocalLeftHand, false);
+        leftItemHolder.SetParent(Bones.LocalLeftHand, false);
         leftItemHolder.localPosition = new Vector3(0.018f, 0.045f, -0.042f);
         leftItemHolder.localEulerAngles = new Vector3(360f - 356.3837f, 357.6979f, 0.1453f);
 
         rightItemHolder = rightHolder.transform;
-        rightItemHolder.SetParent(bones.LocalRightHand, false);
+        rightItemHolder.SetParent(Bones.LocalRightHand, false);
         rightItemHolder.localPosition = new Vector3(-0.002f, 0.036f, -0.042f);
         rightItemHolder.localEulerAngles = new Vector3(356.3837f, 357.6979f, 0.1453f);
 
         // Set up finger curlers
-        LeftFingerCurler = new VRFingerCurler(bones.LocalLeftHand, true);
-        RightFingerCurler = new VRFingerCurler(bones.LocalRightHand, false);
+        LeftFingerCurler = new VRFingerCurler(Bones.LocalLeftHand, true);
+        RightFingerCurler = new VRFingerCurler(Bones.LocalRightHand, false);
 
         BuildVRRig();
 
@@ -204,7 +202,7 @@ public class VRPlayer : MonoBehaviour
     private void BuildVRRig()
     {
         // Reset player character briefly to allow the RigBuilder to behave properly
-        bones.ResetToPrefabPositions();
+        Bones.ResetToPrefabPositions();
 
         // ARMS ONLY RIG
 
@@ -213,72 +211,72 @@ public class VRPlayer : MonoBehaviour
         model.transform.localPosition = Vector3.zero;
         
         // Why are these even nonzero in the first place?
-        bones.LocalMetarig.localPosition = Vector3.zero;
-        bones.LocalArmsRig.localPosition = Vector3.zero;
+        Bones.LocalMetarig.localPosition = Vector3.zero;
+        Bones.LocalArmsRig.localPosition = Vector3.zero;
 
-        var rigFollow = model.GetComponent<IKRigFollowVRRig>() ?? model.AddComponent<IKRigFollowVRRig>();
+        RigTrackerLocal ??= model.AddComponent<RigTracker>();
 
         // Setting up the head
-        rigFollow.head = mainCamera.transform;
+        RigTrackerLocal.head = mainCamera.transform;
 
         // Setting up the left arm
 
-        bones.LocalLeftArmRig.localPosition = Vector3.zero;
-        bones.LocalLeftArmRigHint.localPosition = new Vector3(-10f, -2f, -1f);
+        Bones.LocalLeftArmRig.localPosition = Vector3.zero;
+        Bones.LocalLeftArmRigHint.localPosition = new Vector3(-10f, -2f, -1f);
 
         // Disable built-in constraints since they don't support hints (fucks up the elbows)
-        Destroy(bones.LocalLeftArmRig.GetComponent<ChainIKConstraint>());
-        var localLeftArmConstraint = bones.LocalLeftArmRig.gameObject.AddComponent<TwoBoneIKConstraint>();
+        Destroy(Bones.LocalLeftArmRig.GetComponent<ChainIKConstraint>());
+        var localLeftArmConstraint = Bones.LocalLeftArmRig.gameObject.AddComponent<TwoBoneIKConstraint>();
 
-        localLeftArmConstraint.data.root = bones.LocalLeftUpperArm;
-        localLeftArmConstraint.data.mid = bones.LocalLeftLowerArm;
-        localLeftArmConstraint.data.tip = bones.LocalLeftHand;
-        localLeftArmConstraint.data.target = bones.LocalLeftArmRigTarget;
-        localLeftArmConstraint.data.hint = bones.LocalLeftArmRigHint;
+        localLeftArmConstraint.data.root = Bones.LocalLeftUpperArm;
+        localLeftArmConstraint.data.mid = Bones.LocalLeftLowerArm;
+        localLeftArmConstraint.data.tip = Bones.LocalLeftHand;
+        localLeftArmConstraint.data.target = Bones.LocalLeftArmRigTarget;
+        localLeftArmConstraint.data.hint = Bones.LocalLeftArmRigHint;
         localLeftArmConstraint.data.hintWeight = 1;
         localLeftArmConstraint.data.targetRotationWeight = 1;
         localLeftArmConstraint.data.targetPositionWeight = 1;
 
-        rigFollow.leftHand = new IKRigFollowVRRig.VRMap()
+        RigTrackerLocal.leftHand = new RigTracker.Tracker()
         {
-            ikTarget = bones.LocalLeftArmRigTarget,
-            vrTarget = leftHandVRTarget.transform,
-            trackingPositionOffset = Vector3.zero,
-            trackingRotationOffset = Vector3.zero
+            dstTransform = Bones.LocalLeftArmRigTarget,
+            srcTransform = LeftHandVRTarget,
+            positionOffset = Vector3.zero,
+            rotationOffset = Vector3.zero
         };
 
         // Setting up the right arm
 
-        bones.LocalRightArmRig.localPosition = Vector3.zero;
-        bones.LocalRightArmRigHint.localPosition = new Vector3(12.5f, -2f, -1f);
+        Bones.LocalRightArmRig.localPosition = Vector3.zero;
+        Bones.LocalRightArmRigHint.localPosition = new Vector3(12.5f, -2f, -1f);
 
         // Disable built-in constraints since they don't support hints (fucks up the elbows)
-        Destroy(bones.LocalRightArmRig.GetComponent<ChainIKConstraint>());
-        var localRightArmConstraint = bones.LocalRightArmRig.gameObject.AddComponent<TwoBoneIKConstraint>();
+        Destroy(Bones.LocalRightArmRig.GetComponent<ChainIKConstraint>());
+        var localRightArmConstraint = Bones.LocalRightArmRig.gameObject.AddComponent<TwoBoneIKConstraint>();
 
-        localRightArmConstraint.data.root = bones.LocalRightUpperArm;
-        localRightArmConstraint.data.mid = bones.LocalRightLowerArm;
-        localRightArmConstraint.data.tip = bones.LocalRightHand;
-        localRightArmConstraint.data.target = bones.LocalRightArmRigTarget;
-        localRightArmConstraint.data.hint = bones.LocalRightArmRigHint;
+        localRightArmConstraint.data.root = Bones.LocalRightUpperArm;
+        localRightArmConstraint.data.mid = Bones.LocalRightLowerArm;
+        localRightArmConstraint.data.tip = Bones.LocalRightHand;
+        localRightArmConstraint.data.target = Bones.LocalRightArmRigTarget;
+        localRightArmConstraint.data.hint = Bones.LocalRightArmRigHint;
         localRightArmConstraint.data.hintWeight = 1;
         localRightArmConstraint.data.targetRotationWeight = 1;
         localRightArmConstraint.data.targetPositionWeight = 1;
 
-        rigFollow.rightHand = new IKRigFollowVRRig.VRMap()
+        RigTrackerLocal.rightHand = new RigTracker.Tracker()
         {
-            ikTarget = bones.LocalRightArmRigTarget,
-            vrTarget = rightHandVRTarget.transform,
-            trackingPositionOffset = Vector3.zero,
-            trackingRotationOffset = Vector3.zero
+            dstTransform = Bones.LocalRightArmRigTarget,
+            srcTransform = RightHandVRTarget,
+            positionOffset = Vector3.zero,
+            rotationOffset = Vector3.zero
         };
 
         // This one is pretty hit or miss, sometimes y needs to be -0.2f, other times it needs to be -2.25f
-        rigFollow.headBodyPositionOffset = new Vector3(0, -0.2f, 0);
+        RigTrackerLocal.headBodyPositionOffset = new Vector3(0, -0.2f, 0);
 
         // Disable badges
-        bones.Spine.Find("LevelSticker").gameObject.SetActive(false);
-        bones.Spine.Find("BetaBadge").gameObject.SetActive(false);
+        Bones.Spine.Find("LevelSticker").gameObject.SetActive(false);
+        Bones.Spine.Find("BetaBadge").gameObject.SetActive(false);
 
         // FULL BODY RIG
 
@@ -286,61 +284,59 @@ public class VRPlayer : MonoBehaviour
         var fullModel = transform.Find("ScavengerModel").gameObject;
         fullModel.transform.localPosition = Vector3.zero;
 
-        bones.Metarig.localPosition = Vector3.zero;
+        Bones.Metarig.localPosition = Vector3.zero;
 
-        var fullRigFollow = fullModel.GetComponent<IKRigFollowVRRig>() ?? fullModel.AddComponent<IKRigFollowVRRig>();
+        RigTracker ??= fullModel.AddComponent<RigTracker>();
 
         // Setting up the left arm
 
-        bones.LeftArmRigHint.localPosition = new Vector3(-10f, -2f, -1f);
+        Bones.LeftArmRigHint.localPosition = new Vector3(-10f, -2f, -1f);
 
         // Disable built-in constraints since they don't support hints (fucks up the elbows)
-        Destroy(bones.LeftArmRig.GetComponent<ChainIKConstraint>());
-        var leftArmConstraint = bones.LeftArmRig.gameObject.AddComponent<TwoBoneIKConstraint>();
+        Destroy(Bones.LeftArmRig.GetComponent<ChainIKConstraint>());
+        var leftArmConstraint = Bones.LeftArmRig.gameObject.AddComponent<TwoBoneIKConstraint>();
 
-        leftArmConstraint.data.root = bones.LeftUpperArm;
-        leftArmConstraint.data.mid = bones.LeftLowerArm;
-        leftArmConstraint.data.tip = bones.LeftHand;
-        leftArmConstraint.data.target = bones.LeftArmRigTarget;
-        leftArmConstraint.data.hint = bones.LeftArmRigHint;
+        leftArmConstraint.data.root = Bones.LeftUpperArm;
+        leftArmConstraint.data.mid = Bones.LeftLowerArm;
+        leftArmConstraint.data.tip = Bones.LeftHand;
+        leftArmConstraint.data.target = Bones.LeftArmRigTarget;
+        leftArmConstraint.data.hint = Bones.LeftArmRigHint;
         leftArmConstraint.data.hintWeight = 1;
         leftArmConstraint.data.targetRotationWeight = 1;
         leftArmConstraint.data.targetPositionWeight = 1;
 
-        fullRigFollow.leftHand = new IKRigFollowVRRig.VRMap()
+        RigTracker.leftHand = new RigTracker.Tracker()
         {
-            ikTarget = bones.LeftArmRigTarget,
-            vrTarget = leftHandVRTarget.transform,
-            trackingPositionOffset = Vector3.zero,
-            trackingRotationOffset = Vector3.zero
+            dstTransform = Bones.LeftArmRigTarget,
+            srcTransform = LeftHandVRTarget,
+            positionOffset = Vector3.zero,
+            rotationOffset = Vector3.zero
         };
 
         // Setting up the right arm
 
-        bones.RightArmRigHint.localPosition = new Vector3(12.5f, -2f, -1f);
+        Bones.RightArmRigHint.localPosition = new Vector3(12.5f, -2f, -1f);
 
         // Disable built-in constraints since they don't support hints (fucks up the elbows)
-        Destroy(bones.RightArmRig.GetComponent<ChainIKConstraint>());
-        var rightArmConstraint = bones.RightArmRig.gameObject.AddComponent<TwoBoneIKConstraint>();
+        Destroy(Bones.RightArmRig.GetComponent<ChainIKConstraint>());
+        var rightArmConstraint = Bones.RightArmRig.gameObject.AddComponent<TwoBoneIKConstraint>();
 
-        rightArmConstraint.data.root = bones.RightUpperArm;
-        rightArmConstraint.data.mid = bones.RightLowerArm;
-        rightArmConstraint.data.tip = bones.RightHand;
-        rightArmConstraint.data.target = bones.RightArmRigTarget;
-        rightArmConstraint.data.hint = bones.RightArmRigHint;
+        rightArmConstraint.data.root = Bones.RightUpperArm;
+        rightArmConstraint.data.mid = Bones.RightLowerArm;
+        rightArmConstraint.data.tip = Bones.RightHand;
+        rightArmConstraint.data.target = Bones.RightArmRigTarget;
+        rightArmConstraint.data.hint = Bones.RightArmRigHint;
         rightArmConstraint.data.hintWeight = 1;
         rightArmConstraint.data.targetRotationWeight = 1;
         rightArmConstraint.data.targetPositionWeight = 1;
 
-        fullRigFollow.rightHand = new IKRigFollowVRRig.VRMap()
+        RigTracker.rightHand = new RigTracker.Tracker()
         {
-            ikTarget = bones.RightArmRigTarget,
-            vrTarget = rightHandVRTarget.transform,
-            trackingPositionOffset = Vector3.zero,
-            trackingRotationOffset = Vector3.zero
+            dstTransform = Bones.RightArmRigTarget,
+            srcTransform = RightHandVRTarget,
+            positionOffset = Vector3.zero,
+            rotationOffset = Vector3.zero
         };
-
-        fullRigFollow.headBodyPositionOffset = new Vector3(0, 0, 0);
 
         GetComponentInChildren<RigBuilder>().Build();
     }
@@ -361,41 +357,51 @@ public class VRPlayer : MonoBehaviour
     
     private void Update()
     {
+        // Make sure the XR Origin has the same parent as the player
+        if (xrOrigin.parent != transform.parent)
+        {
+            xrOrigin.parent = transform.parent;
+            TurningProvider.SetOffset(xrOrigin.transform.localEulerAngles.y);
+        }
+        
         var movement = mainCamera.transform.localPosition - lastFrameHMDPosition;
         movement.y = 0;
 
         // Make sure player is facing towards the interacted object and that they're not sprinting
-        if (!wasInSpecialAnimation && playerController.inSpecialInteractAnimation && playerController.currentTriggerInAnimationWith is not null && playerController.currentTriggerInAnimationWith.playerPositionNode)
+        if (!wasInSpecialAnimation && PlayerController.inSpecialInteractAnimation &&
+            PlayerController.currentTriggerInAnimationWith is not null &&
+            PlayerController.currentTriggerInAnimationWith.playerPositionNode)
         {
-            TurningProvider.SetOffset(playerController.currentTriggerInAnimationWith.playerPositionNode.eulerAngles.y - mainCamera.transform.localEulerAngles.y);
+            TurningProvider.SetOffset(PlayerController.currentTriggerInAnimationWith.playerPositionNode.eulerAngles.y -
+                                      mainCamera.transform.localEulerAngles.y);
             isSprinting = false;
         }
 
-        if (!wasInEnemyAnimation && playerController.inAnimationWithEnemy)
+        if (!wasInEnemyAnimation && PlayerController.inAnimationWithEnemy)
         {
-            var direction = playerController.inAnimationWithEnemy.transform.position - transform.position;
+            var direction = PlayerController.inAnimationWithEnemy.transform.position - transform.position;
             var rotation = Quaternion.LookRotation(direction, Vector3.up);
 
             TurningProvider.SetOffset(rotation.eulerAngles.y - mainCamera.transform.localEulerAngles.y);
         }
 
-        var rotationOffset = playerController.jetpackControls switch
+        var rotationOffset = PlayerController.jetpackControls switch
         {
-            true => Quaternion.Euler(playerController.jetpackTurnCompass.eulerAngles.x,
-                TurningProvider.GetRotationOffset(), playerController.jetpackTurnCompass.eulerAngles.z),
+            true => Quaternion.Euler(PlayerController.jetpackTurnCompass.eulerAngles.x,
+                TurningProvider.GetRotationOffset(), PlayerController.jetpackTurnCompass.eulerAngles.z),
             false => Quaternion.Euler(0, TurningProvider.GetRotationOffset(), 0)
         };
 
         var movementAccounted = rotationOffset * movement;
         var cameraPosAccounted = rotationOffset * new Vector3(mainCamera.transform.localPosition.x, 0, mainCamera.transform.localPosition.z);
 
-        if (!wasInSpecialAnimation && playerController.inSpecialInteractAnimation)
+        if (!wasInSpecialAnimation && PlayerController.inSpecialInteractAnimation)
             specialAnimationPositionOffset = new Vector3(-cameraPosAccounted.x * SCALE_FACTOR, 0, -cameraPosAccounted.z * SCALE_FACTOR);
 
-        wasInSpecialAnimation = playerController.inSpecialInteractAnimation;
-        wasInEnemyAnimation = playerController.inAnimationWithEnemy is not null;
+        wasInSpecialAnimation = PlayerController.inSpecialInteractAnimation;
+        wasInEnemyAnimation = PlayerController.inAnimationWithEnemy is not null;
 
-        if (playerController.inSpecialInteractAnimation)
+        if (PlayerController.inSpecialInteractAnimation)
             totalMovementSinceLastMove = Vector3.zero;
         else
             totalMovementSinceLastMove += movementAccounted;
@@ -407,11 +413,12 @@ public class VRPlayer : MonoBehaviour
             .Any(c => !c.isTrigger && c.transform != transform.Find("Misc/Cube"));
 
         // Move player if we're not in special interact animation
-        if (!playerController.inSpecialInteractAnimation && (totalMovementSinceLastMove.sqrMagnitude > 0.25f || hit || moved))
+        if (!PlayerController.inSpecialInteractAnimation && (totalMovementSinceLastMove.sqrMagnitude > 0.25f || hit || moved))
         {
             var wasGrounded = characterController.isGrounded;
-            
-            characterController.Move(new Vector3(totalMovementSinceLastMove.x * SCALE_FACTOR, 0f, totalMovementSinceLastMove.z * SCALE_FACTOR));
+
+            characterController.Move(transform.parent.localRotation * new Vector3(
+                totalMovementSinceLastMove.x * SCALE_FACTOR, 0f, totalMovementSinceLastMove.z * SCALE_FACTOR));
             totalMovementSinceLastMove = Vector3.zero;
 
             if (!characterController.isGrounded && wasGrounded)
@@ -419,62 +426,63 @@ public class VRPlayer : MonoBehaviour
         }
 
         // Update rotation offset after adding movement from frame (if not in build mode)
-        if (!ShipBuildModeManager.Instance.InBuildMode && !playerController.inSpecialInteractAnimation)
+        if (!ShipBuildModeManager.Instance.InBuildMode && !PlayerController.inSpecialInteractAnimation)
             TurningProvider.Update();
 
-        var lastOriginPos = xrOrigin.position;
+        var lastOriginPos = xrOrigin.localPosition;
 
         // If we are in special animation allow 6 DOF but don't update player position
-        if (!playerController.inSpecialInteractAnimation)
-            xrOrigin.position = new Vector3(
-                transform.position.x + (totalMovementSinceLastMove.x * SCALE_FACTOR) - (cameraPosAccounted.x * SCALE_FACTOR),
-                transform.position.y,
-                transform.position.z + (totalMovementSinceLastMove.z * SCALE_FACTOR) - (cameraPosAccounted.z * SCALE_FACTOR)
+        if (!PlayerController.inSpecialInteractAnimation)
+            xrOrigin.localPosition = new Vector3(
+                transform.localPosition.x + (totalMovementSinceLastMove.x * SCALE_FACTOR) - (cameraPosAccounted.x * SCALE_FACTOR),
+                transform.localPosition.y,
+                transform.localPosition.z + (totalMovementSinceLastMove.z * SCALE_FACTOR) - (cameraPosAccounted.z * SCALE_FACTOR)
             );
         else
-            xrOrigin.position = transform.position + specialAnimationPositionOffset;
+            xrOrigin.localPosition = transform.localPosition + specialAnimationPositionOffset;
 
         // Move player model
         var point = transform.InverseTransformPoint(mainCamera.transform.position);
-        bones.Model.localPosition = new Vector3(point.x, 0, point.z);
+        Bones.Model.localPosition = new Vector3(point.x, 0, point.z);
 
         // Check for roomscale crouching
-        float realCrouch = mainCamera.transform.localPosition.y / realHeight;
-        bool roomCrouch = realCrouch < 0.5f;
+        var realCrouch = mainCamera.transform.localPosition.y / realHeight;
+        var roomCrouch = realCrouch < 0.5f;
 
-        if (roomCrouch != isRoomCrouching)
+        if (roomCrouch != IsRoomCrouching)
         {
-            playerController.Crouch(roomCrouch);
-            isRoomCrouching = roomCrouch;
+            PlayerController.Crouch(roomCrouch);
+            IsRoomCrouching = roomCrouch;
         }
 
         // Apply crouch offset (don't offset if roomscale)
-        crouchOffset = Mathf.Lerp(crouchOffset, !isRoomCrouching && playerController.isCrouching ? -1 : 0, 0.2f);
+        crouchOffset = Mathf.Lerp(crouchOffset, !IsRoomCrouching && PlayerController.isCrouching ? -1 : 0, 0.2f);
+        
+        // Apply car animation offset
+        var carOffset = PlayerController.inVehicleAnimation ? -1f : 0f;
 
-        // Apply floor offset and sinking value
-        xrOrigin.position += new Vector3(0, cameraFloorOffset + crouchOffset - playerController.sinkingValue * 2.5f, 0);
-        xrOrigin.rotation = rotationOffset;
-        xrOrigin.localScale = Vector3.one * SCALE_FACTOR;
+        // Apply height and rotation offsets
+        xrOrigin.localPosition += new Vector3(0,
+            cameraFloorOffset + crouchOffset - PlayerController.sinkingValue * 2.5f + carOffset, 0);
+        xrOrigin.localRotation = rotationOffset;
 
-        //Logger.LogDebug($"{transform.position} {xrOrigin.position} {leftHandVRTarget.transform.position} {rightHandVRTarget.transform.position} {cameraFloorOffset} {cameraPosAccounted}");
-
-        if ((xrOrigin.position - lastOriginPos).sqrMagnitude > SQR_MOVE_THRESHOLD) // player moved
+        if ((xrOrigin.localPosition - lastOriginPos).sqrMagnitude > SQR_MOVE_THRESHOLD) // player moved
                                                                                  // Rotate body sharply but still smoothly
             TurnBodyToCamera(TURN_WEIGHT_SHARP);
-        else if (!playerController.inSpecialInteractAnimation && GetBodyToCameraAngle() is var angle && angle > TURN_ANGLE_THRESHOLD)
+        else if (!PlayerController.inSpecialInteractAnimation && GetBodyToCameraAngle() is var angle and > TURN_ANGLE_THRESHOLD)
             // Rotate body as smoothly as possible but prevent 360 deg head twists on quick rotations
             TurnBodyToCamera(TURN_WEIGHT_SHARP * Mathf.InverseLerp(TURN_ANGLE_THRESHOLD, 170f, angle));
 
-        if (!playerController.inSpecialInteractAnimation)
+        if (!PlayerController.inSpecialInteractAnimation)
             lastFrameHMDPosition = mainCamera.transform.localPosition;
 
         // Set sprint
         if (Plugin.Config.ToggleSprint.Value)
         {
-            if (playerController.isExhausted)
+            if (PlayerController.isExhausted)
                 isSprinting = false;
 
-            var move = playerController.isCrouching ? Vector2.zero : Actions.Instance["Move"].ReadValue<Vector2>();
+            var move = PlayerController.isCrouching ? Vector2.zero : Actions.Instance["Move"].ReadValue<Vector2>();
             if (move.x == 0 && move.y == 0 && stopSprintingCoroutine == null && isSprinting)
                 stopSprintingCoroutine = StartCoroutine(StopSprinting());
             else if ((move.x != 0 || move.y != 0) && stopSprintingCoroutine != null)
@@ -484,12 +492,12 @@ public class VRPlayer : MonoBehaviour
             }
 
 
-            PlayerControllerB_Sprint_Patch.sprint = !isRoomCrouching && !playerController.isCrouching && isSprinting ? 1 : 0;
+            PlayerControllerB_Sprint_Patch.sprint = !IsRoomCrouching && !PlayerController.isCrouching && isSprinting ? 1 : 0;
         }
         else
-            PlayerControllerB_Sprint_Patch.sprint = !isRoomCrouching && Actions.Instance["Sprint"].IsPressed() ? 1 : 0;
+            PlayerControllerB_Sprint_Patch.sprint = !IsRoomCrouching && Actions.Instance["Sprint"].IsPressed() ? 1 : 0;
         
-        if (!playerController.isPlayerDead)
+        if (!PlayerController.isPlayerDead)
             DNet.BroadcastRig(new DNet.Rig()
             {
                 leftHandPosition = leftController.transform.localPosition,
@@ -504,7 +512,7 @@ public class VRPlayer : MonoBehaviour
                 cameraPosAccounted = cameraPosAccounted,
                 modelOffset = totalMovementSinceLastMove,
 
-                crouchState = (playerController.isCrouching, isRoomCrouching) switch
+                crouchState = (PlayerController.isCrouching, IsRoomCrouching) switch
                 {
                     (true, true) => CrouchState.Roomscale,
                     (true, false) => CrouchState.Button,
@@ -515,9 +523,9 @@ public class VRPlayer : MonoBehaviour
             });
         else
         {
-            var targetTransform = playerController.isInElevator
-                ? playerController.playersManager.elevatorTransform
-                : playerController.playersManager.playersContainer;
+            var targetTransform = PlayerController.isInElevator
+                ? PlayerController.playersManager.elevatorTransform
+                : PlayerController.playersManager.playersContainer;
 
             DNet.BroadcastSpectatorRig(new DNet.SpectatorRig()
             {
@@ -530,7 +538,7 @@ public class VRPlayer : MonoBehaviour
                 rightHandPosition = targetTransform.InverseTransformPoint(rightController.transform.position),
                 rightHandRotation = rightController.transform.eulerAngles,
 
-                parentedToShip = playerController.isInElevator
+                parentedToShip = PlayerController.isInElevator
             });
         }
     }
@@ -551,7 +559,7 @@ public class VRPlayer : MonoBehaviour
         // Update tracked finger curls after animator update
         LeftFingerCurler?.Update();
 
-        if (!playerController.isHoldingObject)
+        if (!PlayerController.isHoldingObject)
         {
             RightFingerCurler?.Update();
         }
@@ -613,26 +621,25 @@ public class VRPlayer : MonoBehaviour
     }
 }
 
-internal class IKRigFollowVRRig : MonoBehaviour
+public class RigTracker : MonoBehaviour
 {
-    [Serializable]
-    public class VRMap
+    public class Tracker
     {
-        public Transform vrTarget;
-        public Transform ikTarget;
-        public Vector3 trackingPositionOffset;
-        public Vector3 trackingRotationOffset;
+        public Transform srcTransform;
+        public Transform dstTransform;
+        public Vector3 positionOffset;
+        public Vector3 rotationOffset;
 
-        public void Map()
+        public void Apply()
         {
-            ikTarget.position = vrTarget.TransformPoint(trackingPositionOffset);
-            ikTarget.rotation = vrTarget.rotation * Quaternion.Euler(trackingRotationOffset);
+            dstTransform.position = srcTransform.TransformPoint(positionOffset);
+            dstTransform.rotation = srcTransform.rotation * Quaternion.Euler(rotationOffset);
         }
     }
 
     public Transform head;
-    public VRMap leftHand;
-    public VRMap rightHand;
+    public Tracker leftHand;
+    public Tracker rightHand;
 
     public Vector3 headBodyPositionOffset;
 
@@ -643,7 +650,7 @@ internal class IKRigFollowVRRig : MonoBehaviour
             transform.position = head.position + headBodyPositionOffset;
         }
 
-        leftHand.Map();
-        rightHand.Map();
+        leftHand.Apply();
+        rightHand.Apply();
     }
 }

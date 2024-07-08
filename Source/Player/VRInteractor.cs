@@ -1,4 +1,5 @@
-﻿using LCVR.Assets;
+﻿using System;
+using LCVR.Assets;
 using LCVR.Input;
 using LCVR.Physics;
 using System.Collections.Generic;
@@ -9,20 +10,34 @@ namespace LCVR.Player;
 
 public class VRInteractor : MonoBehaviour
 {
-    private const int interactableObjectMask = 1 << 11;
+    private const int INTERACTABLE_OBJECT_MASK = 1 << 11;
 
-    private static readonly Offset rightHandDefaultOffset = new(new(-0.003f, 0.18f, -0.01f), new(0.14f, 0.1f, 0.04f), Quaternion.Euler(0, 10, 0));
-    private static readonly Offset rightHandFingerOffset = new(new(0.05f, 0.18f, -0.02f), new(0.04f, 0.1f, 0.04f), Quaternion.Euler(0, 10, 0));
-    private static readonly Offset rightHandFistOffset = new(new(-0.02f, 0.09f, 0), new(0.12f, 0.1f, 0.07f), Quaternion.identity);
-    
-    private static readonly Offset leftHandDefaultOffset = new(new(0.003f, 0.19f, -0.01f), new(0.14f, 0.1f, 0.04f), Quaternion.Euler(0, 350, 0));
-    private static readonly Offset leftHandFingerOffset = new(new(-0.05f, 0.19f, -0.02f), new(0.04f, 0.1f, 0.04f), Quaternion.Euler(0, 350, 0));
-    private static readonly Offset leftHandFistOffset = new(new(0.02f, 0.09f, 0), new(0.12f, 0.1f, 0.07f), Quaternion.identity);
+    private static readonly Offset RightHandDefaultOffset =
+        new(new Vector3(-0.003f, 0.18f, -0.01f), new Vector3(0.14f, 0.1f, 0.04f), Quaternion.Euler(0, 10, 0));
+
+    private static readonly Offset RightHandFingerOffset = new(new Vector3(0.05f, 0.18f, -0.02f),
+        new Vector3(0.04f, 0.1f, 0.04f), Quaternion.Euler(0, 10, 0));
+
+    private static readonly Offset RightHandFistOffset =
+        new(new Vector3(-0.02f, 0.09f, 0), new Vector3(0.12f, 0.1f, 0.07f), Quaternion.identity);
+
+    private static readonly Offset LeftHandDefaultOffset = new(new Vector3(0.003f, 0.19f, -0.01f),
+        new Vector3(0.14f, 0.1f, 0.04f), Quaternion.Euler(0, 350, 0));
+
+    private static readonly Offset LeftHandFingerOffset = new(new Vector3(-0.05f, 0.19f, -0.02f),
+        new Vector3(0.04f, 0.1f, 0.04f), Quaternion.Euler(0, 350, 0));
+
+    private static readonly Offset LeftHandFistOffset =
+        new(new Vector3(0.02f, 0.09f, 0), new Vector3(0.12f, 0.1f, 0.07f), Quaternion.identity);
+
+    private readonly Collider[] colliderPool = new Collider[8];
 
     private Transform debugCube;
     private Offset defaultOffset;
     private Offset fingerOffset;
     private Offset fistOffset;
+
+    internal bool isHeld;
 
     public bool IsRightHand { get; private set; }
     public VRFingerCurler FingerCurler { get; private set; }
@@ -32,24 +47,24 @@ public class VRInteractor : MonoBehaviour
         switch (gameObject.name)
         {
             case "hand.R":
-                defaultOffset = rightHandDefaultOffset;
-                fingerOffset = rightHandFingerOffset;
-                fistOffset = rightHandFistOffset;
-            
+                defaultOffset = RightHandDefaultOffset;
+                fingerOffset = RightHandFingerOffset;
+                fistOffset = RightHandFistOffset;
+
                 IsRightHand = true;
                 FingerCurler = VRSession.Instance.LocalPlayer.RightFingerCurler;
                 break;
             case "hand.L":
-                defaultOffset = leftHandDefaultOffset;
-                fingerOffset = leftHandFingerOffset;
-                fistOffset = leftHandFistOffset;
+                defaultOffset = LeftHandDefaultOffset;
+                fingerOffset = LeftHandFingerOffset;
+                fistOffset = LeftHandFistOffset;
 
                 IsRightHand = false;
                 FingerCurler = VRSession.Instance.LocalPlayer.LeftFingerCurler;
                 break;
             default:
                 throw new System.Exception($"Attached to unknown object: {gameObject.name}");
-        } 
+        }
 
         debugCube = Instantiate(AssetManager.Interactable, transform).transform;
         debugCube.localScale = Vector3.zero;
@@ -72,19 +87,62 @@ public class VRInteractor : MonoBehaviour
         debugCube.localScale = offset.scale;
 
         var center = transform.TransformPoint(offset.OverlapPosition);
-        var objects = UnityEngine.Physics.OverlapBox(center, offset.OverlapScale, transform.rotation * offset.OverlapRotation, interactableObjectMask);
-        var interactables = objects.Select(o => o.GetComponent<VRInteractable>()).Where(o => o != null);
+        var count = UnityEngine.Physics.OverlapBoxNonAlloc(center, offset.OverlapScale, colliderPool,
+            transform.rotation * offset.OverlapRotation, INTERACTABLE_OBJECT_MASK);
+        var interactables = colliderPool[..count].OrderBy(c => (center - c.transform.position).sqrMagnitude)
+            .Select(c => c.GetComponent<VRInteractable>())
+            .Where(i => i != null);
 
-        VRSession.Instance.InteractionManager.ReportInteractables(this, interactables);
+        VRSession.Instance.InteractionManager.ReportInteractables(this, interactables.ToArray());
+    }
+
+    private void OnDisable()
+    {
+        // Force reset the interaction state
+        VRSession.Instance.InteractionManager.ResetState();
     }
 
     public bool IsPressed()
     {
         var action = Actions.Instance[$"Interact{(IsRightHand ? "" : "Left")}"];
 
-        return action is not null && action.IsPressed();
+        return enabled && action is not null && action.IsPressed();
     }
 
+    public void SnapTo(Transform targetTransform, Vector3? positionOffset = null, Vector3? rotationOffset = null)
+    {
+        var player = VRSession.Instance.LocalPlayer;
+        
+        var localTracker = IsRightHand
+            ? player.RigTrackerLocal.rightHand
+            : player.RigTrackerLocal.leftHand;
+
+        var tracker = IsRightHand ? player.RigTracker.rightHand : player.RigTracker.leftHand;
+        
+        if (targetTransform == null)
+        {
+            var source = IsRightHand ? player.RightHandVRTarget : player.LeftHandVRTarget;
+            
+            localTracker.srcTransform = source;
+            localTracker.positionOffset = Vector3.zero;
+            localTracker.rotationOffset = Vector3.zero;
+            
+            tracker.srcTransform = source;
+            tracker.positionOffset = Vector3.zero;
+            tracker.rotationOffset = Vector3.zero;
+        }
+        else
+        {
+            localTracker.srcTransform = targetTransform;
+            localTracker.positionOffset = positionOffset ?? Vector3.zero;
+            localTracker.rotationOffset = rotationOffset ?? Vector3.zero;
+            
+            tracker.srcTransform = targetTransform;
+            tracker.positionOffset = positionOffset ?? Vector3.zero;
+            tracker.rotationOffset = rotationOffset ?? Vector3.zero;
+        }
+    }
+    
     private readonly struct Offset(Vector3 position, Vector3 scale, Quaternion rotation)
     {
         public readonly Vector3 position = position;
@@ -101,7 +159,7 @@ public class InteractionManager
 {
     private readonly Dictionary<VRInteractable, InteractableState> interactableState = [];
 
-    public void ReportInteractables(VRInteractor interactor, IEnumerable<VRInteractable> interactables)
+    public void ReportInteractables(VRInteractor interactor, VRInteractable[] interactables)
     {
         foreach (var interactable in interactables)
         {
@@ -114,6 +172,9 @@ public class InteractionManager
                 if (!interactor.IsRightHand && !interactable.Flags.HasFlag(InteractableFlags.LeftHand))
                     continue;
 
+                if (interactor.isHeld && interactable.Flags.HasFlag(InteractableFlags.NotWhileHeld))
+                    continue;
+
                 interactableState.Add(interactable, new InteractableState(interactor, false));
                 interactable.OnColliderEnter(interactor);
             }
@@ -122,15 +183,15 @@ public class InteractionManager
             if (interactableState[interactable].interactor != interactor)
                 continue;
 
-            if (!interactableState[interactable].isHeld && interactor.IsPressed())
+            if (!interactableState[interactable].isHeld && !interactor.isHeld && interactor.IsPressed())
             {
-                bool acknowledged = interactable.OnButtonPress(interactor);
-                interactableState[interactable].isHeld = acknowledged;
+                var acknowledged = interactable.OnButtonPress(interactor);
+                interactableState[interactable].isHeld = interactor.isHeld = acknowledged;
             }
             else if (interactableState[interactable].isHeld && !interactor.IsPressed())
             {
                 interactable.OnButtonRelease(interactor);
-                interactableState[interactable].isHeld = false;
+                interactableState[interactable].isHeld = interactor.isHeld = false;
             }
         }
 
@@ -140,21 +201,36 @@ public class InteractionManager
             if (interactableState[interactable].interactor != interactor)
                 continue;
 
-            if (!interactables.Contains(interactable))
-            {
-                // Ignore if button is still being held down
-                if (interactableState[interactable].isHeld)
-                    if (interactor.IsPressed())
-                        continue;
-                    else
-                        interactable.OnButtonRelease(interactor);
+            if (interactables.Contains(interactable))
+                continue;
 
-                interactableState.Remove(interactable);
-                interactable.OnColliderExit(interactor);
+            // Ignore if button is still being held down
+            if (interactableState[interactable].isHeld)
+                if (interactor.IsPressed())
+                    continue;
+                else {
+                    interactable.OnButtonRelease(interactor);
+                    interactor.isHeld = false;
+                }
 
-                // Break to not make C# shit itself, if more need to be removed it'll happen next frame
-                break;
-            }
+            interactableState.Remove(interactable);
+            interactable.OnColliderExit(interactor);
+
+            // Break to not make C# shit itself, if more need to be removed it'll happen next frame
+            break;
+        }
+    }
+
+    public void ResetState()
+    {
+        foreach (var interactable in interactableState.Keys)
+        {
+            var state = interactableState[interactable];
+            
+            if (state.isHeld)
+                interactable.OnButtonRelease(state.interactor);
+            
+            interactable.OnColliderExit(state.interactor);
         }
     }
 

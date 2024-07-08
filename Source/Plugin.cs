@@ -28,12 +28,11 @@ public class Plugin : BaseUnityPlugin
 {
     public const string PLUGIN_GUID = "io.daxcess.lcvr";
     public const string PLUGIN_NAME = "LCVR";
-    public const string PLUGIN_VERSION = "1.2.6";
+    public const string PLUGIN_VERSION = "1.3.0";
 
     private readonly string[] GAME_ASSEMBLY_HASHES =
     [
-        "7CFABBA203022CC46EF309B0E651276CB59217AF6D38C34E2085E67957DBBCBD", // V50
-        "4C265CECBC1A075E52D9E1FA458C67AA25C087362B472DF66DF370B9A0676A67", // V50 Patch 1
+        "A6B2633FE729B9C147466CD4A92168872EF789620EB29FF723A33937837AC9B0", // V56
     ];
 
     public new static Config Config { get; private set; }

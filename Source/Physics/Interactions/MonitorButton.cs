@@ -10,21 +10,21 @@ internal class MonitorButton : MonoBehaviour, VRInteractable
     private float lastInteractTime;
 
     private AudioSource audioSource;
-    private AudioClip buttonPressSFX;
+    private AudioClip buttonPressSfx;
 
     public MonitorButton otherButton;
 
-    public bool CanInteract => Time.realtimeSinceStartup - lastInteractTime > 0.25f;
+    private bool CanInteract => Time.realtimeSinceStartup - lastInteractTime > 0.25f;
 
     public InteractableFlags Flags => InteractableFlags.BothHands;
 
-    void Awake()
+    private void Awake()
     {
         trigger = GetComponentInParent<InteractTrigger>();
         trigger.gameObject.name = "MonitorButtonInteractable";
 
         audioSource = gameObject.AddComponent<AudioSource>();
-        buttonPressSFX = ShipBuildModeManager.Instance.beginPlacementSFX;
+        buttonPressSfx = ShipBuildModeManager.Instance.beginPlacementSFX;
     }
 
     public void OnColliderEnter(VRInteractor _)
@@ -34,7 +34,7 @@ internal class MonitorButton : MonoBehaviour, VRInteractable
 
         lastInteractTime = Time.realtimeSinceStartup;
         trigger.onInteract?.Invoke(VRSession.Instance.LocalPlayer.PlayerController);
-        audioSource.PlayOneShot(buttonPressSFX);
+        audioSource.PlayOneShot(buttonPressSfx);
     }
 
     public void OnColliderExit(VRInteractor _) { }

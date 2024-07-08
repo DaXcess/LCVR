@@ -11,7 +11,7 @@ internal class Experiments
 {
     public static void RunExperiments()
     {
-        // ShowMeTheMoney(10000);
+        ShowMeTheMoney(10000);
         // SpawnShotgun();
         // SpawnBuyableItem<JetpackItem>("Jetpack");
         // SpawnBuyableItem<SprayPaintItem>("Spray paint");
@@ -102,6 +102,14 @@ internal static class ExperimentalPatches
         __result = true;
 
         return false;
+    }
+
+    // TODO: Remove
+    [HarmonyPatch(typeof(Terminal), nameof(Terminal.Start))]
+    [HarmonyPostfix]
+    private static void OnTerminalActivate(Terminal __instance)
+    {
+        Experiments.RunExperiments();
     }
 }
 #endif

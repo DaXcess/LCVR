@@ -157,7 +157,7 @@ public class KeyRemapManager : MonoBehaviour
             option.currentlyUsedKeyText.text = "";
 
             var image = option.transform.Find("ControlImage").GetComponent<Image>();
-
+            
             image.sprite = string.IsNullOrEmpty(playerInput.currentControlScheme)
                 ? null
                 : AssetManager.RemappableControls.icons[

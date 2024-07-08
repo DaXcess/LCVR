@@ -30,7 +30,7 @@ internal static class SpectatorPlayerPatches
     /// Initialize values when joining a new game, since this class is static and values persist across games
     /// </summary>
     [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.Start))]
-    [HarmonyPatch]
+    [HarmonyPostfix]
     private static void OnGameJoined()
     {
         isSpectating = false;
@@ -123,12 +123,6 @@ internal static class SpectatorPlayerPatches
         shipDoorLeft.GetComponent<BoxCollider>().isTrigger = true;
         shipDoorRight.GetComponent<BoxCollider>().isTrigger = true;
         shipDoorWall.GetComponent<BoxCollider>().isTrigger = true;
-        
-        // Make sure all enemies are no longer targeting us
-        var enemies = Object.FindObjectsOfType<EnemyAI>();
-        foreach (var enemy in enemies)
-            if (enemy.targetPlayer == __instance)
-                enemy.targetPlayer = null;
 
         // Of course, Nutcracker with special AI behavior
         var nutcrackers = Object.FindObjectsOfType<NutcrackerEnemyAI>();

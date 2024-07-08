@@ -18,6 +18,7 @@ internal static class AssetManager
     public static GameObject SpectatorLight;
     public static GameObject SpectatorGhost;
     public static GameObject EnemyPrefab;
+    public static GameObject SteeringWheelPoints;
 
     public static Material SplashMaterial;
     public static Material DefaultRayMat;
@@ -42,8 +43,9 @@ internal static class AssetManager
 
     public static bool LoadAssets()
     {
-        assetBundle = AssetBundle.LoadFromMemory(Properties.Resources.lethalcompanyvr);
-
+        // assetBundle = AssetBundle.LoadFromMemory(Properties.Resources.lethalcompanyvr);
+        assetBundle = AssetBundle.LoadFromFile(@"F:\LCVR-Unity\AssetBundles\StandaloneWindows\lethalcompanyvr");
+        
         if (assetBundle == null)
         {
             Logger.LogError("Failed to load asset bundle!");
@@ -58,6 +60,7 @@ internal static class AssetManager
         EnemyPrefab = assetBundle.LoadAsset<GameObject>("Flowerman");
         SpectatorLight = assetBundle.LoadAsset<GameObject>("Spectator Light");
         SpectatorGhost = assetBundle.LoadAsset<GameObject>("SpectatorGhost");
+        SteeringWheelPoints = assetBundle.LoadAsset<GameObject>("SnapPointContainer");
 
         VRActions = assetBundle.LoadAsset<InputActionAsset>("VRActions");
         TrackingActions = assetBundle.LoadAsset<InputActionAsset>("TrackingActions");
@@ -74,7 +77,7 @@ internal static class AssetManager
         KofiImage = assetBundle.LoadAsset<Sprite>("Ko-Fi");
         DiscordImage = assetBundle.LoadAsset<Sprite>("Discord");
         WarningImage = assetBundle.LoadAsset<Sprite>("Warning");
-        SettingsImage = assetBundle.LoadAsset<Sprite>("lcsettings-icon-2");
+        SettingsImage = assetBundle.LoadAsset<Sprite>("lcsettings-icon");
 
         LocalVrMetarig = assetBundle.LoadAsset<RuntimeAnimatorController>("metarig");
         RemoteVrMetarig = assetBundle.LoadAsset<RuntimeAnimatorController>("metarigOtherPlayers");
