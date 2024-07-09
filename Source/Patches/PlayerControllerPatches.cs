@@ -438,6 +438,10 @@ internal static class UniversalPlayerControllerPatches
             return;
         
         networkPlayer.ShowSpectatorGhost();
+        
+        // Reset snap transforms on death
+        networkPlayer.SnapLeftHandTo(null);
+        networkPlayer.SnapRightHandTo(null);
     }
 
     /// <summary>

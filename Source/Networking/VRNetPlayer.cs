@@ -30,8 +30,8 @@ public class VRNetPlayer : MonoBehaviour
     private Transform leftHandVRTarget;
     private Transform rightHandVRTarget;
 
-    private FingerCurler leftFingerCurler;
-    private FingerCurler rightFingerCurler;
+    private HandTargetOverride? leftHandTargetOverride;
+    private HandTargetOverride? rightHandTargetOverride;
 
     private Transform camera;
 
@@ -49,6 +49,9 @@ public class VRNetPlayer : MonoBehaviour
 
     public Transform LeftItemHolder { get; private set; }
     public Transform RightItemHolder { get; private set; }
+
+    public FingerCurler LeftFingerCurler { get; private set; }
+    public FingerCurler RightFingerCurler { get; private set; }
 
     private void Awake()
     {
@@ -97,8 +100,8 @@ public class VRNetPlayer : MonoBehaviour
         RightItemHolder.localEulerAngles = new Vector3(356.3837f, 357.6979f, 0.1453f);
 
         // Set up finger curlers
-        leftFingerCurler = new FingerCurler(Bones.LeftHand, true);
-        rightFingerCurler = new FingerCurler(Bones.RightHand, false);
+        LeftFingerCurler = new FingerCurler(Bones.LeftHand, true);
+        RightFingerCurler = new FingerCurler(Bones.RightHand, false);
 
         BuildVRRig();
 
@@ -231,11 +234,11 @@ public class VRNetPlayer : MonoBehaviour
         Bones.RightArmRigTarget.rotation = rightHandVRTarget.rotation;
 
         // Update tracked finger curls after animator update
-        leftFingerCurler?.Update();
+        LeftFingerCurler?.Update();
 
         if (!PlayerController.isHoldingObject)
         {
-            rightFingerCurler?.Update();
+            RightFingerCurler?.Update();
         }
 
         // Rotate spectator username billboard
@@ -280,16 +283,54 @@ public class VRNetPlayer : MonoBehaviour
 
         usernameAlpha.alpha = 1f;
     }
+    
+    /// <summary>
+    /// Override the target transform that the left hand of this player should go towards
+    /// </summary>
+    public void SnapLeftHandTo(Transform transform, Vector3? positionOffset = null, Vector3? rotationOffset = null)
+    {
+        if (transform == null)
+        {
+            leftHandTargetOverride = null;
+            return;
+        }
 
+        leftHandTargetOverride = new HandTargetOverride
+        {
+            transform = transform,
+            positionOffset = positionOffset ?? Vector3.zero,
+            rotationOffset = rotationOffset ?? Vector3.zero
+        };
+    }
+    
+    /// <summary>
+    /// Override the target transform that the right hand of this player should go towards
+    /// </summary>
+    public void SnapRightHandTo(Transform transform, Vector3? positionOffset = null, Vector3? rotationOffset = null)
+    {
+        if (transform == null)
+        {
+            rightHandTargetOverride = null;
+            return;
+        }
+
+        rightHandTargetOverride = new HandTargetOverride
+        {
+            transform = transform,
+            positionOffset = positionOffset ?? Vector3.zero,
+            rotationOffset = rotationOffset ?? Vector3.zero
+        };
+    }
+    
     internal void UpdateTargetTransforms(DNet.Rig rig)
     {
         leftController.localPosition = rig.leftHandPosition;
         leftController.localEulerAngles = rig.leftHandEulers;
-        leftFingerCurler?.SetCurls(rig.leftHandFingers);
+        LeftFingerCurler?.SetCurls(rig.leftHandFingers);
 
         rightController.localPosition = rig.rightHandPosition;
         rightController.localEulerAngles = rig.rightHandEulers;
-        rightFingerCurler?.SetCurls(rig.rightHandFingers);
+        RightFingerCurler?.SetCurls(rig.rightHandFingers);
 
         camera.transform.eulerAngles = rig.cameraEulers;
         cameraPosAccounted = rig.cameraPosAccounted;
@@ -357,5 +398,12 @@ public class VRNetPlayer : MonoBehaviour
         rightArmConstraint.data = originalRightArmConstraintData;
 
         GetComponentInChildren<RigBuilder>().Build();
+    }
+
+    private struct HandTargetOverride
+    {
+        public Transform transform;
+        public Vector3 positionOffset;
+        public Vector3 rotationOffset;
     }
 }

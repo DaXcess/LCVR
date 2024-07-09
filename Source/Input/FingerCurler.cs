@@ -20,7 +20,7 @@ public class FingerCurler
 
         public void Update()
         {
-            float angle = Mathf.Lerp(0f, 80f, curl);
+            var angle = Mathf.Lerp(0f, 80f, curl);
 
             bone01.localRotation = Quaternion.AngleAxis(-angle, Vector3.right) * bone01Rotation;
             bone02.localRotation = Quaternion.AngleAxis(angle * sign, Vector3.forward) * bone02Rotation;
@@ -29,8 +29,8 @@ public class FingerCurler
 
     public class Thumb(Transform root, Vector3 firstRotation, Vector3 secondRotation)
     {
-        public Transform bone01 = root;
-        public Transform bone02 = root.GetChild(0);
+        private Transform bone01 = root;
+        private Transform bone02 = root.GetChild(0);
 
         public float curl;
 
@@ -41,7 +41,7 @@ public class FingerCurler
 
         public void Update()
         {
-            float angle = Mathf.Lerp(-80f, 80f, curl);
+            var angle = Mathf.Lerp(-80f, 80f, curl);
 
             bone01.localRotation = bone01Rotation;
             bone02.localRotation = Quaternion.AngleAxis(-angle, Vector3.right) * bone02Rotation;
@@ -53,6 +53,8 @@ public class FingerCurler
     public readonly Finger middleFinger;
     public readonly Finger ringFinger;
     public readonly Finger pinkyFinger;
+
+    protected bool forceFist;
 
     public FingerCurler(Transform hand, bool isLeft)
     {
@@ -105,11 +107,23 @@ public class FingerCurler
 
     public virtual void Update()
     {
+        if (forceFist)
+        {
+            thumbFinger.curl = 1;
+            indexFinger.curl = Mathf.Lerp(indexFinger.curl, 1, 0.5f);
+            middleFinger.curl = ringFinger.curl = pinkyFinger.curl = Mathf.Lerp(middleFinger.curl, 1, 0.5f);
+        }
+        
         thumbFinger.Update();
         indexFinger.Update();
         middleFinger.Update();
         ringFinger.Update();
         pinkyFinger.Update();
+    }
+
+    public void ForceFist(bool enabled)
+    {
+        forceFist = enabled;
     }
 }
 
@@ -125,8 +139,6 @@ public class VRFingerCurler(Transform hand, bool isLeft) : FingerCurler(hand, is
     private InputAction ThumbAction => Actions.Instance[$"Thumb{hand}"];
     private InputAction IndexAction => Actions.Instance[$"Index{hand}"];
     private InputAction OthersAction => Actions.Instance[$"Others{hand}"];
-
-    private bool forceFist;
 
     public bool IsFist => indexFinger.curl > 0.75f && middleFinger.curl > 0.75f;
     public bool IsPointer => indexFinger.curl <= 0.75f && middleFinger.curl > 0.75f;
@@ -146,6 +158,9 @@ public class VRFingerCurler(Transform hand, bool isLeft) : FingerCurler(hand, is
 
     private void UpdateCurls()
     {
+        if (forceFist)
+            return;
+        
         // Thumb Up = 0f
         // Thumb Default = 0.5f
         // Thumb Down = 1f
@@ -153,24 +168,13 @@ public class VRFingerCurler(Transform hand, bool isLeft) : FingerCurler(hand, is
         var index = IndexAction.ReadValue<float>();
         var grip = OthersAction.ReadValue<float>();
 
-        var thumbsUp = index > THUMBS_UP_TRESHOLD && grip > THUMBS_UP_TRESHOLD && thumb == THUMB_STATE_DEFAULT;
-
-        if (forceFist)
-        {
-            thumb = 1;
-            index = Mathf.Lerp(indexFinger.curl, 1, 0.5f);
-            grip = Mathf.Lerp(middleFinger.curl, 1, 0.5f);
-        }
+        var thumbsUp = index > THUMBS_UP_TRESHOLD && grip > THUMBS_UP_TRESHOLD &&
+                       Mathf.Approximately(thumb, THUMB_STATE_DEFAULT);
 
         thumbFinger.curl = Mathf.Lerp(thumbFinger.curl, thumbsUp ? THUMB_STATE_UP : thumb, 0.5f);
         indexFinger.curl = index;
         middleFinger.curl = grip;
         ringFinger.curl = grip;
         pinkyFinger.curl = grip;
-    }
-
-    public void ForceFist(bool enabled)
-    {
-        forceFist = enabled;
     }
 }

@@ -1,6 +1,9 @@
+using System;
+using System.IO;
 using System.Linq;
 using HarmonyLib;
 using LCVR.Assets;
+using LCVR.Networking;
 using LCVR.Patches;
 using LCVR.Player;
 using UnityEngine;
@@ -17,6 +20,7 @@ public class SteeringWheel : MonoBehaviour
 
     private VehicleController vehicle;
     private Animator wheelAnimator;
+    private Channel channel;
     
     private float currentRotation;
     private float pendingRotation;
@@ -25,24 +29,34 @@ public class SteeringWheel : MonoBehaviour
     private int handsOnWheel;
 
     internal SteeringWheelSnapPoint[] snapPoints;
+
+    private VRNetPlayer OtherDriver =>
+        DNet.Players.FirstOrDefault(player => player.PlayerController == vehicle.currentDriver);
+    
+    private bool ControlledByLocal => VRSession.InVR && vehicle.localPlayerInControl;
+    
+    private bool ControlledByOther => vehicle.currentDriver is not null &&
+                                      DNet.Players.Any(player => player.PlayerController == vehicle.currentDriver);
     
     private void Awake()
     {
         vehicle = GetComponentInParent<VehicleController>();
         wheelAnimator = GetComponentInParent<Animator>();
+
+        channel = DNet.CreateChannel(ChannelType.VehicleSteeringWheel, vehicle.NetworkObjectId);
+        channel.OnPacketReceived += OnPacketReceived;
     }
 
     private void Update()
     {
-        // TODO: Networking
-        if ((VRSession.InVR && vehicle.localPlayerInControl) || false)
-            wheelAnimator.enabled = false;
-        else
-            wheelAnimator.enabled = true;
+        wheelAnimator.enabled = !ControlledByLocal && !ControlledByOther;
     }
 
     private void LateUpdate()
     {
+        if (!ControlledByLocal && !ControlledByOther)
+            return;
+            
         try
         {
             if (Mathf.Abs(pendingRotation) < 1)
@@ -63,7 +77,28 @@ public class SteeringWheel : MonoBehaviour
             handsOnWheel = 0;
         }
     }
-    
+
+    private void FixedUpdate()
+    {
+        if (!ControlledByLocal)
+            return;
+
+        channel.SendPacket([
+            (byte)SteeringWheelCommand.Sync, ..Serialization.Serialize(new SteeringWheelSync
+            {
+                currentRotation = currentRotation,
+                pendingRotation = pendingRotation,
+                velocity = velocity,
+                handsOnWheel = handsOnWheel
+            })
+        ]);
+    }
+
+    private void OnDestroy()
+    {
+        channel.Dispose();
+    }
+
     public void ApplyRotationAtPointTowards(Vector3 point, Vector3 target)
     {
         handsOnWheel++;
@@ -96,6 +131,105 @@ public class SteeringWheel : MonoBehaviour
         
         vehicle.drivePedalPressed = vehicle.moveInputVector.y > 0.1f;
         vehicle.brakePedalPressed = vehicle.moveInputVector.y < -0.1f;
+    }
+
+    /// <summary>
+    /// Notify other players that the steering wheel was grabbed
+    /// </summary>
+    internal void HandAttachedToWheel(bool isRightHand, int snapPointIndex)
+    {
+        channel.SendPacket([
+            (byte)SteeringWheelCommand.Sync, ..Serialization.Serialize(new HandOnWheel
+            {
+                isOnWheel = true,
+                isRightHand = isRightHand,
+                snapPointIndex = snapPointIndex
+            })
+        ]);
+    }
+    
+    /// <summary>
+    /// Notify other players that the steering wheel was released
+    /// </summary>
+    internal void HandDetachedFromWheel(bool isRightHand)
+    {
+        channel.SendPacket([
+            (byte)SteeringWheelCommand.Sync, ..Serialization.Serialize(new HandOnWheel
+            {
+                isOnWheel = false,
+                isRightHand = isRightHand,
+                snapPointIndex = 0
+            })
+        ]);
+    }
+
+    private void OnPacketReceived(ushort sender, BinaryReader reader)
+    {
+        switch ((SteeringWheelCommand)reader.ReadByte())
+        {
+            case SteeringWheelCommand.Sync:
+                // Only allow sync if sender is the driver of the vehicle
+                if (OtherDriver?.PlayerController.playerClientId != sender)
+                    break;
+
+                var sync = Serialization.Deserialize<SteeringWheelSync>(reader);
+
+                currentRotation = sync.currentRotation;
+                pendingRotation = sync.pendingRotation;
+                velocity = sync.velocity;
+                handsOnWheel = sync.handsOnWheel;
+
+                break;
+
+            case SteeringWheelCommand.Hand:
+                // Only allow sync if sender is the driver of the vehicle
+                if (OtherDriver?.PlayerController.playerClientId != sender)
+                    break;  
+
+                var handOnWheel = Serialization.Deserialize<HandOnWheel>(reader);
+
+                if (!handOnWheel.isOnWheel)
+                {
+                    if (handOnWheel.isRightHand)
+                        OtherDriver.SnapRightHandTo(null);
+                    else
+                        OtherDriver.SnapLeftHandTo(null);
+
+                    break;
+                }
+
+                var target = snapPoints[handOnWheel.snapPointIndex];
+
+                if (handOnWheel.isRightHand)
+                    OtherDriver.SnapRightHandTo(target.transform, new Vector3(0, -0.4f, -0.1f), new Vector3(0, 180, 0));
+                else
+                    OtherDriver.SnapLeftHandTo(target.transform, new Vector3(0, -0.4f, -0.1f), new Vector3(0, 180, 0));
+
+                break;
+        }
+    }
+
+    private enum SteeringWheelCommand : byte
+    {
+        Sync,
+        Hand,
+    }
+
+    [Serialize]
+    private struct SteeringWheelSync
+    {
+        public float currentRotation;
+        public float pendingRotation;
+        public float velocity;
+        public int handsOnWheel;
+    }
+
+    [Serialize]
+    private struct HandOnWheel
+    {
+        public bool isOnWheel;
+        public bool isRightHand;
+        public int snapPointIndex;
     }
 }
 
@@ -136,6 +270,8 @@ public class SteeringWheelSnapPoint : MonoBehaviour, VRInteractable
 
         if (interactor.IsRightHand)
             VRSession.Instance.LocalPlayer.PrimaryController.enabled = false;
+
+        steeringWheel.HandAttachedToWheel(interactor.IsRightHand, pointIndex);
         
         return true;
     }
@@ -148,6 +284,8 @@ public class SteeringWheelSnapPoint : MonoBehaviour, VRInteractable
         
         if (interactor.IsRightHand)
             VRSession.Instance.LocalPlayer.PrimaryController.enabled = true;
+        
+        steeringWheel.HandDetachedFromWheel(interactor.IsRightHand);
     }
     
     public void OnColliderEnter(VRInteractor _) { }

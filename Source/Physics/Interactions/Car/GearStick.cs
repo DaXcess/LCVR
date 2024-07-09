@@ -1,5 +1,8 @@
+using System;
+using System.IO;
 using HarmonyLib;
 using LCVR.Assets;
+using LCVR.Networking;
 using LCVR.Patches;
 using LCVR.Player;
 using UnityEngine;
@@ -15,6 +18,7 @@ public class GearStick : MonoBehaviour, VRInteractable
     private Transform cube;
     
     private VehicleController vehicle;
+    private Channel channel;
     private Transform container;
 
     private const float PARK_POSITION = 1.7551f;
@@ -28,11 +32,14 @@ public class GearStick : MonoBehaviour, VRInteractable
     private void Awake()
     {
         vehicle = GetComponentInParent<VehicleController>();
+        channel = DNet.CreateChannel(ChannelType.VehicleGearStick, vehicle.NetworkObjectId);
         
         container = transform.parent.parent;
 
         cube = Instantiate(AssetManager.Interactable, container).transform;
         cube.localScale = Vector3.one * 0.1f;
+        
+        channel.OnPacketReceived += OnPacketReceived;
     }
 
     private void Update()
@@ -58,6 +65,11 @@ public class GearStick : MonoBehaviour, VRInteractable
         cube.localPosition = new Vector3(-0.125f, 0.1f, localPosition);
     }
 
+    private void OnDestroy()
+    {
+        channel.Dispose();
+    }
+
     public bool OnButtonPress(VRInteractor interactor)
     {
         if (isHeld)
@@ -72,6 +84,8 @@ public class GearStick : MonoBehaviour, VRInteractable
         interactor.SnapTo(transform.parent, new Vector3(0.1f, -0.03f, 0.2f),
             new Vector3(interactor.IsRightHand ? 90 : -90, 180, 270));
         interactor.FingerCurler.ForceFist(true);
+        
+        channel.SendPacket([(byte)GearStickCommand.GrabStick, interactor.IsRightHand ? (byte)1 : (byte)0]);
 
         return true;
     }
@@ -87,10 +101,78 @@ public class GearStick : MonoBehaviour, VRInteractable
 
         interactor.SnapTo(null);
         interactor.FingerCurler.ForceFist(false);
+        
+        channel.SendPacket([(byte)GearStickCommand.ReleaseStick, interactor.IsRightHand ? (byte)1 : (byte)0]);
+    }
+    
+    private void OnPacketReceived(ushort sender, BinaryReader reader)
+    {
+        switch ((GearStickCommand)reader.ReadByte())
+        {
+            case GearStickCommand.GrabStick:
+            {
+                // Discard packet if already held
+                if (isHeld)
+                    break;
+
+                // Check if player exists
+                if (!DNet.TryGetPlayer(sender, out var player))
+                    break;
+
+                isHeld = true;
+
+                var isRightHand = reader.ReadByte() == 1;
+                if (isRightHand)
+                {
+                    player.RightFingerCurler.ForceFist(true);
+                    player.SnapRightHandTo(transform.parent, new Vector3(0.1f, -0.03f, 0.2f),
+                        new Vector3(90, 180, 270));
+                }
+                else
+                {
+                    player.LeftFingerCurler.ForceFist(true);
+                    player.SnapLeftHandTo(transform.parent, new Vector3(0.1f, -0.03f, 0.2f),
+                        new Vector3(-90, 180, 270));
+                }
+            }
+            break;
+
+            case GearStickCommand.ReleaseStick:
+            {
+                // Discard packet if not held by other
+                if (!isHeld || isHeldByLocal)
+                    break;
+
+                // Check if player exists
+                if (!DNet.TryGetPlayer(sender, out var player))
+                    break;
+
+                isHeld = false;
+                
+                var isRightHand = reader.ReadByte() == 1;
+                if (isRightHand)
+                {
+                    player.RightFingerCurler.ForceFist(false);
+                    player.SnapRightHandTo(null);
+                }
+                else
+                {
+                    player.LeftFingerCurler.ForceFist(false);
+                    player.SnapLeftHandTo(null);
+                }
+            }
+            break;
+        }
     }
     
     public void OnColliderEnter(VRInteractor interactor) { }
     public void OnColliderExit(VRInteractor interactor) { }
+
+    private enum GearStickCommand : byte
+    {
+        GrabStick,
+        ReleaseStick
+    }
 }
 
 [LCVRPatch(LCVRPatchTarget.Universal)]
@@ -101,6 +183,7 @@ internal static class GearStickPatches
     [HarmonyPostfix]
     private static void OnCarCreated(VehicleController __instance)
     {
+        // TODO: Make configurable
         if (false)
             return;
 
