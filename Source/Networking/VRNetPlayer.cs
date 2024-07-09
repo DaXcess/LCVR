@@ -230,11 +230,29 @@ public class VRNetPlayer : MonoBehaviour
         }, 0);
 
         // Apply controller transforms
-        Bones.LeftArmRigTarget.position = leftHandVRTarget.position + positionOffset;
-        Bones.LeftArmRigTarget.rotation = leftHandVRTarget.rotation;
+        if (leftHandTargetOverride is {} leftOverride)
+        {
+            Bones.LeftArmRigTarget.position = leftOverride.transform.position + leftOverride.positionOffset;
+            Bones.LeftArmRigTarget.rotation =
+                leftOverride.transform.rotation * Quaternion.Euler(leftOverride.rotationOffset);
+        }
+        else
+        {
+            Bones.LeftArmRigTarget.position = leftHandVRTarget.position + positionOffset;
+            Bones.LeftArmRigTarget.rotation = leftHandVRTarget.rotation;
+        }
 
-        Bones.RightArmRigTarget.position = rightHandVRTarget.position + positionOffset;
-        Bones.RightArmRigTarget.rotation = rightHandVRTarget.rotation;
+        if (rightHandTargetOverride is {} rightOverride)
+        {
+            Bones.RightArmRigTarget.position = rightOverride.transform.position + rightOverride.positionOffset;
+            Bones.RightArmRigTarget.rotation =
+                rightOverride.transform.rotation * Quaternion.Euler(rightOverride.rotationOffset);
+        }
+        else
+        {
+            Bones.RightArmRigTarget.position = rightHandVRTarget.position + positionOffset;
+            Bones.RightArmRigTarget.rotation = rightHandVRTarget.rotation;
+        }
 
         // Update tracked finger curls after animator update
         LeftFingerCurler?.Update();
