@@ -270,16 +270,11 @@ public class Plugin : BaseUnityPlugin
         var settings = asset.currentPlatformRenderPipelineSettings;
 
         settings.dynamicResolutionSettings.enabled = Config.EnableDynamicResolution.Value;
-        settings.dynamicResolutionSettings.enableDLSS = Config.EnableDLSS.Value;
         settings.dynamicResolutionSettings.dynResType = DynamicResolutionType.Hardware;
         settings.dynamicResolutionSettings.upsampleFilter = Config.DynamicResolutionUpscaleFilter.Value;
         settings.dynamicResolutionSettings.minPercentage = settings.dynamicResolutionSettings.maxPercentage =
             Config.DynamicResolutionPercentage.Value;
         settings.supportMotionVectors = true;
-
-        if (Config.EnableDLSS.Value)
-            Logger.LogWarning(
-                "DLSS has been deprecated, and will be removed in a future release. Please switch over to the Dynamic Resolution and Camera Resolution configuration to enhance your performance.");
 
         settings.xrSettings.occlusionMesh = false;
         settings.xrSettings.singlePass = false;

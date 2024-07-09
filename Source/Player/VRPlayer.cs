@@ -4,6 +4,7 @@ using UnityEngine.InputSystem.XR;
 using System;
 using LCVR.Input;
 using System.Collections;
+using System.IO;
 using LCVR.Networking;
 using GameNetcodeStuff;
 using UnityEngine.XR.Interaction.Toolkit;
@@ -60,6 +61,8 @@ public class VRPlayer : MonoBehaviour
 
     public Transform leftItemHolder;
     public Transform rightItemHolder;
+
+    private Channel prefsChannel;
 
     #region Public Accessors
     public PlayerControllerB PlayerController { get; private set; }
@@ -197,6 +200,11 @@ public class VRPlayer : MonoBehaviour
         BuildVRRig();
 
         Logger.LogDebug("Initialized XR Rig");
+
+        prefsChannel = DNet.CreateChannel(ChannelType.PlayerPrefs);
+        prefsChannel.OnPacketReceived += OnPrefsPacketReceived;
+        
+        StartCoroutine(UpdatePlayerPrefs());
     }
 
     private void BuildVRRig()
@@ -572,6 +580,8 @@ public class VRPlayer : MonoBehaviour
     
     private void OnDestroy()
     {
+        prefsChannel.Dispose();
+        
         Actions.Instance["Sprint"].performed -= Sprint_performed;
         Actions.Instance["Reset Height"].performed -= ResetHeight_performed;
     }
@@ -619,6 +629,25 @@ public class VRPlayer : MonoBehaviour
 
         isSprinting = false;
         stopSprintingCoroutine = null;
+    }
+
+    private IEnumerator UpdatePlayerPrefs()
+    {
+        while (true)
+        {
+            // More concise layout if more prefs need to be synced
+            prefsChannel.SendPacket([Plugin.Config.DisableCarSteeringWheelInteraction.Value ? (byte)1 : (byte)0]);
+
+            yield return new WaitForSeconds(5f);
+        }
+    }
+
+    private static void OnPrefsPacketReceived(ushort sender, BinaryReader reader)
+    {
+        var steeringDisabled = reader.ReadBoolean();
+
+        if (DNet.TryGetPlayer(sender, out var player))
+            player.AdditionalData.DisableSteeringWheel = steeringDisabled;
     }
 
     private void TurnBodyToCamera(float turnWeight)

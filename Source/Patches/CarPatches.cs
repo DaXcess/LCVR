@@ -29,6 +29,9 @@ internal static class VRCarPatches
     [HarmonyPrefix]
     private static bool HookGetVehicleInput(VehicleController __instance)
     {
+        if (Plugin.Config.DisableCarSteeringWheelInteraction.Value)
+            return true;
+        
         var wheel = VRSession.Instance.CarManager.FindWheelForVehicle(__instance);
         if (wheel)
             wheel.GetSteeringInput();

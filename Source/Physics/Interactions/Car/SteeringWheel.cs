@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.IO;
 using System.Linq;
 using HarmonyLib;
@@ -32,11 +33,14 @@ public class SteeringWheel : MonoBehaviour
 
     private VRNetPlayer OtherDriver =>
         DNet.Players.FirstOrDefault(player => player.PlayerController == vehicle.currentDriver);
-    
-    private bool ControlledByLocal => VRSession.InVR && vehicle.localPlayerInControl;
-    
+
+    private bool ControlledByLocal => VRSession.InVR && vehicle.localPlayerInControl &&
+                                      !Plugin.Config.DisableCarSteeringWheelInteraction.Value;
+
     private bool ControlledByOther => vehicle.currentDriver is not null &&
-                                      DNet.Players.Any(player => player.PlayerController == vehicle.currentDriver);
+                                      DNet.Players.Any(player =>
+                                          !player.AdditionalData.DisableSteeringWheel &&
+                                          player.PlayerController == vehicle.currentDriver);
     
     private void Awake()
     {
@@ -45,6 +49,8 @@ public class SteeringWheel : MonoBehaviour
 
         channel = DNet.CreateChannel(ChannelType.VehicleSteeringWheel, vehicle.NetworkObjectId);
         channel.OnPacketReceived += OnPacketReceived;
+
+        StartCoroutine(UpdatePrefs());
     }
 
     private void Update()
@@ -163,10 +169,33 @@ public class SteeringWheel : MonoBehaviour
         ]);
     }
 
+    private IEnumerator UpdatePrefs()
+    {
+        while (true)
+        {
+            channel.SendPacket([
+                (byte)SteeringWheelCommand.EnabledForSelf,
+                Plugin.Config.DisableCarSteeringWheelInteraction.Value ? (byte)0 : (byte)1
+            ]);
+            
+            yield return new WaitForSeconds(5);
+        }
+    }
+
     private void OnPacketReceived(ushort sender, BinaryReader reader)
     {
         switch ((SteeringWheelCommand)reader.ReadByte())
         {
+            case SteeringWheelCommand.EnabledForSelf:
+                var enabledForPlayer = reader.ReadByte() == 1;
+
+                if (!DNet.TryGetPlayer(sender, out var player))
+                    break;
+
+                player.AdditionalData.DisableSteeringWheel = !enabledForPlayer;
+                
+                break;
+            
             case SteeringWheelCommand.Sync:
                 // Only allow sync if sender is the driver of the vehicle
                 if (OtherDriver?.PlayerController.playerClientId != sender)
@@ -211,6 +240,7 @@ public class SteeringWheel : MonoBehaviour
 
     private enum SteeringWheelCommand : byte
     {
+        EnabledForSelf,
         Sync,
         Hand,
     }
@@ -259,6 +289,9 @@ public class SteeringWheelSnapPoint : MonoBehaviour, VRInteractable
 
     public bool OnButtonPress(VRInteractor interactor)
     {
+        if (Plugin.Config.DisableCarSteeringWheelInteraction.Value)
+            return false;
+        
         if (vehicle.carDestroyed || !vehicle.localPlayerInControl || !vehicle.ignitionStarted)
             return false;
         

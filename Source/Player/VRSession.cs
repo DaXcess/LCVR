@@ -159,7 +159,6 @@ public class VRSession : MonoBehaviour
         var hdCamera = MainCamera.GetComponent<HDAdditionalCameraData>();
 
         hdCamera.allowDynamicResolution = Plugin.Config.EnableDynamicResolution.Value;
-        hdCamera.allowDeepLearningSuperSampling = Plugin.Config.EnableDLSS.Value;
 
         hdCamera.DisableQualitySetting(FrameSettingsField.DepthOfField);
         hdCamera.DisableQualitySetting(FrameSettingsField.SSAO);
@@ -324,30 +323,30 @@ public class VRSession : MonoBehaviour
         if (!Plugin.Config.DisableHangarLeverInteraction.Value)
             VRController.DisableInteractTrigger("LeverSwitchInteractable");
         
-        // Car horn (TODO: Make configurable)
-        if (true)
+        // Car horn
+        if (!Plugin.Config.DisableCarHonkInteraction.Value)
             VRController.DisableInteractTrigger("HonkHornInteractable");
 
         // Car eject button
-        if (true)
+        if (!Plugin.Config.DisableCarEjectInteraction.Value)
         {
             VRController.DisableInteractTrigger("EjectButtonGlass");
             VRController.DisableInteractTrigger("EjectRedButton");
         }
         
         // Generic car button
-        if (true)
+        if (!Plugin.Config.DisableCarButtonInteractions.Value)
             VRController.DisableInteractTrigger("CarButton");
         
         // Car ignition
-        if (true)
+        if (!Plugin.Config.DisableCarIgnitionInteractions.Value)
         {
             VRController.DisableInteractTrigger("StartIgnition");
             VRController.DisableInteractTrigger("StopIgnition");
         }
         
         // Car gear shift
-        if (true)
+        if (!Plugin.Config.DisableCarGearStickInteractions.Value)
         {
             VRController.DisableInteractTrigger("ShiftToReverseTrigger");
             VRController.DisableInteractTrigger("ShiftToDriveTrigger");

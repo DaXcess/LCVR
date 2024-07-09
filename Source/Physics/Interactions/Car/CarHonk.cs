@@ -49,8 +49,7 @@ internal static class CarHonkPatches
     [HarmonyPostfix]
     private static void OnCarCreated(VehicleController __instance)
     {
-        // TODO: Config disable
-        if (false)
+        if (Plugin.Config.DisableCarHonkInteraction.Value)
             return;
         
         var honkTrigger = __instance.transform.Find("Triggers/HonkHorn");

@@ -27,6 +27,7 @@ public class Channel(ChannelType type, ulong? instanceId) : IDisposable
 
 public enum ChannelType : byte
 {
+    PlayerPrefs,
     VehicleSteeringWheel,
     VehicleGearStick,
 }

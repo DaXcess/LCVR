@@ -73,8 +73,7 @@ internal static class EjectButtonPatches
     [HarmonyPostfix]
     private static void OnCarCreated(VehicleController __instance)
     {
-        // TODO: Config disable
-        if (false)
+        if (Plugin.Config.DisableCarEjectInteraction.Value)
             return;
 
         var container = __instance.transform.Find("Triggers/ButtonAnimContainer");

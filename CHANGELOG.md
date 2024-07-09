@@ -1,3 +1,37 @@
+# 1.3.0
+
+**Additions**:
+- Added support for V56
+- Added VR interactions for the steering wheel in the Company Cruiser
+- Added VR interactions for the buttons in the Company Cruiser
+- Added VR interactions for the car honk in the Company Cruiser
+- Added VR interactions for the ignition in the Company Cruiser
+- Added VR interactions for the eject button in the Company Cruiser
+- Added VR interactions for the gear stick in the Company VR
+- (TODO) Added VR interactions for the car magnet lever on the ship
+- Added configuration options to disable special car interactions
+- Added controls rebinding in the settings menu
+- Added new logic to local and remote VR players to allow overriding hand position
+- (TODO) Added welcome and critical health overlay UI to VR
+
+**Bug Fixes**:
+- Fixed issue where leaving a game while spectating and joining a new game will break spectating
+- Fixed finger curling not consistently forcing a fist when requested to
+- Fixed bug in controller interactor that prevented the use of "hold down" interactions
+- Fixed bug where the interactor could interact through walls of the Company Cruiser
+
+**Changes**:
+- Reworked the input system to allow for manual control binding overriding
+- XR Origin now has the same parent as the local player
+- Reworked a small portion of the 6DOF system to allow 6DOF when parented to other objects
+
+**Removals**:
+- Removed the DLSS optimization setting
+- Removed support for V50
+
+**Dependencies**:
+- Added a dependency to [FixPluginTypesSerialization](https://thunderstore.io/c/lethal-company/p/Evaisa/FixPluginTypesSerialization/)
+
 # 1.2.5
 
 **Bug Fixes**:

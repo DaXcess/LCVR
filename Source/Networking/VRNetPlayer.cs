@@ -53,10 +53,13 @@ public class VRNetPlayer : MonoBehaviour
     public FingerCurler LeftFingerCurler { get; private set; }
     public FingerCurler RightFingerCurler { get; private set; }
 
+    public PlayerData AdditionalData { get; private set; }
+    
     private void Awake()
     {
         PlayerController = GetComponent<PlayerControllerB>();
         Bones = new Bones(transform);
+        AdditionalData = new PlayerData();
 
         // Because I want to transmit local controller positions and angles (since it's much cleaner)
         // I decided to somewhat recreate the XR Origin setup so that all the offsets are correct
@@ -405,5 +408,10 @@ public class VRNetPlayer : MonoBehaviour
         public Transform transform;
         public Vector3 positionOffset;
         public Vector3 rotationOffset;
+    }
+
+    public class PlayerData
+    {
+        public bool DisableSteeringWheel { get; set; }
     }
 }

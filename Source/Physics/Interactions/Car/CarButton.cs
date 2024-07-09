@@ -51,8 +51,7 @@ internal static class CarButtonPatches
     [HarmonyPostfix]
     private static void OnCarCreated(VehicleController __instance)
     {
-        // TODO: Config disable
-        if (false)
+        if (Plugin.Config.DisableCarButtonInteractions.Value)
             return;
         
         var wipers = __instance.transform.Find("Triggers/ChangeChannel (1)");

@@ -22,7 +22,7 @@ namespace LCVR.Networking;
 
 internal static class DNet
 {
-    private const ushort PROTOCOL_VERSION = 3;
+    private const ushort PROTOCOL_VERSION = 4;
 
     private static readonly NamedLogger logger = new("Networking");
 
@@ -336,12 +336,12 @@ internal static class DNet
         yield return new WaitUntil(() => player.Tracker != null);
 
         // Ignore players that have already been registered
-        if (players.TryGetValue(sender, out var networkPlayer))
+        if (players.ContainsKey(sender))
             yield break;
 
         var playerObject = ((NfgoPlayer)player.Tracker!).gameObject;
         var playerController = playerObject.GetComponent<PlayerControllerB>();
-        networkPlayer = playerObject.AddComponent<VRNetPlayer>();
+        var networkPlayer = playerObject.AddComponent<VRNetPlayer>();
 
         logger.LogInfo($"Found VR player {playerController.playerUsername}");
 

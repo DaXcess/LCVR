@@ -18,11 +18,6 @@ public class StartIgnition : MonoBehaviour, VRInteractable
     private void Awake()
     {
         snapPoint = transform.parent.parent.Find("CarKeyTurnedPos");
-        // snapPoint = new GameObject("VR Snap Point").transform;
-        // snapPoint.parent = transform.parent.parent;
-        // snapPoint.localPosition = new Vector3(0.0119f, 0.0269f, 0.0597f);
-        // snapPoint.localEulerAngles = new Vector3(313.8423f, 180f, 226.2147f);
-        // snapPoint.localScale = Vector3.one * 0.0599f;
     }
 
     public void OnColliderEnter(VRInteractor interactor)
@@ -94,7 +89,7 @@ internal static class IgnitionPatches
     [HarmonyPostfix]
     private static void OnCarCreated(VehicleController __instance)
     {
-        if (false)
+        if (Plugin.Config.DisableCarIgnitionInteractions.Value)
             return;
 
         var startIgnitionObj = __instance.transform.Find("Meshes/CarKeyContainer/StartIgnition");

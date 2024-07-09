@@ -72,6 +72,9 @@ public class GearStick : MonoBehaviour, VRInteractable
 
     public bool OnButtonPress(VRInteractor interactor)
     {
+        if (Plugin.Config.DisableCarGearStickInteractions.Value)
+            return false;
+        
         if (isHeld)
             return false;
 
@@ -183,10 +186,6 @@ internal static class GearStickPatches
     [HarmonyPostfix]
     private static void OnCarCreated(VehicleController __instance)
     {
-        // TODO: Make configurable
-        if (false)
-            return;
-
         var gearStickObj = __instance.transform.Find("Meshes/GearStickContainer/GearStick");
         var gearStickInteractable = Object.Instantiate(AssetManager.Interactable, gearStickObj);
 
