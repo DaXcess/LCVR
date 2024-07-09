@@ -22,10 +22,14 @@ public class StartIgnition : MonoBehaviour, VRInteractable
 
     public void OnColliderEnter(VRInteractor interactor)
     {
-        if (!vehicle.localPlayerInControl || vehicle.keyIsInIgnition)
+        if (!vehicle.localPlayerInControl || vehicle.ignitionStarted)
             return;
 
         interactor.FingerCurler.Enabled = false;
+
+        if (vehicle.keyIsInIgnition)
+            return;
+        
         vehicle.keyIsInDriverHand = true;
     }
 
