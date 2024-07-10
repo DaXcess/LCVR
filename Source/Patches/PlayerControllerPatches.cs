@@ -187,19 +187,12 @@ internal static class PlayerControllerPatches
     /// </summary>
     [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.Update))]
     [HarmonyPostfix]
-    private static void UpdatePrefix(PlayerControllerB __instance)
+    private static void ApplyVRAnimator(PlayerControllerB __instance)
     {
-        if (!__instance.IsOwner || __instance.IsInactivePlayer())
+        if (__instance != GameNetworkManager.Instance.localPlayerController)
             return;
 
         __instance.localArmsMatchCamera = false;
-
-        // TODO: Is this necessary?
-        if (__instance.GetComponent<VRPlayer>() == null)
-        {
-            Logger.LogError("GetComponent<VRPlayer>() resulted in null");
-            return;
-        }
 
         if (__instance.isPlayerControlled)
             __instance.playerBodyAnimator.runtimeAnimatorController = AssetManager.LocalVrMetarig;
@@ -374,8 +367,7 @@ internal static class UniversalPlayerControllerPatches
     {
         if (__instance.IsOwner)
             return;
-
-        // TODO: Check if `actualClientId` or `playerClientId` is needed here
+        
         if (DNet.TryGetPlayer((ushort)__instance.playerClientId, out _) &&
             __instance.playerBodyAnimator.runtimeAnimatorController != AssetManager.RemoteVrMetarig)
             __instance.playerBodyAnimator.runtimeAnimatorController = AssetManager.RemoteVrMetarig;
@@ -390,14 +382,15 @@ internal static class UniversalPlayerControllerPatches
     /// </summary>
     [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.Update))]
     [HarmonyPostfix]
-    private static void KeepArmRigs(PlayerControllerB __instance)
+    private static void KeepRigConstraints(PlayerControllerB __instance)
     {
         // Skip if local non-vr player or remote non-vr player
         if ((!__instance.IsLocalPlayer || !VRSession.InVR) &&
-            // TODO: Check if `actualClientId` or `playerClientId` is needed here
             !DNet.TryGetPlayer((ushort)__instance.playerClientId, out _))
             return;
 
+        __instance.cameraLookRig1.weight = 0.45f;
+        __instance.cameraLookRig2.weight = 1;
         __instance.leftArmRigSecondary.weight = 0;
         __instance.rightArmRigSecondary.weight = 0;
         __instance.leftArmRig.weight = 1;

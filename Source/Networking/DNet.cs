@@ -227,6 +227,9 @@ internal static class DNet
 
     private static void BroadcastPacket(MessageType type, byte[] payload)
     {
+        if (!LocalId.HasValue)
+            return;
+        
         var targets = subscribers.Where(key => clients.TryGetValue(key, out _)).Select(value => clients[value]).ToList();
 
         networkClient.SendReliableP2P(targets, ConstructPacket(type, payload));
@@ -234,6 +237,9 @@ internal static class DNet
 
     private static void SendPacket(MessageType type, byte[] payload, params ClientInfo<NfgoConn?>[] targets)
     {
+        if (!LocalId.HasValue)
+            return;
+        
         networkClient.SendReliableP2P([.. targets], ConstructPacket(type, payload));
     }
 

@@ -38,6 +38,7 @@ public class VRNetPlayer : MonoBehaviour
     private float cameraFloorOffset;
     private float rotationOffset;
 
+    private Vector3 cameraEulers;
     private Vector3 cameraPosAccounted;
     private Vector3 modelOffset;
 
@@ -267,6 +268,9 @@ public class VRNetPlayer : MonoBehaviour
         {
             usernameBillboard.LookAt(StartOfRound.Instance.localPlayerController.localVisorTargetPoint);
         }
+        
+        // Set camera (head) rotation
+        camera.transform.eulerAngles = cameraEulers;
     }
 
     /// <summary>
@@ -353,7 +357,7 @@ public class VRNetPlayer : MonoBehaviour
         rightController.localEulerAngles = rig.rightHandEulers;
         RightFingerCurler?.SetCurls(rig.rightHandFingers);
 
-        camera.transform.eulerAngles = rig.cameraEulers;
+        cameraEulers = rig.cameraEulers;
         cameraPosAccounted = rig.cameraPosAccounted;
         modelOffset = rig.modelOffset;
 

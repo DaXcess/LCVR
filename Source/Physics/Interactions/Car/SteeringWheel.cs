@@ -198,7 +198,6 @@ public class SteeringWheel : MonoBehaviour
             
             case SteeringWheelCommand.Sync:
                 // Only allow sync if sender is the driver of the vehicle
-                // TODO: `playerClientId` or `acutalClientId`?
                 if (OtherDriver?.PlayerController.playerClientId != sender)
                     break;
 
@@ -213,7 +212,6 @@ public class SteeringWheel : MonoBehaviour
 
             case SteeringWheelCommand.Hand:
                 // Only allow sync if sender is the driver of the vehicle
-                // TODO: `playerClientId` or `acutalClientId`?
                 if (OtherDriver?.PlayerController.playerClientId != sender)
                     break;  
 
