@@ -211,7 +211,11 @@ public class VRNetPlayer : MonoBehaviour
             Bones.Model.localPosition = Vector3.zero;
         }
 
-        xrOrigin.position += new Vector3(0, cameraFloorOffset + crouchOffset - PlayerController.sinkingValue * 2.5f, 0);
+        // Apply car animation offset
+        var carOffset = PlayerController.inVehicleAnimation ? -0.5f : 0f;
+
+        xrOrigin.position += new Vector3(0,
+            cameraFloorOffset + crouchOffset - PlayerController.sinkingValue * 2.5f + carOffset, 0);
         xrOrigin.eulerAngles = new Vector3(0, rotationOffset, 0);
         xrOrigin.localScale = Vector3.one * 1.5f;
 
@@ -233,7 +237,7 @@ public class VRNetPlayer : MonoBehaviour
         // Apply controller transforms
         if (leftHandTargetOverride is {} leftOverride)
         {
-            Bones.LeftArmRigTarget.position = leftOverride.transform.position + leftOverride.positionOffset;
+            Bones.LeftArmRigTarget.position = leftOverride.transform.TransformPoint(leftOverride.positionOffset);
             Bones.LeftArmRigTarget.rotation =
                 leftOverride.transform.rotation * Quaternion.Euler(leftOverride.rotationOffset);
         }
@@ -245,7 +249,7 @@ public class VRNetPlayer : MonoBehaviour
 
         if (rightHandTargetOverride is {} rightOverride)
         {
-            Bones.RightArmRigTarget.position = rightOverride.transform.position + rightOverride.positionOffset;
+            Bones.RightArmRigTarget.position = rightOverride.transform.TransformPoint(rightOverride.positionOffset);
             Bones.RightArmRigTarget.rotation =
                 rightOverride.transform.rotation * Quaternion.Euler(rightOverride.rotationOffset);
         }
@@ -345,6 +349,11 @@ public class VRNetPlayer : MonoBehaviour
             positionOffset = positionOffset ?? Vector3.zero,
             rotationOffset = rotationOffset ?? Vector3.zero
         };
+    }
+
+    public void SyncHeadRotation()
+    {
+        camera.transform.eulerAngles = cameraEulers;
     }
     
     internal void UpdateTargetTransforms(DNet.Rig rig)

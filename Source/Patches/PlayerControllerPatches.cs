@@ -367,10 +367,12 @@ internal static class UniversalPlayerControllerPatches
     {
         if (__instance.IsOwner)
             return;
-        
-        if (DNet.TryGetPlayer((ushort)__instance.playerClientId, out _) &&
-            __instance.playerBodyAnimator.runtimeAnimatorController != AssetManager.RemoteVrMetarig)
-            __instance.playerBodyAnimator.runtimeAnimatorController = AssetManager.RemoteVrMetarig;
+
+        if (DNet.TryGetPlayer((ushort)__instance.playerClientId, out _))
+        {
+            if (__instance.playerBodyAnimator.runtimeAnimatorController != AssetManager.RemoteVrMetarig)
+                __instance.playerBodyAnimator.runtimeAnimatorController = AssetManager.RemoteVrMetarig;
+        }
         // Used to restore the original metarig if a VR player leaves and a non-vr players join in their place
         else if (__instance.playerBodyAnimator.runtimeAnimatorController == AssetManager.RemoteVrMetarig)
             __instance.playerBodyAnimator.runtimeAnimatorController =
@@ -395,6 +397,16 @@ internal static class UniversalPlayerControllerPatches
         __instance.rightArmRigSecondary.weight = 0;
         __instance.leftArmRig.weight = 1;
         __instance.rightArmRig.weight = 1;
+    }
+
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.Update))]
+    [HarmonyPostfix]
+    private static void SyncHeadRotation(PlayerControllerB __instance)
+    {
+        if (!DNet.TryGetPlayer((ushort)__instance.playerClientId, out var player))
+            return;
+
+        player.SyncHeadRotation();
     }
 
     /// <summary>
