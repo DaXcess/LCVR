@@ -168,21 +168,21 @@ internal static class SpectatorPlayerPatches
     /// <summary>
     /// Quick fix for when you are not the host, and some fields are set after `KillPlayer` has already executed
     /// </summary>
-    [HarmonyPatch(typeof(PlayerControllerB), "KillPlayerClientRpc")]
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.KillPlayerClientRpc))]
     [HarmonyPostfix]
     private static void KillPlayerClientRpc(PlayerControllerB __instance, int playerId)
     {
-        if (playerId == (int)StartOfRound.Instance.localPlayerController.playerClientId)
-        {
-            __instance.isPlayerControlled = true;
-            __instance.thisPlayerModelArms.enabled = true;
-        }
+        if (playerId != (int)StartOfRound.Instance.localPlayerController.playerClientId)
+            return;
+
+        __instance.isPlayerControlled = true;
+        __instance.thisPlayerModelArms.enabled = true;
     }
 
     /// <summary>
     /// If we were dead, perform necessary actions to recover properly
     /// </summary>
-    [HarmonyPatch(typeof(StartOfRound), "ReviveDeadPlayers")]
+    [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.ReviveDeadPlayers))]
     [HarmonyPrefix]
     private static void OnPlayerRevived()
     {
@@ -221,7 +221,7 @@ internal static class SpectatorPlayerPatches
     /// <summary>
     /// Make sure we have infinite sprint and not being hindered by injuries if we're dead
     /// </summary>
-    [HarmonyPatch(typeof(PlayerControllerB), "Update")]
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.Update))]
     [HarmonyPostfix]
     private static void OnPlayerUpdate(PlayerControllerB __instance)
     {
@@ -234,6 +234,9 @@ internal static class SpectatorPlayerPatches
         __instance.takingFallDamage = false;
     }
 
+    /// <summary>
+    /// Handle spectating other players
+    /// </summary>
     [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.ActivateItem_performed))]
     [HarmonyPostfix]
     private static void SpectateNextPlayer(PlayerControllerB __instance)
@@ -316,7 +319,7 @@ internal static class SpectatorPlayerPatches
     /// Prevent the game from spectating a player, since we use our own logic for this
     /// </summary>
     /// <returns></returns>
-    [HarmonyPatch(typeof(PlayerControllerB), "SpectateNextPlayer")]
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.SpectateNextPlayer))]
     [HarmonyPrefix]
     private static bool PreventSpectateNextPlayer()
     {
@@ -336,7 +339,7 @@ internal static class SpectatorPlayerPatches
     /// <summary>
     /// Enable night vision lights when in factory and when dead
     /// </summary>
-    [HarmonyPatch(typeof(PlayerControllerB), "SetNightVisionEnabled")]
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.SetNightVisionEnabled))]
     [HarmonyPrefix]
     private static bool SetNightVisionEnabled(PlayerControllerB __instance)
     {

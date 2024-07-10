@@ -10,7 +10,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System;
 using System.Collections;
-using System.IO;
 using GameNetcodeStuff;
 
 namespace LCVR;
@@ -32,41 +31,34 @@ internal static class Utils
         return sha.ComputeHash(input);
     }
 
-    public static string GetPath(this Transform current)
-    {
-        if (current.parent == null)
-            return "/" + current.name;
-        return current.parent.GetPath() + "/" + current.name;
-    }
-
     public static string FormatPascalAndAcronym(string input)
     {
         var builder = new StringBuilder(input[0].ToString());
-        if (builder.Length > 0)
+        if (builder.Length <= 0)
+            return builder.ToString();
+
+        for (var index = 1; index < input.Length; index++)
         {
-            for (var index = 1; index < input.Length; index++)
+            var prevChar = input[index - 1];
+            var nextChar = index + 1 < input.Length ? input[index + 1] : '\0';
+
+            var isNextLower = char.IsLower(nextChar);
+            var isNextUpper = char.IsUpper(nextChar);
+            var isPresentUpper = char.IsUpper(input[index]);
+            var isPrevLower = char.IsLower(prevChar);
+            var isPrevUpper = char.IsUpper(prevChar);
+
+            if (!string.IsNullOrWhiteSpace(prevChar.ToString()) &&
+                ((isPrevUpper && isPresentUpper && isNextLower) ||
+                 (isPrevLower && isPresentUpper && isNextLower) ||
+                 (isPrevLower && isPresentUpper && isNextUpper)))
             {
-                char prevChar = input[index - 1];
-                char nextChar = index + 1 < input.Length ? input[index + 1] : '\0';
-
-                bool isNextLower = char.IsLower(nextChar);
-                bool isNextUpper = char.IsUpper(nextChar);
-                bool isPresentUpper = char.IsUpper(input[index]);
-                bool isPrevLower = char.IsLower(prevChar);
-                bool isPrevUpper = char.IsUpper(prevChar);
-
-                if (!string.IsNullOrWhiteSpace(prevChar.ToString()) &&
-                    ((isPrevUpper && isPresentUpper && isNextLower) ||
-                    (isPrevLower && isPresentUpper && isNextLower) ||
-                    (isPrevLower && isPresentUpper && isNextUpper)))
-                {
-                    builder.Append(' ');
-                    builder.Append(input[index]);
-                }
-                else
-                {
-                    builder.Append(input[index]);
-                }
+                builder.Append(' ');
+                builder.Append(input[index]);
+            }
+            else
+            {
+                builder.Append(input[index]);
             }
         }
         return builder.ToString();
@@ -115,6 +107,7 @@ internal static class Utils
         if (player == StartOfRound.Instance.localPlayerController)
             return false;
 
+        // TODO: Does `player.gameplayCamera.enabled` work as well?
         return !player.transform.Find("ScavengerModel/metarig/CameraContainer/MainCamera").GetComponent<Camera>().enabled;
     }
 
