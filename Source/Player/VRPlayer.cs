@@ -201,8 +201,7 @@ public class VRPlayer : MonoBehaviour
 
         Logger.LogDebug("Initialized XR Rig");
 
-        prefsChannel = DNet.CreateChannel(ChannelType.PlayerPrefs);
-        prefsChannel.OnPacketReceived += OnPrefsPacketReceived;
+        prefsChannel = DNet.CreateChannel(ChannelType.PlayerPrefs, PlayerController.playerClientId);
         
         StartCoroutine(UpdatePlayerPrefs());
     }
@@ -640,14 +639,6 @@ public class VRPlayer : MonoBehaviour
 
             yield return new WaitForSeconds(5f);
         }
-    }
-
-    private static void OnPrefsPacketReceived(ushort sender, BinaryReader reader)
-    {
-        var steeringDisabled = reader.ReadBoolean();
-
-        if (DNet.TryGetPlayer(sender, out var player))
-            player.AdditionalData.DisableSteeringWheel = steeringDisabled;
     }
 
     private void TurnBodyToCamera(float turnWeight)

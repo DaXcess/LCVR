@@ -1,4 +1,5 @@
-﻿using GameNetcodeStuff;
+﻿using System.IO;
+using GameNetcodeStuff;
 using LCVR.Assets;
 using LCVR.Input;
 using LCVR.Player;
@@ -44,6 +45,8 @@ public class VRNetPlayer : MonoBehaviour
 
     private CrouchState crouchState = CrouchState.None;
     private float crouchOffset;
+
+    private Channel prefsChannel;
 
     public PlayerControllerB PlayerController { get; private set; }
     public Bones Bones { get; private set; }
@@ -133,6 +136,9 @@ public class VRNetPlayer : MonoBehaviour
         }
 
         usernameText.text = $"<noparse>{PlayerController.playerUsername}</noparse>";
+
+        prefsChannel = DNet.CreateChannel(ChannelType.PlayerPrefs, PlayerController.playerClientId);
+        prefsChannel.OnPacketReceived += OnPrefsPacketReceived;
     }
 
     private void BuildVRRig()
@@ -224,6 +230,9 @@ public class VRNetPlayer : MonoBehaviour
             xrOrigin.position += transform.forward * 0.55f;
 
         usernameAlpha.alpha -= Time.deltaTime;
+        
+        // Set camera (head) rotation
+        camera.transform.eulerAngles = cameraEulers;
     }
 
     private void LateUpdate()
@@ -272,9 +281,6 @@ public class VRNetPlayer : MonoBehaviour
         {
             usernameBillboard.LookAt(StartOfRound.Instance.localPlayerController.localVisorTargetPoint);
         }
-        
-        // Set camera (head) rotation
-        camera.transform.eulerAngles = cameraEulers;
     }
 
     /// <summary>
@@ -353,7 +359,7 @@ public class VRNetPlayer : MonoBehaviour
 
     public void SyncHeadRotation()
     {
-        camera.transform.eulerAngles = cameraEulers;
+        // camera.transform.eulerAngles = cameraEulers;
     }
     
     internal void UpdateTargetTransforms(DNet.Rig rig)
@@ -432,6 +438,15 @@ public class VRNetPlayer : MonoBehaviour
         rightArmConstraint.data = originalRightArmConstraintData;
 
         GetComponentInChildren<RigBuilder>().Build();
+        
+        prefsChannel.Dispose();
+    }
+
+    private void OnPrefsPacketReceived(ushort _, BinaryReader reader)
+    {
+        var steeringDisabled = reader.ReadBoolean();
+
+        AdditionalData.DisableSteeringWheel = steeringDisabled;
     }
 
     private struct HandTargetOverride

@@ -17,6 +17,9 @@ public class Channel(ChannelType type, ulong? instanceId) : IDisposable
     internal void ReceivedPacket(ushort sender, BinaryReader reader)
     {
         OnPacketReceived?.Invoke(sender, reader);
+        
+        // Reader was cloned, so dispose our copy
+        reader.Dispose();
     }
 
     public void Dispose()

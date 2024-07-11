@@ -1,5 +1,3 @@
-using System;
-using System.Collections;
 using System.IO;
 using System.Linq;
 using HarmonyLib;
@@ -28,6 +26,7 @@ public class SteeringWheel : MonoBehaviour
     private float velocity;
     
     private int handsOnWheel;
+    private int packetCounter;
 
     internal SteeringWheelSnapPoint[] snapPoints;
 
@@ -49,8 +48,6 @@ public class SteeringWheel : MonoBehaviour
 
         channel = DNet.CreateChannel(ChannelType.VehicleSteeringWheel, vehicle.NetworkObjectId);
         channel.OnPacketReceived += OnPacketReceived;
-
-        StartCoroutine(UpdatePrefs());
     }
 
     private void Update()
@@ -65,6 +62,22 @@ public class SteeringWheel : MonoBehaviour
             
         try
         {
+            if (ControlledByLocal)
+            {
+                packetCounter++;
+
+                if (packetCounter % 2 == 0)
+                    channel.SendPacket([
+                        (byte)SteeringWheelCommand.Sync, ..Serialization.Serialize(new SteeringWheelSync
+                        {
+                            currentRotation = currentRotation,
+                            pendingRotation = pendingRotation,
+                            velocity = velocity,
+                            handsOnWheel = handsOnWheel
+                        })
+                    ]);
+            }
+
             if (Mathf.Abs(pendingRotation) < 1)
                 return;
 
@@ -82,22 +95,6 @@ public class SteeringWheel : MonoBehaviour
         {
             handsOnWheel = 0;
         }
-    }
-
-    private void FixedUpdate()
-    {
-        if (!ControlledByLocal)
-            return;
-
-        channel.SendPacket([
-            (byte)SteeringWheelCommand.Sync, ..Serialization.Serialize(new SteeringWheelSync
-            {
-                currentRotation = currentRotation,
-                pendingRotation = pendingRotation,
-                velocity = velocity,
-                handsOnWheel = handsOnWheel
-            })
-        ]);
     }
 
     private void OnDestroy()
@@ -126,7 +123,7 @@ public class SteeringWheel : MonoBehaviour
 
         if (!vehicle.localPlayerInControl)
             return;
-
+        
         vehicle.moveInputVector =
             IngamePlayerSettings.Instance.playerInput.actions.FindAction("Move").ReadValue<Vector2>();
 
@@ -134,7 +131,8 @@ public class SteeringWheel : MonoBehaviour
             vehicle.steeringInput = 0;
         else
             vehicle.steeringInput = Mathf.Clamp(currentRotation / div, -3f, 3f);
-        
+
+        vehicle.steeringAnimValue = Mathf.Abs(velocity) < 20 ? 0 : Mathf.Sign(velocity);
         vehicle.drivePedalPressed = vehicle.moveInputVector.y > 0.1f;
         vehicle.brakePedalPressed = vehicle.moveInputVector.y < -0.1f;
     }
@@ -145,7 +143,7 @@ public class SteeringWheel : MonoBehaviour
     internal void HandAttachedToWheel(bool isRightHand, int snapPointIndex)
     {
         channel.SendPacket([
-            (byte)SteeringWheelCommand.Sync, ..Serialization.Serialize(new HandOnWheel
+            (byte)SteeringWheelCommand.Hand, ..Serialization.Serialize(new HandOnWheel
             {
                 isOnWheel = true,
                 isRightHand = isRightHand,
@@ -160,7 +158,7 @@ public class SteeringWheel : MonoBehaviour
     internal void HandDetachedFromWheel(bool isRightHand)
     {
         channel.SendPacket([
-            (byte)SteeringWheelCommand.Sync, ..Serialization.Serialize(new HandOnWheel
+            (byte)SteeringWheelCommand.Hand, ..Serialization.Serialize(new HandOnWheel
             {
                 isOnWheel = false,
                 isRightHand = isRightHand,
@@ -169,40 +167,17 @@ public class SteeringWheel : MonoBehaviour
         ]);
     }
 
-    private IEnumerator UpdatePrefs()
-    {
-        while (true)
-        {
-            channel.SendPacket([
-                (byte)SteeringWheelCommand.EnabledForSelf,
-                Plugin.Config.DisableCarSteeringWheelInteraction.Value ? (byte)0 : (byte)1
-            ]);
-            
-            yield return new WaitForSeconds(5);
-        }
-    }
-
     private void OnPacketReceived(ushort sender, BinaryReader reader)
     {
         switch ((SteeringWheelCommand)reader.ReadByte())
         {
-            case SteeringWheelCommand.EnabledForSelf:
-                var enabledForPlayer = reader.ReadByte() == 1;
-
-                if (!DNet.TryGetPlayer(sender, out var player))
-                    break;
-
-                player.AdditionalData.DisableSteeringWheel = !enabledForPlayer;
-                
-                break;
-            
             case SteeringWheelCommand.Sync:
                 // Only allow sync if sender is the driver of the vehicle
                 if (OtherDriver?.PlayerController.playerClientId != sender)
                     break;
 
                 var sync = Serialization.Deserialize<SteeringWheelSync>(reader);
-
+                
                 currentRotation = sync.currentRotation;
                 pendingRotation = sync.pendingRotation;
                 velocity = sync.velocity;
@@ -240,7 +215,6 @@ public class SteeringWheel : MonoBehaviour
 
     private enum SteeringWheelCommand : byte
     {
-        EnabledForSelf,
         Sync,
         Hand,
     }

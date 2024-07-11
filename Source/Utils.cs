@@ -10,6 +10,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System;
 using System.Collections;
+using System.IO;
 using GameNetcodeStuff;
 
 namespace LCVR;
@@ -213,5 +214,20 @@ internal static class Utils
     public static IEnumerator NopRoutine()
     {
         yield break;
+    }
+}
+
+public static class BinaryReaderExtensions
+{
+    public static BinaryReader Clone(this BinaryReader reader)
+    {
+        var mem = new MemoryStream();
+        var pos = reader.BaseStream.Position;
+        
+        reader.BaseStream.CopyTo(mem);
+        reader.BaseStream.Position = pos;
+        mem.Position = 0;
+
+        return new BinaryReader(mem);
     }
 }

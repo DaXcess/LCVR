@@ -30,7 +30,7 @@ internal static class DNet
     private static BaseClient<NfgoServer, NfgoClient, NfgoConn> networkClient;
     private static SlaveClientCollection<NfgoConn> peers;
 
-    private static ushort? LocalId => networkClient._serverNegotiator.LocalId;
+    private static ushort? LocalId => networkClient?._serverNegotiator.LocalId;
 
     /// List of known clients inside the Dissonance Voice session
     private static readonly Dictionary<ushort, ClientInfo<NfgoConn?>> clients = [];
@@ -446,12 +446,12 @@ internal static class DNet
 
         if (!channels.TryGetValue(type, out var channelList))
             return;
-
+        
         if (instanceId.HasValue)
             channelList.Where(channel => channel.InstanceId == instanceId.Value)
-                .Do(channel => channel.ReceivedPacket(sender, reader));
+                .Do(channel => channel.ReceivedPacket(sender, reader.Clone()));
         else
-            channelList.Do(channel => channel.ReceivedPacket(sender, reader));
+            channelList.Do(channel => channel.ReceivedPacket(sender, reader.Clone()));
     }
     
     #endregion
