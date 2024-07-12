@@ -1,4 +1,3 @@
-using System;
 using System.IO;
 using HarmonyLib;
 using LCVR.Assets;
@@ -21,6 +20,11 @@ public class GearStick : MonoBehaviour, VRInteractable
     private const float PARK_POSITION = 1.7551f;
     private const float REVERSE_POSITION = 1.66f;
     private const float DRIVE_POSITION = 1.5463f;
+
+    private const int HANDS_ON_LEGS = 0;
+    private const int HANDS_ON_WHEEL = 1;
+    private const int HAND_NEAR_GEAR = 4;
+    private const int HAND_ON_GEAR = 5;
 
     private bool isHeld;
     private bool isHeldByLocal;
@@ -62,6 +66,23 @@ public class GearStick : MonoBehaviour, VRInteractable
         channel.Dispose();
     }
 
+    public void OnColliderEnter(VRInteractor interactor)
+    {
+        if (vehicle.currentDriver != VRSession.Instance.LocalPlayer.PlayerController)
+            return;
+        
+        vehicle.currentDriver.playerBodyAnimator.SetInteger("SA_CarAnim", HAND_NEAR_GEAR);
+    }
+
+    public void OnColliderExit(VRInteractor interactor)
+    {
+        if (vehicle.currentDriver != VRSession.Instance.LocalPlayer.PlayerController)
+            return;
+
+        vehicle.currentDriver.playerBodyAnimator.SetInteger("SA_CarAnim",
+            vehicle.ignitionStarted ? HANDS_ON_WHEEL : HANDS_ON_LEGS);
+    }
+
     public bool OnButtonPress(VRInteractor interactor)
     {
         if (Plugin.Config.DisableCarGearStickInteractions.Value)
@@ -81,6 +102,9 @@ public class GearStick : MonoBehaviour, VRInteractable
         interactor.FingerCurler.ForceFist(true);
         
         channel.SendPacket([(byte)GearStickCommand.GrabStick, interactor.IsRightHand ? (byte)1 : (byte)0]);
+        
+        if (vehicle.currentDriver == VRSession.Instance.LocalPlayer.PlayerController)
+            vehicle.currentDriver.playerBodyAnimator.SetInteger("SA_CarAnim", HAND_ON_GEAR);
 
         return true;
     }
@@ -98,6 +122,9 @@ public class GearStick : MonoBehaviour, VRInteractable
         interactor.FingerCurler.ForceFist(false);
         
         channel.SendPacket([(byte)GearStickCommand.ReleaseStick, interactor.IsRightHand ? (byte)1 : (byte)0]);
+        
+        if (vehicle.currentDriver == VRSession.Instance.LocalPlayer.PlayerController)
+            vehicle.currentDriver.playerBodyAnimator.SetInteger("SA_CarAnim", HAND_NEAR_GEAR);
     }
     
     private void OnPacketReceived(ushort sender, BinaryReader reader)
@@ -159,9 +186,6 @@ public class GearStick : MonoBehaviour, VRInteractable
             break;
         }
     }
-    
-    public void OnColliderEnter(VRInteractor interactor) { }
-    public void OnColliderExit(VRInteractor interactor) { }
 
     private enum GearStickCommand : byte
     {

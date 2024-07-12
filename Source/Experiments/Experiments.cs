@@ -103,13 +103,5 @@ internal static class ExperimentalPatches
 
         return false;
     }
-
-    // TODO: Remove
-    [HarmonyPatch(typeof(Terminal), nameof(Terminal.Start))]
-    [HarmonyPostfix]
-    private static void OnTerminalActivate(Terminal __instance)
-    {
-        Experiments.RunExperiments();
-    }
 }
 #endif

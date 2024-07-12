@@ -381,8 +381,15 @@ public class VRPlayer : MonoBehaviour
             PlayerController.currentTriggerInAnimationWith is not null &&
             PlayerController.currentTriggerInAnimationWith.playerPositionNode)
         {
-            TurningProvider.SetOffset(PlayerController.currentTriggerInAnimationWith.playerPositionNode.eulerAngles.y -
-                                      mainCamera.transform.localEulerAngles.y);
+            var offset = PlayerController.currentTriggerInAnimationWith.playerPositionNode.localEulerAngles.y -
+                         mainCamera.transform.localEulerAngles.y;
+
+            TurningProvider.SetOffset(offset);
+            specialAnimationPositionOffset = Quaternion.Euler(0, offset, 0) *
+                                             Vector3.Scale(
+                                                 new Vector3(mainCamera.transform.localPosition.x, 0,
+                                                     mainCamera.transform.localPosition.z) * -SCALE_FACTOR,
+                                                 transform.parent.localScale);
             isSprinting = false;
         }
 
@@ -422,13 +429,14 @@ public class VRPlayer : MonoBehaviour
             .Any(c => !c.isTrigger && c.transform != mysteriousCube);
 
         // Move player if we're not in special interact animation
-        if (!PlayerController.inSpecialInteractAnimation && (totalMovementSinceLastMove.sqrMagnitude > 0.25f || hit || moved))
+        if (!PlayerController.inSpecialInteractAnimation &&
+            (totalMovementSinceLastMove.sqrMagnitude > 0.25f || hit || moved))
         {
             var wasGrounded = characterController.isGrounded;
 
-            characterController.Move(transform.parent.localRotation * Vector3.Scale(new Vector3(
-                totalMovementSinceLastMove.x * SCALE_FACTOR, 0f,
-                totalMovementSinceLastMove.z * SCALE_FACTOR), transform.parent.localScale));
+            characterController.Move(transform.parent.localRotation * Vector3.Scale(
+                new Vector3(totalMovementSinceLastMove.x, 0f, totalMovementSinceLastMove.z) * SCALE_FACTOR,
+                transform.parent.localScale));
             totalMovementSinceLastMove = Vector3.zero;
 
             if (!characterController.isGrounded && wasGrounded)
@@ -459,7 +467,8 @@ public class VRPlayer : MonoBehaviour
         var realCrouch = mainCamera.transform.localPosition.y / realHeight;
         var roomCrouch = realCrouch < 0.5f;
 
-        if (roomCrouch != IsRoomCrouching)
+        if (roomCrouch != IsRoomCrouching && !PlayerController.inSpecialInteractAnimation &&
+            characterController.isGrounded)
         {
             PlayerController.Crouch(roomCrouch);
             IsRoomCrouching = roomCrouch;
@@ -610,15 +619,17 @@ public class VRPlayer : MonoBehaviour
         realHeight = mainCamera.transform.localPosition.y * SCALE_FACTOR;
         cameraFloorOffset = targetHeight - realHeight;
 
-        if (PlayerController.inVehicleAnimation)
+        if (PlayerController.inSpecialInteractAnimation)
         {
-            var offset = PlayerController.currentTriggerInAnimationWith.playerPositionNode.eulerAngles.y -
+            var offset = PlayerController.currentTriggerInAnimationWith.playerPositionNode.localEulerAngles.y -
                          mainCamera.transform.localEulerAngles.y;
 
             TurningProvider.SetOffset(offset);
             specialAnimationPositionOffset = Quaternion.Euler(0, offset, 0) *
-                                             new Vector3(mainCamera.transform.localPosition.x, 0,
-                                                 mainCamera.transform.localPosition.z) * -SCALE_FACTOR;
+                                             Vector3.Scale(
+                                                 new Vector3(mainCamera.transform.localPosition.x, 0,
+                                                     mainCamera.transform.localPosition.z) * -SCALE_FACTOR,
+                                                 transform.parent.localScale);
         }
 
         resetHeightCoroutine = null;

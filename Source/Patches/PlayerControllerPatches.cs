@@ -216,6 +216,16 @@ internal static class PlayerControllerPatches
     }
 
     /// <summary>
+    /// Prevent `LookClamped` from updating the camera in an undesired way
+    /// </summary>
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.LookClamped))]
+    [HarmonyPrefix]
+    private static bool PreventLookClamped(PlayerControllerB __instance)
+    {
+        return !__instance.IsLocalPlayer();
+    }
+    
+    /// <summary>
     /// Disable the player spawn animation in VR
     /// </summary>
     [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.SpawnPlayerAnimation))]
@@ -360,16 +370,6 @@ internal static class UniversalPlayerControllerPatches
         __instance.rightArmRigSecondary.weight = 0;
         __instance.leftArmRig.weight = 1;
         __instance.rightArmRig.weight = 1;
-    }
-
-    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.Update))]
-    [HarmonyPostfix]
-    private static void SyncHeadRotation(PlayerControllerB __instance)
-    {
-        if (!DNet.TryGetPlayer((ushort)__instance.playerClientId, out var player))
-            return;
-
-        player.SyncHeadRotation();
     }
 
     /// <summary>

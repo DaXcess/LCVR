@@ -356,11 +356,6 @@ public class VRNetPlayer : MonoBehaviour
             rotationOffset = rotationOffset ?? Vector3.zero
         };
     }
-
-    public void SyncHeadRotation()
-    {
-        // camera.transform.eulerAngles = cameraEulers;
-    }
     
     internal void UpdateTargetTransforms(DNet.Rig rig)
     {
