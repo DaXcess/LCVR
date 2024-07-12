@@ -4,14 +4,12 @@ using UnityEngine.InputSystem.XR;
 using System;
 using LCVR.Input;
 using System.Collections;
-using System.IO;
 using LCVR.Networking;
 using GameNetcodeStuff;
 using UnityEngine.XR.Interaction.Toolkit;
 using LCVR.Patches;
 using UnityEngine.Animations.Rigging;
 using System.Linq;
-using UnityEngine.Serialization;
 using CrouchState = LCVR.Networking.DNet.Rig.CrouchState;
 
 namespace LCVR.Player;
@@ -49,8 +47,8 @@ public class VRPlayer : MonoBehaviour
 
     private Transform xrOrigin;
 
-    private Vector3 lastFrameHMDPosition = new(0, 0, 0);
-    private Vector3 lastFrameHMDRotation = new(0, 0, 0);
+    private Vector3 lastFrameHmdPosition = new(0, 0, 0);
+    private Vector3 lastFrameHmdRotation = new(0, 0, 0);
 
     private Vector3 totalMovementSinceLastMove = Vector3.zero;
 
@@ -61,6 +59,8 @@ public class VRPlayer : MonoBehaviour
 
     public Transform leftItemHolder;
     public Transform rightItemHolder;
+
+    private Transform mysteriousCube;
 
     private Channel prefsChannel;
 
@@ -86,11 +86,13 @@ public class VRPlayer : MonoBehaviour
 
     private void Awake()
     {
-        Logger.LogDebug("Going to intialize XR Rig");
+        Logger.LogDebug("Going to initialize XR Rig");
         
         PlayerController = GetComponent<PlayerControllerB>();
         characterController = GetComponent<CharacterController>();
         Bones = new Bones(transform);
+
+        mysteriousCube = transform.Find("Misc/Cube");
 
         // Prevent walking through walls
         GetComponent<Rigidbody>().collisionDetectionMode = CollisionDetectionMode.Continuous;
@@ -102,7 +104,7 @@ public class VRPlayer : MonoBehaviour
         // Fool the animator (this removes console error spam)
         new GameObject("MainCamera").transform.parent = transform.Find("ScavengerModel/metarig/CameraContainer");
 
-        // Unparent camera container
+        // Un-parent camera container
         mainCamera.transform.parent = xrOrigin;
         xrOrigin.localPosition = Vector3.zero;
         xrOrigin.localRotation = Quaternion.Euler(0, 0, 0);
@@ -137,7 +139,7 @@ public class VRPlayer : MonoBehaviour
         RightHandVRTarget.parent = rightController.transform;
         LeftHandVRTarget.parent = leftController.transform;
 
-        // Head defintely does need to have offsets (in this case an offset of 0, 0, 0)
+        // Head definitely does need to have offsets (in this case an offset of 0, 0, 0)
         headVRTarget.transform.localPosition = Vector3.zero;
 
         RightHandVRTarget.localPosition = new Vector3(0.0279f, 0.0353f, -0.0044f);
@@ -371,7 +373,7 @@ public class VRPlayer : MonoBehaviour
             TurningProvider.SetOffset(xrOrigin.transform.localEulerAngles.y);
         }
         
-        var movement = mainCamera.transform.localPosition - lastFrameHMDPosition;
+        var movement = mainCamera.transform.localPosition - lastFrameHmdPosition;
         movement.y = 0;
 
         // Make sure player is facing towards the interacted object and that they're not sprinting
@@ -417,7 +419,7 @@ public class VRPlayer : MonoBehaviour
         var moved = controllerMovement.x > 0 || controllerMovement.y > 0;
         var hit = UnityEngine.Physics
             .OverlapBox(mainCamera.transform.position, Vector3.one * 0.1f, Quaternion.identity, CAMERA_CLIP_MASK)
-            .Any(c => !c.isTrigger && c.transform != transform.Find("Misc/Cube"));
+            .Any(c => !c.isTrigger && c.transform != mysteriousCube);
 
         // Move player if we're not in special interact animation
         if (!PlayerController.inSpecialInteractAnimation && (totalMovementSinceLastMove.sqrMagnitude > 0.25f || hit || moved))
@@ -482,7 +484,7 @@ public class VRPlayer : MonoBehaviour
             TurnBodyToCamera(TURN_WEIGHT_SHARP * Mathf.InverseLerp(TURN_ANGLE_THRESHOLD, 170f, angle));
 
         if (!PlayerController.inSpecialInteractAnimation)
-            lastFrameHMDPosition = mainCamera.transform.localPosition;
+            lastFrameHmdPosition = mainCamera.transform.localPosition;
 
         // Set sprint
         if (Plugin.Config.ToggleSprint.Value)
@@ -491,7 +493,7 @@ public class VRPlayer : MonoBehaviour
                 isSprinting = false;
 
             var move = PlayerController.isCrouching ? Vector2.zero : Actions.Instance["Move"].ReadValue<Vector2>();
-            if (move.x == 0 && move.y == 0 && stopSprintingCoroutine == null && isSprinting)
+            if (move is { x: 0, y: 0 } && stopSprintingCoroutine == null && isSprinting)
                 stopSprintingCoroutine = StartCoroutine(StopSprinting());
             else if ((move.x != 0 || move.y != 0) && stopSprintingCoroutine != null)
             {
@@ -555,14 +557,14 @@ public class VRPlayer : MonoBehaviour
     {
         var angles = mainCamera.transform.eulerAngles;
         var deltaAngles = new Vector3(
-            Mathf.DeltaAngle(lastFrameHMDRotation.x, angles.x),
-            Mathf.DeltaAngle(lastFrameHMDRotation.y, angles.y),
-            Mathf.DeltaAngle(lastFrameHMDRotation.z, angles.z)
+            Mathf.DeltaAngle(lastFrameHmdRotation.x, angles.x),
+            Mathf.DeltaAngle(lastFrameHmdRotation.y, angles.y),
+            Mathf.DeltaAngle(lastFrameHmdRotation.z, angles.z)
         );
 
         StartOfRound.Instance.playerLookMagnitudeThisFrame = deltaAngles.magnitude * Time.deltaTime * 0.1f;
 
-        lastFrameHMDRotation = angles;
+        lastFrameHmdRotation = angles;
 
         // Update tracked finger curls after animator update
         LeftFingerCurler?.Update();
@@ -677,10 +679,8 @@ public class RigTracker : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (head != null)
-        {
+        if (head is not null)
             transform.position = head.position + headBodyPositionOffset;
-        }
 
         leftHand.Apply();
         rightHand.Apply();

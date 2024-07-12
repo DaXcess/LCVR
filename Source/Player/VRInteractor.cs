@@ -1,5 +1,4 @@
-﻿using System;
-using LCVR.Assets;
+﻿using LCVR.Assets;
 using LCVR.Input;
 using LCVR.Physics;
 using System.Collections.Generic;

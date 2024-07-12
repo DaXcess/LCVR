@@ -387,11 +387,14 @@ public class VRController : MonoBehaviour
             PlayerController.cursorIcon.enabled = false;
             CursorTip = "";
             PlayerController.twoHanded = PlayerController.currentlyGrabbingObject.itemProperties.twoHanded;
-            PlayerController.carryWeight = Mathf.Clamp(PlayerController.carryWeight + (PlayerController.currentlyGrabbingObject.itemProperties.weight - 1f), 1f, 10f);
-            if (PlayerController.currentlyGrabbingObject.itemProperties.grabAnimationTime > 0f)
-                PlayerController.grabObjectAnimationTime = PlayerController.currentlyGrabbingObject.itemProperties.grabAnimationTime;
-            else
-                PlayerController.grabObjectAnimationTime = 0.4f;
+            PlayerController.carryWeight =
+                Mathf.Clamp(
+                    PlayerController.carryWeight +
+                    (PlayerController.currentlyGrabbingObject.itemProperties.weight - 1f), 1f, 10f);
+            PlayerController.grabObjectAnimationTime =
+                PlayerController.currentlyGrabbingObject.itemProperties.grabAnimationTime > 0f
+                    ? PlayerController.currentlyGrabbingObject.itemProperties.grabAnimationTime
+                    : 0.4f;
 
             if (!PlayerController.isTestingPlayer)
                 PlayerController.GrabObjectServerRpc(networkObject);
