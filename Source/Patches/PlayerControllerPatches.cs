@@ -105,40 +105,6 @@ internal static class PlayerControllerB_LateUpdate_Patches
 internal static class PlayerControllerPatches
 {
     /// <summary>
-    /// Make sure the OnEnable function uses the correct inputs
-    /// TODO: This might be redundant now, check if removing this breaks game
-    /// </summary>
-    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.OnEnable))]
-    [HarmonyTranspiler]
-    private static IEnumerable<CodeInstruction> PatchOnEnable(IEnumerable<CodeInstruction> instructions)
-    {
-        var codes = new List<CodeInstruction>(instructions);
-        var firstIndex = codes.FindIndex(code => code.opcode == OpCodes.Ldstr);
-
-        for (var i = 0; i < 14; i++)
-            codes[firstIndex + i * 8].operand = $"Movement/{codes[firstIndex + i * 8].operand}";
-
-        return codes.AsEnumerable();
-    }
-
-    /// <summary>
-    /// Make sure the OnDisable function uses the correct inputs
-    /// TODO: This might be redundant now, check if removing this breaks game
-    /// </summary>
-    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.OnDisable))]
-    [HarmonyTranspiler]
-    private static IEnumerable<CodeInstruction> PatchOnDisable(IEnumerable<CodeInstruction> instructions)
-    {
-        var codes = new List<CodeInstruction>(instructions);
-        var firstIndex = codes.FindIndex(code => code.opcode == OpCodes.Ldstr);
-
-        for (var i = 0; i < 14; i++)
-            codes[firstIndex + i * 8].operand = $"Movement/{codes[firstIndex + i * 8].operand}";
-
-        return codes.AsEnumerable();
-    }
-
-    /// <summary>
     /// Prevent the local player visor from being moved when the player dies
     /// </summary>
     [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.KillPlayer))]
@@ -163,10 +129,7 @@ internal static class PlayerControllerPatches
         if (__instance.inTerminalMenu)
             return true;
 
-        if (Mathf.Abs(context.ReadValue<float>()) < 0.75f)
-            return false;
-
-        return true;
+        return !(Mathf.Abs(context.ReadValue<float>()) < 0.75f);
     }
 
     /// <summary>
@@ -176,9 +139,9 @@ internal static class PlayerControllerPatches
     [HarmonyPrefix]
     private static bool OnCrouchPerformed(PlayerControllerB __instance)
     {
-        if (!__instance.IsOwner || __instance.IsInactivePlayer())
+        if (!__instance.IsLocalPlayer())
             return true;
-
+        
         return !VRSession.Instance.LocalPlayer.IsRoomCrouching;
     }
 
@@ -290,7 +253,7 @@ internal static class PlayerControllerPatches
     [HarmonyPostfix]
     private static void OnPlayerDeath(PlayerControllerB __instance)
     {
-        if (!__instance.IsOwner || __instance.IsInactivePlayer())
+        if (!__instance.IsLocalPlayer())
             return;
 
         Logger.Log("VR Player died");
@@ -307,7 +270,7 @@ internal static class PlayerControllerPatches
     private static void SwitchedToItemSlot(PlayerControllerB __instance)
     {
         // Ignore if it's someone else, that is handled by the universal patch
-        if (!__instance.IsOwner || __instance.IsInactivePlayer())
+        if (!__instance.IsLocalPlayer())
             return;
 
         // Find held item
@@ -387,7 +350,7 @@ internal static class UniversalPlayerControllerPatches
     private static void KeepRigConstraints(PlayerControllerB __instance)
     {
         // Skip if local non-vr player or remote non-vr player
-        if ((!__instance.IsLocalPlayer || !VRSession.InVR) &&
+        if ((!__instance.IsLocalPlayer() || !VRSession.InVR) &&
             !DNet.TryGetPlayer((ushort)__instance.playerClientId, out _))
             return;
 

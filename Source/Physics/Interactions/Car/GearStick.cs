@@ -13,9 +13,6 @@ namespace LCVR.Physics.Interactions.Car;
 public class GearStick : MonoBehaviour, VRInteractable
 {
     public InteractableFlags Flags => InteractableFlags.BothHands | InteractableFlags.NotWhileHeld;
-
-    // TODO: Remove
-    private Transform cube;
     
     private VehicleController vehicle;
     private Channel channel;
@@ -35,9 +32,6 @@ public class GearStick : MonoBehaviour, VRInteractable
         channel = DNet.CreateChannel(ChannelType.VehicleGearStick, vehicle.NetworkObjectId);
         
         container = transform.parent.parent;
-
-        cube = Instantiate(AssetManager.Interactable, container).transform;
-        cube.localScale = Vector3.one * 0.1f;
         
         channel.OnPacketReceived += OnPacketReceived;
     }
@@ -61,8 +55,6 @@ public class GearStick : MonoBehaviour, VRInteractable
         {
             vehicle.ShiftToGearAndSync((int)CarGearShift.Drive);
         }
-
-        cube.localPosition = new Vector3(-0.125f, 0.1f, localPosition);
     }
 
     private void OnDestroy()
