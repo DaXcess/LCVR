@@ -14,7 +14,7 @@ While we certainly believe in the Company, we feel that this service manual may 
 
 To get started, enter your Company Cruiser. Now don't be overwhelmed by the amount of buttons, handles and wheels, we'll take you through them all!
 
-First of all, we will go around the buttons that are strewn about the dashboard. On the left side of the steering wheel, you will notice three buttons. These respectively control the windshield wipers, back window, and the headlights.
+First of all, we will go around the buttons that are strewn about the dashboard. On the left side of the steering wheel, you will notice three buttons. These respectively control the windshield wipers, cabin window, and the headlights.
 
 Next up, we have the radio. If you ever get lonely whilst traveling the treacherous landscapes, you can play some relaxing tunes to help you keep your performance at a maximum. The left button allows you to tune between different radio stations, while the right button toggles the radio on or off.
 

@@ -381,7 +381,9 @@ public class VRPlayer : MonoBehaviour
             PlayerController.currentTriggerInAnimationWith is not null &&
             PlayerController.currentTriggerInAnimationWith.playerPositionNode)
         {
-            var offset = PlayerController.currentTriggerInAnimationWith.playerPositionNode.localEulerAngles.y -
+            var nodeRotation = Quaternion.Inverse(transform.parent.rotation) *
+                               PlayerController.currentTriggerInAnimationWith.playerPositionNode.rotation;
+            var offset = nodeRotation.eulerAngles.y -
                          mainCamera.transform.localEulerAngles.y;
 
             TurningProvider.SetOffset(offset);
@@ -621,7 +623,9 @@ public class VRPlayer : MonoBehaviour
 
         if (PlayerController.inSpecialInteractAnimation)
         {
-            var offset = PlayerController.currentTriggerInAnimationWith.playerPositionNode.localEulerAngles.y -
+            var nodeRotation = Quaternion.Inverse(transform.parent.rotation) *
+                               PlayerController.currentTriggerInAnimationWith.playerPositionNode.rotation;
+            var offset = nodeRotation.eulerAngles.y -
                          mainCamera.transform.localEulerAngles.y;
 
             TurningProvider.SetOffset(offset);
