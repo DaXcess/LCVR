@@ -1,4 +1,5 @@
-﻿using GameNetcodeStuff;
+﻿using System.IO;
+using GameNetcodeStuff;
 using LCVR.Assets;
 using LCVR.Input;
 using LCVR.Player;
@@ -30,19 +31,22 @@ public class VRNetPlayer : MonoBehaviour
     private Transform leftHandVRTarget;
     private Transform rightHandVRTarget;
 
-    private FingerCurler leftFingerCurler;
-    private FingerCurler rightFingerCurler;
+    private HandTargetOverride? leftHandTargetOverride;
+    private HandTargetOverride? rightHandTargetOverride;
 
     private Transform camera;
 
     private float cameraFloorOffset;
     private float rotationOffset;
 
+    private Vector3 cameraEulers;
     private Vector3 cameraPosAccounted;
     private Vector3 modelOffset;
 
     private CrouchState crouchState = CrouchState.None;
     private float crouchOffset;
+
+    private Channel prefsChannel;
 
     public PlayerControllerB PlayerController { get; private set; }
     public Bones Bones { get; private set; }
@@ -50,10 +54,16 @@ public class VRNetPlayer : MonoBehaviour
     public Transform LeftItemHolder { get; private set; }
     public Transform RightItemHolder { get; private set; }
 
+    public FingerCurler LeftFingerCurler { get; private set; }
+    public FingerCurler RightFingerCurler { get; private set; }
+
+    public PlayerData AdditionalData { get; private set; }
+    
     private void Awake()
     {
         PlayerController = GetComponent<PlayerControllerB>();
         Bones = new Bones(transform);
+        AdditionalData = new PlayerData();
 
         // Because I want to transmit local controller positions and angles (since it's much cleaner)
         // I decided to somewhat recreate the XR Origin setup so that all the offsets are correct
@@ -97,8 +107,8 @@ public class VRNetPlayer : MonoBehaviour
         RightItemHolder.localEulerAngles = new Vector3(356.3837f, 357.6979f, 0.1453f);
 
         // Set up finger curlers
-        leftFingerCurler = new FingerCurler(Bones.LeftHand, true);
-        rightFingerCurler = new FingerCurler(Bones.RightHand, false);
+        LeftFingerCurler = new FingerCurler(Bones.LeftHand, true);
+        RightFingerCurler = new FingerCurler(Bones.RightHand, false);
 
         BuildVRRig();
 
@@ -126,6 +136,9 @@ public class VRNetPlayer : MonoBehaviour
         }
 
         usernameText.text = $"<noparse>{PlayerController.playerUsername}</noparse>";
+
+        prefsChannel = DNet.CreateChannel(ChannelType.PlayerPrefs, PlayerController.playerClientId);
+        prefsChannel.OnPacketReceived += OnPrefsPacketReceived;
     }
 
     private void BuildVRRig()
@@ -204,7 +217,11 @@ public class VRNetPlayer : MonoBehaviour
             Bones.Model.localPosition = Vector3.zero;
         }
 
-        xrOrigin.position += new Vector3(0, cameraFloorOffset + crouchOffset - PlayerController.sinkingValue * 2.5f, 0);
+        // Apply car animation offset
+        var carOffset = PlayerController.inVehicleAnimation ? -0.5f : 0f;
+
+        xrOrigin.position += new Vector3(0,
+            cameraFloorOffset + crouchOffset - PlayerController.sinkingValue * 2.5f + carOffset, 0);
         xrOrigin.eulerAngles = new Vector3(0, rotationOffset, 0);
         xrOrigin.localScale = Vector3.one * 1.5f;
 
@@ -213,6 +230,9 @@ public class VRNetPlayer : MonoBehaviour
             xrOrigin.position += transform.forward * 0.55f;
 
         usernameAlpha.alpha -= Time.deltaTime;
+        
+        // Set camera (head) rotation
+        camera.transform.eulerAngles = cameraEulers;
     }
 
     private void LateUpdate()
@@ -224,18 +244,36 @@ public class VRNetPlayer : MonoBehaviour
         }, 0);
 
         // Apply controller transforms
-        Bones.LeftArmRigTarget.position = leftHandVRTarget.position + positionOffset;
-        Bones.LeftArmRigTarget.rotation = leftHandVRTarget.rotation;
+        if (leftHandTargetOverride is {} leftOverride)
+        {
+            Bones.LeftArmRigTarget.position = leftOverride.transform.TransformPoint(leftOverride.positionOffset);
+            Bones.LeftArmRigTarget.rotation =
+                leftOverride.transform.rotation * Quaternion.Euler(leftOverride.rotationOffset);
+        }
+        else
+        {
+            Bones.LeftArmRigTarget.position = leftHandVRTarget.position + positionOffset;
+            Bones.LeftArmRigTarget.rotation = leftHandVRTarget.rotation;
+        }
 
-        Bones.RightArmRigTarget.position = rightHandVRTarget.position + positionOffset;
-        Bones.RightArmRigTarget.rotation = rightHandVRTarget.rotation;
+        if (rightHandTargetOverride is {} rightOverride)
+        {
+            Bones.RightArmRigTarget.position = rightOverride.transform.TransformPoint(rightOverride.positionOffset);
+            Bones.RightArmRigTarget.rotation =
+                rightOverride.transform.rotation * Quaternion.Euler(rightOverride.rotationOffset);
+        }
+        else
+        {
+            Bones.RightArmRigTarget.position = rightHandVRTarget.position + positionOffset;
+            Bones.RightArmRigTarget.rotation = rightHandVRTarget.rotation;
+        }
 
         // Update tracked finger curls after animator update
-        leftFingerCurler?.Update();
+        LeftFingerCurler?.Update();
 
         if (!PlayerController.isHoldingObject)
         {
-            rightFingerCurler?.Update();
+            RightFingerCurler?.Update();
         }
 
         // Rotate spectator username billboard
@@ -280,18 +318,56 @@ public class VRNetPlayer : MonoBehaviour
 
         usernameAlpha.alpha = 1f;
     }
+    
+    /// <summary>
+    /// Override the target transform that the left hand of this player should go towards
+    /// </summary>
+    public void SnapLeftHandTo(Transform transform, Vector3? positionOffset = null, Vector3? rotationOffset = null)
+    {
+        if (transform == null)
+        {
+            leftHandTargetOverride = null;
+            return;
+        }
 
+        leftHandTargetOverride = new HandTargetOverride
+        {
+            transform = transform,
+            positionOffset = positionOffset ?? Vector3.zero,
+            rotationOffset = rotationOffset ?? Vector3.zero
+        };
+    }
+    
+    /// <summary>
+    /// Override the target transform that the right hand of this player should go towards
+    /// </summary>
+    public void SnapRightHandTo(Transform transform, Vector3? positionOffset = null, Vector3? rotationOffset = null)
+    {
+        if (transform == null)
+        {
+            rightHandTargetOverride = null;
+            return;
+        }
+
+        rightHandTargetOverride = new HandTargetOverride
+        {
+            transform = transform,
+            positionOffset = positionOffset ?? Vector3.zero,
+            rotationOffset = rotationOffset ?? Vector3.zero
+        };
+    }
+    
     internal void UpdateTargetTransforms(DNet.Rig rig)
     {
         leftController.localPosition = rig.leftHandPosition;
         leftController.localEulerAngles = rig.leftHandEulers;
-        leftFingerCurler?.SetCurls(rig.leftHandFingers);
+        LeftFingerCurler?.SetCurls(rig.leftHandFingers);
 
         rightController.localPosition = rig.rightHandPosition;
         rightController.localEulerAngles = rig.rightHandEulers;
-        rightFingerCurler?.SetCurls(rig.rightHandFingers);
+        RightFingerCurler?.SetCurls(rig.rightHandFingers);
 
-        camera.transform.eulerAngles = rig.cameraEulers;
+        cameraEulers = rig.cameraEulers;
         cameraPosAccounted = rig.cameraPosAccounted;
         modelOffset = rig.modelOffset;
 
@@ -357,5 +433,26 @@ public class VRNetPlayer : MonoBehaviour
         rightArmConstraint.data = originalRightArmConstraintData;
 
         GetComponentInChildren<RigBuilder>().Build();
+        
+        prefsChannel.Dispose();
+    }
+
+    private void OnPrefsPacketReceived(ushort _, BinaryReader reader)
+    {
+        var steeringDisabled = reader.ReadBoolean();
+
+        AdditionalData.DisableSteeringWheel = steeringDisabled;
+    }
+
+    private struct HandTargetOverride
+    {
+        public Transform transform;
+        public Vector3 positionOffset;
+        public Vector3 rotationOffset;
+    }
+
+    public class PlayerData
+    {
+        public bool DisableSteeringWheel { get; set; }
     }
 }

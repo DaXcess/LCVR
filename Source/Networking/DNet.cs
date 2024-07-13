@@ -22,7 +22,7 @@ namespace LCVR.Networking;
 
 internal static class DNet
 {
-    private const ushort PROTOCOL_VERSION = 3;
+    private const ushort PROTOCOL_VERSION = 4;
 
     private static readonly NamedLogger logger = new("Networking");
 
@@ -30,7 +30,7 @@ internal static class DNet
     private static BaseClient<NfgoServer, NfgoClient, NfgoConn> networkClient;
     private static SlaveClientCollection<NfgoConn> peers;
 
-    private static ushort? LocalId => networkClient._serverNegotiator.LocalId;
+    private static ushort? LocalId => networkClient?._serverNegotiator.LocalId;
 
     /// List of known clients inside the Dissonance Voice session
     private static readonly Dictionary<ushort, ClientInfo<NfgoConn?>> clients = [];
@@ -43,6 +43,8 @@ internal static class DNet
     
     /// List of client IDs (from Dissonance Voice) which support DNet
     private static readonly HashSet<ushort> subscribers = [];
+    
+    private static readonly Dictionary<ChannelType, List<Channel>> channels = [];
 
     public static VRNetPlayer[] Players => players.Values.ToArray();
 
@@ -80,10 +82,53 @@ internal static class DNet
         players.Clear();
         clients.Clear();
         cachedPeers.Clear();
+        channels.Clear();
 
         muffledPlayers.Clear();
     }
 
+    public static Channel CreateChannel(ChannelType type, ulong? instanceId = null)
+    {
+        var channel = new Channel(type, instanceId);
+
+        channels.TryAdd(type, []);
+        channels[type].Add(channel);
+
+        return channel;
+    }
+
+    internal static void CloseChannel(ChannelType type, Channel channel)
+    {
+        if (!channels.TryGetValue(type, out var channelList))
+            return;
+
+        channelList.Remove(channel);
+    }
+
+    public static bool TryGetPlayer(ushort id, out VRNetPlayer player)
+    {
+        return players.TryGetValue(id, out player);
+    }
+
+    public static void BroadcastChannelPacket(ChannelType type, ulong? instanceId, byte[] packet)
+    {
+        using var mem = new MemoryStream();
+        using var bw = new BinaryWriter(mem);
+        
+        bw.Write((byte)type);
+
+        if (instanceId.HasValue)
+        {
+            bw.Write(true);
+            bw.Write(instanceId.Value);
+        } else
+            bw.Write(false);
+        
+        bw.Write(packet);
+        
+        BroadcastPacket(MessageType.Channel, mem.ToArray());
+    }
+    
     public static void BroadcastRig(Rig rig)
     {
         BroadcastPacket(MessageType.RigData, Serialization.Serialize(rig));
@@ -182,6 +227,9 @@ internal static class DNet
 
     private static void BroadcastPacket(MessageType type, byte[] payload)
     {
+        if (!LocalId.HasValue)
+            return;
+        
         var targets = subscribers.Where(key => clients.TryGetValue(key, out _)).Select(value => clients[value]).ToList();
 
         networkClient.SendReliableP2P(targets, ConstructPacket(type, payload));
@@ -189,6 +237,9 @@ internal static class DNet
 
     private static void SendPacket(MessageType type, byte[] payload, params ClientInfo<NfgoConn?>[] targets)
     {
+        if (!LocalId.HasValue)
+            return;
+        
         networkClient.SendReliableP2P([.. targets], ConstructPacket(type, payload));
     }
 
@@ -247,6 +298,10 @@ internal static class DNet
             case MessageType.Muffled:
                 HandleSetMuffled(sender, reader.ReadBoolean());
                 break;
+            
+            case MessageType.Channel:
+                HandleChannelMessage(sender, reader);
+                break;
         }
     }
 
@@ -287,12 +342,12 @@ internal static class DNet
         yield return new WaitUntil(() => player.Tracker != null);
 
         // Ignore players that have already been registered
-        if (players.TryGetValue(sender, out var networkPlayer))
+        if (players.ContainsKey(sender))
             yield break;
 
         var playerObject = ((NfgoPlayer)player.Tracker!).gameObject;
         var playerController = playerObject.GetComponent<PlayerControllerB>();
-        networkPlayer = playerObject.AddComponent<VRNetPlayer>();
+        var networkPlayer = playerObject.AddComponent<VRNetPlayer>();
 
         logger.LogInfo($"Found VR player {playerController.playerUsername}");
 
@@ -381,6 +436,24 @@ internal static class DNet
         }
     }
 
+    private static void HandleChannelMessage(ushort sender, BinaryReader reader)
+    {
+        var type = (ChannelType)reader.ReadByte();
+        ulong? instanceId = null;
+
+        if (reader.ReadBoolean())
+            instanceId = reader.ReadUInt64();
+
+        if (!channels.TryGetValue(type, out var channelList))
+            return;
+        
+        if (instanceId.HasValue)
+            channelList.Where(channel => channel.InstanceId == instanceId.Value)
+                .Do(channel => channel.ReceivedPacket(sender, reader.Clone()));
+        else
+            channelList.Do(channel => channel.ReceivedPacket(sender, reader.Clone()));
+    }
+    
     #endregion
 
     #region SERIALIZABLE STRUCTS
@@ -445,7 +518,8 @@ internal static class DNet
         SpectatorRigData,
         Lever,
         CancelChargerAnim,
-        Muffled
+        Muffled,
+        Channel
     }
 
     #endregion

@@ -5,7 +5,9 @@ using LCVR.Physics.Interactions;
 using LCVR.UI;
 using Microsoft.MixedReality.Toolkit.Experimental.UI;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using LCVR.Physics.Interactions.Car;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
@@ -21,21 +23,9 @@ public class VRSession : MonoBehaviour
     public static VRSession Instance { get; private set; }
 
     /// <summary>
-    /// Whether or not the game has VR enabled. This field will only be populated after LCVR has loaded.
+    /// Whether the game has VR enabled. This field will only be populated after LCVR has loaded.
     /// </summary>
     public static bool InVR => Plugin.Flags.HasFlag(Flags.VR);
-
-    private VRPlayer localPlayer;
-    private VRHUD hud;
-
-    private Camera playerGameplayCamera;
-    private Camera menuCamera;
-
-    #region Controllers
-
-    private MotionDetector motionDetector;
-
-    #endregion
 
     #region Custom Camera
 
@@ -47,30 +37,31 @@ public class VRSession : MonoBehaviour
 
     #region Public Accessors
 
-    public VRPlayer LocalPlayer => localPlayer;
-    public VRHUD HUD => hud;
+    public VRPlayer LocalPlayer { get; private set; }
+    public VRHUD HUD { get; private set; }
 
-    public Camera MainCamera => playerGameplayCamera;
-    public Camera UICamera => menuCamera;
+    public Camera MainCamera { get; private set; }
+    public Camera UICamera { get; private set; }
 
-    public MotionDetector MotionDetector => motionDetector;
+    public MotionDetector MotionDetector { get; private set; }
 
     public Rendering.VolumeManager VolumeManager { get; private set; }
 
     public InteractionManager InteractionManager { get; private set; }
     public ShipLever ShipLever { get; private set; }
     public ChargeStation ChargeStation { get; private set; }
+    public CarManager CarManager { get; private set; }
     public Muffler Muffler { get; private set; }
     public Face Face { get; private set; }
 
     #endregion
 
-    void Awake()
+    private void Awake()
     {
         Instance = this;
 
-        playerGameplayCamera = StartOfRound.Instance.activeCamera;
-        menuCamera = GameObject.Find("UICamera").GetComponent<Camera>();
+        MainCamera = StartOfRound.Instance.activeCamera;
+        UICamera = GameObject.Find("UICamera").GetComponent<Camera>();
 
         if (InVR)
             InitializeVRSession();
@@ -78,21 +69,22 @@ public class VRSession : MonoBehaviour
         // Initialize universal interactions
         ShipLever = ShipLever.Create();
         ChargeStation = ChargeStation.Create();
+        CarManager = new CarManager();
 
         if (Plugin.Flags.HasFlag(Flags.InteractableDebug))
-            playerGameplayCamera.cullingMask |= 1 << 11;
+            MainCamera.cullingMask |= 1 << 11;
     }
 
-    void LateUpdate()
+    private void LateUpdate()
     {
         if (!InVR)
             return;
 
         if (customCameraEnabled)
         {
-            customCamera.transform.position = playerGameplayCamera.transform.position;
+            customCamera.transform.position = MainCamera.transform.position;
             customCamera.transform.rotation = Quaternion.Lerp(customCamera.transform.rotation,
-                playerGameplayCamera.transform.rotation, customCameraLerpFactor);
+                MainCamera.transform.rotation, customCameraLerpFactor);
         }
     }
 
@@ -129,18 +121,18 @@ public class VRSession : MonoBehaviour
         helmetTarget.localScale = Vector3.one;
 
         // Disable UI camera and promote FPV camera
-        playerGameplayCamera.targetTexture = null;
-        menuCamera.GetComponent<HDAdditionalCameraData>().xrRendering = false;
-        menuCamera.stereoTargetEye = StereoTargetEyeMask.None;
-        menuCamera.enabled = false;
+        MainCamera.targetTexture = null;
+        UICamera.GetComponent<HDAdditionalCameraData>().xrRendering = false;
+        UICamera.stereoTargetEye = StereoTargetEyeMask.None;
+        UICamera.enabled = false;
 
-        playerGameplayCamera.stereoTargetEye = StereoTargetEyeMask.Both;
-        playerGameplayCamera.GetComponent<HDAdditionalCameraData>().xrRendering = true;
+        MainCamera.stereoTargetEye = StereoTargetEyeMask.Both;
+        MainCamera.GetComponent<HDAdditionalCameraData>().xrRendering = true;
 
-        playerGameplayCamera.depth = menuCamera.depth + 1;
+        MainCamera.depth = UICamera.depth + 1;
 
         // Create HMD tracker
-        var cameraPoseDriver = playerGameplayCamera.gameObject.AddComponent<TrackedPoseDriver>();
+        var cameraPoseDriver = MainCamera.gameObject.AddComponent<TrackedPoseDriver>();
         cameraPoseDriver.positionAction = Actions.Instance.HeadPosition;
         cameraPoseDriver.rotationAction = Actions.Instance.HeadRotation;
         cameraPoseDriver.trackingStateInput = new InputActionProperty(Actions.Instance.HeadTrackingState);
@@ -154,21 +146,20 @@ public class VRSession : MonoBehaviour
             }
         };
 
-        menuCamera.transform.SetParent(uiCameraAnchor.transform, false);
-        menuCamera.cullingMask = -1;
+        UICamera.transform.SetParent(uiCameraAnchor.transform, false);
+        UICamera.cullingMask = -1;
 
         uiCameraAnchor.AddComponent<VRPauseMenu>();
 
-        var uiCameraPoseDriver = menuCamera.gameObject.AddComponent<TrackedPoseDriver>();
+        var uiCameraPoseDriver = UICamera.gameObject.AddComponent<TrackedPoseDriver>();
         uiCameraPoseDriver.positionAction = Actions.Instance.HeadPosition;
         uiCameraPoseDriver.rotationAction = Actions.Instance.HeadRotation;
         uiCameraPoseDriver.trackingStateInput = new InputActionProperty(Actions.Instance.HeadTrackingState);
 
         // Apply optimization configuration
-        var hdCamera = playerGameplayCamera.GetComponent<HDAdditionalCameraData>();
+        var hdCamera = MainCamera.GetComponent<HDAdditionalCameraData>();
 
         hdCamera.allowDynamicResolution = Plugin.Config.EnableDynamicResolution.Value;
-        hdCamera.allowDeepLearningSuperSampling = Plugin.Config.EnableDLSS.Value;
 
         hdCamera.DisableQualitySetting(FrameSettingsField.DepthOfField);
         hdCamera.DisableQualitySetting(FrameSettingsField.SSAO);
@@ -218,7 +209,7 @@ public class VRSession : MonoBehaviour
         terminalKeyboardObject.transform.localEulerAngles = new Vector3(0, 90, 90);
         terminalKeyboardObject.transform.localScale = Vector3.one * 0.0009f;
 
-        terminalKeyboardObject.GetComponent<Canvas>().worldCamera = playerGameplayCamera;
+        terminalKeyboardObject.GetComponent<Canvas>().worldCamera = MainCamera;
 
         var terminalKeyboard = terminalKeyboardObject.GetComponent<NonNativeKeyboard>();
         terminalKeyboard.InputField = terminal.screenText;
@@ -248,18 +239,18 @@ public class VRSession : MonoBehaviour
         terminalKeyboard.OnClosed += (_, _) => { terminal.QuitTerminal(); };
 
         // Set up motion detector
-        motionDetector = new GameObject("Motion Detector").AddComponent<MotionDetector>();
-        motionDetector.gameObject.CreateInteractorController(Utils.Hand.Right, false, true, false);
+        MotionDetector = new GameObject("Motion Detector").AddComponent<MotionDetector>();
+        MotionDetector.gameObject.CreateInteractorController(Utils.Hand.Right, false, true, false);
 
         // Initialize VR Player
-        localPlayer = StartOfRound.Instance.localPlayerController.gameObject.AddComponent<VRPlayer>();
+        LocalPlayer = StartOfRound.Instance.localPlayerController.gameObject.AddComponent<VRPlayer>();
 
         // Initialize Interaction Manager
         InteractionManager = new InteractionManager();
 
         // Initialize HUD
-        hud = new GameObject("VR HUD").AddComponent<VRHUD>();
-        hud.TerminalKeyboard = terminalKeyboard;
+        HUD = new GameObject("VR HUD").AddComponent<VRHUD>();
+        HUD.TerminalKeyboard = terminalKeyboard;
 
         // Initialize VR-Only interactions
         
@@ -293,8 +284,8 @@ public class VRSession : MonoBehaviour
         // Teleporter
         if (!Plugin.Config.DisableTeleporterInteraction.Value)
         {
-            VRController.DisableInteractTrigger("ButtonGlass");
-            VRController.DisableInteractTrigger("RedButton");
+            VRController.DisableInteractTrigger("TeleporterButtonGlass");
+            VRController.DisableInteractTrigger("TeleporterRedButton");
         }
 
         // Monitor Buttons
@@ -332,7 +323,37 @@ public class VRSession : MonoBehaviour
         // Hangar Lever
         if (!Plugin.Config.DisableHangarLeverInteraction.Value)
             VRController.DisableInteractTrigger("LeverSwitchInteractable");
+        
+        // Car horn
+        if (!Plugin.Config.DisableCarHonkInteraction.Value)
+            VRController.DisableInteractTrigger("HonkHornInteractable");
 
+        // Car eject button
+        if (!Plugin.Config.DisableCarEjectInteraction.Value)
+        {
+            VRController.DisableInteractTrigger("EjectButtonGlass");
+            VRController.DisableInteractTrigger("EjectRedButton");
+        }
+        
+        // Generic car button
+        if (!Plugin.Config.DisableCarButtonInteractions.Value)
+            VRController.DisableInteractTrigger("CarButton");
+        
+        // Car ignition
+        if (!Plugin.Config.DisableCarIgnitionInteractions.Value)
+        {
+            VRController.DisableInteractTrigger("StartIgnition");
+            VRController.DisableInteractTrigger("StopIgnition");
+        }
+        
+        // Car gear shift
+        if (!Plugin.Config.DisableCarGearStickInteractions.Value)
+        {
+            VRController.DisableInteractTrigger("ShiftToReverseTrigger");
+            VRController.DisableInteractTrigger("ShiftToDriveTrigger");
+            VRController.DisableInteractTrigger("ShiftToParkTrigger");
+        }
+        
 #if DEBUG
         Experiments.Experiments.RunExperiments();
 #endif
@@ -350,11 +371,11 @@ public class VRSession : MonoBehaviour
         customCameraEnabled = true;
         customCameraLerpFactor = Mathf.Clamp(Plugin.Config.CustomCameraLerpFactor.Value, 0.01f, 1f);
 
-        var children = playerGameplayCamera.transform.GetChildren();
+        var children = MainCamera.transform.GetChildren();
 
         children.Do(child => child.SetParent(null, true));
 
-        customCamera = Instantiate(playerGameplayCamera, transform);
+        customCamera = Instantiate(MainCamera, transform);
         customCamera.name = "Custom Camera";
         customCamera.transform.localEulerAngles = Vector3.zero;
         customCamera.transform.localPosition = Vector3.zero;
@@ -371,7 +392,7 @@ public class VRSession : MonoBehaviour
         var hdDesktopCamera = customCamera.GetComponent<HDAdditionalCameraData>();
         hdDesktopCamera.xrRendering = false;
 
-        children.Do(child => child.SetParent(playerGameplayCamera.transform, true));
+        children.Do(child => child.SetParent(MainCamera.transform, true));
     }
 
     public void OnEnterTerminal()
@@ -424,19 +445,19 @@ public class VRSession : MonoBehaviour
 
     private void SwitchToUICamera()
     {
-        var hdUICamera = menuCamera.GetComponent<HDAdditionalCameraData>();
-        var hdMainCamera = playerGameplayCamera.GetComponent<HDAdditionalCameraData>();
+        var hdUICamera = UICamera.GetComponent<HDAdditionalCameraData>();
+        var hdMainCamera = MainCamera.GetComponent<HDAdditionalCameraData>();
 
         hdMainCamera.xrRendering = false;
-        playerGameplayCamera.stereoTargetEye = StereoTargetEyeMask.None;
-        playerGameplayCamera.depth = menuCamera.depth - 1;
-        playerGameplayCamera.enabled = false;
+        MainCamera.stereoTargetEye = StereoTargetEyeMask.None;
+        MainCamera.depth = UICamera.depth - 1;
+        MainCamera.enabled = false;
 
         hdUICamera.xrRendering = true;
-        menuCamera.stereoTargetEye = StereoTargetEyeMask.Both;
-        menuCamera.nearClipPlane = 0.01f;
-        menuCamera.farClipPlane = 15f;
-        menuCamera.enabled = true;
+        UICamera.stereoTargetEye = StereoTargetEyeMask.Both;
+        UICamera.nearClipPlane = 0.01f;
+        UICamera.farClipPlane = 150f;
+        UICamera.enabled = true;
 
         FindObjectsOfType<CanvasTransformFollow>().Do(follow => follow.ResetPosition(true));
 
@@ -445,26 +466,28 @@ public class VRSession : MonoBehaviour
 
     private void SwitchToGameCamera()
     {
-        var hdUICamera = menuCamera.GetComponent<HDAdditionalCameraData>();
-        var hdMainCamera = playerGameplayCamera.GetComponent<HDAdditionalCameraData>();
+        var hdUICamera = UICamera.GetComponent<HDAdditionalCameraData>();
+        var hdMainCamera = MainCamera.GetComponent<HDAdditionalCameraData>();
 
         hdUICamera.xrRendering = false;
-        menuCamera.stereoTargetEye = StereoTargetEyeMask.None;
-        menuCamera.enabled = false;
+        UICamera.stereoTargetEye = StereoTargetEyeMask.None;
+        UICamera.enabled = false;
 
         hdMainCamera.xrRendering = true;
-        playerGameplayCamera.stereoTargetEye = StereoTargetEyeMask.Both;
-        playerGameplayCamera.depth = menuCamera.depth + 1;
-        playerGameplayCamera.enabled = true;
+        MainCamera.stereoTargetEye = StereoTargetEyeMask.Both;
+        MainCamera.depth = UICamera.depth + 1;
+        MainCamera.enabled = true;
 
         XRSettings.eyeTextureResolutionScale = Plugin.Config.CameraResolution.Value;
     }
 
     public static void VibrateController(XRNode hand, float duration, float amplitude)
     {
-        UnityEngine.XR.InputDevice device = InputDevices.GetDeviceAtXRNode(hand);
+        Logger.LogDebug(new StackTrace().ToString());
+        
+        var device = InputDevices.GetDeviceAtXRNode(hand);
 
-        if (device != null && device.TryGetHapticCapabilities(out HapticCapabilities capabilities) &&
+        if (device.isValid && device.TryGetHapticCapabilities(out var capabilities) &&
             capabilities.supportsImpulse)
         {
             device.SendHapticImpulse(0, amplitude, duration);

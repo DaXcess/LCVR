@@ -12,8 +12,6 @@ namespace LCVR.UI;
 
 public class VRHUD : MonoBehaviour
 {
-    private ObjectScanner scanner;
-    
     private GameObject selfRed;
     private GameObject self;
     private GameObject sprintMeter;
@@ -90,7 +88,7 @@ public class VRHUD : MonoBehaviour
         globalScanInfo.transform.localRotation = Quaternion.identity;
         globalScanInfo.transform.localScale = Vector3.one;
 
-        scanner = new ObjectScanner();
+        gameObject.AddComponent<ObjectScanner>();
 
         // Player cursor: Attach to world interaction canvas
 
@@ -332,6 +330,15 @@ public class VRHUD : MonoBehaviour
         deathScreen.transform.localPosition = Vector3.zero;
         deathScreen.transform.localEulerAngles = Vector3.zero;
         deathScreen.transform.localScale = Vector3.one * 1.1f;
+        
+        // Systems online: In front of eyes
+        var ingamePlayerHud = GameObject.Find("IngamePlayerHUD");
+        var systemsOnline = ingamePlayerHud.transform.Find("BottomMiddle/SystemsOnline");
+        
+        systemsOnline.SetParent(transform, false);
+        systemsOnline.localPosition = new Vector3(-280, -100, 0);
+        systemsOnline.localEulerAngles = Vector3.zero;
+        systemsOnline.localScale = Vector3.one * 1.65f;
 
         // Player screen (Render texture): World space
         SpectateCanvas = GameObject.Find("Systems/UI/Canvas").GetComponent<Canvas>();
@@ -365,8 +372,6 @@ public class VRHUD : MonoBehaviour
         // Interaction canvas
         WorldInteractionCanvas.transform.rotation = Quaternion.LookRotation(WorldInteractionCanvas.transform.position - camTransform.position);
         WorldInteractionCanvas.transform.position += WorldInteractionCanvas.transform.forward * -0.2f;
-
-        scanner.Update();
     }
 
     public void UpdateInteractCanvasPosition(Vector3 position)
