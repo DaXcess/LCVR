@@ -5,6 +5,7 @@ using LCVR.Physics.Interactions;
 using LCVR.UI;
 using Microsoft.MixedReality.Toolkit.Experimental.UI;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using LCVR.Physics.Interactions.Car;
 using UnityEngine;
@@ -455,7 +456,7 @@ public class VRSession : MonoBehaviour
         hdUICamera.xrRendering = true;
         UICamera.stereoTargetEye = StereoTargetEyeMask.Both;
         UICamera.nearClipPlane = 0.01f;
-        UICamera.farClipPlane = 15f;
+        UICamera.farClipPlane = 150f;
         UICamera.enabled = true;
 
         FindObjectsOfType<CanvasTransformFollow>().Do(follow => follow.ResetPosition(true));
@@ -482,6 +483,8 @@ public class VRSession : MonoBehaviour
 
     public static void VibrateController(XRNode hand, float duration, float amplitude)
     {
+        Logger.LogDebug(new StackTrace().ToString());
+        
         var device = InputDevices.GetDeviceAtXRNode(hand);
 
         if (device.isValid && device.TryGetHapticCapabilities(out var capabilities) &&

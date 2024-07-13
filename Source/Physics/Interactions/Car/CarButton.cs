@@ -43,7 +43,7 @@ public class CarButton : MonoBehaviour, VRInteractable
     public void OnButtonRelease(VRInteractor _) { }
 }
 
-[LCVRPatch(LCVRPatchTarget.Universal)]
+[LCVRPatch]
 [HarmonyPatch]
 internal static class CarButtonPatches
 {

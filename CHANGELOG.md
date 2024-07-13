@@ -60,6 +60,7 @@ Some bindings are blacklisted from being used, mostly the "touched" bindings on 
 - Fixed bug in controller interactor that prevented the use of "hold down" interactions
 - Fixed bug where the interactor could interact through walls of the Company Cruiser
 - Fixed bug where having the helmet enabled caused a large shadow to appear
+- Fixed bug where the controllers sometimes kept vibrating after the player already died
 
 **Changes**:
 

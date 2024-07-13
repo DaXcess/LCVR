@@ -85,7 +85,7 @@ public class StopIgnition : MonoBehaviour, VRInteractable
     public void OnButtonRelease(VRInteractor interactor) { }
 }
 
-[LCVRPatch(LCVRPatchTarget.Universal)]
+[LCVRPatch]
 [HarmonyPatch]
 internal static class IgnitionPatches
 {

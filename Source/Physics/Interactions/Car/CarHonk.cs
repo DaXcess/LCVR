@@ -31,17 +31,11 @@ public class CarHonk : MonoBehaviour, VRInteractable
         trigger.StopInteraction();
     }
 
-    public bool OnButtonPress(VRInteractor interactor)
-    {
-        return false;
-    }
-
-    public void OnButtonRelease(VRInteractor interactor)
-    {
-    }
+    public bool OnButtonPress(VRInteractor interactor) { return false; }
+    public void OnButtonRelease(VRInteractor interactor) { }
 }
 
-[LCVRPatch(LCVRPatchTarget.Universal)]
+[LCVRPatch]
 [HarmonyPatch]
 internal static class CarHonkPatches
 {

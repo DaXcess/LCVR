@@ -43,8 +43,7 @@ internal static class AssetManager
 
     public static bool LoadAssets()
     {
-        // assetBundle = AssetBundle.LoadFromMemory(Properties.Resources.lethalcompanyvr);
-        assetBundle = AssetBundle.LoadFromFile(@"F:\LCVR-Unity\AssetBundles\StandaloneWindows\lethalcompanyvr");
+        assetBundle = AssetBundle.LoadFromMemory(Properties.Resources.lethalcompanyvr);
         
         if (assetBundle == null)
         {
@@ -57,7 +56,7 @@ internal static class AssetManager
         Keyboard = assetBundle.LoadAsset<GameObject>("NonNativeKeyboard");
         SettingsPanel = assetBundle.LoadAsset<GameObject>("Panel");
         VolumeManager = assetBundle.LoadAsset<GameObject>("Volume Manager");
-        EnemyPrefab = assetBundle.LoadAsset<GameObject>("Flowerman");
+        EnemyPrefab = assetBundle.LoadAsset<GameObject>("CompanyCruiser");
         SpectatorLight = assetBundle.LoadAsset<GameObject>("Spectator Light");
         SpectatorGhost = assetBundle.LoadAsset<GameObject>("SpectatorGhost");
         SteeringWheelPoints = assetBundle.LoadAsset<GameObject>("SnapPointContainer");

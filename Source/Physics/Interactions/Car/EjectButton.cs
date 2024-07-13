@@ -65,7 +65,7 @@ internal class EjectButtonGlass : MonoBehaviour, VRInteractable
     public void OnColliderExit(VRInteractor _) { }
 }
 
-[LCVRPatch(LCVRPatchTarget.Universal)]
+[LCVRPatch]
 [HarmonyPatch]
 internal static class EjectButtonPatches
 {

@@ -263,10 +263,8 @@ internal static class PlayerControllerPatches
     [HarmonyPostfix]
     private static void OnPlayerDeath(PlayerControllerB __instance)
     {
-        if (!__instance.IsLocalPlayer())
+        if (!__instance.IsLocalPlayer() || __instance.isPlayerDead)
             return;
-
-        Logger.Log("VR Player died");
 
         VRSession.VibrateController(XRNode.LeftHand, 1f, 1f);
         VRSession.VibrateController(XRNode.RightHand, 1f, 1f);
