@@ -8,9 +8,6 @@ internal static class AssetManager
 {
     private static AssetBundle assetBundle;
 
-#if DEBUG
-    public static GameObject Cube;
-#endif
     public static GameObject Interactable;
     public static GameObject Keyboard;
     public static GameObject SettingsPanel;
@@ -43,16 +40,14 @@ internal static class AssetManager
 
     public static bool LoadAssets()
     {
-        assetBundle = AssetBundle.LoadFromFile(@"F:/LCVR-Unity/AssetBundles/StandaloneWindows/lethalcompanyvr");
-        // assetBundle = AssetBundle.LoadFromMemory(Properties.Resources.lethalcompanyvr);
+        assetBundle = AssetBundle.LoadFromMemory(Properties.Resources.lethalcompanyvr);
         
         if (assetBundle == null)
         {
             Logger.LogError("Failed to load asset bundle!");
             return false;
         }
-
-        Cube = assetBundle.LoadAsset<GameObject>("ALiteralCube");
+        
         Interactable = assetBundle.LoadAsset<GameObject>("VRInteractable");
         Keyboard = assetBundle.LoadAsset<GameObject>("NonNativeKeyboard");
         SettingsPanel = assetBundle.LoadAsset<GameObject>("Panel");
