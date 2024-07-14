@@ -13,16 +13,16 @@ namespace LCVR.Player;
 public class VRController : MonoBehaviour
 {
     private const int INTERACTABLE_OBJECTS_MASK = (1 << 6) | (1 << 8) | (1 << 9) | (1 << 30);
-    
+
     private static readonly int grabInvalidated = Animator.StringToHash("GrabInvalidated");
     private static readonly int grabValidated = Animator.StringToHash("GrabValidated");
     private static readonly int cancelHolding = Animator.StringToHash("cancelHolding");
     private static readonly int @throw = Animator.StringToHash("Throw");
-    
+
     private static readonly HashSet<string> disabledInteractTriggers = [];
 
     private static InputAction GrabAction => Actions.Instance["Interact"];
-    private static PlayerControllerB PlayerController => VRSession.Instance.LocalPlayer.PlayerController;
+    private static PlayerControllerB PlayerController => StartOfRound.Instance.localPlayerController;
 
     private LineRenderer debugLineRenderer;
 
@@ -30,7 +30,8 @@ public class VRController : MonoBehaviour
     {
         set
         {
-            PlayerController.cursorTip.text = value.Replace(": [LMB]", "").Replace(": [RMB]", "").Replace(": [E]", "").TrimEnd();
+            PlayerController.cursorTip.text =
+                value.Replace(": [LMB]", "").Replace(": [RMB]", "").Replace(": [E]", "").TrimEnd();
         }
     }
 
@@ -60,6 +61,7 @@ public class VRController : MonoBehaviour
         debugLineRenderer.SetMaterials([AssetManager.DefaultRayMat]);
         debugLineRenderer.enabled = Plugin.Config.EnableInteractRay.Value;
 
+        // Re-enable local player controller to make sure our "Interact" runs first
         Actions.Instance["Interact"].performed += OnInteractPerformed;
     }
 
@@ -71,7 +73,7 @@ public class VRController : MonoBehaviour
         CursorTip = "";
         if (PlayerController.hoveringOverTrigger != null)
             PlayerController.previousHoveringOverTrigger = PlayerController.hoveringOverTrigger;
-                
+
         PlayerController.hoveringOverTrigger = null;
     }
 
@@ -84,7 +86,7 @@ public class VRController : MonoBehaviour
     {
         disabledInteractTriggers.Clear();
     }
-    
+
     public static void EnableInteractTrigger(string objectName)
     {
         disabledInteractTriggers.Remove(objectName);
@@ -155,7 +157,7 @@ public class VRController : MonoBehaviour
     {
         var pressed = GrabAction.IsPressed() && !ShipBuildModeManager.Instance.InBuildMode;
         PlayerController.isHoldingInteract = pressed;
-        
+
         if (!pressed)
         {
             PlayerController.StopHoldInteractionOnTrigger();
@@ -338,7 +340,7 @@ public class VRController : MonoBehaviour
                 CursorTip = "";
                 if (PlayerController.hoveringOverTrigger != null)
                     PlayerController.previousHoveringOverTrigger = PlayerController.hoveringOverTrigger;
-                
+
                 PlayerController.hoveringOverTrigger = null;
             }
         }
@@ -347,7 +349,8 @@ public class VRController : MonoBehaviour
     private void BeginGrabObject()
     {
         var ray = new Ray(InteractOrigin.position, InteractOrigin.forward);
-        if (ray.Raycast(out var hit, PlayerController.grabDistance, INTERACTABLE_OBJECTS_MASK) && hit.collider.gameObject.layer != 8 && hit.collider.CompareTag("PhysicsProp"))
+        if (ray.Raycast(out var hit, PlayerController.grabDistance, INTERACTABLE_OBJECTS_MASK) &&
+            hit.collider.gameObject.layer != 8 && hit.collider.CompareTag("PhysicsProp"))
         {
             if (PlayerController.twoHanded || PlayerController.sinkingValue > 0.73f) return;
 
@@ -363,12 +366,14 @@ public class VRController : MonoBehaviour
     {
         PlayerController.currentlyGrabbingObject = item;
 
-        if (!GameNetworkManager.Instance.gameHasStarted && !PlayerController.currentlyGrabbingObject.itemProperties.canBeGrabbedBeforeGameStart)
+        if (!GameNetworkManager.Instance.gameHasStarted &&
+            !PlayerController.currentlyGrabbingObject.itemProperties.canBeGrabbedBeforeGameStart)
             return;
 
         PlayerController.grabInvalidated = false;
 
-        if (PlayerController.currentlyGrabbingObject == null || PlayerController.inSpecialInteractAnimation || PlayerController.currentlyGrabbingObject.isHeld || PlayerController.currentlyGrabbingObject.isPocketed)
+        if (PlayerController.currentlyGrabbingObject == null || PlayerController.inSpecialInteractAnimation ||
+            PlayerController.currentlyGrabbingObject.isHeld || PlayerController.currentlyGrabbingObject.isPocketed)
             return;
 
         var networkObject = PlayerController.currentlyGrabbingObject.NetworkObject;
@@ -400,9 +405,7 @@ public class VRController : MonoBehaviour
                 PlayerController.GrabObjectServerRpc(networkObject);
 
             if (PlayerController.grabObjectCoroutine != null)
-            {
                 PlayerController.StopCoroutine(PlayerController.grabObjectCoroutine);
-            }
 
             PlayerController.grabObjectCoroutine = PlayerController.StartCoroutine(PlayerController.GrabObject());
         }

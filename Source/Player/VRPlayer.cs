@@ -10,6 +10,7 @@ using UnityEngine.XR.Interaction.Toolkit;
 using LCVR.Patches;
 using UnityEngine.Animations.Rigging;
 using System.Linq;
+using Unity.XR.CoreUtils;
 using CrouchState = LCVR.Networking.DNet.Rig.CrouchState;
 
 namespace LCVR.Player;
@@ -388,10 +389,10 @@ public class VRPlayer : MonoBehaviour
 
             TurningProvider.SetOffset(offset);
             specialAnimationPositionOffset = Quaternion.Euler(0, offset, 0) *
-                                             Vector3.Scale(
+                                             (
                                                  new Vector3(mainCamera.transform.localPosition.x, 0,
-                                                     mainCamera.transform.localPosition.z) * -SCALE_FACTOR,
-                                                 transform.parent.localScale);
+                                                     mainCamera.transform.localPosition.z) * -SCALE_FACTOR)
+                                             .Divide(transform.parent.localScale);
             isSprinting = false;
         }
 
@@ -469,8 +470,7 @@ public class VRPlayer : MonoBehaviour
         var realCrouch = mainCamera.transform.localPosition.y / realHeight;
         var roomCrouch = realCrouch < 0.5f;
 
-        if (roomCrouch != IsRoomCrouching && !PlayerController.inSpecialInteractAnimation &&
-            characterController.isGrounded)
+        if (roomCrouch != IsRoomCrouching && !PlayerController.inSpecialInteractAnimation)
         {
             PlayerController.Crouch(roomCrouch);
             IsRoomCrouching = roomCrouch;
@@ -532,6 +532,7 @@ public class VRPlayer : MonoBehaviour
                 cameraEulers = mainCamera.transform.eulerAngles,
                 cameraPosAccounted = cameraPosAccounted,
                 modelOffset = totalMovementSinceLastMove,
+                specialAnimationPositionOffset = specialAnimationPositionOffset,
 
                 crouchState = (PlayerController.isCrouching, IsRoomCrouching) switch
                 {
@@ -548,6 +549,8 @@ public class VRPlayer : MonoBehaviour
                 ? PlayerController.playersManager.elevatorTransform
                 : PlayerController.playersManager.playersContainer;
 
+            targetTransform = PlayerController.physicsParent ?? targetTransform;
+
             DNet.BroadcastSpectatorRig(new DNet.SpectatorRig()
             {
                 headPosition = targetTransform.InverseTransformPoint(mainCamera.transform.position),
@@ -559,7 +562,7 @@ public class VRPlayer : MonoBehaviour
                 rightHandPosition = targetTransform.InverseTransformPoint(rightController.transform.position),
                 rightHandRotation = rightController.transform.eulerAngles,
 
-                parentedToShip = PlayerController.isInElevator
+                parentedToShip = PlayerController.isInElevator,
             });
         }
     }
@@ -630,10 +633,9 @@ public class VRPlayer : MonoBehaviour
 
             TurningProvider.SetOffset(offset);
             specialAnimationPositionOffset = Quaternion.Euler(0, offset, 0) *
-                                             Vector3.Scale(
-                                                 new Vector3(mainCamera.transform.localPosition.x, 0,
-                                                     mainCamera.transform.localPosition.z) * -SCALE_FACTOR,
-                                                 transform.parent.localScale);
+                                             (new Vector3(mainCamera.transform.localPosition.x, 0,
+                                                 mainCamera.transform.localPosition.z) * -SCALE_FACTOR)
+                                             .Divide(transform.parent.localScale);
         }
 
         resetHeightCoroutine = null;

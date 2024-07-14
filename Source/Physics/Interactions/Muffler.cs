@@ -6,6 +6,7 @@ using LCVR.Player;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.XR;
 
 namespace LCVR.Physics.Interactions;
 
@@ -23,11 +24,11 @@ public class Muffler : MonoBehaviour, VRInteractable
 
     private Coroutine stopMuffleCoroutine;
 
-    private float counter = 0;
+    private float counter;
 
     public InteractableFlags Flags => InteractableFlags.BothHands;
     public bool Muffled { get; private set; }
-
+    
     private void Update()
     {
         if (Muffled)
@@ -41,10 +42,9 @@ public class Muffler : MonoBehaviour, VRInteractable
     public void OnColliderEnter(VRInteractor interactor)
     {        
         var heldItem = VRSession.Instance.LocalPlayer.PlayerController.currentlyHeldObjectServer;
-
         if (heldItem && heldItem.itemProperties.twoHanded)
             return;
-
+        
         if (interactor.IsRightHand && heldItem && MUFFLED_ITEMS_IGNORE.Contains(heldItem.itemProperties.itemName))
             return;
 
@@ -53,6 +53,8 @@ public class Muffler : MonoBehaviour, VRInteractable
 
         if (Muffled)
             return;
+
+        VRSession.VibrateController(interactor.IsRightHand ? XRNode.RightHand : XRNode.LeftHand, 0.1f, 1f);
 
         Muffled = true;
         DNet.SetMuffled(true);
@@ -70,13 +72,15 @@ public class Muffler : MonoBehaviour, VRInteractable
 
         if (stopMuffleCoroutine != null)
             StopCoroutine(stopMuffleCoroutine);
-
-        stopMuffleCoroutine = StartCoroutine(delayedStopMuffle());
+        
+        stopMuffleCoroutine = StartCoroutine(delayedStopMuffle(interactor));
     }
 
-    private IEnumerator delayedStopMuffle()
+    private IEnumerator delayedStopMuffle(VRInteractor interactor)
     {
         yield return new WaitForSeconds(0.5f);
+
+        VRSession.VibrateController(interactor.IsRightHand ? XRNode.RightHand : XRNode.LeftHand, 0.2f, 0.1f);
 
         Muffled = false;
         DNet.SetMuffled(false);

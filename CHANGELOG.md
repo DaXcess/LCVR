@@ -47,11 +47,13 @@ Some bindings are blacklisted from being used, mostly the "touched" bindings on 
 - Added VR interactions for the ignition in the Company Cruiser
 - Added VR interactions for the eject button in the Company Cruiser
 - Added VR interactions for the gear stick in the Company VR
-- (TODO) Added VR interactions for the car magnet lever on the ship
+- Added VR interactions for the car magnet lever on the ship
 - Added configuration options to disable special car interactions
 - Added controls rebinding in the settings menu
 - Added new logic to local and remote VR players to allow overriding hand position
-- (TODO) Added welcome and critical health overlay UI to VR
+- Added welcome and PTT overlay UI to VR
+- Added VR support for the Weed Killer item
+- Added haptic feedback to the muffle interaction
 
 **Bug Fixes**:
 
@@ -61,6 +63,8 @@ Some bindings are blacklisted from being used, mostly the "touched" bindings on 
 - Fixed bug where the interactor could interact through walls of the Company Cruiser
 - Fixed bug where having the helmet enabled caused a large shadow to appear
 - Fixed bug where the controllers sometimes kept vibrating after the player already died
+- (Accidentally) fixed a bug where the keyboard on the terminal would be unusable if the ship was in motion
+- Fixed issue where players in an animation wouldn't sync their offset to their room center with other players
 
 **Changes**:
 
@@ -71,6 +75,7 @@ Some bindings are blacklisted from being used, mostly the "touched" bindings on 
 
 **Removals**:
 
+- Removed bracken from the main and pause menus
 - Removed the DLSS optimization setting
 - Removed support for V50
 

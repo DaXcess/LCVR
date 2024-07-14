@@ -43,7 +43,8 @@ internal static class AssetManager
 
     public static bool LoadAssets()
     {
-        assetBundle = AssetBundle.LoadFromMemory(Properties.Resources.lethalcompanyvr);
+        assetBundle = AssetBundle.LoadFromFile(@"F:/LCVR-Unity/AssetBundles/StandaloneWindows/lethalcompanyvr");
+        // assetBundle = AssetBundle.LoadFromMemory(Properties.Resources.lethalcompanyvr);
         
         if (assetBundle == null)
         {

@@ -414,8 +414,6 @@ public class VRSession : MonoBehaviour
 
     public void OnPauseMenuOpened()
     {
-        Logger.LogDebug("Opened pause menu");
-
         // Make sure keyboard is closed when pause menu opens
         HUD.MenuKeyboard.Close();
         SwitchToUICamera();
@@ -430,8 +428,6 @@ public class VRSession : MonoBehaviour
 
     public void OnPauseMenuClosed()
     {
-        Logger.LogDebug("Closed pause menu");
-
         HUD.MenuKeyboard.Close();
         SwitchToGameCamera();
 
@@ -483,8 +479,6 @@ public class VRSession : MonoBehaviour
 
     public static void VibrateController(XRNode hand, float duration, float amplitude)
     {
-        Logger.LogDebug(new StackTrace().ToString());
-        
         var device = InputDevices.GetDeviceAtXRNode(hand);
 
         if (device.isValid && device.TryGetHapticCapabilities(out var capabilities) &&

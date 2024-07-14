@@ -1,6 +1,7 @@
 using System.Collections;
 using HarmonyLib;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace LCVR.UI;
 
@@ -15,12 +16,15 @@ public class MenuCar : MonoBehaviour
     private Camera camera;
 
     private bool isHonkingHorn;
+    private float timeLookedAt;
     private bool hasTriggered;
     private Coroutine currentRoutine;
     
     private void Awake()
     {
         camera = GameObject.Find("UICamera").GetComponent<Camera>();
+
+        lights.Do(light => light.hideFlags = HideFlags.HideAndDontSave);
     }
 
     private void Update()
@@ -33,14 +37,24 @@ public class MenuCar : MonoBehaviour
             if (currentRoutine != null)
                 StopCoroutine(currentRoutine);
         }
-        
-        if (camera.isActiveAndEnabled && HasLineOfSight() && !hasTriggered)
+
+        var los = HasLineOfSight();
+
+        if (camera.isActiveAndEnabled && los && !hasTriggered)
         {
-            hasTriggered = true;
-            
-            // 5% chance to drive towards player
-            currentRoutine = StartCoroutine(Random.Range(0, 100) < 5 ? DriveTowardsPlayer() : HonkHorn());
+            timeLookedAt += Time.deltaTime;
+
+            if (timeLookedAt > 0.333f)
+            {
+                hasTriggered = true;
+
+                // 20% chance to drive towards player
+                currentRoutine = StartCoroutine(Random.Range(0, 100) < 20 ? DriveTowardsPlayer() : HonkHorn());
+            }
         }
+
+        if (!los)
+            timeLookedAt = 0;
         
         if (isHonkingHorn)
         {

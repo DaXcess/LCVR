@@ -24,6 +24,7 @@ public class VRNetPlayer : MonoBehaviour
     private TextMeshProUGUI usernameText;
 
     private bool spectatorWasParentedToShip;
+    private Transform lastSyncedPhysicsParent;
 
     private Transform xrOrigin;
     private Transform leftController;
@@ -42,7 +43,8 @@ public class VRNetPlayer : MonoBehaviour
     private Vector3 cameraEulers;
     private Vector3 cameraPosAccounted;
     private Vector3 modelOffset;
-
+    private Vector3 specialAnimationPositionOffset;
+    
     private CrouchState crouchState = CrouchState.None;
     private float crouchOffset;
 
@@ -213,7 +215,7 @@ public class VRNetPlayer : MonoBehaviour
         }
         else
         {
-            xrOrigin.position = transform.position;
+            xrOrigin.position = transform.position + specialAnimationPositionOffset;
             Bones.Model.localPosition = Vector3.zero;
         }
 
@@ -246,6 +248,14 @@ public class VRNetPlayer : MonoBehaviour
         // Apply controller transforms
         if (leftHandTargetOverride is {} leftOverride)
         {
+            if (leftOverride.transform == null)
+            {
+                Logger.LogWarning("Left hand override target transform despawned");
+                leftHandTargetOverride = null;
+
+                return;
+            }
+            
             Bones.LeftArmRigTarget.position = leftOverride.transform.TransformPoint(leftOverride.positionOffset);
             Bones.LeftArmRigTarget.rotation =
                 leftOverride.transform.rotation * Quaternion.Euler(leftOverride.rotationOffset);
@@ -258,6 +268,14 @@ public class VRNetPlayer : MonoBehaviour
 
         if (rightHandTargetOverride is {} rightOverride)
         {
+            if (rightOverride.transform == null)
+            {
+                Logger.LogWarning("Right hand override target transform despawned");
+                leftHandTargetOverride = null;
+
+                return;
+            }
+            
             Bones.RightArmRigTarget.position = rightOverride.transform.TransformPoint(rightOverride.positionOffset);
             Bones.RightArmRigTarget.rotation =
                 rightOverride.transform.rotation * Quaternion.Euler(rightOverride.rotationOffset);
@@ -370,6 +388,7 @@ public class VRNetPlayer : MonoBehaviour
         cameraEulers = rig.cameraEulers;
         cameraPosAccounted = rig.cameraPosAccounted;
         modelOffset = rig.modelOffset;
+        specialAnimationPositionOffset = rig.specialAnimationPositionOffset;
 
         crouchState = rig.crouchState;
         rotationOffset = rig.rotationOffset;
@@ -384,6 +403,14 @@ public class VRNetPlayer : MonoBehaviour
         var head = playerGhost.transform.Find("Head");
         var leftHand = playerGhost.transform.Find("Hand.L");
         var rightHand = playerGhost.transform.Find("Hand.R");
+        
+        if (PlayerController.physicsParent != lastSyncedPhysicsParent)
+        {
+            lastSyncedPhysicsParent = PlayerController.physicsParent;
+            
+            playerGhost.transform.SetParent(PlayerController.physicsParent, true);
+            playerGhost.transform.localPosition = Vector3.zero;
+        }
 
         switch (rig.parentedToShip)
         {

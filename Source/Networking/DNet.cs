@@ -472,7 +472,8 @@ internal static class DNet
         public Vector3 cameraEulers;
         public Vector3 cameraPosAccounted;
         public Vector3 modelOffset;
-
+        public Vector3 specialAnimationPositionOffset;
+        
         public CrouchState crouchState;
         public float rotationOffset;
         public float cameraFloorOffset;
