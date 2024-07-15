@@ -41,7 +41,7 @@ internal static class AssetManager
     public static bool LoadAssets()
     {
         assetBundle = AssetBundle.LoadFromMemory(Properties.Resources.lethalcompanyvr);
-        
+
         if (assetBundle == null)
         {
             Logger.LogError("Failed to load asset bundle!");

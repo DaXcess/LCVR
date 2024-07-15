@@ -1,5 +1,4 @@
-﻿using HarmonyLib;
-using LCVR.Assets;
+﻿using LCVR.Assets;
 using LCVR.Networking;
 using LCVR.Player;
 using System.Collections;

@@ -2,8 +2,6 @@
 using LCVR.Assets;
 using LCVR.Patches;
 using LCVR.Player;
-using System.Collections;
-using TMPro;
 using UnityEngine;
 
 namespace LCVR.Physics.Interactions.Car;

@@ -99,7 +99,9 @@ public class Plugin : BaseUnityPlugin
             {
                 Logger.LogError("Error: Unsupported game version, or corrupted game detected!");
                 Logger.LogError("Aborting before we blow something up!");
-
+                Logger.LogWarning(
+                    "To bypass this check, add the following flag to your launch options in Steam: --lcvr-skip-checksum");
+                
                 return;
             }
         }

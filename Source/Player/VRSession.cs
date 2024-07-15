@@ -5,7 +5,6 @@ using LCVR.Physics.Interactions;
 using LCVR.UI;
 using Microsoft.MixedReality.Toolkit.Experimental.UI;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using LCVR.Physics.Interactions.Car;
 using UnityEngine;

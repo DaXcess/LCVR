@@ -246,6 +246,16 @@ internal static class PlayerControllerPatches
     }
 
     /// <summary>
+    /// Prevent LC's built in Interact handler as we're shipping our own
+    /// </summary>
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.Interact_performed))]
+    [HarmonyPrefix]
+    private static bool PreventBuiltinInteract()
+    {
+        return false;
+    }
+
+    /// <summary>
     /// Prevent vanilla "hold interactable" code from running, as we have our own implementation
     /// </summary>
     [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.ClickHoldInteraction))]

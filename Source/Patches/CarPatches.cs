@@ -84,4 +84,15 @@ internal static class VRCarPatches
 
         __instance.NetworkObject.ChangeOwnership(alivePlayer.actualClientId);
     }
+
+    /// <summary>
+    /// Make sure to take back ownership once we leave the level
+    /// </summary>
+    [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.ShipHasLeft))]
+    [HarmonyPostfix]
+    private static void OnUnloadMap()
+    {
+        foreach (var vehicle in Object.FindObjectsOfType<VehicleController>())
+            vehicle.NetworkObject.ChangeOwnership(StartOfRound.Instance.localPlayerController.actualClientId);
+    }
 }
