@@ -9,7 +9,7 @@ public class ConfigEntry : MonoBehaviour
     public string category;
     public new string name;
 
-    void Awake()
+    private void Awake()
     {
         settingsManager = GetComponentInParent<SettingsManager>();
     }

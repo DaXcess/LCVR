@@ -28,7 +28,7 @@ public class Face : MonoBehaviour, VRInteractable
 
     private bool CanInteract => VRSession.Instance.LocalPlayer.PlayerController.CanUseItem();
 
-    void Update()
+    private void Update()
     {
         if (!isInteracting)
             return;

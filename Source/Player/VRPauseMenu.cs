@@ -8,7 +8,7 @@ internal class VRPauseMenu : MonoBehaviour
     private XRRayInteractor leftController;
     private XRRayInteractor rightController;
 
-    void Awake()
+    private void Awake()
     {
         leftController = new GameObject("LController").CreateInteractorController(Utils.Hand.Left);
         rightController = new GameObject("RController").CreateInteractorController(Utils.Hand.Right);

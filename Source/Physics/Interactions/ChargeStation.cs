@@ -15,7 +15,7 @@ public class ChargeStation : MonoBehaviour, VRInteractable
 
     public InteractableFlags Flags => InteractableFlags.RightHand;
 
-    void Awake()
+    private void Awake()
     {
         trigger = GetComponentInParent<InteractTrigger>();
         charger = GetComponentInParent<ItemCharger>();

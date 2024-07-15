@@ -10,7 +10,7 @@ public class ConfigDescription : MonoBehaviour, IPointerEnterHandler
 
     private SettingsManager settingsManager;
 
-    void Start()
+    private void Start()
     {
         settingsManager = GetComponentInParent<SettingsManager>();
     }

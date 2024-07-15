@@ -31,7 +31,7 @@ public class VolumeManager : MonoBehaviour
         set => saturation = Mathf.Clamp(value, -100, 100);
     }
 
-    void Awake()
+    private void Awake()
     {
         volume = GetComponent<Volume>();
 
@@ -39,7 +39,7 @@ public class VolumeManager : MonoBehaviour
         volume.sharedProfile.TryGet(out colorAdjustments);
     }
 
-    void Update()
+    private void Update()
     {
         vignette.color.value = Color.Lerp(vignette.color.value, vignetteColor, Time.deltaTime);
         vignette.intensity.value = Mathf.Lerp(vignette.intensity.value, VignetteIntensity, Time.deltaTime * vignetteLerpMul);

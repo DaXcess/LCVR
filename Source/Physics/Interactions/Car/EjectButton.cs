@@ -15,8 +15,8 @@ internal class EjectButton : MonoBehaviour, VRInteractable
     private float lastTriggerTime;
     
     public InteractableFlags Flags => InteractableFlags.BothHands;
-    
-    void Awake()
+
+    private void Awake()
     {
         trigger = GetComponentInParent<InteractTrigger>();
     }
@@ -45,7 +45,7 @@ internal class EjectButtonGlass : MonoBehaviour, VRInteractable
     public bool CanPressButton => trigger.boolValue && Time.realtimeSinceStartup - lastTriggerTime > 0.2f;
     public InteractableFlags Flags => InteractableFlags.BothHands;
 
-    void Awake()
+    private void Awake()
     {
         trigger = GetComponentInParent<AnimatedObjectTrigger>();
     }

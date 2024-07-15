@@ -17,13 +17,13 @@ internal class TeleporterButton : MonoBehaviour, VRInteractable
 
     public InteractableFlags Flags => InteractableFlags.BothHands;
 
-    void Awake()
+    private void Awake()
     {
         teleporter = GetComponentInParent<ShipTeleporter>();
         trigger = GetComponentInParent<InteractTrigger>();
     }
 
-    void Start()
+    private void Start()
     {
         StartCoroutine(timerLoop());
     }
@@ -66,7 +66,7 @@ internal class TeleporterButtonGlass : MonoBehaviour, VRInteractable
     public bool CanPressButton => trigger.boolValue && Time.realtimeSinceStartup - lastTriggerTime > 0.2f;
     public InteractableFlags Flags => InteractableFlags.BothHands;
 
-    void Awake()
+    private void Awake()
     {
         trigger = GetComponentInParent<AnimatedObjectTrigger>();
     }

@@ -19,7 +19,7 @@ namespace LCVR.Patches;
 [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.Update))]
 public static class PlayerControllerB_Update_Patch
 {
-    static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+    private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
     {
         var codes = new List<CodeInstruction>(instructions);
 
@@ -53,7 +53,7 @@ public static class PlayerControllerB_Sprint_Patch
 {
     public static float sprint = 0;
 
-    static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+    private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
     {
         var codes = new List<CodeInstruction>(instructions);
 
@@ -82,7 +82,7 @@ public static class PlayerControllerB_Sprint_Patch
 [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.LateUpdate))]
 internal static class PlayerControllerB_LateUpdate_Patches
 {
-    static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+    private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
     {
         var codes = new List<CodeInstruction>(instructions);
 

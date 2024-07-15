@@ -14,7 +14,7 @@ internal class BreakerBoxSwitch : MonoBehaviour, VRInteractable
 
     public InteractableFlags Flags => InteractableFlags.BothHands;
 
-    void Awake()
+    private void Awake()
     {
         trigger = GetComponentInParent<InteractTrigger>();
     }
@@ -42,7 +42,7 @@ internal class BreakerBoxDoor : MonoBehaviour, VRInteractable
     public InteractableFlags Flags => InteractableFlags.BothHands;
     public bool IsOpen => animatedTrigger.boolValue && Time.realtimeSinceStartup - lastInteraction > 0.5f;
 
-    void Awake()
+    private void Awake()
     {
         animatedTrigger = GetComponentInParent<AnimatedObjectTrigger>();
         trigger = GetComponentInParent<InteractTrigger>();

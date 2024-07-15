@@ -15,7 +15,7 @@ internal class CompanyBell : MonoBehaviour, VRInteractable
 
     public InteractableFlags Flags => InteractableFlags.BothHands;
 
-    void Awake()
+    private void Awake()
     {
         trigger = GetComponentInParent<InteractTrigger>();
     }

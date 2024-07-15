@@ -14,7 +14,7 @@ internal class ShipDoorButton : MonoBehaviour, VRInteractable
     public InteractableFlags Flags => InteractableFlags.BothHands;
     public bool CanInteract => trigger.interactable && Time.realtimeSinceStartup - lastInteractTime > 0.5f;
 
-    void Awake()
+    private void Awake()
     {
         trigger = GetComponentInParent<InteractTrigger>();
         trigger.gameObject.name = "ShipDoorButtonInteractable";

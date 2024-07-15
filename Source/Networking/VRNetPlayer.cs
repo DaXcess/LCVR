@@ -444,7 +444,7 @@ public class VRNetPlayer : MonoBehaviour
     /// <summary>
     /// Properly clean up the IK and spectator ghost if a VR player leaves the game
     /// </summary>
-    void OnDestroy()
+    private void OnDestroy()
     {
         Destroy(playerGhost);
 

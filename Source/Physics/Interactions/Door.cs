@@ -151,7 +151,7 @@ internal class LockPickerInteractable : MonoBehaviour, VRInteractable
 
     public InteractableFlags Flags => InteractableFlags.RightHand;
 
-    void Awake()
+    private void Awake()
     {
         lockPicker = GetComponentInParent<LockPicker>();
     }

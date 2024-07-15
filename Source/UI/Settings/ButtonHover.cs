@@ -12,7 +12,7 @@ public class ButtonHover : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     private Image background;
     private Color color;
 
-    void Start()
+    private void Start()
     {
         background = GetComponent<Image>();
         color = text.color;

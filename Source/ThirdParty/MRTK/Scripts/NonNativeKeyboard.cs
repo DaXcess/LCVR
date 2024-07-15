@@ -243,7 +243,7 @@ public class NonNativeKeyboard : MonoBehaviour
     /// <summary>
     /// Deactivate on Awake.
     /// </summary>
-    void Awake()
+    private void Awake()
     {
         m_StartingScale = transform.localScale;
         Bounds canvasBounds = RectTransformUtility.CalculateRelativeRectTransformBounds(transform);
@@ -346,7 +346,7 @@ public class NonNativeKeyboard : MonoBehaviour
     /// <summary>
     /// Destroy unmanaged memory links.
     /// </summary>
-    void OnDestroy()
+    private void OnDestroy()
     { }
 
     #region Present Functions
