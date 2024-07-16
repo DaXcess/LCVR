@@ -38,13 +38,13 @@ public class ChargeStation : MonoBehaviour, VRInteractable
 
     public void OnColliderExit(VRInteractor _)
     {
-        if (chargeItemCoroutine != null)
-        {
-            charger.zapAudio.Stop();
-            StopCoroutine(chargeItemCoroutine);
+        if (chargeItemCoroutine == null)
+            return;
 
-            DNet.CancelChargerAnimation();
-        }
+        charger.zapAudio.Stop();
+        StopCoroutine(chargeItemCoroutine);
+
+        DNet.CancelChargerAnimation();
     }
 
     private IEnumerator chargeItemDelayed(GrabbableObject item)

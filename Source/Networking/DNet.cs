@@ -12,6 +12,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using BepInEx.Logging;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -22,9 +23,11 @@ namespace LCVR.Networking;
 
 internal static class DNet
 {
-    private const ushort PROTOCOL_VERSION = 4;
+    private const ushort PROTOCOL_VERSION = 5;
 
-    private static readonly NamedLogger logger = new("Networking");
+    private static readonly ManualLogSource logger = BepInEx.Logging.Logger.CreateLogSource("DNet");
+    
+    public static bool Initialized { get; private set; }
 
     private static DissonanceComms dissonance;
     private static BaseClient<NfgoServer, NfgoClient, NfgoConn> networkClient;
@@ -69,6 +72,8 @@ internal static class DNet
                 cachedPeers.Add(player.Name, client.PlayerId);
             }
 
+        Initialized = true;
+        
         dissonance.StartCoroutine(SendHandshakeCoroutine());
     }
 
@@ -170,7 +175,7 @@ internal static class DNet
     /// </summary>
     private static IEnumerator SendHandshakeCoroutine()
     {
-        while (true)
+        while (Initialized)
         {
             // Grab a list of clients that are not subscribed
             var targets = clients.Where(client => !subscribers.Contains(client.Key)).Select(client => client.Value);
@@ -227,23 +232,23 @@ internal static class DNet
 
     private static void BroadcastPacket(MessageType type, byte[] payload)
     {
-        if (!LocalId.HasValue)
+        if (LocalId is not {} sender)
             return;
         
         var targets = subscribers.Where(key => clients.TryGetValue(key, out _)).Select(value => clients[value]).ToList();
 
-        networkClient.SendReliableP2P(targets, ConstructPacket(type, payload));
+        networkClient.SendReliableP2P(targets, ConstructPacket(type, sender, payload));
     }
 
     private static void SendPacket(MessageType type, byte[] payload, params ClientInfo<NfgoConn?>[] targets)
     {
-        if (!LocalId.HasValue)
+        if (LocalId is not {} sender)
             return;
         
-        networkClient.SendReliableP2P([.. targets], ConstructPacket(type, payload));
+        networkClient.SendReliableP2P([.. targets], ConstructPacket(type, sender, payload));
     }
 
-    private static byte[] ConstructPacket(MessageType type, byte[] payload)
+    private static byte[] ConstructPacket(MessageType type, ushort sender, byte[] payload)
     {
         using var memory = new MemoryStream();
         using var writer = new BinaryWriter(memory);
@@ -255,7 +260,7 @@ internal static class DNet
         writer.Write((byte)type);
 
         // Sender Id
-        writer.Write(LocalId.Value);
+        writer.Write(sender);
 
         // Rest of payload
         writer.Write(payload);
@@ -418,7 +423,7 @@ internal static class DNet
         if (!players.TryGetValue(sender, out var player))
             return;
 
-        logger.Log($"{player.PlayerController.playerUsername} muffled: {muffled}");
+        logger.LogInfo($"{player.PlayerController.playerUsername} muffled: {muffled}");
 
         if (muffled)
         {

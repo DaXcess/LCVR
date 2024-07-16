@@ -171,8 +171,8 @@ internal static class PlayerControllerPatches
         if (!__instance.IsOwner || __instance.isPlayerDead)
             return;
 
-        VRSession.VibrateController(XRNode.LeftHand, 0.1f, 0.5f);
-        VRSession.VibrateController(XRNode.RightHand, 0.1f, 0.5f);
+        VRSession.VibrateController(XRNode.LeftHand, 0.2f, 0.6f);
+        VRSession.VibrateController(XRNode.RightHand, 0.2f, 0.6f);
 
         VRSession.Instance.VolumeManager.TakeDamage();
     }

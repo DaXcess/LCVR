@@ -27,7 +27,7 @@ internal class MonitorButton : MonoBehaviour, VRInteractable
         buttonPressSfx = ShipBuildModeManager.Instance.beginPlacementSFX;
     }
 
-    public void OnColliderEnter(VRInteractor _)
+    public void OnColliderEnter(VRInteractor interactor)
     {
         if (!CanInteract || !otherButton.CanInteract)
             return;
@@ -35,6 +35,7 @@ internal class MonitorButton : MonoBehaviour, VRInteractable
         lastInteractTime = Time.realtimeSinceStartup;
         trigger.onInteract?.Invoke(VRSession.Instance.LocalPlayer.PlayerController);
         audioSource.PlayOneShot(buttonPressSfx);
+        interactor.Vibrate(0.1f, 0.1f);
     }
 
     public void OnColliderExit(VRInteractor _) { }

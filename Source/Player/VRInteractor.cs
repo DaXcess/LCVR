@@ -4,6 +4,7 @@ using LCVR.Physics;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.XR;
 
 namespace LCVR.Player;
 
@@ -141,7 +142,12 @@ public class VRInteractor : MonoBehaviour
             tracker.rotationOffset = rotationOffset ?? Vector3.zero;
         }
     }
-    
+
+    public void Vibrate(float duration, float amplitude)
+    {
+        VRSession.VibrateController(IsRightHand ? XRNode.RightHand : XRNode.LeftHand, duration, amplitude);
+    }
+
     private readonly struct Offset(Vector3 position, Vector3 scale, Quaternion rotation)
     {
         public readonly Vector3 position = position;

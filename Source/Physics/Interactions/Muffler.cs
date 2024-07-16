@@ -6,7 +6,6 @@ using LCVR.Player;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.XR;
 
 namespace LCVR.Physics.Interactions;
 
@@ -54,7 +53,7 @@ public class Muffler : MonoBehaviour, VRInteractable
         if (Muffled)
             return;
 
-        VRSession.VibrateController(interactor.IsRightHand ? XRNode.RightHand : XRNode.LeftHand, 0.1f, 1f);
+        interactor.Vibrate(0.1f, 1f);
 
         Muffled = true;
         DNet.SetMuffled(true);
@@ -80,7 +79,7 @@ public class Muffler : MonoBehaviour, VRInteractable
     {
         yield return new WaitForSeconds(0.5f);
 
-        VRSession.VibrateController(interactor.IsRightHand ? XRNode.RightHand : XRNode.LeftHand, 0.2f, 0.1f);
+        interactor.Vibrate(0.2f, 0.1f);
 
         Muffled = false;
         DNet.SetMuffled(false);
@@ -113,7 +112,13 @@ internal static class MufflePatches
     [HarmonyPrefix]
     private static bool MuffleBlockSound()
     {
-        return !VRSession.Instance?.Muffler?.Muffled ?? true;
+        if (VRSession.Instance is not { } instance)
+            return true;
+
+        if (instance.Muffler is not { } muffler)
+            return true;
+            
+        return !muffler.Muffled;
     }
 
     /// <summary>

@@ -36,33 +36,3 @@ public static class Logger
         logSource.LogDebug(message);
     }
 }
-
-public class NamedLogger(string name)
-{
-    private readonly string name = name;
-
-    public void Log(string message)
-    {
-        Logger.Log($"[{name}] {message}");
-    }
-
-    public void LogInfo(string message)
-    {
-        Logger.LogInfo($"[{name}] {message}");
-    }
-
-    public void LogWarning(string message)
-    {
-        Logger.LogWarning($"[{name}] {message}");
-    }
-
-    public void LogError(string message)
-    {
-        Logger.LogError($"[{name}] {message}");
-    }
-
-    public void LogDebug(string message)
-    {
-        Logger.LogDebug($"[{name}] {message}");
-    }
-}

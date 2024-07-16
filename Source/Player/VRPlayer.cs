@@ -545,12 +545,10 @@ public class VRPlayer : MonoBehaviour
             });
         else
         {
-            var targetTransform = PlayerController.isInElevator
+            var targetTransform = PlayerController.physicsParent ?? PlayerController.isInElevator
                 ? PlayerController.playersManager.elevatorTransform
                 : PlayerController.playersManager.playersContainer;
-
-            targetTransform = PlayerController.physicsParent ?? targetTransform;
-
+            
             DNet.BroadcastSpectatorRig(new DNet.SpectatorRig()
             {
                 headPosition = targetTransform.InverseTransformPoint(mainCamera.transform.position),

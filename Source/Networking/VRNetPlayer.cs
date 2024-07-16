@@ -403,28 +403,18 @@ public class VRNetPlayer : MonoBehaviour
         var head = playerGhost.transform.Find("Head");
         var leftHand = playerGhost.transform.Find("Hand.L");
         var rightHand = playerGhost.transform.Find("Hand.R");
+
+        var physicsParent = PlayerController.physicsParent ?? rig.parentedToShip
+            ? StartOfRound.Instance.elevatorTransform
+            : null;
         
-        if (PlayerController.physicsParent != lastSyncedPhysicsParent)
+        if (physicsParent != lastSyncedPhysicsParent)
         {
-            lastSyncedPhysicsParent = PlayerController.physicsParent;
+            lastSyncedPhysicsParent = physicsParent;
             
-            playerGhost.transform.SetParent(PlayerController.physicsParent, true);
+            playerGhost.transform.SetParent(physicsParent, true);
             playerGhost.transform.localPosition = Vector3.zero;
         }
-
-        switch (rig.parentedToShip)
-        {
-            case true when !spectatorWasParentedToShip:
-                playerGhost.transform.SetParent(StartOfRound.Instance.elevatorTransform, true);
-                playerGhost.transform.localPosition = Vector3.zero;
-                break;
-            case false when spectatorWasParentedToShip:
-                playerGhost.transform.SetParent(null, true);
-                playerGhost.transform.localPosition = Vector3.zero;
-                break;
-        }
-
-        spectatorWasParentedToShip = rig.parentedToShip;
 
         head.localPosition = rig.headPosition;
         head.eulerAngles = rig.headRotation;
@@ -436,9 +426,7 @@ public class VRNetPlayer : MonoBehaviour
         rightHand.eulerAngles = rig.rightHandRotation;
 
         if (StartOfRound.Instance.localPlayerController.localVisorTargetPoint is not null)
-        {
             usernameBillboard.LookAt(StartOfRound.Instance.localPlayerController.localVisorTargetPoint);
-        }
     }
 
     /// <summary>
