@@ -33,8 +33,12 @@ internal static class HarmonyPatcher
                 if (attribute.Dependency != null && !Plugin.Compatibility.IsLoaded(attribute.Dependency))
                     return;
 
-                if (attribute.Target == target)
-                    patcher.CreateClassProcessor(type).Patch();
+                if (attribute.Target != target)
+                    return;
+
+                Logger.LogDebug($"Applying patches from: {type.FullName}");
+                    
+                patcher.CreateClassProcessor(type).Patch();
             }
             catch (Exception e)
             {

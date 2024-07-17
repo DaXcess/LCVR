@@ -23,7 +23,6 @@ public class VRNetPlayer : MonoBehaviour
     private CanvasGroup usernameAlpha;
     private TextMeshProUGUI usernameText;
 
-    private bool spectatorWasParentedToShip;
     private Transform lastSyncedPhysicsParent;
 
     private Transform xrOrigin;

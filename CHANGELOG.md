@@ -54,6 +54,7 @@ Some bindings are blacklisted from being used, mostly the "touched" bindings on 
 - Added welcome and PTT overlay UI to VR
 - Added VR support for the Weed Killer item
 - Added haptic feedback to the muffle interaction
+- Added haptic feedback to the monitor buttons in the ship
 
 **Bug Fixes**:
 
@@ -75,6 +76,7 @@ Some bindings are blacklisted from being used, mostly the "touched" bindings on 
 
 **Removals**:
 
+- Removed the forced startup cutscene
 - Removed bracken from the main and pause menus
 - Removed the DLSS optimization setting
 - Removed support for V50

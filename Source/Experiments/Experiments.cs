@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace LCVR.Experiments;
 
-internal class Experiments
+internal static class Experiments
 {
     public static void RunExperiments()
     {

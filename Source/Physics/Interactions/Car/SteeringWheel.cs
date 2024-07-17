@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Linq;
 using HarmonyLib;
@@ -210,6 +211,9 @@ public class SteeringWheel : MonoBehaviour
                     OtherDriver.SnapLeftHandTo(target.transform, new Vector3(0, -0.4f, -0.1f), new Vector3(0, 180, 0));
 
                 break;
+            
+            default:
+                throw new ArgumentOutOfRangeException();
         }
     }
 
