@@ -33,6 +33,7 @@ public class MenuCar : MonoBehaviour
         {
             hasTriggered = false;
             isHonkingHorn = false;
+            skidAudio.Stop();
             
             if (currentRoutine != null)
                 StopCoroutine(currentRoutine);
