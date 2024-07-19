@@ -13,7 +13,6 @@ public class Config(ConfigFile file)
     public ConfigEntry<bool> DisableVR { get; } = file.Bind("General", "DisableVR", false, "Disables the main functionality of this mod, can be used if you want to play without VR while keeping the mod installed.");
 
     public ConfigEntry<bool> AskOnStartup { get; } = file.Bind("General", "AskOnStartup", false, "When enabled, shows a popup on game launch where you are asked whether or not you want to play in VR. If DisableVR is set to true, this popup will not show.");
-    public ConfigEntry<bool> IntroScreenSeen { get; } = file.Bind("General", "IntroScreenSeen", false, "Whether the VR intro screen has been displayed before. This configuration option should be set automatically.");
     public ConfigEntry<bool> EnableHelmetVisor { get; } = file.Bind("General", "EnableHelmetVisor", false, "Enables the first person helmet visor and helmet. This will restrict your field of view, but looks more immersive.");
 
     // Performance configuration
@@ -73,10 +72,10 @@ public class Config(ConfigFile file)
     
     // Internal configuration
 
+    public ConfigEntry<bool> IntroScreenSeen { get; } = file.Bind("Internal", "IntroScreenSeen", false, "Whether the VR intro screen has been displayed before. This configuration option should be set automatically.");
     public ConfigEntry<string> ControllerBindingsOverride { get; } = file.Bind("Internal", "ControllerBindingsOverride", "", "FOR INTERNAL USE ONLY, DO NOT EDIT");
     public ConfigEntry<string> OpenXRRuntimeFile { get; } = file.Bind("Internal", "OpenXRRuntimeFile", "", "FOR INTERNAL USE ONLY, DO NOT EDIT");
-    public ConfigEntry<bool> DisableSettingsButton { get; } = file.Bind("Internal", "DisableSettingsButton", false,
-        "Disables the settings button on the main menu screen");
+    public ConfigEntry<bool> DisableSettingsButton { get; } = file.Bind("Internal", "DisableSettingsButton", false, "Disables the settings button on the main menu screen");
     
     public enum TurnProviderOption
     {
