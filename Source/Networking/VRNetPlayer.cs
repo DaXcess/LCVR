@@ -270,7 +270,7 @@ public class VRNetPlayer : MonoBehaviour
             if (rightOverride.transform == null)
             {
                 Logger.LogWarning("Right hand override target transform despawned");
-                leftHandTargetOverride = null;
+                rightHandTargetOverride = null;
 
                 return;
             }
