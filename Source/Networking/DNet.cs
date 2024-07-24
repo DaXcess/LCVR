@@ -23,9 +23,10 @@ namespace LCVR.Networking;
 
 internal static class DNet
 {
+    /// DNet Protocol Version, increase this everytime a change is made that is not compatible with older versions
     private const ushort PROTOCOL_VERSION = 5;
 
-    private static readonly ManualLogSource logger = BepInEx.Logging.Logger.CreateLogSource("DNet");
+    private static readonly ManualLogSource Logger = BepInEx.Logging.Logger.CreateLogSource("DNet");
     
     public static bool Initialized { get; private set; }
 
@@ -60,7 +61,7 @@ internal static class DNet
         // Wait for voicechat connection
         yield return new WaitUntil(() => LocalId.HasValue);
 
-        logger.LogDebug("Connected to Dissonance server");
+        Logger.LogDebug("Connected to Dissonance server");
 
         dissonance.OnPlayerJoinedSession += OnPlayerJoinedSession;
         dissonance.OnPlayerLeftSession += OnPlayerLeftSession;
@@ -163,7 +164,7 @@ internal static class DNet
     {
         if (!clients.TryGetValue(clientId, out var target))
         {
-            logger.LogError($"Cannot send handshake response to {clientId}: Client info is missing!");
+            Logger.LogError($"Cannot send handshake response to {clientId}: Client info is missing!");
             return;
         }
 
@@ -191,17 +192,17 @@ internal static class DNet
 
     private static void OnPlayerJoinedSession(VoicePlayerState player)
     {
-        logger.LogDebug("Player joined, trying to resolve client info");
+        Logger.LogDebug("Player joined, trying to resolve client info");
 
         if (!peers.TryGetClientInfoByName(player.Name, out var info))
         {
-            logger.LogError($"Failed to resolve client info for client '{player.Name}'");
+            Logger.LogError($"Failed to resolve client info for client '{player.Name}'");
             return;
         }
 
-        logger.LogDebug($"Resolved client info");
-        logger.LogDebug($"Player Name = {player.Name}");
-        logger.LogDebug($"Player Id = {info.PlayerId}");
+        Logger.LogDebug($"Resolved client info");
+        Logger.LogDebug($"Player Name = {player.Name}");
+        Logger.LogDebug($"Player Id = {info.PlayerId}");
 
         clients.Add(info.PlayerId, info);
         cachedPeers.Add(player.Name, info.PlayerId);
@@ -222,8 +223,8 @@ internal static class DNet
 
         muffledPlayers.Remove(id);
 
-        logger.LogDebug($"Player {player.Name} left the game");
-        logger.LogDebug($"subscribers = {subscribers.Count}, players = {players.Count}, clients = {clients.Count} ({string.Join(", ", clients.Keys)}), clientByNames = {cachedPeers.Count} ({string.Join(", ", cachedPeers.Keys)})");
+        Logger.LogDebug($"Player {player.Name} left the game");
+        Logger.LogDebug($"subscribers = {subscribers.Count}, players = {players.Count}, clients = {clients.Count} ({string.Join(", ", clients.Keys)}), clientByNames = {cachedPeers.Count} ({string.Join(", ", cachedPeers.Keys)})");
     }
 
     #endregion
@@ -313,9 +314,15 @@ internal static class DNet
     private static void HandleHandshakeRequest(ushort sender, ushort protocol)
     {
         if (protocol != PROTOCOL_VERSION)
-            return;
+        {
+            if (StartOfRound.Instance.allPlayerScripts.FirstOrDefault(p => p.playerClientId == sender) is { } player)
+                Logger.LogWarning(
+                    $"{player.playerUsername} protocol version is {protocol}, expected {PROTOCOL_VERSION}");
 
-        logger.LogDebug($"Player {sender} has initiated a handshake");
+            return;
+        }
+
+        Logger.LogDebug($"Player {sender} has initiated a handshake");
 
         SendHandshakeResponse(sender);
     }
@@ -332,7 +339,7 @@ internal static class DNet
 
         if (!peers.TryGetClientInfoById(sender, out var client))
         {
-            logger.LogError($"Failed to resolve client for Player Id {sender}. No VR movements will be synchronized.");
+            Logger.LogError($"Failed to resolve client for Player Id {sender}. No VR movements will be synchronized.");
 
             yield break;
         }
@@ -340,7 +347,7 @@ internal static class DNet
         var player = dissonance.FindPlayer(client.PlayerName);
         if (player == null)
         {
-            logger.LogError($"Failed to resolve client for Player {client.PlayerName}. No VR movements will be synchronized.");
+            Logger.LogError($"Failed to resolve client for Player {client.PlayerName}. No VR movements will be synchronized.");
             yield break;
         }
 
@@ -354,11 +361,11 @@ internal static class DNet
         var playerController = playerObject.GetComponent<PlayerControllerB>();
         var networkPlayer = playerObject.AddComponent<VRNetPlayer>();
 
-        logger.LogInfo($"Found VR player {playerController.playerUsername}");
+        Logger.LogInfo($"Found VR player {playerController.playerUsername}");
 
         if (!players.TryAdd(sender, networkPlayer))
         {
-            Logger.LogError("VR player already exists? Emergency nuking the network connection for this player!");
+            LCVR.Logger.LogError("VR player already exists? Emergency nuking the network connection for this player!");
             
             Object.Destroy(networkPlayer);
             OnPlayerLeftSession(player);
@@ -423,7 +430,7 @@ internal static class DNet
         if (!players.TryGetValue(sender, out var player))
             return;
 
-        logger.LogInfo($"{player.PlayerController.playerUsername} muffled: {muffled}");
+        Logger.LogInfo($"{player.PlayerController.playerUsername} muffled: {muffled}");
 
         if (muffled)
         {
