@@ -1,13 +1,12 @@
 using System.Collections.Generic;
 using HarmonyLib;
 using LCVR.Assets;
-using LCVR.Input;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
-namespace LCVR.UI;
+namespace LCVR.Input;
 
 public class KeyRemapManager : MonoBehaviour
 {

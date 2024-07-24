@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Reflection.Emit;
 using BepInEx.Configuration;
 using LCVR.Assets;
-using LCVR.UI;
+using LCVR.Input;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using static HarmonyLib.AccessTools;

@@ -7,6 +7,7 @@ using LCVR.Networking;
 using LCVR.Player;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.Emit;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -142,7 +143,7 @@ internal static class PlayerControllerPatches
     {
         if (!__instance.IsLocalPlayer())
             return true;
-        
+
         return !VRSession.Instance.LocalPlayer.IsRoomCrouching;
     }
 
@@ -225,7 +226,7 @@ internal static class PlayerControllerPatches
     {
         return !__instance.IsLocalPlayer();
     }
-    
+
     /// <summary>
     /// Disable the player spawn animation in VR
     /// </summary>
@@ -338,32 +339,32 @@ internal static class PlayerControllerPatches
     /// <summary>
     /// When dropping items, use the hand rotation instead of the player rotation to determine which way the item
     /// should face once on the ground
-    /// TODO: Check which euler angle is correct (x, y or z)
     /// </summary>
     [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.DiscardHeldObject))]
     [HarmonyTranspiler]
     [HarmonyDebug]
-    private static IEnumerable<CodeInstruction> DropItemWithHandRotation(IEnumerable<CodeInstruction> instructions)
+    private static IEnumerable<CodeInstruction> DropItemWithHandRotation(IEnumerable<CodeInstruction> instructions,
+        MethodBase original)
     {
         return new CodeMatcher(instructions)
-            .MatchForward(false, [new CodeMatch(OpCodes.Stloc_0)])
-            .Advance(-5)
-            .RemoveInstructions(5)
+            .End()
+            .MatchBack(false,
+            [
+                new CodeMatch(OpCodes.Callvirt, PropertyGetter(typeof(Transform), nameof(Transform.localEulerAngles)))
+            ])
+            .Advance(-1)
+            .RemoveInstructions(4)
             .InsertAndAdvance(
-                new CodeInstruction(OpCodes.Ldarg_0),
                 new CodeInstruction(OpCodes.Call, ((Func<PlayerControllerB, int>)GetHandRotation).Method)
-            )
-            .InstructionEnumeration();
+            ).InstructionEnumeration();
 
         static int GetHandRotation(PlayerControllerB player)
         {
-            var rotation = Quaternion.Inverse(player.transform.parent.rotation) *
-                VRSession.Instance.LocalPlayer.PrimaryController.transform.rotation;
-            
-            return (int)rotation.eulerAngles.y;
+            var dir = VRSession.Instance.LocalPlayer.PrimaryController.InteractOrigin.forward;
+            return (int)(Mathf.Atan2(dir.x, dir.z) * Mathf.Rad2Deg);
         }
     }
-}   
+}
 
 [LCVRPatch(LCVRPatchTarget.Universal)]
 [HarmonyPatch]
