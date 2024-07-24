@@ -1,4 +1,5 @@
-﻿using GameNetcodeStuff;
+﻿using System;
+using GameNetcodeStuff;
 using HarmonyLib;
 using LCVR.Assets;
 using LCVR.Input;
@@ -333,7 +334,36 @@ internal static class PlayerControllerPatches
                 Method(typeof(Vector3), "op_Addition", [typeof(Vector3), typeof(Vector3)])))
             .InstructionEnumeration();
     }
-}
+
+    /// <summary>
+    /// When dropping items, use the hand rotation instead of the player rotation to determine which way the item
+    /// should face once on the ground
+    /// TODO: Check which euler angle is correct (x, y or z)
+    /// </summary>
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.DiscardHeldObject))]
+    [HarmonyTranspiler]
+    [HarmonyDebug]
+    private static IEnumerable<CodeInstruction> DropItemWithHandRotation(IEnumerable<CodeInstruction> instructions)
+    {
+        return new CodeMatcher(instructions)
+            .MatchForward(false, [new CodeMatch(OpCodes.Stloc_0)])
+            .Advance(-5)
+            .RemoveInstructions(5)
+            .InsertAndAdvance(
+                new CodeInstruction(OpCodes.Ldarg_0),
+                new CodeInstruction(OpCodes.Call, ((Func<PlayerControllerB, int>)GetHandRotation).Method)
+            )
+            .InstructionEnumeration();
+
+        static int GetHandRotation(PlayerControllerB player)
+        {
+            var rotation = Quaternion.Inverse(player.transform.parent.rotation) *
+                VRSession.Instance.LocalPlayer.PrimaryController.transform.rotation;
+            
+            return (int)rotation.eulerAngles.y;
+        }
+    }
+}   
 
 [LCVRPatch(LCVRPatchTarget.Universal)]
 [HarmonyPatch]

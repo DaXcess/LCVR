@@ -98,7 +98,7 @@ public class Plugin : BaseUnityPlugin
             else
             {
                 Logger.LogError("Error: Unsupported game version, or corrupted game detected!");
-                Logger.LogError("Aborting before we blow something up!");
+                Logger.LogError("This usually happens if Lethal Company got updated recently.");
                 Logger.LogWarning(
                     "To bypass this check, add the following flag to your launch options in Steam: --lcvr-skip-checksum");
                 
@@ -253,6 +253,7 @@ public class Plugin : BaseUnityPlugin
         if (!OpenXR.Loader.InitializeXR())
         {
             Logger.LogError("Failed to start in VR Mode! Only Non-VR features are available!");
+            Logger.LogWarning("If you are not intending to play in VR, you can ignore the previous error.");
 
             return false;
         }
@@ -269,7 +270,7 @@ public class Plugin : BaseUnityPlugin
 
         // Change HDRP settings
         var asset = QualitySettings.renderPipeline as HDRenderPipelineAsset;
-        var settings = asset.currentPlatformRenderPipelineSettings;
+        var settings = asset!.currentPlatformRenderPipelineSettings;
 
         settings.dynamicResolutionSettings.enabled = Config.EnableDynamicResolution.Value;
         settings.dynamicResolutionSettings.dynResType = DynamicResolutionType.Hardware;
