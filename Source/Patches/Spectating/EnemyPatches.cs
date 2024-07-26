@@ -3,6 +3,7 @@ using System.Reflection.Emit;
 using GameNetcodeStuff;
 using HarmonyLib;
 using Unity.Netcode;
+using UnityEngine;
 using static HarmonyLib.AccessTools;
 
 namespace LCVR.Patches.Spectating;
@@ -97,5 +98,18 @@ internal static class SpectatorEnemyPatches
             )
             .InsertBranchAndAdvance(OpCodes.Brtrue, 78)
             .InstructionEnumeration();
+    }
+
+    private static readonly int AlphaCutoff = Shader.PropertyToID("_AlphaCutoff");
+    
+    /// <summary>
+    /// Make the clay surgeon always visible if we're dead
+    /// </summary>
+    [HarmonyPatch(typeof(ClaySurgeonAI), nameof(ClaySurgeonAI.SetVisibility))]
+    [HarmonyPostfix]
+    private static void ClaySurgeonVisibleWhenDead(ClaySurgeonAI __instance)
+    {
+        if (StartOfRound.Instance.localPlayerController.isPlayerDead)
+            __instance.thisMaterial.SetFloat(AlphaCutoff, 0);
     }
 }
