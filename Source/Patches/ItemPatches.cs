@@ -1,5 +1,7 @@
 ﻿using HarmonyLib;
 using LCVR.Items;
+using LCVR.Player;
+using UnityEngine;
 
 namespace LCVR.Patches;
 
@@ -29,5 +31,13 @@ internal static class UniversalItemPatches
     {
         if (!__runOriginal && __instance.radarIcon != null)
             __instance.radarIcon.position = __instance.transform.position;
+    }
+
+    [HarmonyPatch(typeof(GrabbableObject), nameof(GrabbableObject.GetItemFloorPosition))]
+    [HarmonyPrefix]
+    private static void GetItemFloorPositionFromHand(ref Vector3 startPosition)
+    {
+        if (startPosition == Vector3.zero)
+            startPosition = VRSession.Instance.LocalPlayer.RightHandVRTarget.position;
     }
 }
