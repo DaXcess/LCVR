@@ -360,8 +360,11 @@ internal static class PlayerControllerPatches
 
         static int GetHandRotation(PlayerControllerB player)
         {
-            var dir = VRSession.Instance.LocalPlayer.PrimaryController.InteractOrigin.forward;
-            return (int)(Mathf.Atan2(dir.x, dir.z) * Mathf.Rad2Deg);
+            var item = player.currentlyHeldObjectServer;
+            var restOffset = Quaternion.Euler(item.itemProperties.restingRotation.x, 0,
+                item.itemProperties.restingRotation.z);
+            return (int)(item.transform.eulerAngles.y - item.itemProperties.floorYOffset - 90 +
+                         restOffset.eulerAngles.y);
         }
     }
 }

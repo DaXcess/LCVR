@@ -57,7 +57,9 @@ public struct ControllerIcons
 
             var path = Regex.Replace(controlPath.ToLowerInvariant(), @"<[^>]+>([^ ]+)", "$1");
             var hand = path.Split('/')[0].TrimStart('{').TrimEnd('}');
-            controlPath = string.Join("/", path.Split('/').Skip(1)).TrimStart('{').TrimEnd('}');
+            controlPath = Regex.Replace(string.Join("/", path.Split('/').Skip(1)), @"{(.*)}", "$1");
+            
+            Logger.LogDebug(controlPath);
             
             return (hand, controlPath) switch
             {
