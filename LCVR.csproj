@@ -73,17 +73,6 @@
     </EmbeddedResource>
   </ItemGroup>
 
-  <Target Name="InjectCommitHash" BeforeTargets="BeforeBuild">
-    <Exec Command="git rev-parse --short HEAD" ConsoleToMSBuild="true">
-      <Output TaskParameter="ConsoleOutput" PropertyName="CommitHash" />
-    </Exec>
-    <WriteLinesToFile File="$(IntermediateOutputPath)/AssemblyInfo.cs" Overwrite="true" Lines="[assembly:System.Reflection.AssemblyMetadata(&quot;CommitHash&quot;, &quot;$(CommitHash)&quot;)]" />
-    <ItemGroup>
-      <Compile Include="$(IntermediateOutputPath)/AssemblyInfo.cs" />
-      <FileWrites Include="$(IntermediateOutputPath)/AssemblyInfo.cs" />
-    </ItemGroup>
-  </Target>
-
   <ItemGroup>
     <None Include="README.md" Pack="true" PackagePath="\" />
     <None Include="LICENSE" Pack="true" PackagePath="\" />

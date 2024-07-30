@@ -137,9 +137,9 @@ public class Plugin : BaseUnityPlugin
     private static string GetCommitHash()
     {
         var attribute = Assembly.GetExecutingAssembly()
-            .GetCustomAttributes<AssemblyMetadataAttribute>().FirstOrDefault(attr => attr.Key == "CommitHash");
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>();
 
-        return attribute?.Value ?? "unknown";
+        return attribute?.InformationalVersion.Split('+')[1][..7] ?? "unknown";
     }
 
     private bool VerifyGameVersion()
