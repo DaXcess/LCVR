@@ -85,9 +85,6 @@ public class SteeringWheel : MonoBehaviour
             currentRotation = Mathf.SmoothDampAngle(currentRotation, currentRotation + pendingRotation, ref velocity,
                 SMOOTH_TIME, Mathf.Max(ROTATION_SPEED * handsOnWheel, 0.25f));
             currentRotation = Mathf.Clamp(currentRotation, -MAX_ROTATION, MAX_ROTATION);
-            
-            Logger.LogDebug(velocity);
-
             pendingRotation = Mathf.Lerp(pendingRotation, 0, Time.deltaTime * ROTATION_SPEED * handsOnWheel);
 
             transform.localEulerAngles = new Vector3(0, 0, currentRotation);

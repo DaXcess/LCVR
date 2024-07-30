@@ -55,7 +55,7 @@ public class Plugin : BaseUnityPlugin
         Config = new Config(base.Config);
         Compatibility = new Compat([.. Chainloader.PluginInfos.Values]);
 
-        Logger.LogInfo($"Plugin {PLUGIN_NAME} is starting...");
+        Logger.LogInfo($"Starting {PLUGIN_NAME} v{PLUGIN_VERSION} ({GetCommitHash()})");
 
         // Allow disabling VR via config and command line
         var disableVr = Config.DisableVR.Value ||
@@ -132,6 +132,14 @@ public class Plugin : BaseUnityPlugin
 
         // Bring game window to front
         Native.BringGameWindowToFront();
+    }
+
+    private static string GetCommitHash()
+    {
+        var attribute = Assembly.GetExecutingAssembly()
+            .GetCustomAttributes<AssemblyMetadataAttribute>().FirstOrDefault(attr => attr.Key == "CommitHash");
+
+        return attribute?.Value ?? "unknown";
     }
 
     private bool VerifyGameVersion()

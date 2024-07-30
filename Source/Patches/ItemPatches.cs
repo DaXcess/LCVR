@@ -5,6 +5,34 @@ using UnityEngine;
 
 namespace LCVR.Patches;
 
+[LCVRPatch]
+[HarmonyPatch]
+internal static class ItemPatches
+{
+    /// <summary>
+    /// Make the items drop at the real life hand position instead of the item's current position to make dropping easier
+    /// </summary>
+    [HarmonyPatch(typeof(GrabbableObject), nameof(GrabbableObject.GetItemFloorPosition))]
+    [HarmonyPrefix]
+    private static void GetItemFloorPositionFromHand(ref Vector3 startPosition)
+    {
+        if (startPosition != Vector3.zero)
+            return;
+
+        var player = VRSession.Instance.LocalPlayer;
+        var localPosition = player.transform.InverseTransformPoint(player.RightHandVRTarget.position);
+            
+        // Only apply the logic if the hand is far away enough, otherwise it looks weird on close range
+        // TODO: Find a good minimum distance
+
+        var magnitude = localPosition.magnitude;
+        Logger.LogDebug($"Drop item magnitude: {magnitude}");
+        
+        if (magnitude > 0.5)
+            startPosition = VRSession.Instance.LocalPlayer.RightHandVRTarget.position;
+    }
+}
+
 [LCVRPatch(LCVRPatchTarget.Universal)]
 [HarmonyPatch]
 internal static class UniversalItemPatches
@@ -31,13 +59,5 @@ internal static class UniversalItemPatches
     {
         if (!__runOriginal && __instance.radarIcon != null)
             __instance.radarIcon.position = __instance.transform.position;
-    }
-
-    [HarmonyPatch(typeof(GrabbableObject), nameof(GrabbableObject.GetItemFloorPosition))]
-    [HarmonyPrefix]
-    private static void GetItemFloorPositionFromHand(ref Vector3 startPosition)
-    {
-        if (startPosition == Vector3.zero)
-            startPosition = VRSession.Instance.LocalPlayer.RightHandVRTarget.position;
     }
 }

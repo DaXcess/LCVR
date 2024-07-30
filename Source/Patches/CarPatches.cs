@@ -92,6 +92,9 @@ internal static class VRCarPatches
     [HarmonyPostfix]
     private static void OnUnloadMap()
     {
+        if (!NetworkManager.Singleton.IsServer)
+            return;
+        
         foreach (var vehicle in Object.FindObjectsOfType<VehicleController>())
             vehicle.NetworkObject.ChangeOwnership(StartOfRound.Instance.localPlayerController.actualClientId);
     }

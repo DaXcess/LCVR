@@ -242,6 +242,9 @@ public class VRController : MonoBehaviour
                     PlayerController.previousHoveringOverTrigger.isBeingHeldByPlayer = false;
                 }
 
+                if (component == null)
+                    return;
+
                 // Ignore disabled triggers (like ship lever, charging station, etc)
                 if (disabledInteractTriggers.Contains(component.gameObject.name))
                     return;
