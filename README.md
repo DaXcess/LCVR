@@ -34,6 +34,33 @@ Running the mod using r2modman can be done simply by clicking "Launch Modded", w
 
 For more documentation on using the mod, check out the [LethalCompanyVR Thunderstore page](https://thunderstore.io/c/lethal-company/p/DaXcess/LethalCompanyVR)
 
+# Versions
+
+> [!NOTE]
+> Versions annotated with **(BETA)** are not available on Thunderstore, and must be downloaded or compiled manually
+
+Here is a list of LCVR versions and which version(s) of Lethal Company it supports
+
+| LCVR              | Lethal Company    |
+|-------------------|-------------------|
+| v1.3.0 *(BETA)*   | V56               |
+| v1.2.5 *(LATEST)* | V50               |
+| v1.2.4            | V50               |
+| v1.2.3            | V50               |
+| v1.2.2            | V50               |
+| v1.2.1            | V50 (Older patch) |
+| v1.2.0            | V49               |
+| v1.1.9            | V45 and V49       |
+| v1.1.8            | V45 and V49       |
+| v1.1.6            | V45 and V49       |
+| v1.1.5            | V45 and V49       |
+| v1.1.4            | V45 and V49       |
+| v1.1.2            | V45 and V49       |
+| v1.1.1            | V45 and V49       |
+| v1.1.0            | V45 and V49       |
+| v1.0.1            | V45 and V49       |
+| v1.0.0            | V45 and V49       |
+
 # For developers
 
 If you want to make your mod compatible with LCVR, make sure to check out the [API documentation](Docs/API). While at the time of writing it doesn't contain much, this might be expanded more in the future.

@@ -365,7 +365,8 @@ internal static class DNet
 
         if (!players.TryAdd(sender, networkPlayer))
         {
-            LCVR.Logger.LogError("VR player already exists? Emergency nuking the network connection for this player!");
+            LCVR.Logger.LogError(
+                "VR player already exists? Destroying VR player script! Player will look like a vanilla player.");
             
             Object.Destroy(networkPlayer);
             OnPlayerLeftSession(player);
@@ -434,9 +435,13 @@ internal static class DNet
 
         if (muffled)
         {
-            var occlude = player.PlayerController.currentVoiceChatAudioSource.GetComponent<OccludeAudio>();
-            occlude.overridingLowPass = true;
-            occlude.lowPassOverride = 1000f;
+            // Muffling may happen before the voice chat sources are set up, so check for null first
+            if (player.PlayerController.currentVoiceChatAudioSource != null)
+            {
+                var occlude = player.PlayerController.currentVoiceChatAudioSource.GetComponent<OccludeAudio>();
+                occlude.overridingLowPass = true;
+                occlude.lowPassOverride = 1000f;
+            }
 
             muffledPlayers.Add(sender);
         }

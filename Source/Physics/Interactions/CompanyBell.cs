@@ -38,7 +38,7 @@ internal class CompanyBell : MonoBehaviour, VRInteractable
 [HarmonyPatch]
 internal static class DepositItemsDeskPatches
 {
-    [HarmonyPatch(typeof(DepositItemsDesk), "Start")]
+    [HarmonyPatch(typeof(DepositItemsDesk), nameof(DepositItemsDesk.Start))]
     [HarmonyPostfix]
     private static void OnItemDeskActivate()
     {

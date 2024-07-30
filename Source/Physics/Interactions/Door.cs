@@ -175,7 +175,7 @@ internal class LockPickerInteractable : MonoBehaviour, VRInteractable
 [HarmonyPatch]
 internal static class DoorPatches
 {
-    [HarmonyPatch(typeof(DoorLock), "Awake")]
+    [HarmonyPatch(typeof(DoorLock), nameof(DoorLock.Awake))]
     [HarmonyPostfix]
     private static void InitializeDoorInteractor(DoorLock __instance)
     {
@@ -211,7 +211,7 @@ internal static class DoorPatches
 [HarmonyPatch]
 internal static class LockerPickerPatches
 {
-    [HarmonyPatch(typeof(LockPicker), "Start")]
+    [HarmonyPatch(typeof(LockPicker), nameof(LockPicker.Start))]
     [HarmonyPostfix]
     private static void InitializeLockPickerInteractor(LockPicker __instance)
     {
@@ -240,7 +240,7 @@ internal static class LockerPickerPatches
     /// <summary>
     /// Change object name so that VRController allows picking up the item when removed from a door
     /// </summary>
-    [HarmonyPatch(typeof(LockPicker), "RetractClaws")]
+    [HarmonyPatch(typeof(LockPicker), nameof(LockPicker.RetractClaws))]
     [HarmonyPostfix]
     private static void OnRemovedFromDoor(LockPicker __instance)
     {

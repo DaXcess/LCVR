@@ -93,7 +93,7 @@ internal class TeleporterButtonGlass : MonoBehaviour, VRInteractable
 [HarmonyPatch]
 internal static class TeleporterPatches
 {
-    [HarmonyPatch(typeof(ShipTeleporter), "Awake")]
+    [HarmonyPatch(typeof(ShipTeleporter), nameof(ShipTeleporter.Awake))]
     [HarmonyPostfix]
     private static void OnShipTeleporterCreated(ShipTeleporter __instance)
     {

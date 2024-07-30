@@ -112,14 +112,14 @@ public class Face : MonoBehaviour, VRInteractable
 [HarmonyPatch]
 internal static class FaceItemInteractionPatches
 {
-    [HarmonyPatch(typeof(PlayerControllerB), "ActivateItem_performed")]
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.ActivateItem_performed))]
     [HarmonyPrefix]
     private static bool CanInteractUsingController()
     {
         return !VRSession.Instance?.Face?.IsInteracting ?? true;
     }
 
-    [HarmonyPatch(typeof(PlayerControllerB), "ActivateItem_canceled")]
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.ActivateItem_canceled))]
     [HarmonyPrefix]
     private static bool CanStopInteractUsingController()
     {
