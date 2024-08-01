@@ -8,10 +8,13 @@ using UnityEngine.XR.Interaction.Toolkit;
 
 namespace LCVR.Compatibility.MoreCompany;
 
-[LCVRPatch(dependency: "MoreCompany")]
+[LCVRPatch(dependency: Compat.MoreCompany)]
 [HarmonyPatch]
 internal static class MoreCompanyUIPatches
 {
+    /// <summary>
+    /// Not too sure why this was needed, probably had to do with me moving the UI around in the GameObject hierarchy
+    /// </summary>
     [HarmonyPatch(typeof(CosmeticRegistry), nameof(CosmeticRegistry.UpdateCosmeticsOnDisplayGuy))]
     [HarmonyPostfix]
     private static void AfterUpdateCosmetics()

@@ -45,7 +45,8 @@ public class Config(ConfigFile file)
     public ConfigEntry<float> CustomCameraLerpFactor { get; } = file.Bind("Rendering", "CustomCameraLerpFactor", 0.1f, new ConfigDescription("The smoothing factor of the custom camera rotation. Higher values mean more static movement, lower values are more smooth.", new AcceptableValueRange<float>(0.01f, 1f)));
     public ConfigEntry<float> LODBias { get; } = file.Bind("Rendering", "LODBias", 2f, new ConfigDescription("The LOD bias is a multiplier that dictates when an LOD must reduce their quality. Higher values means that more detailed LODs will persist for longer.", new AcceptableValueRange<float>(1, 5)));
     public ConfigEntry<bool> DisableLensDistortion { get; } = file.Bind("Rendering", "DisableLensDistortion", false, "Disables the warping effects that you experience when you are under water, use the TZP-inhalant and more.");
-
+    public ConfigEntry<bool> SpectatorLightRemovesVolumetrics { get; } = file.Bind("Rendering", "SpectatorLightRemovesVolumetrics", false, "When spectating, also disable all volumetrics (fog) while the fullbright lighting is enabled for more visibility.");
+    
     // Interaction configuration
 
     public ConfigEntry<bool> DisableShipLeverInteraction { get; } = file.Bind("Interaction", "DisableShipLeverInteraction", false, "Disables the physical lever pull interaction on the ship lever.");

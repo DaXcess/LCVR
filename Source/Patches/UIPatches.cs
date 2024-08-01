@@ -57,7 +57,7 @@ internal static class UIPatches
 
         InitMenuScene(canvas);
 
-        if (Plugin.Compatibility.IsLoaded("MoreCompany"))
+        if (Compat.IsLoaded(Compat.MoreCompany))
             Compatibility.MoreCompany.MoreCompanyCompatibility.SetupMoreCompanyUI();
 
         if (__instance.isInitScene)

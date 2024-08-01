@@ -3,6 +3,7 @@ using LCVR.Player;
 using Microsoft.MixedReality.Toolkit.Experimental.UI;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.UI;
 using UnityEngine.XR.Interaction.Toolkit.UI;
 
@@ -425,6 +426,19 @@ public class VRHUD : MonoBehaviour
     {
         if (spectatorLight is not { } light)
             return;
+        
+        var hdCamera = VRSession.Instance.MainCamera.GetComponent<HDAdditionalCameraData>();
+
+        // Don't disable volumetrics if it's already disabled, or if the user disabled the feature
+        if (!Plugin.Config.DisableVolumetrics.Value && Plugin.Config.SpectatorLightRemovesVolumetrics.Value)
+        {
+            var enable = active ?? !light.activeSelf;
+
+            if (enable)
+                hdCamera.DisableQualitySetting(FrameSettingsField.Volumetrics);
+            else
+                hdCamera.EnableQualitySetting(FrameSettingsField.Volumetrics);
+        }
         
         light.SetActive(active ?? !light.activeSelf);
     }

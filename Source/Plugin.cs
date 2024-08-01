@@ -36,7 +36,6 @@ public class Plugin : BaseUnityPlugin
     ];
 
     public new static Config Config { get; private set; }
-    public static Compat Compatibility { get; private set; }
     public static Flags Flags { get; private set; } = 0;
 
     private void Awake()
@@ -51,9 +50,7 @@ public class Plugin : BaseUnityPlugin
 
         // Plugin startup logic
         LCVR.Logger.SetSource(Logger);
-
         Config = new Config(base.Config);
-        Compatibility = new Compat([.. Chainloader.PluginInfos.Values]);
 
         Logger.LogInfo($"Starting {PLUGIN_NAME} v{PLUGIN_VERSION} ({GetCommitHash()})");
 

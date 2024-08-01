@@ -30,7 +30,7 @@ internal static class HarmonyPatcher
                 if (attribute == null)
                     return;
 
-                if (attribute.Dependency != null && !Plugin.Compatibility.IsLoaded(attribute.Dependency))
+                if (attribute.Dependency != null && !Compat.IsLoaded(attribute.Dependency))
                     return;
 
                 if (attribute.Target != target)
@@ -48,7 +48,7 @@ internal static class HarmonyPatcher
     }
 }
 
-[AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
+[AttributeUsage(AttributeTargets.Class)]
 internal class LCVRPatchAttribute(LCVRPatchTarget target = LCVRPatchTarget.VROnly, string dependency = null) : Attribute
 {
     public LCVRPatchTarget Target { get; } = target;

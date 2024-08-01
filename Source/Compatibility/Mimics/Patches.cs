@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace LCVR.Compatibility.Mimics;
 
-[LCVRPatch(dependency: "Mimics")]
+[LCVRPatch(dependency: Compat.Mimics)]
 [HarmonyPatch]
 internal static class MimicUIPatches
 {
