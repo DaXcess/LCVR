@@ -317,10 +317,11 @@ public class VRNetPlayer : MonoBehaviour
     /// </summary>
     public void HideSpectatorGhost()
     {
+        if (!playerGhost)
+            return;
+        
         foreach (var renderer in playerGhost.GetComponentsInChildren<MeshRenderer>())
-        {
             renderer.enabled = false;
-        }
 
         usernameAlpha.alpha = 0f;
     }
