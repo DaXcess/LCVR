@@ -55,6 +55,7 @@ Some bindings are blacklisted from being used, mostly the "touched" bindings on 
 - Added VR support for the Weed Killer item
 - Added haptic feedback to the muffle interaction
 - Added haptic feedback to the monitor buttons in the ship
+- Added new option: `SpectatorLightRemovesVolumetrics`, which disables fog when using the spectator light (if enabled)
 
 **Bug Fixes**:
 
@@ -66,6 +67,7 @@ Some bindings are blacklisted from being used, mostly the "touched" bindings on 
 - Fixed bug where the controllers sometimes kept vibrating after the player already died
 - (Accidentally) fixed a bug where the keyboard on the terminal would be unusable if the ship was in motion
 - Fixed issue where players in an animation wouldn't sync their offset to their room center with other players
+- Fixed a vanilla bug where sometimes you could "ghost interact" with battery powered items by using grip buttons
 
 **Changes**:
 

@@ -254,6 +254,14 @@ public class VRNetPlayer : MonoBehaviour
 
                 return;
             }
+
+            // Break snap if distance is too great
+            if (Vector3.Distance(leftOverride.transform.position, leftHandVRTarget.position) > 2)
+            {
+                leftHandTargetOverride = null;
+
+                return;
+            }
             
             Bones.LeftArmRigTarget.position = leftOverride.transform.TransformPoint(leftOverride.positionOffset);
             Bones.LeftArmRigTarget.rotation =
@@ -270,6 +278,14 @@ public class VRNetPlayer : MonoBehaviour
             if (rightOverride.transform == null)
             {
                 Logger.LogWarning("Right hand override target transform despawned");
+                rightHandTargetOverride = null;
+
+                return;
+            }
+
+            // Break snap if distance is too great
+            if (Vector3.Distance(rightOverride.transform.position, rightHandVRTarget.position) > 2)
+            {
                 rightHandTargetOverride = null;
 
                 return;
