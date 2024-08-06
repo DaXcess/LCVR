@@ -27,13 +27,17 @@ public class Muffler : MonoBehaviour, VRInteractable
 
     public InteractableFlags Flags => InteractableFlags.BothHands;
     public bool Muffled { get; private set; }
-    
+
     private void Update()
     {
-        if (Muffled)
-            counter = Mathf.Min(counter + Time.deltaTime * 2, MAX_COUNTER);
-        else
-            counter = Mathf.Max(counter - Time.deltaTime, 0);
+        counter = Muffled
+            ? Mathf.Min(counter + Time.deltaTime * 2, MAX_COUNTER)
+            : Mathf.Max(counter - Time.deltaTime, 0);
+
+        // Disable muffle if we picked up a two-handed item while muffled
+        if (Muffled && VRSession.Instance.LocalPlayer.PlayerController.currentlyHeldObjectServer is { } heldObject &&
+            heldObject.itemProperties.twoHanded)
+            Muffled = false;
 
         VRSession.Instance.VolumeManager.Muffle(counter);
     }
@@ -79,7 +83,8 @@ public class Muffler : MonoBehaviour, VRInteractable
     {
         yield return new WaitForSeconds(0.5f);
 
-        interactor.Vibrate(0.2f, 0.1f);
+        if (Muffled)
+            interactor.Vibrate(0.2f, 0.1f);
 
         Muffled = false;
         DNet.SetMuffled(false);

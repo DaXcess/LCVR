@@ -15,7 +15,7 @@ internal class SmoothTurningProvider : TurningProvider
         if (!shouldExecute)
             return;
 
-        var totalRotation = (value > 0 ? 90 : -90) * Time.deltaTime * Plugin.Config.SmoothTurnSpeedModifier.Value;
+        var totalRotation = (value > 0 ? 180 : -180) * Time.deltaTime * Plugin.Config.SmoothTurnSpeedModifier.Value;
 
         offset += totalRotation;
     }

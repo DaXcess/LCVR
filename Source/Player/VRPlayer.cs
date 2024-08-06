@@ -389,10 +389,10 @@ public class VRPlayer : MonoBehaviour
 
             TurningProvider.SetOffset(offset);
             specialAnimationPositionOffset = Quaternion.Euler(0, offset, 0) *
-                                             (
-                                                 new Vector3(mainCamera.transform.localPosition.x, 0,
-                                                     mainCamera.transform.localPosition.z) * -SCALE_FACTOR)
+                                             (new Vector3(mainCamera.transform.localPosition.x, 0,
+                                                 mainCamera.transform.localPosition.z) * -SCALE_FACTOR)
                                              .Divide(transform.parent.localScale);
+            
             isSprinting = false;
         }
 
@@ -413,9 +413,6 @@ public class VRPlayer : MonoBehaviour
 
         var movementAccounted = rotationOffset * movement;
         var cameraPosAccounted = rotationOffset * new Vector3(mainCamera.transform.localPosition.x, 0, mainCamera.transform.localPosition.z);
-
-        if (!wasInSpecialAnimation && PlayerController.inSpecialInteractAnimation)
-            specialAnimationPositionOffset = new Vector3(-cameraPosAccounted.x * SCALE_FACTOR, 0, -cameraPosAccounted.z * SCALE_FACTOR);
 
         wasInSpecialAnimation = PlayerController.inSpecialInteractAnimation;
         wasInEnemyAnimation = PlayerController.inAnimationWithEnemy is not null;

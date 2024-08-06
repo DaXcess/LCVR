@@ -19,7 +19,7 @@ public class Face : MonoBehaviour, VRInteractable
     ];
 
     private GrabbableObject heldItem;
-    private bool isInteracting = false;
+    private bool isInteracting;
 
     private Coroutine stopInteractingCoroutine;
 
@@ -59,7 +59,7 @@ public class Face : MonoBehaviour, VRInteractable
         isInteracting = true;
         heldItem = item;
 
-        heldItem.UseItemOnClient(true);
+        heldItem.UseItemOnClient();
     }
 
     public void OnColliderExit(VRInteractor _)

@@ -75,6 +75,7 @@ Some bindings are blacklisted from being used, mostly the "touched" bindings on 
 - XR Origin now has the same parent as the local player
 - Reworked a small portion of the 6DOF system to allow 6DOF when parented to other objects
 - Resetting height now also resets your rotation if you are in a special interact animation (i.e. terminal, car, enemy kill animation)
+- Doubled the base rotation speed on the Smooth Rotation setting
 
 **Removals**:
 
