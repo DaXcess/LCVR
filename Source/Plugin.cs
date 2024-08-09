@@ -133,10 +133,20 @@ public class Plugin : BaseUnityPlugin
 
     private static string GetCommitHash()
     {
-        var attribute = Assembly.GetExecutingAssembly()
-            .GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+        try
+        {
+            var attribute = Assembly.GetExecutingAssembly()
+                .GetCustomAttribute<AssemblyInformationalVersionAttribute>();
 
-        return attribute?.InformationalVersion.Split('+')[1][..7] ?? "unknown";
+            return attribute?.InformationalVersion.Split('+')[1][..7] ?? "unknown";
+        }
+        catch
+        {
+            LCVR.Logger.LogWarning(
+                "Failed to retrieve commit hash (compiled outside of git repo?). Using placeholder.");
+
+            return "badbeef";
+        }
     }
 
     private bool VerifyGameVersion()
