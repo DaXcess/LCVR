@@ -46,7 +46,7 @@ Some bindings are blacklisted from being used, mostly the "touched" bindings on 
 - Added VR interactions for the car honk in the Company Cruiser
 - Added VR interactions for the ignition in the Company Cruiser
 - Added VR interactions for the eject button in the Company Cruiser
-- Added VR interactions for the gear stick in the Company VR
+- Added VR interactions for the gear stick in the Company Cruiser
 - Added VR interactions for the car magnet lever on the ship
 - Added configuration options to disable special car interactions
 - Added controls rebinding in the settings menu
