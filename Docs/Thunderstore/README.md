@@ -53,17 +53,39 @@ Facing issues, have some mod (in)compatibility to report or just want to hang ou
 
 You can join the [LCVR Discord Server](https://discord.gg/2DxNgpPZUF)!
 
+# Versions
+
+> Versions annotated with **(BETA)** are not available on Thunderstore, and must be downloaded or compiled manually
+
+Here is a list of LCVR versions and which version(s) of Lethal Company it supports
+
+| LCVR              | Lethal Company    |
+|-------------------|-------------------|
+| v1.3.0 *(BETA)*   | V56               |
+| v1.2.5 *(LATEST)* | V50               |
+| v1.2.4            | V50               |
+| v1.2.3            | V50               |
+| v1.2.2            | V50               |
+| v1.2.1            | V50 (Older patch) |
+| v1.2.0            | V49               |
+| v1.1.9            | V45 and V49       |
+| v1.1.8            | V45 and V49       |
+| v1.1.6            | V45 and V49       |
+| v1.1.5            | V45 and V49       |
+| v1.1.4            | V45 and V49       |
+| v1.1.2            | V45 and V49       |
+| v1.1.1            | V45 and V49       |
+| v1.1.0            | V45 and V49       |
+| v1.0.1            | V45 and V49       |
+| v1.0.0            | V45 and V49       |
+
 # Compatibility
 
-Adding VR into a game will drastically change some of the gameplay elements. This is guaranteed to cause some incompatibilities with other Lethal Company mods. You can find a [compatibility sheet here](https://docs.google.com/spreadsheets/d/1mSulrvMkQFtjF_BWDeSfGz9rm3UWKMywmUP1yhcgCGo/edit?usp=sharing) where you can find a list of mods that have been tested to see if they work well in conjunction with the VR mod _(mostly managed by Moderators)_.
-
-In some rare cases, a mod will have "first class support", meaning that LCVR, the mod in question, or both mods have added official compatibility for both mods to work together seamlessly.
+Most mods should all work fine with LCVR, like interior mods, new moons, most items, etc. There's also a small handful of mods that have been explicitly made compatible with VR.
 
 ## Known incompatibilities
 
-It is generally assumed that any emote mod not listed as fully compatible inside the compatibility sheet will **completely break** LCVR, as the changes made to the player model more often than not conflict heavily with LCVR's IK implementation.
-
-This also includes combining multiple emote mods (even when they are both listed as compatible!) as more often than not the compatibility between the two (or more) emote mods don't account for LCVR when combined.
+In general, most emote mods, mods adding UI elements and mods that require new bindings are not compatible with LCVR by default, and either require configuration changes, or dedicated VR support.
 
 # Configuring the mod
 
@@ -77,7 +99,8 @@ LCVR attempts to automatically detect which type of controller you are using, an
 
 The current list of built-in controller profiles are:
 
-- Oculus (Rift S, Quest 2, Quest 3) - Default Fallback
+- Oculus (Rift S, Quest 2) - Default Fallback
+- Meta Quest (Quest 3)
 - Valve Index
 - HTC Vive
 - HP Reverb G2
@@ -87,11 +110,12 @@ For a list of all controls for your specific controllers, check out the `control
 
 # How to change controls
 
-Check out the [LCVR Controller Profiles](https://github.com/DaXcess/LCVR-Controller-Profiles) GitHub page to find a list of available controller bindings.
+You can change controller bindings just like you would normally in Lethal Company.
 
-In the mod's configuration, set the `ControllerBindingsOverrideProfile` option to the name of the profile binding you would like to use. This does however require an active internet connection, since these profiles are downloaded directly from this GitHub repository and will allow the use of new profiles without having to update the mod.
+Go to the settings, then press "Change keybinds", and scroll all the way down to the VR controls section.
 
-> Setting `ControllerBindingsOverrideProfile` will override the controller auto-detection
+> You must be in VR to change VR controller bindings. <br/>
+> Resetting the bindings will only reset the VR bindings, and will not touch keyboard/gamepad bindings.
 
 # Main Menu
 

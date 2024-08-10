@@ -4,7 +4,7 @@ using LCVR.Patches;
 
 namespace LCVR.Compatibility.Diversity;
 
-[LCVRPatch(dependency: "Diversity")]
+[LCVRPatch(dependency: Compat.Diversity)]
 [HarmonyPatch]
 internal static class DiversityPatches
 {
@@ -22,6 +22,9 @@ internal static class DiversityPatches
         DisableGlitchCustomPass();
     }
     
+    /// <summary>
+    /// Disables the glitch fullscreen pass, which is incompatible with Dynamic Resolution in VR
+    /// </summary>
     private static void DisableGlitchCustomPass()
     {
         HUDManagerRevamp.Instance.fullscreenPass2.enabled = false;

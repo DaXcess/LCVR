@@ -19,7 +19,7 @@ public class Face : MonoBehaviour, VRInteractable
     ];
 
     private GrabbableObject heldItem;
-    private bool isInteracting = false;
+    private bool isInteracting;
 
     private Coroutine stopInteractingCoroutine;
 
@@ -28,7 +28,7 @@ public class Face : MonoBehaviour, VRInteractable
 
     private bool CanInteract => VRSession.Instance.LocalPlayer.PlayerController.CanUseItem();
 
-    void Update()
+    private void Update()
     {
         if (!isInteracting)
             return;
@@ -59,7 +59,7 @@ public class Face : MonoBehaviour, VRInteractable
         isInteracting = true;
         heldItem = item;
 
-        heldItem.UseItemOnClient(true);
+        heldItem.UseItemOnClient();
     }
 
     public void OnColliderExit(VRInteractor _)
@@ -100,7 +100,7 @@ public class Face : MonoBehaviour, VRInteractable
         if (Plugin.Config.DisableFaceInteractions.Value)
             return null;
 
-        var interactableObject = Instantiate(AssetManager.interactable, VRSession.Instance.MainCamera.transform);
+        var interactableObject = Instantiate(AssetManager.Interactable, VRSession.Instance.MainCamera.transform);
         interactableObject.transform.localPosition = new Vector3(0, -0.1f, 0.1f);
         interactableObject.transform.localScale = new Vector3(0.225f, 0.2f, 0.225f);
 
@@ -112,14 +112,14 @@ public class Face : MonoBehaviour, VRInteractable
 [HarmonyPatch]
 internal static class FaceItemInteractionPatches
 {
-    [HarmonyPatch(typeof(PlayerControllerB), "ActivateItem_performed")]
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.ActivateItem_performed))]
     [HarmonyPrefix]
     private static bool CanInteractUsingController()
     {
         return !VRSession.Instance?.Face?.IsInteracting ?? true;
     }
 
-    [HarmonyPatch(typeof(PlayerControllerB), "ActivateItem_canceled")]
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.ActivateItem_canceled))]
     [HarmonyPrefix]
     private static bool CanStopInteractUsingController()
     {

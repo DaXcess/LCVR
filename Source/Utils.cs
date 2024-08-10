@@ -32,43 +32,37 @@ internal static class Utils
         return sha.ComputeHash(input);
     }
 
-    public static string GetPath(this Transform current)
-    {
-        if (current.parent == null)
-            return "/" + current.name;
-        return current.parent.GetPath() + "/" + current.name;
-    }
-
     public static string FormatPascalAndAcronym(string input)
     {
         var builder = new StringBuilder(input[0].ToString());
-        if (builder.Length > 0)
+        if (builder.Length <= 0)
+            return builder.ToString();
+
+        for (var index = 1; index < input.Length; index++)
         {
-            for (var index = 1; index < input.Length; index++)
+            var prevChar = input[index - 1];
+            var nextChar = index + 1 < input.Length ? input[index + 1] : '\0';
+
+            var isNextLower = char.IsLower(nextChar);
+            var isNextUpper = char.IsUpper(nextChar);
+            var isPresentUpper = char.IsUpper(input[index]);
+            var isPrevLower = char.IsLower(prevChar);
+            var isPrevUpper = char.IsUpper(prevChar);
+
+            if (!string.IsNullOrWhiteSpace(prevChar.ToString()) &&
+                ((isPrevUpper && isPresentUpper && isNextLower) ||
+                 (isPrevLower && isPresentUpper && isNextLower) ||
+                 (isPrevLower && isPresentUpper && isNextUpper)))
             {
-                char prevChar = input[index - 1];
-                char nextChar = index + 1 < input.Length ? input[index + 1] : '\0';
-
-                bool isNextLower = char.IsLower(nextChar);
-                bool isNextUpper = char.IsUpper(nextChar);
-                bool isPresentUpper = char.IsUpper(input[index]);
-                bool isPrevLower = char.IsLower(prevChar);
-                bool isPrevUpper = char.IsUpper(prevChar);
-
-                if (!string.IsNullOrWhiteSpace(prevChar.ToString()) &&
-                    ((isPrevUpper && isPresentUpper && isNextLower) ||
-                    (isPrevLower && isPresentUpper && isNextLower) ||
-                    (isPrevLower && isPresentUpper && isNextUpper)))
-                {
-                    builder.Append(' ');
-                    builder.Append(input[index]);
-                }
-                else
-                {
-                    builder.Append(input[index]);
-                }
+                builder.Append(' ');
+                builder.Append(input[index]);
+            }
+            else
+            {
+                builder.Append(input[index]);
             }
         }
+
         return builder.ToString();
     }
 
@@ -103,22 +97,16 @@ internal static class Utils
         return children.ToArray();
     }
 
-    public static void ApplyOffsetTransform(this Transform transform, Transform parent, Vector3 positionOffset, Vector3 rotationOffset)
+    public static void ApplyOffsetTransform(this Transform transform, Transform parent, Vector3 positionOffset,
+        Vector3 rotationOffset)
     {
         transform.rotation = parent.rotation;
         transform.Rotate(rotationOffset);
         transform.position = parent.position + parent.rotation * positionOffset;
     }
 
-    public static bool IsInactivePlayer(this PlayerControllerB player)
-    {
-        if (player == StartOfRound.Instance.localPlayerController)
-            return false;
-
-        return !player.transform.Find("ScavengerModel/metarig/CameraContainer/MainCamera").GetComponent<Camera>().enabled;
-    }
-
-    public static XRRayInteractor CreateInteractorController(this GameObject @object, Hand hand, bool rayVisible = true, bool trackingEnabled = true, bool actionsEnabled = true)
+    public static XRRayInteractor CreateInteractorController(this GameObject @object, Hand hand, bool rayVisible = true,
+        bool trackingEnabled = true, bool actionsEnabled = true)
     {
         var controller = @object.AddComponent<ActionBasedController>();
         var interactor = @object.AddComponent<XRRayInteractor>();
@@ -129,25 +117,28 @@ internal static class Utils
         visual.invalidColorGradient = new Gradient()
         {
             mode = GradientMode.Blend,
-            alphaKeys = [
+            alphaKeys =
+            [
                 new GradientAlphaKey(0.1f, 0),
                 new GradientAlphaKey(0.1f, 1)
             ],
-            colorKeys = [
+            colorKeys =
+            [
                 new GradientColorKey(Color.white, 0),
                 new GradientColorKey(Color.white, 1)
             ]
         };
         visual.enabled = rayVisible;
 
-        renderer.material = AssetManager.defaultRayMat;
+        renderer.material = AssetManager.DefaultRayMat;
 
         controller.AddActionBasedControllerBinds(hand, trackingEnabled, actionsEnabled);
 
         return interactor;
     }
 
-    public static void AddActionBasedControllerBinds(this ActionBasedController controller, Hand hand, bool trackingEnabled = true, bool actionsEnabled = true)
+    private static void AddActionBasedControllerBinds(this ActionBasedController controller, Hand hand,
+        bool trackingEnabled = true, bool actionsEnabled = true)
     {
         controller.enableInputTracking = trackingEnabled;
         controller.positionAction = new InputActionProperty(hand.Position());
@@ -155,27 +146,39 @@ internal static class Utils
         controller.trackingStateAction = new InputActionProperty(hand.TrackingState());
 
         controller.enableInputActions = actionsEnabled;
-        controller.selectAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Select"));
-        controller.selectActionValue = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Select Value"));
-        controller.activateAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Activate"));
-        controller.activateActionValue = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Activate Value"));
-        controller.uiPressAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/UI Press"));
-        controller.uiPressActionValue = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/UI Press Value"));
-        controller.uiScrollAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/UI Scroll"));
-        controller.rotateAnchorAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Rotate Anchor"));
-        controller.translateAnchorAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Translate Anchor"));
-        controller.scaleToggleAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Scale Toggle"));
-        controller.scaleDeltaAction = new InputActionProperty(AssetManager.defaultInputActions.FindAction($"{hand}/Scale Delta"));
+        controller.selectAction = new InputActionProperty(AssetManager.TrackingActions.FindAction($"{hand}/Select"));
+        controller.selectActionValue =
+            new InputActionProperty(AssetManager.TrackingActions.FindAction($"{hand}/Select Value"));
+        controller.activateAction =
+            new InputActionProperty(AssetManager.TrackingActions.FindAction($"{hand}/Activate"));
+        controller.activateActionValue =
+            new InputActionProperty(AssetManager.TrackingActions.FindAction($"{hand}/Activate Value"));
+        controller.uiPressAction = new InputActionProperty(AssetManager.TrackingActions.FindAction($"{hand}/UI Press"));
+        controller.uiPressActionValue =
+            new InputActionProperty(AssetManager.TrackingActions.FindAction($"{hand}/UI Press Value"));
+        controller.uiScrollAction =
+            new InputActionProperty(AssetManager.TrackingActions.FindAction($"{hand}/UI Scroll"));
+        controller.rotateAnchorAction =
+            new InputActionProperty(AssetManager.TrackingActions.FindAction($"{hand}/Rotate Anchor"));
+        controller.translateAnchorAction =
+            new InputActionProperty(AssetManager.TrackingActions.FindAction($"{hand}/Translate Anchor"));
+        controller.scaleToggleAction =
+            new InputActionProperty(AssetManager.TrackingActions.FindAction($"{hand}/Scale Toggle"));
+        controller.scaleDeltaAction =
+            new InputActionProperty(AssetManager.TrackingActions.FindAction($"{hand}/Scale Delta"));
     }
 
-    public static bool Raycast(this Ray ray, out RaycastHit hit, float maxDistance = Mathf.Infinity, int layerMask = UnityEngine.Physics.DefaultRaycastLayers)
+    public static bool Raycast(this Ray ray, out RaycastHit hit, float maxDistance = Mathf.Infinity,
+        int layerMask = UnityEngine.Physics.DefaultRaycastLayers)
     {
         return UnityEngine.Physics.Raycast(ray, out hit, maxDistance, layerMask);
     }
 
-    public static bool BoxCast(this Ray ray, float radius, out RaycastHit hit, float maxDistance = Mathf.Infinity, int layerMask = UnityEngine.Physics.DefaultRaycastLayers)
+    public static bool BoxCast(this Ray ray, float radius, out RaycastHit hit, float maxDistance = Mathf.Infinity,
+        int layerMask = UnityEngine.Physics.DefaultRaycastLayers)
     {
-        return UnityEngine.Physics.BoxCast(ray.origin, Vector3.one * radius, ray.direction, out hit, Quaternion.identity, maxDistance, layerMask);
+        return UnityEngine.Physics.BoxCast(ray.origin, Vector3.one * radius, ray.direction, out hit,
+            Quaternion.identity, maxDistance, layerMask);
     }
 
     public enum Hand
@@ -190,7 +193,7 @@ internal static class Utils
         {
             Hand.Left => Actions.Instance.LeftHandPosition,
             Hand.Right => Actions.Instance.RightHandPosition,
-            _ => throw new NotImplementedException(),
+            _ => throw new ArgumentOutOfRangeException(nameof(hand), @"Invalid hand variant was given"),
         };
     }
 
@@ -200,7 +203,7 @@ internal static class Utils
         {
             Hand.Left => Actions.Instance.LeftHandRotation,
             Hand.Right => Actions.Instance.RightHandRotation,
-            _ => throw new NotImplementedException(),
+            _ => throw new ArgumentOutOfRangeException(nameof(hand), @"Invalid hand variant was given"),
         };
     }
 
@@ -210,8 +213,13 @@ internal static class Utils
         {
             Hand.Left => Actions.Instance.LeftHandTrackingState,
             Hand.Right => Actions.Instance.RightHandTrackingState,
-            _ => throw new NotImplementedException(),
+            _ => throw new ArgumentOutOfRangeException(nameof(hand), @"Invalid hand variant was given"),
         };
+    }
+
+    public static bool IsLocalPlayer(this PlayerControllerB player)
+    {
+        return GameNetworkManager.Instance.localPlayerController == player;
     }
     
     /// <summary>
@@ -220,5 +228,20 @@ internal static class Utils
     public static IEnumerator NopRoutine()
     {
         yield break;
+    }
+}
+
+public static class BinaryReaderExtensions
+{
+    public static BinaryReader Clone(this BinaryReader reader)
+    {
+        var mem = new MemoryStream();
+        var pos = reader.BaseStream.Position;
+
+        reader.BaseStream.CopyTo(mem);
+        reader.BaseStream.Position = pos;
+        mem.Position = 0;
+
+        return new BinaryReader(mem);
     }
 }

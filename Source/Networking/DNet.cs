@@ -12,6 +12,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using BepInEx.Logging;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -22,15 +23,18 @@ namespace LCVR.Networking;
 
 internal static class DNet
 {
-    private const ushort PROTOCOL_VERSION = 3;
+    /// DNet Protocol Version, increase this everytime a change is made that is not compatible with older versions
+    private const ushort PROTOCOL_VERSION = 5;
 
-    private static readonly NamedLogger logger = new("Networking");
+    private static readonly ManualLogSource Logger = BepInEx.Logging.Logger.CreateLogSource("DNet");
+    
+    public static bool Initialized { get; private set; }
 
     private static DissonanceComms dissonance;
     private static BaseClient<NfgoServer, NfgoClient, NfgoConn> networkClient;
     private static SlaveClientCollection<NfgoConn> peers;
 
-    private static ushort? LocalId => networkClient._serverNegotiator.LocalId;
+    private static ushort? LocalId => networkClient?._serverNegotiator.LocalId;
 
     /// List of known clients inside the Dissonance Voice session
     private static readonly Dictionary<ushort, ClientInfo<NfgoConn?>> clients = [];
@@ -43,6 +47,8 @@ internal static class DNet
     
     /// List of client IDs (from Dissonance Voice) which support DNet
     private static readonly HashSet<ushort> subscribers = [];
+    
+    private static readonly Dictionary<ChannelType, List<Channel>> channels = [];
 
     public static VRNetPlayer[] Players => players.Values.ToArray();
 
@@ -55,7 +61,7 @@ internal static class DNet
         // Wait for voicechat connection
         yield return new WaitUntil(() => LocalId.HasValue);
 
-        logger.LogDebug("Connected to Dissonance server");
+        Logger.LogDebug("Connected to Dissonance server");
 
         dissonance.OnPlayerJoinedSession += OnPlayerJoinedSession;
         dissonance.OnPlayerLeftSession += OnPlayerLeftSession;
@@ -67,6 +73,8 @@ internal static class DNet
                 cachedPeers.Add(player.Name, client.PlayerId);
             }
 
+        Initialized = true;
+        
         dissonance.StartCoroutine(SendHandshakeCoroutine());
     }
 
@@ -80,10 +88,53 @@ internal static class DNet
         players.Clear();
         clients.Clear();
         cachedPeers.Clear();
+        channels.Clear();
 
         muffledPlayers.Clear();
     }
 
+    public static Channel CreateChannel(ChannelType type, ulong? instanceId = null)
+    {
+        var channel = new Channel(type, instanceId);
+
+        channels.TryAdd(type, []);
+        channels[type].Add(channel);
+
+        return channel;
+    }
+
+    internal static void CloseChannel(ChannelType type, Channel channel)
+    {
+        if (!channels.TryGetValue(type, out var channelList))
+            return;
+
+        channelList.Remove(channel);
+    }
+
+    public static bool TryGetPlayer(ushort id, out VRNetPlayer player)
+    {
+        return players.TryGetValue(id, out player);
+    }
+
+    public static void BroadcastChannelPacket(ChannelType type, ulong? instanceId, byte[] packet)
+    {
+        using var mem = new MemoryStream();
+        using var bw = new BinaryWriter(mem);
+        
+        bw.Write((byte)type);
+
+        if (instanceId.HasValue)
+        {
+            bw.Write(true);
+            bw.Write(instanceId.Value);
+        } else
+            bw.Write(false);
+        
+        bw.Write(packet);
+        
+        BroadcastPacket(MessageType.Channel, mem.ToArray());
+    }
+    
     public static void BroadcastRig(Rig rig)
     {
         BroadcastPacket(MessageType.RigData, Serialization.Serialize(rig));
@@ -113,7 +164,7 @@ internal static class DNet
     {
         if (!clients.TryGetValue(clientId, out var target))
         {
-            logger.LogError($"Cannot send handshake response to {clientId}: Client info is missing!");
+            Logger.LogError($"Cannot send handshake response to {clientId}: Client info is missing!");
             return;
         }
 
@@ -125,7 +176,7 @@ internal static class DNet
     /// </summary>
     private static IEnumerator SendHandshakeCoroutine()
     {
-        while (true)
+        while (Initialized)
         {
             // Grab a list of clients that are not subscribed
             var targets = clients.Where(client => !subscribers.Contains(client.Key)).Select(client => client.Value);
@@ -141,17 +192,17 @@ internal static class DNet
 
     private static void OnPlayerJoinedSession(VoicePlayerState player)
     {
-        logger.LogDebug("Player joined, trying to resolve client info");
+        Logger.LogDebug("Player joined, trying to resolve client info");
 
         if (!peers.TryGetClientInfoByName(player.Name, out var info))
         {
-            logger.LogError($"Failed to resolve client info for client '{player.Name}'");
+            Logger.LogError($"Failed to resolve client info for client '{player.Name}'");
             return;
         }
 
-        logger.LogDebug($"Resolved client info");
-        logger.LogDebug($"Player Name = {player.Name}");
-        logger.LogDebug($"Player Id = {info.PlayerId}");
+        Logger.LogDebug($"Resolved client info");
+        Logger.LogDebug($"Player Name = {player.Name}");
+        Logger.LogDebug($"Player Id = {info.PlayerId}");
 
         clients.Add(info.PlayerId, info);
         cachedPeers.Add(player.Name, info.PlayerId);
@@ -172,8 +223,8 @@ internal static class DNet
 
         muffledPlayers.Remove(id);
 
-        logger.LogDebug($"Player {player.Name} left the game");
-        logger.LogDebug($"subscribers = {subscribers.Count}, players = {players.Count}, clients = {clients.Count} ({string.Join(", ", clients.Keys)}), clientByNames = {cachedPeers.Count} ({string.Join(", ", cachedPeers.Keys)})");
+        Logger.LogDebug($"Player {player.Name} left the game");
+        Logger.LogDebug($"subscribers = {subscribers.Count}, players = {players.Count}, clients = {clients.Count} ({string.Join(", ", clients.Keys)}), clientByNames = {cachedPeers.Count} ({string.Join(", ", cachedPeers.Keys)})");
     }
 
     #endregion
@@ -182,17 +233,23 @@ internal static class DNet
 
     private static void BroadcastPacket(MessageType type, byte[] payload)
     {
+        if (LocalId is not {} sender)
+            return;
+        
         var targets = subscribers.Where(key => clients.TryGetValue(key, out _)).Select(value => clients[value]).ToList();
 
-        networkClient.SendReliableP2P(targets, ConstructPacket(type, payload));
+        networkClient.SendReliableP2P(targets, ConstructPacket(type, sender, payload));
     }
 
     private static void SendPacket(MessageType type, byte[] payload, params ClientInfo<NfgoConn?>[] targets)
     {
-        networkClient.SendReliableP2P([.. targets], ConstructPacket(type, payload));
+        if (LocalId is not {} sender)
+            return;
+        
+        networkClient.SendReliableP2P([.. targets], ConstructPacket(type, sender, payload));
     }
 
-    private static byte[] ConstructPacket(MessageType type, byte[] payload)
+    private static byte[] ConstructPacket(MessageType type, ushort sender, byte[] payload)
     {
         using var memory = new MemoryStream();
         using var writer = new BinaryWriter(memory);
@@ -204,7 +261,7 @@ internal static class DNet
         writer.Write((byte)type);
 
         // Sender Id
-        writer.Write(LocalId.Value);
+        writer.Write(sender);
 
         // Rest of payload
         writer.Write(payload);
@@ -247,15 +304,25 @@ internal static class DNet
             case MessageType.Muffled:
                 HandleSetMuffled(sender, reader.ReadBoolean());
                 break;
+            
+            case MessageType.Channel:
+                HandleChannelMessage(sender, reader);
+                break;
         }
     }
 
     private static void HandleHandshakeRequest(ushort sender, ushort protocol)
     {
         if (protocol != PROTOCOL_VERSION)
-            return;
+        {
+            if (StartOfRound.Instance.allPlayerScripts.FirstOrDefault(p => p.playerClientId == sender) is { } player)
+                Logger.LogWarning(
+                    $"{player.playerUsername} protocol version is {protocol}, expected {PROTOCOL_VERSION}");
 
-        logger.LogDebug($"Player {sender} has initiated a handshake");
+            return;
+        }
+
+        Logger.LogDebug($"Player {sender} has initiated a handshake");
 
         SendHandshakeResponse(sender);
     }
@@ -272,7 +339,7 @@ internal static class DNet
 
         if (!peers.TryGetClientInfoById(sender, out var client))
         {
-            logger.LogError($"Failed to resolve client for Player Id {sender}. No VR movements will be synchronized.");
+            Logger.LogError($"Failed to resolve client for Player Id {sender}. No VR movements will be synchronized.");
 
             yield break;
         }
@@ -280,25 +347,26 @@ internal static class DNet
         var player = dissonance.FindPlayer(client.PlayerName);
         if (player == null)
         {
-            logger.LogError($"Failed to resolve client for Player {client.PlayerName}. No VR movements will be synchronized.");
+            Logger.LogError($"Failed to resolve client for Player {client.PlayerName}. No VR movements will be synchronized.");
             yield break;
         }
 
         yield return new WaitUntil(() => player.Tracker != null);
 
         // Ignore players that have already been registered
-        if (players.TryGetValue(sender, out var networkPlayer))
+        if (players.ContainsKey(sender))
             yield break;
 
         var playerObject = ((NfgoPlayer)player.Tracker!).gameObject;
         var playerController = playerObject.GetComponent<PlayerControllerB>();
-        networkPlayer = playerObject.AddComponent<VRNetPlayer>();
+        var networkPlayer = playerObject.AddComponent<VRNetPlayer>();
 
-        logger.LogInfo($"Found VR player {playerController.playerUsername}");
+        Logger.LogInfo($"Found VR player {playerController.playerUsername}");
 
         if (!players.TryAdd(sender, networkPlayer))
         {
-            Logger.LogError("VR player already exists? Emergency nuking the network connection for this player!");
+            LCVR.Logger.LogError(
+                "VR player already exists? Destroying VR player script! Player will look like a vanilla player.");
             
             Object.Destroy(networkPlayer);
             OnPlayerLeftSession(player);
@@ -363,13 +431,17 @@ internal static class DNet
         if (!players.TryGetValue(sender, out var player))
             return;
 
-        logger.Log($"{player.PlayerController.playerUsername} muffled: {muffled}");
+        Logger.LogInfo($"{player.PlayerController.playerUsername} muffled: {muffled}");
 
         if (muffled)
         {
-            var occlude = player.PlayerController.currentVoiceChatAudioSource.GetComponent<OccludeAudio>();
-            occlude.overridingLowPass = true;
-            occlude.lowPassOverride = 1000f;
+            // Muffling may happen before the voice chat sources are set up, so check for null first
+            if (player.PlayerController.currentVoiceChatAudioSource != null)
+            {
+                var occlude = player.PlayerController.currentVoiceChatAudioSource.GetComponent<OccludeAudio>();
+                occlude.overridingLowPass = true;
+                occlude.lowPassOverride = 1000f;
+            }
 
             muffledPlayers.Add(sender);
         }
@@ -381,6 +453,24 @@ internal static class DNet
         }
     }
 
+    private static void HandleChannelMessage(ushort sender, BinaryReader reader)
+    {
+        var type = (ChannelType)reader.ReadByte();
+        ulong? instanceId = null;
+
+        if (reader.ReadBoolean())
+            instanceId = reader.ReadUInt64();
+
+        if (!channels.TryGetValue(type, out var channelList))
+            return;
+        
+        if (instanceId.HasValue)
+            channelList.Where(channel => channel.InstanceId == instanceId.Value)
+                .Do(channel => channel.ReceivedPacket(sender, reader.Clone()));
+        else
+            channelList.Do(channel => channel.ReceivedPacket(sender, reader.Clone()));
+    }
+    
     #endregion
 
     #region SERIALIZABLE STRUCTS
@@ -399,7 +489,8 @@ internal static class DNet
         public Vector3 cameraEulers;
         public Vector3 cameraPosAccounted;
         public Vector3 modelOffset;
-
+        public Vector3 specialAnimationPositionOffset;
+        
         public CrouchState crouchState;
         public float rotationOffset;
         public float cameraFloorOffset;
@@ -445,7 +536,8 @@ internal static class DNet
         SpectatorRigData,
         Lever,
         CancelChargerAnim,
-        Muffled
+        Muffled,
+        Channel
     }
 
     #endregion

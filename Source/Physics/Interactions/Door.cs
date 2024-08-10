@@ -71,7 +71,7 @@ public class Door : MonoBehaviour, VRInteractable
                 lockpicker.PlaceOnDoor(door, lockpicker.placeOnLockPicker1);
             }
             else
-                door.doorLockSFX.PlayOneShot(AssetManager.doorLocked);
+                door.doorLockSFX.PlayOneShot(AssetManager.DoorLocked);
 
             return true;
         }
@@ -151,7 +151,7 @@ internal class LockPickerInteractable : MonoBehaviour, VRInteractable
 
     public InteractableFlags Flags => InteractableFlags.RightHand;
 
-    void Awake()
+    private void Awake()
     {
         lockPicker = GetComponentInParent<LockPicker>();
     }
@@ -175,7 +175,7 @@ internal class LockPickerInteractable : MonoBehaviour, VRInteractable
 [HarmonyPatch]
 internal static class DoorPatches
 {
-    [HarmonyPatch(typeof(DoorLock), "Awake")]
+    [HarmonyPatch(typeof(DoorLock), nameof(DoorLock.Awake))]
     [HarmonyPostfix]
     private static void InitializeDoorInteractor(DoorLock __instance)
     {
@@ -196,7 +196,7 @@ internal static class DoorPatches
         // Make sure default ray based interaction no longer works for this door
         __instance.gameObject.name = "DoorInteractable";
 
-        var interactableObject = Object.Instantiate(AssetManager.interactable, __instance.transform);
+        var interactableObject = Object.Instantiate(AssetManager.Interactable, __instance.transform);
         interactableObject.transform.localPosition = position;
         interactableObject.transform.localEulerAngles = rotation;
         interactableObject.transform.localScale = scale * (__instance.isDoorOpened ? 4f : 1f);
@@ -211,7 +211,7 @@ internal static class DoorPatches
 [HarmonyPatch]
 internal static class LockerPickerPatches
 {
-    [HarmonyPatch(typeof(LockPicker), "Start")]
+    [HarmonyPatch(typeof(LockPicker), nameof(LockPicker.Start))]
     [HarmonyPostfix]
     private static void InitializeLockPickerInteractor(LockPicker __instance)
     {
@@ -221,7 +221,7 @@ internal static class LockerPickerPatches
         // Do **not** yet disable the ray based interactor. Only disable when placed on door!
         __instance.gameObject.name = "LockPicker";
 
-        var interactableObject = Object.Instantiate(AssetManager.interactable, __instance.transform);
+        var interactableObject = Object.Instantiate(AssetManager.Interactable, __instance.transform);
         interactableObject.transform.localScale = new Vector3(2f, 4f, 2.5f);
         interactableObject.AddComponent<LockPickerInteractable>();
     }
@@ -240,7 +240,7 @@ internal static class LockerPickerPatches
     /// <summary>
     /// Change object name so that VRController allows picking up the item when removed from a door
     /// </summary>
-    [HarmonyPatch(typeof(LockPicker), "RetractClaws")]
+    [HarmonyPatch(typeof(LockPicker), nameof(LockPicker.RetractClaws))]
     [HarmonyPostfix]
     private static void OnRemovedFromDoor(LockPicker __instance)
     {

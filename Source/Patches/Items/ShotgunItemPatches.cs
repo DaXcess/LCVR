@@ -36,7 +36,9 @@ internal static class ShotgunItemPatches
     private static IEnumerable<CodeInstruction> KurtCobainTranspiler(IEnumerable<CodeInstruction> instructions)
     {
         return new CodeMatcher(instructions)
-            .MatchForward(false, new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(Animator), nameof(Animator.SetTrigger), [typeof(string)])))
+            .MatchForward(false,
+                new CodeMatch(OpCodes.Callvirt,
+                    AccessTools.Method(typeof(Animator), nameof(Animator.SetTrigger), [typeof(string)])))
             .Advance(1)
             .SetOpcodeAndAdvance(OpCodes.Ldc_I4_0)
             .InstructionEnumeration();

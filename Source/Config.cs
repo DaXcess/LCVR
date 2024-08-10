@@ -13,7 +13,6 @@ public class Config(ConfigFile file)
     public ConfigEntry<bool> DisableVR { get; } = file.Bind("General", "DisableVR", false, "Disables the main functionality of this mod, can be used if you want to play without VR while keeping the mod installed.");
 
     public ConfigEntry<bool> AskOnStartup { get; } = file.Bind("General", "AskOnStartup", false, "When enabled, shows a popup on game launch where you are asked whether or not you want to play in VR. If DisableVR is set to true, this popup will not show.");
-    public ConfigEntry<bool> IntroScreenSeen { get; } = file.Bind("General", "IntroScreenSeen", false, "Whether the VR intro screen has been displayed before. This configuration option should be set automatically.");
     public ConfigEntry<bool> EnableHelmetVisor { get; } = file.Bind("General", "EnableHelmetVisor", false, "Enables the first person helmet visor and helmet. This will restrict your field of view, but looks more immersive.");
 
     // Performance configuration
@@ -21,7 +20,6 @@ public class Config(ConfigFile file)
     public ConfigEntry<bool> EnableDynamicResolution { get; } = file.Bind("Performance", "EnableDynamicResolution", false, "Whether or not dynamic resolution should be enabled. Required for most of these settings to have an effect.");
     public ConfigEntry<DynamicResUpscaleFilter> DynamicResolutionUpscaleFilter { get; } = file.Bind("Performance", "DynamicResolutionUpscaleFilter", DynamicResUpscaleFilter.EdgeAdaptiveScalingUpres, new ConfigDescription("The filter/algorithm that will be used to perform dynamic resolution upscaling. Defaulted to FSR (Edge Adaptive Scaling).", new AcceptableValueEnum<DynamicResUpscaleFilter>()));
     public ConfigEntry<float> DynamicResolutionPercentage { get; } = file.Bind("Performance", "DynamicResolutionPercentage", 80f, new ConfigDescription("The percentage of resolution to scale the game down to. The lower the value, the harder the upscale filter has to work which will result in quality loss.", new AcceptableValueRange<float>(0, 100)));
-    public ConfigEntry<bool> EnableDLSS { get; } = file.Bind("Performance", "EnableDLSS", false, "[DEPRECATED] DLSS support will be removed in a future release!");
     public ConfigEntry<float> CameraResolution { get; } = file.Bind("Performance", "CameraResolution", 0.75f, new ConfigDescription("This setting configures the resolution scale of the game, lower values are more performant, but will make the game look worse. From around 0.8 the difference is negligible (on a Quest 2, with dynamic resolution disabled).", new AcceptableValueRange<float>(0.05f, 1f)));
     public ConfigEntry<bool> DisableVolumetrics { get; } = file.Bind("Performance", "DisableVolumetrics", false, "Disables volumetrics in the game, which significantly improves performance, but removes all fog and may be considered cheating.");
 
@@ -32,7 +30,6 @@ public class Config(ConfigFile file)
     public ConfigEntry<float> SnapTurnSize { get; } = file.Bind("Input", "SnapTurnSize", 45f, new ConfigDescription("The amount of rotation that is applied when performing a snap turn. Requires turn provider to be set to snap.", new AcceptableValueRange<float>(10, 180)));
     public ConfigEntry<bool> ToggleSprint { get; } = file.Bind("Input", "ToggleSprint", false, "Whether the sprint button should toggle sprint instead of having to hold it down.");
     public ConfigEntry<float> MovementSprintToggleCooldown { get; } = file.Bind("Input", "MovementSprintToggleCooldown", 1f, new ConfigDescription("The amount of seconds that you need to stand still for sprint to be toggled off automatically. Requires sprint toggle to be enabled.", new AcceptableValueRange<float>(0, 60)));
-    public ConfigEntry<string> ControllerBindingsOverrideProfile { get; } = file.Bind("Input", "ControllerBindingsOverrideProfile", "", "Specify the name of a controler profile you would like to use. Keep empty to use the built-in controller profiles. You can find a list of available controller profiles on https://github.com/DaXcess/LCVR-Controller-Profiles. To test a local profile, specify a path using the file protocol (e.g. file:///C:/Users/.../profile.inputactions)");
 
     // UI configuration
 
@@ -48,7 +45,8 @@ public class Config(ConfigFile file)
     public ConfigEntry<float> CustomCameraLerpFactor { get; } = file.Bind("Rendering", "CustomCameraLerpFactor", 0.1f, new ConfigDescription("The smoothing factor of the custom camera rotation. Higher values mean more static movement, lower values are more smooth.", new AcceptableValueRange<float>(0.01f, 1f)));
     public ConfigEntry<float> LODBias { get; } = file.Bind("Rendering", "LODBias", 2f, new ConfigDescription("The LOD bias is a multiplier that dictates when an LOD must reduce their quality. Higher values means that more detailed LODs will persist for longer.", new AcceptableValueRange<float>(1, 5)));
     public ConfigEntry<bool> DisableLensDistortion { get; } = file.Bind("Rendering", "DisableLensDistortion", false, "Disables the warping effects that you experience when you are under water, use the TZP-inhalant and more.");
-
+    public ConfigEntry<bool> SpectatorLightRemovesVolumetrics { get; } = file.Bind("Rendering", "SpectatorLightRemovesVolumetrics", false, "When spectating, also disable all volumetrics (fog) while the fullbright lighting is enabled for more visibility.");
+    
     // Interaction configuration
 
     public ConfigEntry<bool> DisableShipLeverInteraction { get; } = file.Bind("Interaction", "DisableShipLeverInteraction", false, "Disables the physical lever pull interaction on the ship lever.");
@@ -60,18 +58,25 @@ public class Config(ConfigFile file)
     public ConfigEntry<bool> DisableCompanyBellInteraction { get; } = file.Bind("Interaction", "DisableCompanyBellInteraction", false, "Disables needing to physically press the bell at the company desk.");
     public ConfigEntry<bool> DisableBreakerBoxInteraction { get; } = file.Bind("Interaction", "DisableBreakerBoxInteraction", false, "Disabled needing to physically open the breaker box and flip the switches with your finger.");
     public ConfigEntry<bool> DisableDoorInteraction { get; } = file.Bind("Interaction", "DisableDoorInteraction", false, "Disable needing to physically open and close doors by interacting with the door handles. Will also disable the need to use keys and lockpickers physically on the door handle.");
-
     public ConfigEntry<bool> DisableHangarLeverInteraction { get; } = file.Bind("Interaction", "DisableHangarLeverInteraction", false, "Disable needing to physically pull the lever for the big doors on Artiface");
-    
     public ConfigEntry<bool> DisableMuffleInteraction { get; } = file.Bind("Interaction", "DisableMuffleInteraction", false, "Disables the self-muffling feature, which makes it so that holding your hand in front of your mouth will no longer make you inaudible to enemies.");
     public ConfigEntry<bool> DisableFaceInteractions { get; } = file.Bind("Interaction", "DisableFaceInteractions", false, "Disables the functionality to hold certain items up to your face to use them.");
 
+    // Car interaction configuration
+
+    public ConfigEntry<bool> DisableCarSteeringWheelInteraction { get; } = file.Bind("Car", "DisableCarSteeringWheelInteraction", false, "Disables the need to physically steer the Company Cruiser");
+    public ConfigEntry<bool> DisableCarButtonInteractions { get; } = file.Bind("Car", "DisableCarButtonInteractions", false, "Disables the need to physically press the generic buttons in the Company Cruiser (radio, windshield wipers, etc)");
+    public ConfigEntry<bool> DisableCarHonkInteraction { get; } = file.Bind("Car", "DisableCarHonkInteraction", false, "Disables the need to physically press the car honk in the Company Cruiser");
+    public ConfigEntry<bool> DisableCarEjectInteraction { get; } = file.Bind("Car", "DisableCarEjectInteraction", false, "Disables the need to physically press the eject button in the Company Cruiser");
+    public ConfigEntry<bool> DisableCarGearStickInteractions { get; } = file.Bind("Car", "DisableCarGearStickInteractions", false, "Disables the need to physically shift the gears in the Company Cruiser");
+    public ConfigEntry<bool> DisableCarIgnitionInteractions { get; } = file.Bind("Car", "DisableCarIgnitionInteractions", false, "Disables the need to physically start/stop the car ignition in the Company Cruiser");
+    
     // Internal configuration
 
-    public ConfigEntry<string> LastInternalControllerProfile { get; } = file.Bind("Internal", "LastInternalControllerProfile", "", "FOR INTERNAL USE ONLY, DO NOT EDIT");
+    public ConfigEntry<bool> IntroScreenSeen { get; } = file.Bind("Internal", "IntroScreenSeen", false, "Whether the VR intro screen has been displayed before. This configuration option should be set automatically.");
+    public ConfigEntry<string> ControllerBindingsOverride { get; } = file.Bind("Internal", "ControllerBindingsOverride", "", "FOR INTERNAL USE ONLY, DO NOT EDIT");
     public ConfigEntry<string> OpenXRRuntimeFile { get; } = file.Bind("Internal", "OpenXRRuntimeFile", "", "FOR INTERNAL USE ONLY, DO NOT EDIT");
-    public ConfigEntry<bool> DisableSettingsButton { get; } = file.Bind("Internal", "DisableSettingsButton", false,
-        "Disables the settings button on the main menu screen");
+    public ConfigEntry<bool> DisableSettingsButton { get; } = file.Bind("Internal", "DisableSettingsButton", false, "Disables the settings button on the main menu screen");
     
     public enum TurnProviderOption
     {

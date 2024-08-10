@@ -5,19 +5,19 @@ namespace LCVR.Input;
 
 internal class SmoothTurningProvider : TurningProvider
 {
-    private float offset = 0;
+    private float offset;
 
     public void Update()
     {
-        var value = Actions.Instance["Controls/Turn"].ReadValue<float>();
-        bool shouldExecute = MathF.Abs(value) > 0.75;
+        var value = Actions.Instance["Turn"].ReadValue<float>();
+        var shouldExecute = MathF.Abs(value) > 0.75;
 
-        if (shouldExecute)
-        {
-            var totalRotation = (value > 0 ? 90 : -90) * Time.deltaTime * Plugin.Config.SmoothTurnSpeedModifier.Value;
+        if (!shouldExecute)
+            return;
 
-            offset += totalRotation;
-        }
+        var totalRotation = (value > 0 ? 180 : -180) * Time.deltaTime * Plugin.Config.SmoothTurnSpeedModifier.Value;
+
+        offset += totalRotation;
     }
 
     public void SetOffset(float offset)

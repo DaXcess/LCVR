@@ -1,44 +1,16 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using BepInEx;
+﻿using BepInEx.Bootstrap;
 
 namespace LCVR;
 
-public class Compat
+public static class Compat
 {
-    private readonly CompatibleMod[] ModCompatibilityList =
-    [
-        new CompatibleMod("MoreCompany", "me.swipez.melonloader.morecompany"),
-        new CompatibleMod("Mimics", "x753.Mimics"),
-        new CompatibleMod("Diversity", "Chaos.Diversity"),
-        new CompatibleMod("CullFactory", "com.fumiko.CullFactory")
-    ];
+    public const string MoreCompany = "me.swipez.melonloader.morecompany";
+    public const string Mimics = "x753.Mimics";
+    public const string Diversity = "Chaos.Diversity";
+    public const string CullFactory = "com.fumiko.CullFactory";
 
-    private readonly List<string> DetectedMods = [];
-
-    public Compat(IEnumerable<PluginInfo> plugins)
+    public static bool IsLoaded(string modId)
     {
-        foreach (var plugin in plugins)
-        {
-            var mod = ModCompatibilityList.FirstOrDefault((mod) => mod.Guid == plugin.Metadata.GUID);
-
-            if (mod == null)
-                continue;
-
-            Logger.LogInfo($"Found compatible mod {mod.Name}");
-
-            DetectedMods.Add(mod.Name);
-        }
-    }
-
-    public bool IsLoaded(string modName)
-    {
-        return DetectedMods.Contains(modName);
-    }
-
-    private class CompatibleMod(string name, string guid)
-    {
-        public string Name { get; } = name;
-        public string Guid { get; } = guid;
+        return Chainloader.PluginInfos.ContainsKey(modId);
     }
 }

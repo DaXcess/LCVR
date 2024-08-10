@@ -17,13 +17,13 @@ internal class TeleporterButton : MonoBehaviour, VRInteractable
 
     public InteractableFlags Flags => InteractableFlags.BothHands;
 
-    void Awake()
+    private void Awake()
     {
         teleporter = GetComponentInParent<ShipTeleporter>();
         trigger = GetComponentInParent<InteractTrigger>();
     }
 
-    void Start()
+    private void Start()
     {
         StartCoroutine(timerLoop());
     }
@@ -66,7 +66,7 @@ internal class TeleporterButtonGlass : MonoBehaviour, VRInteractable
     public bool CanPressButton => trigger.boolValue && Time.realtimeSinceStartup - lastTriggerTime > 0.2f;
     public InteractableFlags Flags => InteractableFlags.BothHands;
 
-    void Awake()
+    private void Awake()
     {
         trigger = GetComponentInParent<AnimatedObjectTrigger>();
     }
@@ -93,7 +93,7 @@ internal class TeleporterButtonGlass : MonoBehaviour, VRInteractable
 [HarmonyPatch]
 internal static class TeleporterPatches
 {
-    [HarmonyPatch(typeof(ShipTeleporter), "Awake")]
+    [HarmonyPatch(typeof(ShipTeleporter), nameof(ShipTeleporter.Awake))]
     [HarmonyPostfix]
     private static void OnShipTeleporterCreated(ShipTeleporter __instance)
     {
@@ -107,8 +107,11 @@ internal static class TeleporterPatches
         var button = __instance.buttonTrigger.gameObject;
         var glass = button.transform.parent.Find("ButtonGlass").gameObject;
 
-        var buttonInteractableObject = Object.Instantiate(AssetManager.interactable, button.transform);
-        var glassInteractableObject = Object.Instantiate(AssetManager.interactable, glass.transform);
+        button.name = "TeleporterRedButton";
+        glass.name = "TeleporterButtonGlass";
+
+        var buttonInteractableObject = Object.Instantiate(AssetManager.Interactable, button.transform);
+        var glassInteractableObject = Object.Instantiate(AssetManager.Interactable, glass.transform);
 
         buttonInteractableObject.transform.localPosition = new Vector3(0, -0.12f, 1.2f);
         buttonInteractableObject.transform.localScale = new Vector3(1.1f, 1.2f, 2);

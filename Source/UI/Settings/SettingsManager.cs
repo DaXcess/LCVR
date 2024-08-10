@@ -271,7 +271,6 @@ public class SettingsManager : MonoBehaviour
         var settings = asset.currentPlatformRenderPipelineSettings;
 
         settings.dynamicResolutionSettings.enabled = Plugin.Config.EnableDynamicResolution.Value;
-        settings.dynamicResolutionSettings.enableDLSS = Plugin.Config.EnableDLSS.Value;
         settings.dynamicResolutionSettings.dynResType = DynamicResolutionType.Hardware;
         settings.dynamicResolutionSettings.upsampleFilter = Plugin.Config.DynamicResolutionUpscaleFilter.Value;
         settings.dynamicResolutionSettings.minPercentage = settings.dynamicResolutionSettings.maxPercentage = Plugin.Config.DynamicResolutionPercentage.Value;

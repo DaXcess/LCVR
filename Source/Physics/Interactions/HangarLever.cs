@@ -17,6 +17,8 @@ public class HangarLever : MonoBehaviour, VRInteractable
 
     private float lockedRotation;
     private float lockedRotationTime;
+
+    internal bool inverse;
     
     public InteractableFlags Flags => InteractableFlags.BothHands;
 
@@ -24,8 +26,8 @@ public class HangarLever : MonoBehaviour, VRInteractable
     {
         trigger = GetComponentInParent<InteractTrigger>();
         animTrigger = GetComponentInParent<AnimatedObjectTrigger>();
-        
-        transform.parent.GetComponent<BoxCollider>().enabled = false;
+
+        transform.parent.GetComponentInParent<BoxCollider>().enabled = false;
     }
     
     public void OnColliderEnter(VRInteractor interactor)
@@ -59,7 +61,7 @@ public class HangarLever : MonoBehaviour, VRInteractable
         interacting = false;
 
         var rot = GetLookRotation();
-        switch (animTrigger.boolValue)
+        switch ((!inverse && animTrigger.boolValue) || (inverse && !animTrigger.boolValue))
         {
             case true when rot is > 160 and < 200:
                 trigger.Interact(VRSession.Instance.LocalPlayer.transform);
@@ -117,15 +119,20 @@ internal static class LeverSwitchPatches
     [HarmonyPostfix]
     private static void OnInteractTriggerStart(InteractTrigger __instance)
     {
-        if (__instance.gameObject.name is not "LeverSwitchHandle")
+        var go = __instance.gameObject;
+        if (go.name is not "LeverSwitchHandle" and not "MagnetLever")
             return;
         
-        __instance.gameObject.name = "LeverSwitchInteractable";
-
-        var interactableObject = Object.Instantiate(AssetManager.interactable, __instance.transform);
-
+        var isMagnet = go.name is "MagnetLever";
+        go.name = "LeverSwitchInteractable";
+        
+        var interactableObject = Object.Instantiate(AssetManager.Interactable,
+            isMagnet ? __instance.transform.Find("LeverSwitchHandle") : __instance.transform);
+        
         interactableObject.transform.localPosition = new Vector3(0.0044f, -0.0513f, 0.2529f);
         interactableObject.transform.localScale = new Vector3(0.0553f, 0.1696f, 0.0342f);
-        interactableObject.AddComponent<HangarLever>();
+        
+        var lever = interactableObject.AddComponent<HangarLever>();
+        lever.inverse = isMagnet;
     }
 }

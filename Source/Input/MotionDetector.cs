@@ -16,12 +16,12 @@ public class MotionDetector : MonoBehaviour
     private float lastShakeTime = 0;
     private bool startHold = false;
 
-    void Awake()
+    private void Awake()
     {
         onShake = new UnityEvent();
     }
 
-    void FixedUpdate()
+    private void FixedUpdate()
     {
         var distance = Vector3.Distance(lastPosition, transform.localPosition) * 10;
 

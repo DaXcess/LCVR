@@ -1,49 +1,150 @@
+# 1.3.0
+
+## Car!
+
+Lethal Company V56 introduces the latest and greatest in vehicular technology: **The Company Cruiser!**
+
+Upon purchasing your Company Cruiser, you will receive:
+
+- A Company Cruiser
+- A Company Cruiser ignition key
+- A Company Cruiser service manual
+
+While we certainly believe in the Company, we feel that this service manual may need some amendments. So here we go.
+
+To get started, enter your Company Cruiser. Now don't be overwhelmed by the amount of buttons, handles and wheels, we'll take you through them all!
+
+First of all, we will go around the buttons that are strewn about the dashboard. On the left side of the steering wheel, you will notice three buttons. These respectively control the windshield wipers, cabin window, and the headlights.
+
+Next up, we have the radio. If you ever get lonely whilst traveling the treacherous landscapes, you can play some relaxing tunes to help you keep your performance at a maximum. The left button allows you to tune between different radio stations, while the right button toggles the radio on or off.
+
+Now that we're over on the right side, you will see a button encased in glass. **This button is for use in emergency situations only!** So don't press it unless it's absolutely necessary!
+
+Should you encounter a dangerous situation while driving, you can alert anyone in the vicinity by pressing the horn. The horn is located in the center of the steering wheel. Just press on it, and let the compressed air tanks do the rest!
+
+Let's get to driving, shall we? On the right side of the steering wheel, left of the emergency button, you will find the ignition. You can make use of the Company Cruiser ignition key, which should have been provided to you upon purchase of your Company Cruiser, to start the vehicle.
+
+Carefully insert the key and twist it until you hear the engine start revving. Keep in mind that this technology was not specifically designed for the atmospheres of other planets, so it might take a few twists until you successfully start your Company Cruiser.
+
+Now that you have started your Company Cruiser, take a peek over on your right. There should be a gear stick, which allows you to drive, reverse, and park your Company Cruiser. It should be in park by default. Carefully reach over with your right hand, grab the stick, and move it between the gears that you want to use.
+
+Last but not least, the steering wheel. You may take hold of the steering wheel using either your left, or your right hand, or both of them. To turn left, steer the steering wheel to your left. To turn right, steer the steering wheel to your right. It's not rocket science!
+
+Now get ready to drive! Put your gear into drive, give the Company Cruiser some throttle, and take to the stars (or... well... the scrap, can't leave bossman hanging)!
+
+## Control rebinding
+
+LCVR 1.3.0 replaces the old controller profile system with individual control rebinding. These are located in the settings menu, just like the keyboard and gamepad controls. Make sure both of your controllers are connected, as the game doesn't detect your controller profile until both the controllers are active.
+
+Some bindings are blacklisted from being used, mostly the "touched" bindings on buttons, as they overrule any "pressed" bindings. Some of them still work though, as some "touched" bindings don't have any "pressed" bindings associated with the same button/touchpad (i.e. Quest 2 thumbrest).
+
+**Additions**:
+
+- Added support for V56
+- Added VR interactions for the steering wheel in the Company Cruiser
+- Added VR interactions for the buttons in the Company Cruiser
+- Added VR interactions for the car honk in the Company Cruiser
+- Added VR interactions for the ignition in the Company Cruiser
+- Added VR interactions for the eject button in the Company Cruiser
+- Added VR interactions for the gear stick in the Company VR
+- Added VR interactions for the car magnet lever on the ship
+- Added configuration options to disable special car interactions
+- Added controls rebinding in the settings menu
+- Added new logic to local and remote VR players to allow overriding hand position
+- Added welcome and PTT overlay UI to VR
+- Added VR support for the Weed Killer item
+- Added haptic feedback to the muffle interaction
+- Added haptic feedback to the monitor buttons in the ship
+- Added new option: `SpectatorLightRemovesVolumetrics`, which disables fog when using the spectator light (if enabled)
+
+**Bug Fixes**:
+
+- Fixed issue where leaving a game while spectating and joining a new game will break spectating
+- Fixed finger curling not consistently forcing a fist when requested to
+- Fixed bug in controller interactor that prevented the use of "hold down" interactions
+- Fixed bug where the interactor could interact through walls of the Company Cruiser
+- Fixed bug where having the helmet enabled caused a large shadow to appear
+- Fixed bug where the controllers sometimes kept vibrating after the player already died
+- (Accidentally) fixed a bug where the keyboard on the terminal would be unusable if the ship was in motion
+- Fixed issue where players in an animation wouldn't sync their offset to their room center with other players
+- Fixed a vanilla bug where sometimes you could "ghost interact" with battery powered items by using grip buttons
+
+**Changes**:
+
+- Reworked the input system to allow for manual control binding overriding
+- XR Origin now has the same parent as the local player
+- Reworked a small portion of the 6DOF system to allow 6DOF when parented to other objects
+- Resetting height now also resets your rotation if you are in a special interact animation (i.e. terminal, car, enemy kill animation)
+- Doubled the base rotation speed on the Smooth Rotation setting
+
+**Removals**:
+
+- Removed the forced startup cutscene
+- Removed bracken from the main and pause menus
+- Removed the DLSS optimization setting
+- Removed support for V50
+
+**Dependencies**:
+
+- Added a dependency to [FixPluginTypesSerialization](https://thunderstore.io/c/lethal-company/p/Evaisa/FixPluginTypesSerialization/)
+
 # 1.2.5
 
 **Bug Fixes**:
+
 - Fixed corrupt/unreadable OpenXR default runtimes preventing VR to launch properly
 
 # 1.2.4
 
 **Bug Fixes**:
+
 - Fixed some of the doors on Artiface not using the new VR interactions
 - Leaving the game while spectating will no longer prevent spectating to work in the next game
 - Fixed some issues on the main menu when certain mods are active
 
 **Additions**:
+
 - Added VR motion controls to the knife (you can now stabby stab)
 - Added VR interactions to the big doors on Artiface
 
 **Changes**:
+
 - Reworked the OpenXR loader, which will now attempt every runtime instead of only the default/preconfigured runtime
 - Moved startup logic to a prefix, fixing an issue where occasionally the camera would be black when loading in
 
 **Removals**:
+
 - Removed detection for `UnityExplorer`
 - Removed ghost girl from the main/pause menus
 
 # 1.2.3
 
 **Bug Fixes**:
+
 - Fixed issues with enemy collision that was causing error spam and potential other issues
 - Changed the way `VerifyGameVersion` finds the game assembly, fixing some mod compatibility issues
 
 **Additions**:
+
 - Added configuration option to disable the settings button on the main menu
 
 **Development Changes**:
+
 - Added debug symbols in the assembly output if the mod is compiled in debug, which helps with tracking down errors
 
 # 1.2.2
 
 **Game Version**:
+
 - Added compatibility with V50 Patch 1
 
 **Bug Fixes**:
+
 - Fixed visual glitch where VR players would not appear to be sinking in mud
 - Fixed visual glitch where VR players who died in water got the underwater filter applied sporadically
 
 **Mod Compatibility**:
+
 - Fixed lighting culling issues when CullFactory is installed
 
 # 1.2.1
@@ -55,6 +156,7 @@ LCVR v1.2.1 brings the joys of V50 into VR.
 Due to V50 having changed some important stuff behind the scenes, versions starting from v1.2.1 are no longer supported in V49.
 
 **Additions**:
+
 - Added support for the cold open cinematic cutscene
 
 **Bug fixes:**
@@ -67,9 +169,11 @@ Due to V50 having changed some important stuff behind the scenes, versions start
 - Fixed the rad mech trying to pick up dead players
 
 **API changes**:
+
 - Made the arm HUD canvasses public in `VRSession.Instance.HUD`
 
 **Removals:**
+
 - Removed april fools code & assets
 - Removed support for V49
 

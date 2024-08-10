@@ -14,7 +14,7 @@ internal class BreakerBoxSwitch : MonoBehaviour, VRInteractable
 
     public InteractableFlags Flags => InteractableFlags.BothHands;
 
-    void Awake()
+    private void Awake()
     {
         trigger = GetComponentInParent<InteractTrigger>();
     }
@@ -42,7 +42,7 @@ internal class BreakerBoxDoor : MonoBehaviour, VRInteractable
     public InteractableFlags Flags => InteractableFlags.BothHands;
     public bool IsOpen => animatedTrigger.boolValue && Time.realtimeSinceStartup - lastInteraction > 0.5f;
 
-    void Awake()
+    private void Awake()
     {
         animatedTrigger = GetComponentInParent<AnimatedObjectTrigger>();
         trigger = GetComponentInParent<InteractTrigger>();
@@ -66,7 +66,7 @@ internal class BreakerBoxDoor : MonoBehaviour, VRInteractable
 [HarmonyPatch]
 internal static class BreakerBoxPatches
 {
-    [HarmonyPatch(typeof(BreakerBox), "Start")]
+    [HarmonyPatch(typeof(BreakerBox), nameof(BreakerBox.Start))]
     [HarmonyPostfix]
     private static void OnCreateBreakerBox(BreakerBox __instance)
     {
@@ -74,7 +74,7 @@ internal static class BreakerBoxPatches
             return;
 
         var door = __instance.transform.Find("Mesh/PowerBoxDoor");
-        var doorInteractableObject = Object.Instantiate(AssetManager.interactable, door);
+        var doorInteractableObject = Object.Instantiate(AssetManager.Interactable, door);
         doorInteractableObject.transform.localPosition = new Vector3(-0.8f, 0, -0.7f);
         doorInteractableObject.transform.localScale = new Vector3(1.5f, 0.2f, 2.1f);
 
@@ -83,7 +83,7 @@ internal static class BreakerBoxPatches
         for (var i = 1; i <= 5; i++)
         {
             var @switch = __instance.transform.Find($"Mesh/BreakerSwitch{i}");
-            var switchInteractableObject = Object.Instantiate(AssetManager.interactable, @switch);
+            var switchInteractableObject = Object.Instantiate(AssetManager.Interactable, @switch);
             switchInteractableObject.transform.localEulerAngles = new Vector3(0, 45, 0);
             switchInteractableObject.transform.localScale = Vector3.one * 0.1f;
 

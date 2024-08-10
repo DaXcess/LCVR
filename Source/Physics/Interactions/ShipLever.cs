@@ -13,12 +13,12 @@ internal class ShipLeverInteractable : MonoBehaviour, VRInteractable
 
     public InteractableFlags Flags => InteractableFlags.BothHands;
 
-    void Awake()
+    private void Awake()
     {
         lever = GetComponentInParent<ShipLever>();
     }
 
-    void Update()
+    private void Update()
     {
         if (!lever.CanInteract && interactor != null)
             OnButtonRelease(interactor);
@@ -64,13 +64,13 @@ public class ShipLever : MonoBehaviour
     public bool CanInteract => lever.triggerScript.interactable && currentActor != Actor.Other;
     public Actor CurrentActor => currentActor;
 
-    void Awake()
+    private void Awake()
     {
         animator = GetComponent<Animator>();
         lever = FindObjectOfType<StartMatchLever>();
     }
 
-    void Update()
+    private void Update()
     {
         if (rotateTo == null)
             return;
@@ -145,7 +145,7 @@ public class ShipLever : MonoBehaviour
         if (VRSession.InVR)
         {
             var leverObject = startMatch.leverAnimatorObject.gameObject;
-            var interactable = Instantiate(AssetManager.interactable, leverObject.transform);
+            var interactable = Instantiate(AssetManager.Interactable, leverObject.transform);
 
             interactable.transform.localPosition = new Vector3(0.2327f, 0.0404f, 11.6164f);
             interactable.transform.localScale = new Vector3(1, 1, 4);

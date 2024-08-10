@@ -1,5 +1,4 @@
-﻿using HarmonyLib;
-using LCVR.Assets;
+﻿using LCVR.Assets;
 using LCVR.Networking;
 using LCVR.Player;
 using System.Collections;
@@ -15,7 +14,7 @@ public class ChargeStation : MonoBehaviour, VRInteractable
 
     public InteractableFlags Flags => InteractableFlags.RightHand;
 
-    void Awake()
+    private void Awake()
     {
         trigger = GetComponentInParent<InteractTrigger>();
         charger = GetComponentInParent<ItemCharger>();
@@ -39,13 +38,13 @@ public class ChargeStation : MonoBehaviour, VRInteractable
 
     public void OnColliderExit(VRInteractor _)
     {
-        if (chargeItemCoroutine != null)
-        {
-            charger.zapAudio.Stop();
-            StopCoroutine(chargeItemCoroutine);
+        if (chargeItemCoroutine == null)
+            return;
 
-            DNet.CancelChargerAnimation();
-        }
+        charger.zapAudio.Stop();
+        StopCoroutine(chargeItemCoroutine);
+
+        DNet.CancelChargerAnimation();
     }
 
     private IEnumerator chargeItemDelayed(GrabbableObject item)
@@ -74,7 +73,7 @@ public class ChargeStation : MonoBehaviour, VRInteractable
         var charger = FindObjectOfType<ItemCharger>();
         charger.name = "ChargingStationTrigger";
 
-        var interactable = Instantiate(AssetManager.interactable, charger.gameObject.transform);
+        var interactable = Instantiate(AssetManager.Interactable, charger.gameObject.transform);
         var station = interactable.AddComponent<ChargeStation>();
 
         interactable.transform.localScale = Vector3.one * 0.7f;

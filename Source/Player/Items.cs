@@ -27,14 +27,15 @@ internal static class Items
             item.canBeGrabbedBeforeGameStart = true;
 #endif
 
-            if (item.itemName == "Chemical Jug")
+            switch (item.itemName)
             {
-                item.positionOffset = new Vector3(-0.1f, 0.18f, -0.24f);
-                item.rotationOffset = new Vector3(180, 287.52f, 0);
-            }
-            else if (item.itemName == "Boombox")
-            {
-                item.positionOffset = new Vector3(0.1f, 0, -0.03f);
+                case "Chemical Jug":
+                    item.positionOffset = new Vector3(-0.1f, 0.18f, -0.24f);
+                    item.rotationOffset = new Vector3(180, 287.52f, 0);
+                    break;
+                case "Boombox":
+                    item.positionOffset = new Vector3(0.1f, 0, -0.03f);
+                    break;
             }
         }
     }

@@ -23,17 +23,21 @@ public class Muffler : MonoBehaviour, VRInteractable
 
     private Coroutine stopMuffleCoroutine;
 
-    private float counter = 0;
+    private float counter;
 
     public InteractableFlags Flags => InteractableFlags.BothHands;
     public bool Muffled { get; private set; }
 
     private void Update()
     {
-        if (Muffled)
-            counter = Mathf.Min(counter + Time.deltaTime * 2, MAX_COUNTER);
-        else
-            counter = Mathf.Max(counter - Time.deltaTime, 0);
+        counter = Muffled
+            ? Mathf.Min(counter + Time.deltaTime * 2, MAX_COUNTER)
+            : Mathf.Max(counter - Time.deltaTime, 0);
+
+        // Disable muffle if we picked up a two-handed item while muffled
+        if (Muffled && VRSession.Instance.LocalPlayer.PlayerController.currentlyHeldObjectServer is { } heldObject &&
+            heldObject.itemProperties.twoHanded)
+            Muffled = false;
 
         VRSession.Instance.VolumeManager.Muffle(counter);
     }
@@ -41,10 +45,9 @@ public class Muffler : MonoBehaviour, VRInteractable
     public void OnColliderEnter(VRInteractor interactor)
     {        
         var heldItem = VRSession.Instance.LocalPlayer.PlayerController.currentlyHeldObjectServer;
-
         if (heldItem && heldItem.itemProperties.twoHanded)
             return;
-
+        
         if (interactor.IsRightHand && heldItem && MUFFLED_ITEMS_IGNORE.Contains(heldItem.itemProperties.itemName))
             return;
 
@@ -53,6 +56,8 @@ public class Muffler : MonoBehaviour, VRInteractable
 
         if (Muffled)
             return;
+
+        interactor.Vibrate(0.1f, 1f);
 
         Muffled = true;
         DNet.SetMuffled(true);
@@ -70,13 +75,16 @@ public class Muffler : MonoBehaviour, VRInteractable
 
         if (stopMuffleCoroutine != null)
             StopCoroutine(stopMuffleCoroutine);
-
-        stopMuffleCoroutine = StartCoroutine(delayedStopMuffle());
+        
+        stopMuffleCoroutine = StartCoroutine(delayedStopMuffle(interactor));
     }
 
-    private IEnumerator delayedStopMuffle()
+    private IEnumerator delayedStopMuffle(VRInteractor interactor)
     {
         yield return new WaitForSeconds(0.5f);
+
+        if (Muffled)
+            interactor.Vibrate(0.2f, 0.1f);
 
         Muffled = false;
         DNet.SetMuffled(false);
@@ -90,7 +98,7 @@ public class Muffler : MonoBehaviour, VRInteractable
         if (Plugin.Config.DisableMuffleInteraction.Value)
             return null;
 
-        var interactableObject = Instantiate(AssetManager.interactable, VRSession.Instance.MainCamera.transform);
+        var interactableObject = Instantiate(AssetManager.Interactable, VRSession.Instance.MainCamera.transform);
         interactableObject.transform.localPosition = new Vector3(0, -0.1f, 0.1f);
         interactableObject.transform.localScale = new Vector3(0.1f, 0.05f, 0.1f);
 
@@ -109,7 +117,13 @@ internal static class MufflePatches
     [HarmonyPrefix]
     private static bool MuffleBlockSound()
     {
-        return !VRSession.Instance?.Muffler?.Muffled ?? true;
+        if (VRSession.Instance is not { } instance)
+            return true;
+
+        if (instance.Muffler is not { } muffler)
+            return true;
+            
+        return !muffler.Muffled;
     }
 
     /// <summary>

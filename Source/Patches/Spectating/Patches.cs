@@ -1,7 +1,9 @@
 using System.Collections;
+using System.Linq;
 using GameNetcodeStuff;
 using HarmonyLib;
 using LCVR.Player;
+using Unity.Netcode;
 using UnityEngine;
 
 namespace LCVR.Patches.Spectating;
@@ -30,7 +32,7 @@ internal static class SpectatorPlayerPatches
     /// Initialize values when joining a new game, since this class is static and values persist across games
     /// </summary>
     [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.Start))]
-    [HarmonyPatch]
+    [HarmonyPostfix]
     private static void OnGameJoined()
     {
         isSpectating = false;
@@ -124,11 +126,23 @@ internal static class SpectatorPlayerPatches
         shipDoorRight.GetComponent<BoxCollider>().isTrigger = true;
         shipDoorWall.GetComponent<BoxCollider>().isTrigger = true;
         
-        // Make sure all enemies are no longer targeting us
-        var enemies = Object.FindObjectsOfType<EnemyAI>();
-        foreach (var enemy in enemies)
-            if (enemy.targetPlayer == __instance)
-                enemy.targetPlayer = null;
+        // Make sure any cars are not owned by us if we're the host
+        if (NetworkManager.Singleton.IsHost)
+        {
+            var alivePlayer = StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => !player.isPlayerDead);
+            if (alivePlayer)
+            {
+                foreach (var car in Object.FindObjectsOfType<VehicleController>().Where(car => car.IsOwner))
+                {
+                    car.syncCarPositionInterval = 1f;
+                    car.syncedPosition = Vector3.zero;
+                    car.syncedRotation = Quaternion.identity;
+                    car.SyncCarPhysicsToOtherClients();
+                    
+                    car.NetworkObject.ChangeOwnership(alivePlayer.actualClientId);
+                }
+            }
+        }
 
         // Of course, Nutcracker with special AI behavior
         var nutcrackers = Object.FindObjectsOfType<NutcrackerEnemyAI>();
@@ -174,21 +188,21 @@ internal static class SpectatorPlayerPatches
     /// <summary>
     /// Quick fix for when you are not the host, and some fields are set after `KillPlayer` has already executed
     /// </summary>
-    [HarmonyPatch(typeof(PlayerControllerB), "KillPlayerClientRpc")]
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.KillPlayerClientRpc))]
     [HarmonyPostfix]
     private static void KillPlayerClientRpc(PlayerControllerB __instance, int playerId)
     {
-        if (playerId == (int)StartOfRound.Instance.localPlayerController.playerClientId)
-        {
-            __instance.isPlayerControlled = true;
-            __instance.thisPlayerModelArms.enabled = true;
-        }
+        if (playerId != (int)StartOfRound.Instance.localPlayerController.playerClientId)
+            return;
+
+        __instance.isPlayerControlled = true;
+        __instance.thisPlayerModelArms.enabled = true;
     }
 
     /// <summary>
     /// If we were dead, perform necessary actions to recover properly
     /// </summary>
-    [HarmonyPatch(typeof(StartOfRound), "ReviveDeadPlayers")]
+    [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.ReviveDeadPlayers))]
     [HarmonyPrefix]
     private static void OnPlayerRevived()
     {
@@ -221,13 +235,16 @@ internal static class SpectatorPlayerPatches
         shipDoorRight.GetComponent<BoxCollider>().isTrigger = false;
         shipDoorWall.GetComponent<BoxCollider>().isTrigger = false;
         
+        // Make sure the car has collision again
+        player.GetComponent<CharacterController>().excludeLayers = 0;
+        
         VRSession.Instance.HUD.ToggleSpectatorLight(false);
     }
 
     /// <summary>
     /// Make sure we have infinite sprint and not being hindered by injuries if we're dead
     /// </summary>
-    [HarmonyPatch(typeof(PlayerControllerB), "Update")]
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.Update))]
     [HarmonyPostfix]
     private static void OnPlayerUpdate(PlayerControllerB __instance)
     {
@@ -240,6 +257,9 @@ internal static class SpectatorPlayerPatches
         __instance.takingFallDamage = false;
     }
 
+    /// <summary>
+    /// Handle spectating other players
+    /// </summary>
     [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.ActivateItem_performed))]
     [HarmonyPostfix]
     private static void SpectateNextPlayer(PlayerControllerB __instance)
@@ -322,7 +342,7 @@ internal static class SpectatorPlayerPatches
     /// Prevent the game from spectating a player, since we use our own logic for this
     /// </summary>
     /// <returns></returns>
-    [HarmonyPatch(typeof(PlayerControllerB), "SpectateNextPlayer")]
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.SpectateNextPlayer))]
     [HarmonyPrefix]
     private static bool PreventSpectateNextPlayer()
     {
@@ -342,7 +362,7 @@ internal static class SpectatorPlayerPatches
     /// <summary>
     /// Enable night vision lights when in factory and when dead
     /// </summary>
-    [HarmonyPatch(typeof(PlayerControllerB), "SetNightVisionEnabled")]
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.SetNightVisionEnabled))]
     [HarmonyPrefix]
     private static bool SetNightVisionEnabled(PlayerControllerB __instance)
     {

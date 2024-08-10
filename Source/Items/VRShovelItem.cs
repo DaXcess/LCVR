@@ -5,14 +5,16 @@ using UnityEngine;
 
 namespace LCVR.Items;
 
-// The holding is insanely scuffed but I really have no clue how to do it properly I'm not /that/ good of a developer
+// The holding is insanely scuffed, but I really have no clue how to do it properly I'm not /that/ good of a developer
 internal class VRShovelItem : VRItem<Shovel>
 {
-    private readonly Vector3 positionOffset = new(-0.09f, 0, 0.25f);
+    private static readonly int ShovelHit = Animator.StringToHash("shovelHit");
+    private static readonly int ReelingUp = Animator.StringToHash("reelingUp");
+    
+    private static readonly Vector3 PositionOffset = new(-0.09f, 0, 0.25f);
 
     private Transform interactTransform;
     private readonly Queue<Vector3> positions = new();
-    private Vector3 lastPosition = Vector3.zero;
 
     private bool isHitting;
     private bool hasSwung;
@@ -61,29 +63,28 @@ internal class VRShovelItem : VRItem<Shovel>
 
             var rotation2 = transform.rotation;
 
-            transform.eulerAngles = new Vector3(transform.eulerAngles.x, transform.eulerAngles.y, 360 - networkPlayer.LeftItemHolder.eulerAngles.z);
-            transform.position += rotation2 * positionOffset;
+            transform.eulerAngles = new Vector3(transform.eulerAngles.x, transform.eulerAngles.y,
+                360 - networkPlayer.LeftItemHolder.eulerAngles.z);
+            transform.position += rotation2 * PositionOffset;
 
             return;
         }
 
-        var player = VRSession.Instance.LocalPlayer;
+        var self = VRSession.Instance.LocalPlayer;
 
-        transform.position = player.leftItemHolder.position;
-        transform.LookAt(player.rightItemHolder.position);
+        transform.position = self.leftItemHolder.position;
+        transform.LookAt(self.rightItemHolder.position);
 
         var rotation = transform.rotation;
 
-        transform.eulerAngles = new Vector3(transform.eulerAngles.x, transform.eulerAngles.y, 360 - player.leftItemHolder.eulerAngles.z);
-        transform.position += rotation * positionOffset;
+        transform.eulerAngles = new Vector3(transform.eulerAngles.x, transform.eulerAngles.y,
+            360 - self.leftItemHolder.eulerAngles.z);
+        transform.position += rotation * PositionOffset;
 
-        // Good enough failsafe to detect teleports, which could cause the shovel to swing
-        if (Vector3.Distance(interactTransform.position, lastPosition) > 5)
-            positions.Clear();
+        // Get position relative to player to prevent the world from inducing velocities
+        var localPosition = self.transform.InverseTransformPoint(interactTransform.position);
 
-        lastPosition = interactTransform.position;
-
-        positions.Enqueue(interactTransform.position);
+        positions.Enqueue(localPosition);
         if (positions.Count > 5)
             positions.Dequeue();
 
@@ -120,16 +121,15 @@ internal class VRShovelItem : VRItem<Shovel>
             }
         }
 
-        if (dot > 0.8 && item.reelingUp && !isHitting)
-        {
-            var averageSpeed = GetAverageSpeed();
+        if (dot < 0.8 || !item.reelingUp || isHitting)
+            return;
 
-            if (GetAverageSpeed() > 8)
-            {
-                Logger.LogDebug($"Shovel Swing detected with average speed: {averageSpeed}");
-                HitShovel();
-            }
-        }
+        var averageSpeed = GetAverageSpeed();
+        if (averageSpeed < 8)
+            return;
+
+        Logger.LogDebug($"Shovel Swing detected with average speed: {averageSpeed}");
+        HitShovel();
     }
 
     private void ReelUpShovel()
@@ -147,8 +147,8 @@ internal class VRShovelItem : VRItem<Shovel>
         item.previousPlayerHeldBy = item.playerHeldBy;
         item.playerHeldBy.activatingItem = true;
         item.playerHeldBy.twoHanded = true;
-        item.playerHeldBy.playerBodyAnimator.ResetTrigger("shovelHit");
-        item.playerHeldBy.playerBodyAnimator.SetBool("reelingUp", true);
+        item.playerHeldBy.playerBodyAnimator.ResetTrigger(ShovelHit);
+        item.playerHeldBy.playerBodyAnimator.SetBool(ReelingUp, true);
         item.shovelAudio.PlayOneShot(item.reelUp);
         item.ReelUpSFXServerRpc();
     }
@@ -186,15 +186,15 @@ internal class VRShovelItem : VRItem<Shovel>
 
     private float GetAverageSpeed()
     {
-        var positions = this.positions.ToArray();
+        var posList = this.positions.ToArray();
         var distance = 0f;
 
-        for (var i = 1; i < positions.Length; i++)
+        for (var i = 1; i < posList.Length; i++)
         {
-            distance += Vector3.Distance(positions[i - 1], positions[i]);
+            distance += Vector3.Distance(posList[i - 1], posList[i]);
         }
 
-        var totalTime = (positions.Length - 1) * Time.deltaTime;
+        var totalTime = (posList.Length - 1) * Time.deltaTime;
         var averageSpeed = distance / totalTime;
 
         return averageSpeed;

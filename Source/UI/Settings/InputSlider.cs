@@ -9,7 +9,7 @@ public class InputSlider : MonoBehaviour
     private TMP_InputField inputField;
     private Slider slider;
 
-    void Start()
+    private void Start()
     {
         inputField = GetComponentInChildren<TMP_InputField>();
         slider = GetComponentInChildren<Slider>();
@@ -18,7 +18,7 @@ public class InputSlider : MonoBehaviour
         slider.onValueChanged.AddListener(OnSliderValueChanged);
     }
 
-    void OnDestroy()
+    private void OnDestroy()
     {
         inputField.onSubmit.RemoveListener(OnInputFieldChanged);
         slider.onValueChanged.RemoveListener(OnSliderValueChanged);

@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace LCVR.Compatibility.CullFactory;
 
-[LCVRPatch(dependency: "CullFactory")]
+[LCVRPatch(dependency: Compat.CullFactory)]
 [HarmonyPatch]
 internal static class Patches
 {

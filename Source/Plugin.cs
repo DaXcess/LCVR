@@ -28,16 +28,14 @@ public class Plugin : BaseUnityPlugin
 {
     public const string PLUGIN_GUID = "io.daxcess.lcvr";
     public const string PLUGIN_NAME = "LCVR";
-    public const string PLUGIN_VERSION = "1.2.5";
+    public const string PLUGIN_VERSION = "1.3.0";
 
     private readonly string[] GAME_ASSEMBLY_HASHES =
     [
-        "7CFABBA203022CC46EF309B0E651276CB59217AF6D38C34E2085E67957DBBCBD", // V50
-        "4C265CECBC1A075E52D9E1FA458C67AA25C087362B472DF66DF370B9A0676A67", // V50 Patch 1
+        "A6B2633FE729B9C147466CD4A92168872EF789620EB29FF723A33937837AC9B0", // V56
     ];
 
     public new static Config Config { get; private set; }
-    public static Compat Compatibility { get; private set; }
     public static Flags Flags { get; private set; } = 0;
 
     private void Awake()
@@ -52,16 +50,14 @@ public class Plugin : BaseUnityPlugin
 
         // Plugin startup logic
         LCVR.Logger.SetSource(Logger);
-
         Config = new Config(base.Config);
-        Compatibility = new Compat([.. Chainloader.PluginInfos.Values]);
 
-        Logger.LogInfo($"Plugin {PLUGIN_NAME} is starting...");
+        Logger.LogInfo($"Starting {PLUGIN_NAME} v{PLUGIN_VERSION} ({GetCommitHash()})");
 
         // Allow disabling VR via config and command line
         var disableVr = Config.DisableVR.Value ||
                         Environment.GetCommandLineArgs().Contains("--disable-vr", StringComparer.OrdinalIgnoreCase);
-
+        
         if (disableVr)
             Logger.LogWarning("VR has been disabled by config or the `--disable-vr` command line flag");
         else if (Config.AskOnStartup.Value)
@@ -99,8 +95,10 @@ public class Plugin : BaseUnityPlugin
             else
             {
                 Logger.LogError("Error: Unsupported game version, or corrupted game detected!");
-                Logger.LogError("Aborting before we blow something up!");
-
+                Logger.LogError("This usually happens if Lethal Company got updated recently.");
+                Logger.LogWarning(
+                    "To bypass this check, add the following flag to your launch options in Steam: --lcvr-skip-checksum");
+                
                 return;
             }
         }
@@ -133,6 +131,24 @@ public class Plugin : BaseUnityPlugin
         Native.BringGameWindowToFront();
     }
 
+    private static string GetCommitHash()
+    {
+        try
+        {
+            var attribute = Assembly.GetExecutingAssembly()
+                .GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+
+            return attribute?.InformationalVersion.Split('+')[1][..7] ?? "unknown";
+        }
+        catch
+        {
+            LCVR.Logger.LogWarning(
+                "Failed to retrieve commit hash (compiled outside of git repo?). Using placeholder.");
+
+            return "badbeef";
+        }
+    }
+
     private bool VerifyGameVersion()
     {
         var location = Path.Combine(Paths.ManagedPath, "Assembly-CSharp.dll");
@@ -152,7 +168,7 @@ public class Plugin : BaseUnityPlugin
                 var filename = Path.GetFileName(file);
 
                 // Ignore known unmanaged libraries
-                if (filename == "UnityOpenXR.dll" || filename == "openxr_loader.dll")
+                if (filename is "UnityOpenXR.dll" or "openxr_loader.dll")
                     continue;
 
                 Logger.LogDebug($"Early loading {filename}");
@@ -252,6 +268,7 @@ public class Plugin : BaseUnityPlugin
         if (!OpenXR.Loader.InitializeXR())
         {
             Logger.LogError("Failed to start in VR Mode! Only Non-VR features are available!");
+            Logger.LogWarning("If you are not intending to play in VR, you can ignore the previous error.");
 
             return false;
         }
@@ -268,19 +285,14 @@ public class Plugin : BaseUnityPlugin
 
         // Change HDRP settings
         var asset = QualitySettings.renderPipeline as HDRenderPipelineAsset;
-        var settings = asset.currentPlatformRenderPipelineSettings;
+        var settings = asset!.currentPlatformRenderPipelineSettings;
 
         settings.dynamicResolutionSettings.enabled = Config.EnableDynamicResolution.Value;
-        settings.dynamicResolutionSettings.enableDLSS = Config.EnableDLSS.Value;
         settings.dynamicResolutionSettings.dynResType = DynamicResolutionType.Hardware;
         settings.dynamicResolutionSettings.upsampleFilter = Config.DynamicResolutionUpscaleFilter.Value;
         settings.dynamicResolutionSettings.minPercentage = settings.dynamicResolutionSettings.maxPercentage =
             Config.DynamicResolutionPercentage.Value;
         settings.supportMotionVectors = true;
-
-        if (Config.EnableDLSS.Value)
-            Logger.LogWarning(
-                "DLSS has been deprecated, and will be removed in a future release. Please switch over to the Dynamic Resolution and Camera Resolution configuration to enhance your performance.");
 
         settings.xrSettings.occlusionMesh = false;
         settings.xrSettings.singlePass = false;
@@ -313,7 +325,7 @@ public class Plugin : BaseUnityPlugin
 
         var mesh = GameObject.Find("SplashRootObject/Quad").GetComponent<MeshRenderer>();
 
-        mesh.material = AssetManager.splashMaterial;
+        mesh.material = AssetManager.SplashMaterial;
     }
 }
 
