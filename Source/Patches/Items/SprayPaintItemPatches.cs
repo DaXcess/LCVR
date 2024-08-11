@@ -12,6 +12,11 @@ namespace LCVR.Patches.Items;
 internal static class SprayPaintItemPatches
 {
     /// <summary>
+    /// Offset to make the spray paint come out of the tip of the can instead of from the hand
+    /// </summary>
+    private static readonly Vector3 SprayOffset = new(-0.1025f, 0.225f, 0.16f);
+    
+    /// <summary>
     /// Makes the spray paint item spray from your hand instead of your head
     /// </summary>
     [HarmonyPatch(typeof(SprayPaintItem), nameof(SprayPaintItem.TrySpraying))]
@@ -19,10 +24,11 @@ internal static class SprayPaintItemPatches
     private static bool SprayPaintFromHand(SprayPaintItem __instance, ref bool __result)
     {
         var rayOrigin = VRSession.Instance.LocalPlayer.PrimaryController.InteractOrigin;
+        var position = rayOrigin.TransformPoint(SprayOffset);
 
-        if (__instance.AddSprayPaintLocal(rayOrigin.transform.position, rayOrigin.transform.forward))
+        if (__instance.AddSprayPaintLocal(position, rayOrigin.forward))
         {
-            __instance.SprayPaintServerRpc(rayOrigin.transform.position, rayOrigin.transform.forward);
+            __instance.SprayPaintServerRpc(position, rayOrigin.forward);
             __result = true;
             return false;
         }
