@@ -6,6 +6,7 @@ using LCVR.UI;
 using Microsoft.MixedReality.Toolkit.Experimental.UI;
 using System.Collections.Generic;
 using System.Linq;
+using LCVR.Networking;
 using LCVR.Physics.Interactions.Car;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -38,6 +39,7 @@ public class VRSession : MonoBehaviour
 
     public VRPlayer LocalPlayer { get; private set; }
     public VRHUD HUD { get; private set; }
+    public NetworkSystem NetworkSystem { get; private set; }
 
     public Camera MainCamera { get; private set; }
     public Camera UICamera { get; private set; }
@@ -48,9 +50,9 @@ public class VRSession : MonoBehaviour
 
     public InteractionManager InteractionManager { get; private set; }
     public ShipLever ShipLever { get; private set; }
-    public ChargeStation ChargeStation { get; private set; }
     public CarManager CarManager { get; private set; }
-    public Muffler Muffler { get; private set; }
+    public MuffleManager MuffleManager { get; private set; }
+    public Muffler LocalMuffler { get; private set; }
     public Face Face { get; private set; }
 
     #endregion
@@ -62,12 +64,16 @@ public class VRSession : MonoBehaviour
         MainCamera = StartOfRound.Instance.activeCamera;
         UICamera = GameObject.Find("UICamera").GetComponent<Camera>();
 
+        NetworkSystem = new GameObject("VR Network System").AddComponent<NetworkSystem>();
+
         if (InVR)
             InitializeVRSession();
 
         // Initialize universal interactions
+        ChargeStation.Create();
+        
         ShipLever = ShipLever.Create();
-        ChargeStation = ChargeStation.Create();
+        MuffleManager = new MuffleManager();
         CarManager = new CarManager();
 
         if (Plugin.Flags.HasFlag(Flags.InteractableDebug))
@@ -260,7 +266,7 @@ public class VRSession : MonoBehaviour
         ShipDoorButton.Create();
 
         // Creates interactor for muting yourself using your hand
-        Muffler = Muffler.Create();
+        LocalMuffler = Muffler.Create();
 
         // Creates interactor for using items when held up to your face
         Face = Face.Create();

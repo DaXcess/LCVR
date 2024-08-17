@@ -5,9 +5,58 @@ using LCVR.Patches;
 using LCVR.Player;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 namespace LCVR.Physics.Interactions;
+
+public class MuffleManager
+{
+    private readonly HashSet<ushort> muffledPlayers = [];
+    private readonly Channel channel;
+
+    public MuffleManager()
+    {
+        channel = VRSession.Instance.NetworkSystem.CreateChannel(ChannelType.Muffle);
+        channel.OnPacketReceived += OnOtherPlayerMuffle;
+    }
+
+    public bool IsPlayerMuffled(ushort id)
+    {
+        return muffledPlayers.Contains(id);
+    }
+
+    public void SetLocalMuffled(bool muffled)
+    {
+        channel.SendPacket([muffled ? (byte)1 : (byte)0]);
+    }
+
+    private void OnOtherPlayerMuffle(ushort sender, BinaryReader reader)
+    {
+        var muffled = reader.ReadBoolean();
+        
+        if (!VRSession.Instance.NetworkSystem.TryGetPlayer(sender, out var player))
+            return;
+
+        if (!muffled)
+        {
+            muffledPlayers.Remove(sender);
+
+            StartOfRound.Instance.UpdatePlayerVoiceEffects();
+            return;
+        }
+
+        // Muffling may happen before the voice chat sources are set up, so check for null first
+        if (player.PlayerController.currentVoiceChatAudioSource != null)
+        {
+            var occlude = player.PlayerController.currentVoiceChatAudioSource.GetComponent<OccludeAudio>();
+            occlude.overridingLowPass = true;
+            occlude.lowPassOverride = 1000f;
+        }
+
+        muffledPlayers.Add(sender);
+    }
+}
 
 public class Muffler : MonoBehaviour, VRInteractable
 {
@@ -60,7 +109,7 @@ public class Muffler : MonoBehaviour, VRInteractable
         interactor.Vibrate(0.1f, 1f);
 
         Muffled = true;
-        DNet.SetMuffled(true);
+        VRSession.Instance.MuffleManager.SetLocalMuffled(true);
     }
 
     public void OnColliderExit(VRInteractor interactor)
@@ -87,7 +136,7 @@ public class Muffler : MonoBehaviour, VRInteractable
             interactor.Vibrate(0.2f, 0.1f);
 
         Muffled = false;
-        DNet.SetMuffled(false);
+        VRSession.Instance.MuffleManager.SetLocalMuffled(false);
     }
 
     public bool OnButtonPress(VRInteractor _) { return false; }
@@ -117,15 +166,17 @@ internal static class MufflePatches
     [HarmonyPrefix]
     private static bool MuffleBlockSound()
     {
-        if (VRSession.Instance is not { } instance)
+        if (VRSession.Instance?.LocalMuffler is not { } muffler)
             return true;
 
-        if (instance.Muffler is not { } muffler)
-            return true;
-            
         return !muffler.Muffled;
     }
+}
 
+[LCVRPatch(LCVRPatchTarget.Universal)]
+[HarmonyPatch]
+internal static class UniversalMufflePatches
+{
     /// <summary>
     /// Make sure the muffle effect stays active even when the player voice effects are updated
     /// </summary>
@@ -133,6 +184,9 @@ internal static class MufflePatches
     [HarmonyPostfix]
     private static void OnUpdatePlayerVoiceEffects(StartOfRound __instance)
     {
+        if (VRSession.Instance?.MuffleManager is not { } manager)
+            return;
+
         if (GameNetworkManager.Instance == null || GameNetworkManager.Instance.localPlayerController == null)
             return;
 
@@ -143,7 +197,7 @@ internal static class MufflePatches
             if (player == __instance.localPlayerController || player.isPlayerDead)
                 continue;
 
-            if (!DNet.IsPlayerMuffled(i))
+            if (!manager.IsPlayerMuffled((ushort)i))
                 continue;
 
             var occlude = player.currentVoiceChatAudioSource.GetComponent<OccludeAudio>();

@@ -342,27 +342,6 @@ internal static class PlayerControllerPatches
 internal static class UniversalPlayerControllerPatches
 {
     /// <summary>
-    /// Update player animator
-    /// </summary>
-    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.Update))]
-    [HarmonyPostfix]
-    private static void UpdatePlayerRig(PlayerControllerB __instance)
-    {
-        if (__instance.IsOwner)
-            return;
-
-        if (DNet.TryGetPlayer((ushort)__instance.playerClientId, out _))
-        {
-            if (__instance.playerBodyAnimator.runtimeAnimatorController != AssetManager.RemoteVrMetarig)
-                __instance.playerBodyAnimator.runtimeAnimatorController = AssetManager.RemoteVrMetarig;
-        }
-        // Used to restore the original metarig if a VR player leaves and a non-vr players join in their place
-        else if (__instance.playerBodyAnimator.runtimeAnimatorController == AssetManager.RemoteVrMetarig)
-            __instance.playerBodyAnimator.runtimeAnimatorController =
-                __instance.playersManager.otherClientsAnimatorController;
-    }
-
-    /// <summary>
     /// Prevent the use of the secondary arm rigs, so that VR arms still freely move when inside the Company Cruiser
     /// </summary>
     [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.Update))]
@@ -371,7 +350,8 @@ internal static class UniversalPlayerControllerPatches
     {
         // Skip if local non-vr player or remote non-vr player
         if ((!__instance.IsLocalPlayer() || !VRSession.InVR) &&
-            !DNet.TryGetPlayer((ushort)__instance.playerClientId, out _))
+            VRSession.Instance?.NetworkSystem is { } networkSystem &&
+            !networkSystem.IsInVR((ushort)__instance.playerClientId))
             return;
 
         __instance.cameraLookRig1.weight = 0.45f;
@@ -421,13 +401,12 @@ internal static class UniversalPlayerControllerPatches
     [HarmonyPostfix]
     private static void OnPlayerDeath(PlayerControllerB __instance)
     {
-        if (__instance != StartOfRound.Instance.localPlayerController)
+        if (__instance != StartOfRound.Instance.localPlayerController || !__instance.AllowPlayerDeath())
             return;
 
-        foreach (var player in DNet.Players.Where(player => player.PlayerController.isPlayerDead))
-        {
+        foreach (var player in VRSession.Instance.NetworkSystem.Players.Where(player =>
+                     player.PlayerController.isPlayerDead))
             player.ShowSpectatorGhost();
-        }
     }
 
     /// <summary>
@@ -461,9 +440,7 @@ internal static class UniversalPlayerControllerPatches
     [HarmonyPostfix]
     private static void OnPlayerRevived()
     {
-        foreach (var player in DNet.Players)
-        {
+        foreach (var player in VRSession.Instance.NetworkSystem.Players)
             player.HideSpectatorGhost();
-        }
     }
 }

@@ -21,6 +21,7 @@ namespace LCVR.Networking;
 // (Ab)using Dissonance Voice to communicate directly to players without the host needing to have mods installed
 // Keep in mind that all of this code is and should be CLIENT side!
 
+[Obsolete]
 internal static class DNet
 {
     /// DNet Protocol Version, increase this everytime a change is made that is not compatible with older versions
@@ -95,7 +96,7 @@ internal static class DNet
 
     public static Channel CreateChannel(ChannelType type, ulong? instanceId = null)
     {
-        var channel = new Channel(type, instanceId);
+        var channel = new Channel(null, type, instanceId);
 
         channels.TryAdd(type, []);
         channels[type].Add(channel);
@@ -298,7 +299,7 @@ internal static class DNet
                 break;
 
             case MessageType.CancelChargerAnim:
-                VRSession.Instance.ChargeStation.CancelChargingAnimation();
+                // VRSession.Instance.ChargeStation.CancelChargingAnimation();
                 break;
 
             case MessageType.Muffled:
@@ -394,7 +395,7 @@ internal static class DNet
             return;
 
         var rig = Serialization.Deserialize<Rig>(reader);
-        player.UpdateTargetTransforms(rig);
+        // player.UpdateTargetTransforms(rig);
     }
 
     private static void HandleSpectatorRigUpdate(ushort sender, BinaryReader reader)
@@ -403,7 +404,7 @@ internal static class DNet
             return;
 
         var rig = Serialization.Deserialize<SpectatorRig>(reader);
-        player.UpdateSpectatorTransforms(rig);
+        // player.UpdateSpectatorTransforms(rig);
     }
     
     private static void HandleInteractWithLever(ushort sender, bool started)
@@ -551,6 +552,8 @@ internal static class DissonancePatches
     [HarmonyPostfix]
     private static void ProcessReceivedPacket(ref ArraySegment<byte> data)
     {
+        return;
+        
         try
         {
             using var stream = new MemoryStream(data.Array!, data.Offset, data.Array!.Length - data.Offset);

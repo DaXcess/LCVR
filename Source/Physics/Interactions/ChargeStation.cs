@@ -2,6 +2,7 @@
 using LCVR.Networking;
 using LCVR.Player;
 using System.Collections;
+using System.IO;
 using UnityEngine;
 
 namespace LCVR.Physics.Interactions;
@@ -11,6 +12,7 @@ public class ChargeStation : MonoBehaviour, VRInteractable
     private InteractTrigger trigger;
     private ItemCharger charger;
     private Coroutine chargeItemCoroutine;
+    private Channel channel;
 
     public InteractableFlags Flags => InteractableFlags.RightHand;
 
@@ -18,6 +20,13 @@ public class ChargeStation : MonoBehaviour, VRInteractable
     {
         trigger = GetComponentInParent<InteractTrigger>();
         charger = GetComponentInParent<ItemCharger>();
+        channel = VRSession.Instance.NetworkSystem.CreateChannel(ChannelType.ChargeStation);
+
+        channel.OnPacketReceived += (_, _) =>
+        {
+            charger.zapAudio.Stop();
+            charger.StopCoroutine(charger.chargeItemCoroutine);
+        };
     }
 
     public void OnColliderEnter(VRInteractor _)
@@ -44,7 +53,7 @@ public class ChargeStation : MonoBehaviour, VRInteractable
         charger.zapAudio.Stop();
         StopCoroutine(chargeItemCoroutine);
 
-        DNet.CancelChargerAnimation();
+        channel.SendPacket([]);
     }
 
     private IEnumerator chargeItemDelayed(GrabbableObject item)
@@ -57,12 +66,6 @@ public class ChargeStation : MonoBehaviour, VRInteractable
         item.SyncBatteryServerRpc(100);
 
         chargeItemCoroutine = null;
-    }
-
-    public void CancelChargingAnimation()
-    {
-        charger.zapAudio.Stop();
-        charger.StopCoroutine(charger.chargeItemCoroutine);
     }
 
     public bool OnButtonPress(VRInteractor _) { return false; }

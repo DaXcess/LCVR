@@ -11,7 +11,8 @@ using LCVR.Patches;
 using UnityEngine.Animations.Rigging;
 using System.Linq;
 using Unity.XR.CoreUtils;
-using CrouchState = LCVR.Networking.DNet.Rig.CrouchState;
+using CrouchState = LCVR.Networking.Rig.CrouchState;
+using Rig = LCVR.Networking.Rig;
 
 namespace LCVR.Player;
 
@@ -64,6 +65,8 @@ public class VRPlayer : MonoBehaviour
     private Transform mysteriousCube;
 
     private Channel prefsChannel;
+    private Channel rigChannel;
+    private Channel spectatorRigChannel;
 
     #region Public Accessors
     public PlayerControllerB PlayerController { get; private set; }
@@ -204,7 +207,11 @@ public class VRPlayer : MonoBehaviour
 
         Logger.LogDebug("Initialized XR Rig");
 
-        prefsChannel = DNet.CreateChannel(ChannelType.PlayerPrefs, PlayerController.playerClientId);
+        var networkSystem = VRSession.Instance.NetworkSystem;
+        
+        prefsChannel = networkSystem.CreateChannel(ChannelType.PlayerPrefs, PlayerController.playerClientId);
+        rigChannel = networkSystem.CreateChannel(ChannelType.Rig, PlayerController.playerClientId);
+        spectatorRigChannel = networkSystem.CreateChannel(ChannelType.SpectatorRig, PlayerController.playerClientId);
         
         StartCoroutine(UpdatePlayerPrefs());
     }
@@ -516,7 +523,7 @@ public class VRPlayer : MonoBehaviour
             PlayerControllerB_Sprint_Patch.sprint = !IsRoomCrouching && Actions.Instance["Sprint"].IsPressed() ? 1 : 0;
         
         if (!PlayerController.isPlayerDead)
-            DNet.BroadcastRig(new DNet.Rig()
+            rigChannel.SendPacket(Serialization.Serialize(new Rig()
             {
                 leftHandPosition = leftController.transform.localPosition,
                 leftHandEulers = leftController.transform.localEulerAngles,
@@ -539,26 +546,27 @@ public class VRPlayer : MonoBehaviour
                 },
                 rotationOffset = rotationOffset.eulerAngles.y,
                 cameraFloorOffset = cameraFloorOffset,
-            });
+            }));
         else
         {
             var targetTransform = PlayerController.physicsParent ?? PlayerController.isInElevator
                 ? PlayerController.playersManager.elevatorTransform
                 : PlayerController.playersManager.playersContainer;
-            
-            DNet.BroadcastSpectatorRig(new DNet.SpectatorRig()
-            {
-                headPosition = targetTransform.InverseTransformPoint(mainCamera.transform.position),
-                headRotation = mainCamera.transform.eulerAngles,
 
-                leftHandPosition = targetTransform.InverseTransformPoint(leftController.transform.position),
-                leftHandRotation = leftController.transform.eulerAngles,
+            spectatorRigChannel.SendPacket(Serialization.Serialize(
+                new SpectatorRig()
+                {
+                    headPosition = targetTransform.InverseTransformPoint(mainCamera.transform.position),
+                    headRotation = mainCamera.transform.eulerAngles,
 
-                rightHandPosition = targetTransform.InverseTransformPoint(rightController.transform.position),
-                rightHandRotation = rightController.transform.eulerAngles,
+                    leftHandPosition = targetTransform.InverseTransformPoint(leftController.transform.position),
+                    leftHandRotation = leftController.transform.eulerAngles,
 
-                parentedToShip = PlayerController.isInElevator,
-            });
+                    rightHandPosition = targetTransform.InverseTransformPoint(rightController.transform.position),
+                    rightHandRotation = rightController.transform.eulerAngles,
+
+                    parentedToShip = PlayerController.isInElevator,
+                }));
         }
     }
 

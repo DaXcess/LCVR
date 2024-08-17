@@ -2,6 +2,7 @@
 using LCVR.Networking;
 using LCVR.Player;
 using System.Collections;
+using System.IO;
 using UnityEngine;
 
 namespace LCVR.Physics.Interactions;
@@ -34,7 +35,6 @@ internal class ShipLeverInteractable : MonoBehaviour, VRInteractable
         interactor.FingerCurler.ForceFist(true);
 
         lever.StartInteracting(interactor.transform, ShipLever.Actor.Self);
-        DNet.InteractWithLever(true);
 
         return true;
     }
@@ -46,7 +46,6 @@ internal class ShipLeverInteractable : MonoBehaviour, VRInteractable
         interactor.FingerCurler.ForceFist(false);
 
         lever.StopInteracting();
-        DNet.InteractWithLever(false);
     }
 
     public void OnColliderEnter(VRInteractor _) { }
@@ -60,6 +59,7 @@ public class ShipLever : MonoBehaviour
     private Transform rotateTo;
     private TriggerDirection shouldTrigger = TriggerDirection.None;
     private Actor currentActor;
+    private Channel channel;
 
     public bool CanInteract => lever.triggerScript.interactable && currentActor != Actor.Other;
     public Actor CurrentActor => currentActor;
@@ -68,6 +68,9 @@ public class ShipLever : MonoBehaviour
     {
         animator = GetComponent<Animator>();
         lever = FindObjectOfType<StartMatchLever>();
+        
+        channel = VRSession.Instance.NetworkSystem.CreateChannel(ChannelType.ShipLever);
+        channel.OnPacketReceived += OnOtherInteractWithLever;
     }
 
     private void Update()
@@ -104,6 +107,9 @@ public class ShipLever : MonoBehaviour
         currentActor = actor;
         animator.enabled = false;
         rotateTo = target;
+        
+        if (actor == Actor.Self)
+            channel.SendPacket([1]);
     }
 
     public void StopInteracting()
@@ -120,6 +126,9 @@ public class ShipLever : MonoBehaviour
         }
         finally
         {
+            if (currentActor == Actor.Self)
+                channel.SendPacket([0]);
+            
             // Always reset at the end
             rotateTo = null;
             shouldTrigger = TriggerDirection.None;
@@ -135,6 +144,24 @@ public class ShipLever : MonoBehaviour
 
         animator.enabled = true;
         if (isLocal) lever.PullLever();
+    }
+
+    private void OnOtherInteractWithLever(ushort other, BinaryReader reader)
+    {
+        var interacting = reader.ReadBoolean();
+
+        if (!VRSession.Instance.NetworkSystem.TryGetPlayer(other, out var player))
+            return;
+
+        switch (interacting)
+        {
+            case true when CurrentActor == ShipLever.Actor.None:
+                StartInteracting(player.Bones.RightHand, ShipLever.Actor.Other);
+                break;
+            case false when CurrentActor == ShipLever.Actor.Other:
+                StopInteracting();
+                break;
+        }
     }
 
     public static ShipLever Create()

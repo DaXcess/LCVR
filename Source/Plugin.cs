@@ -1,5 +1,4 @@
 ﻿using BepInEx;
-using BepInEx.Bootstrap;
 using LCVR.Assets;
 using LCVR.Patches;
 using System;
@@ -32,7 +31,7 @@ public class Plugin : BaseUnityPlugin
 
     private readonly string[] GAME_ASSEMBLY_HASHES =
     [
-        "A6B2633FE729B9C147466CD4A92168872EF789620EB29FF723A33937837AC9B0", // V56
+        "F34BE4B08F191695BAD3D09F7CB8F8EC82A00B5F93A4EC2269BAE94D9ABCA721", // V61
     ];
 
     public new static Config Config { get; private set; }

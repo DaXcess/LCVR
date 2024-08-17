@@ -1,9 +1,5 @@
-﻿using HarmonyLib;
-using LCVR.Assets;
-using LCVR.Player;
-using TMPro;
+﻿using LCVR.Player;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace LCVR.UI;
 
@@ -11,19 +7,14 @@ internal class ObjectScanner : MonoBehaviour
 {
     private void Awake()
     {
-        foreach (Transform child in GameObject.Find("ObjectScanner").transform)
+        var scanner = GameObject.Find("ObjectScanner");
+        
+        foreach (Transform child in scanner.transform)
         {
             var canvas = child.gameObject.AddComponent<Canvas>();
             canvas.worldCamera = VRSession.Instance.MainCamera;
             canvas.renderMode = RenderMode.WorldSpace;
-
-            // Render all object scanner stuff on top
-            child.GetComponentsInChildren<Image>().Do(image => image.material = AssetManager.AlwaysOnTopMat);
-            child.GetComponentsInChildren<TextMeshProUGUI>().Do(text =>
-            {
-                text.fontSharedMaterial = new Material(text.fontSharedMaterial);
-                text.isOverlay = true;
-            });
+            canvas.sortingOrder = 1;
         }
     }
 

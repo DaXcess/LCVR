@@ -33,7 +33,7 @@ public class GearStick : MonoBehaviour, VRInteractable
     private void Awake()
     {
         vehicle = GetComponentInParent<VehicleController>();
-        channel = DNet.CreateChannel(ChannelType.VehicleGearStick, vehicle.NetworkObjectId);
+        channel = VRSession.Instance.NetworkSystem.CreateChannel(ChannelType.VehicleGearStick, vehicle.NetworkObjectId);
         
         container = transform.parent.parent;
         
@@ -138,12 +138,12 @@ public class GearStick : MonoBehaviour, VRInteractable
                     break;
 
                 // Check if player exists
-                if (!DNet.TryGetPlayer(sender, out var player))
+                if (!VRSession.Instance.NetworkSystem.TryGetPlayer(sender, out var player))
                     break;
 
                 isHeld = true;
 
-                var isRightHand = reader.ReadByte() == 1;
+                var isRightHand = reader.ReadBoolean();
                 if (isRightHand)
                 {
                     player.RightFingerCurler.ForceFist(true);
@@ -166,12 +166,12 @@ public class GearStick : MonoBehaviour, VRInteractable
                     break;
 
                 // Check if player exists
-                if (!DNet.TryGetPlayer(sender, out var player))
+                if (!VRSession.Instance.NetworkSystem.TryGetPlayer(sender, out var player))
                     break;
 
                 isHeld = false;
                 
-                var isRightHand = reader.ReadByte() == 1;
+                var isRightHand = reader.ReadBoolean();
                 if (isRightHand)
                 {
                     player.RightFingerCurler.ForceFist(false);

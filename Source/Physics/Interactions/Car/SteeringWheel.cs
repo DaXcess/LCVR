@@ -21,33 +21,35 @@ public class SteeringWheel : MonoBehaviour
     private VehicleController vehicle;
     private Animator wheelAnimator;
     private Channel channel;
-    
+
     private float currentRotation;
     private float pendingRotation;
     private float velocity;
-    
+
     private int handsOnWheel;
     private int packetCounter;
 
     internal SteeringWheelSnapPoint[] snapPoints;
 
     private VRNetPlayer OtherDriver =>
-        DNet.Players.FirstOrDefault(player => player.PlayerController == vehicle.currentDriver);
+        VRSession.Instance.NetworkSystem.Players.FirstOrDefault(player =>
+            player.PlayerController == vehicle.currentDriver);
 
     private bool ControlledByLocal => VRSession.InVR && vehicle.localPlayerInControl &&
                                       !Plugin.Config.DisableCarSteeringWheelInteraction.Value;
 
     private bool ControlledByOther => vehicle.currentDriver is not null &&
-                                      DNet.Players.Any(player =>
+                                      VRSession.Instance.NetworkSystem.Players.Any(player =>
                                           !player.AdditionalData.DisableSteeringWheel &&
                                           player.PlayerController == vehicle.currentDriver);
-    
+
     private void Awake()
     {
         vehicle = GetComponentInParent<VehicleController>();
         wheelAnimator = GetComponentInParent<Animator>();
 
-        channel = DNet.CreateChannel(ChannelType.VehicleSteeringWheel, vehicle.NetworkObjectId);
+        channel = VRSession.Instance.NetworkSystem.CreateChannel(ChannelType.VehicleSteeringWheel,
+            vehicle.NetworkObjectId);
         channel.OnPacketReceived += OnPacketReceived;
     }
 
@@ -60,7 +62,7 @@ public class SteeringWheel : MonoBehaviour
     {
         if (!ControlledByLocal && !ControlledByOther)
             return;
-            
+
         try
         {
             if (ControlledByLocal)
@@ -103,13 +105,13 @@ public class SteeringWheel : MonoBehaviour
     public void ApplyRotationAtPointTowards(Vector3 point, Vector3 target)
     {
         handsOnWheel++;
-        
+
         var targetPosition = transform.InverseTransformPoint(target);
         var pointPosition = transform.InverseTransformPoint(point);
 
         targetPosition.z = 0;
         pointPosition.z = 0;
-        
+
         var angle = Vector3.SignedAngle(pointPosition, targetPosition, Vector3.forward);
 
         pendingRotation += angle;
@@ -121,7 +123,7 @@ public class SteeringWheel : MonoBehaviour
 
         if (!vehicle.localPlayerInControl)
             return;
-        
+
         vehicle.moveInputVector =
             IngamePlayerSettings.Instance.playerInput.actions.FindAction("Move").ReadValue<Vector2>();
 
@@ -149,7 +151,7 @@ public class SteeringWheel : MonoBehaviour
             })
         ]);
     }
-    
+
     /// <summary>
     /// Notify other players that the steering wheel was released
     /// </summary>
@@ -175,7 +177,7 @@ public class SteeringWheel : MonoBehaviour
                     break;
 
                 var sync = Serialization.Deserialize<SteeringWheelSync>(reader);
-                
+
                 currentRotation = sync.currentRotation;
                 pendingRotation = sync.pendingRotation;
                 velocity = sync.velocity;
@@ -186,7 +188,7 @@ public class SteeringWheel : MonoBehaviour
             case SteeringWheelCommand.Hand:
                 // Only allow sync if sender is the driver of the vehicle
                 if (OtherDriver?.PlayerController.playerClientId != sender)
-                    break;  
+                    break;
 
                 var handOnWheel = Serialization.Deserialize<HandOnWheel>(reader);
 
@@ -208,7 +210,7 @@ public class SteeringWheel : MonoBehaviour
                     OtherDriver.SnapLeftHandTo(target.transform, new Vector3(0, -0.4f, -0.1f), new Vector3(0, 180, 0));
 
                 break;
-            
+
             default:
                 throw new ArgumentOutOfRangeException();
         }

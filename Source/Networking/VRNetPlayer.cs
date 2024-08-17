@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Linq;
 using GameNetcodeStuff;
 using LCVR.Assets;
 using LCVR.Input;
@@ -6,7 +7,7 @@ using LCVR.Player;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Animations.Rigging;
-using CrouchState = LCVR.Networking.DNet.Rig.CrouchState;
+using CrouchState = LCVR.Networking.Rig.CrouchState;
 
 namespace LCVR.Networking;
 
@@ -48,6 +49,8 @@ public class VRNetPlayer : MonoBehaviour
     private float crouchOffset;
 
     private Channel prefsChannel;
+    private Channel rigChannel;
+    private Channel spectatorRigChannel;
 
     public PlayerControllerB PlayerController { get; private set; }
     public Bones Bones { get; private set; }
@@ -138,8 +141,29 @@ public class VRNetPlayer : MonoBehaviour
 
         usernameText.text = $"<noparse>{PlayerController.playerUsername}</noparse>";
 
-        prefsChannel = DNet.CreateChannel(ChannelType.PlayerPrefs, PlayerController.playerClientId);
+        var networkSystem = VRSession.Instance.NetworkSystem;
+        
+        prefsChannel = networkSystem.CreateChannel(ChannelType.PlayerPrefs, PlayerController.playerClientId);
+        rigChannel = networkSystem.CreateChannel(ChannelType.Rig, PlayerController.playerClientId);
+        spectatorRigChannel = networkSystem.CreateChannel(ChannelType.SpectatorRig, PlayerController.playerClientId);
+        
         prefsChannel.OnPacketReceived += OnPrefsPacketReceived;
+        rigChannel.OnPacketReceived += OnRigDataReceived;
+        spectatorRigChannel.OnPacketReceived += OnSpectatorRigDataReceived;
+        
+        // Set up VR items
+        foreach (var item in PlayerController.ItemSlots.Where(val => val != null))
+        {
+            // Add or enable VR item script on item if there is one for this item
+            if (!Player.Items.items.TryGetValue(item.itemProperties.itemName, out var type))
+                continue;
+
+            var component = (MonoBehaviour)item.GetComponent(type);
+            if (component == null)
+                item.gameObject.AddComponent(type);
+            else
+                component.enabled = true;
+        }
     }
 
     private void BuildVRRig()
@@ -190,6 +214,10 @@ public class VRNetPlayer : MonoBehaviour
 
     private void Update()
     {
+        // Re-apply animator if necessary
+        if (PlayerController.playerBodyAnimator.runtimeAnimatorController != AssetManager.RemoteVrMetarig)
+            PlayerController.playerBodyAnimator.runtimeAnimatorController = AssetManager.RemoteVrMetarig;
+        
         // Apply crouch offset
         crouchOffset = Mathf.Lerp(crouchOffset, crouchState switch
         {
@@ -305,15 +333,11 @@ public class VRNetPlayer : MonoBehaviour
         LeftFingerCurler?.Update();
 
         if (!PlayerController.isHoldingObject)
-        {
             RightFingerCurler?.Update();
-        }
 
         // Rotate spectator username billboard
         if (StartOfRound.Instance.localPlayerController.localVisorTargetPoint is not null)
-        {
             usernameBillboard.LookAt(StartOfRound.Instance.localPlayerController.localVisorTargetPoint);
-        }
     }
 
     /// <summary>
@@ -390,9 +414,47 @@ public class VRNetPlayer : MonoBehaviour
             rotationOffset = rotationOffset ?? Vector3.zero
         };
     }
-    
-    internal void UpdateTargetTransforms(DNet.Rig rig)
+
+    /// <summary>
+    /// Properly clean up the IK and spectator ghost if a VR player leaves the game
+    /// </summary>
+    private void OnDestroy()
     {
+        Destroy(playerGhost);
+        Destroy(xrOrigin.gameObject);
+
+        Bones.ResetToPrefabPositions();
+
+        Destroy(Bones.LeftArmRig.GetComponent<TwoBoneIKConstraint>());
+        Destroy(Bones.RightArmRig.GetComponent<TwoBoneIKConstraint>());
+
+        var leftArmConstraint = Bones.LeftArmRig.gameObject.AddComponent<ChainIKConstraint>();
+        var rightArmConstraint = Bones.RightArmRig.gameObject.AddComponent<ChainIKConstraint>();
+
+        leftArmConstraint.data = originalLeftArmConstraintData;
+        rightArmConstraint.data = originalRightArmConstraintData;
+
+        GetComponentInChildren<RigBuilder>().Build();
+
+        PlayerController.playerBodyAnimator.runtimeAnimatorController =
+            StartOfRound.Instance.otherClientsAnimatorController;
+        
+        prefsChannel.Dispose();
+        rigChannel.Dispose();
+        spectatorRigChannel.Dispose();
+    }
+
+    private void OnPrefsPacketReceived(ushort _, BinaryReader reader)
+    {
+        var steeringDisabled = reader.ReadBoolean();
+
+        AdditionalData.DisableSteeringWheel = steeringDisabled;
+    }
+
+    private void OnRigDataReceived(ushort _, BinaryReader reader)
+    {
+        var rig = Serialization.Deserialize<Rig>(reader);
+        
         leftController.localPosition = rig.leftHandPosition;
         leftController.localEulerAngles = rig.leftHandEulers;
         LeftFingerCurler?.SetCurls(rig.leftHandFingers);
@@ -411,11 +473,10 @@ public class VRNetPlayer : MonoBehaviour
         cameraFloorOffset = rig.cameraFloorOffset;
     }
 
-    /// <summary>
-    /// Apply transforms for the spectator ghost
-    /// </summary>
-    internal void UpdateSpectatorTransforms(DNet.SpectatorRig rig)
+    private void OnSpectatorRigDataReceived(ushort _, BinaryReader reader)
     {
+        var rig = Serialization.Deserialize<SpectatorRig>(reader);
+        
         var head = playerGhost.transform.Find("Head");
         var leftHand = playerGhost.transform.Find("Hand.L");
         var rightHand = playerGhost.transform.Find("Hand.R");
@@ -440,39 +501,6 @@ public class VRNetPlayer : MonoBehaviour
 
         rightHand.localPosition = rig.rightHandPosition;
         rightHand.eulerAngles = rig.rightHandRotation;
-
-        if (StartOfRound.Instance.localPlayerController.localVisorTargetPoint is not null)
-            usernameBillboard.LookAt(StartOfRound.Instance.localPlayerController.localVisorTargetPoint);
-    }
-
-    /// <summary>
-    /// Properly clean up the IK and spectator ghost if a VR player leaves the game
-    /// </summary>
-    private void OnDestroy()
-    {
-        Destroy(playerGhost);
-
-        Bones.ResetToPrefabPositions();
-
-        Destroy(Bones.LeftArmRig.GetComponent<TwoBoneIKConstraint>());
-        Destroy(Bones.RightArmRig.GetComponent<TwoBoneIKConstraint>());
-
-        var leftArmConstraint = Bones.LeftArmRig.gameObject.AddComponent<ChainIKConstraint>();
-        var rightArmConstraint = Bones.RightArmRig.gameObject.AddComponent<ChainIKConstraint>();
-
-        leftArmConstraint.data = originalLeftArmConstraintData;
-        rightArmConstraint.data = originalRightArmConstraintData;
-
-        GetComponentInChildren<RigBuilder>().Build();
-        
-        prefsChannel.Dispose();
-    }
-
-    private void OnPrefsPacketReceived(ushort _, BinaryReader reader)
-    {
-        var steeringDisabled = reader.ReadBoolean();
-
-        AdditionalData.DisableSteeringWheel = steeringDisabled;
     }
 
     private struct HandTargetOverride
@@ -486,4 +514,57 @@ public class VRNetPlayer : MonoBehaviour
     {
         public bool DisableSteeringWheel { get; set; }
     }
+}
+
+[Serialize]
+public struct Rig
+{
+    public Vector3 rightHandPosition;
+    public Vector3 rightHandEulers;
+    public Fingers rightHandFingers;
+
+    public Vector3 leftHandPosition;
+    public Vector3 leftHandEulers;
+    public Fingers leftHandFingers;
+
+    public Vector3 cameraEulers;
+    public Vector3 cameraPosAccounted;
+    public Vector3 modelOffset;
+    public Vector3 specialAnimationPositionOffset;
+        
+    public CrouchState crouchState;
+    public float rotationOffset;
+    public float cameraFloorOffset;
+
+    public enum CrouchState : byte
+    {
+        None,
+        Roomscale,
+        Button
+    }
+}
+
+[Serialize]
+public struct SpectatorRig
+{
+    public Vector3 headPosition;
+    public Vector3 headRotation;
+
+    public Vector3 leftHandPosition;
+    public Vector3 leftHandRotation;
+
+    public Vector3 rightHandPosition;
+    public Vector3 rightHandRotation;
+
+    public bool parentedToShip;
+}
+    
+[Serialize]
+public struct Fingers
+{
+    public byte thumb;
+    public byte index;
+    public byte middle;
+    public byte ring;
+    public byte pinky;
 }

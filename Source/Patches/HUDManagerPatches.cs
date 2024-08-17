@@ -1,9 +1,11 @@
-﻿using HarmonyLib;
+﻿using System;
+using HarmonyLib;
 using LCVR.Player;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using UnityEngine;
 using UnityEngine.InputSystem;
 
 using static HarmonyLib.AccessTools;
@@ -64,5 +66,28 @@ internal static class HUDManagerPatches
         codes[startIndex++] = new(OpCodes.Callvirt, Method(typeof(InputAction), nameof(InputAction.IsPressed)));
 
         return codes.AsEnumerable();
+    }
+
+    /// <summary>
+    /// Fix that disables all lights on scrap found that otherwise will bleed into the world
+    /// </summary>
+    [HarmonyPatch(typeof(HUDManager), nameof(HUDManager.DisplayNewScrapFound))]
+    [HarmonyTranspiler]
+    private static IEnumerable<CodeInstruction> ScrapFoundNoLights(IEnumerable<CodeInstruction> instructions)
+    {
+        return new CodeMatcher(instructions)
+            .MatchForward(false, new CodeMatch(OpCodes.Stloc_0))
+            .Advance(1)
+            .InsertAndAdvance(
+                new CodeInstruction(OpCodes.Ldloc_0),
+                new CodeInstruction(OpCodes.Call, ((Action<GameObject>)DisableLight).Method)
+            )
+            .InstructionEnumeration();
+
+        static void DisableLight(GameObject @object)
+        {
+            foreach (var light in @object.GetComponentsInChildren<Light>(true))
+                light.enabled = false;
+        }
     }
 }

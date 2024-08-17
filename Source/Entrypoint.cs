@@ -28,13 +28,13 @@ internal static class Entrypoint
         new GameObject("LCVR Session Manager").AddComponent<VRSession>();
 
         // Setup Dissonance for VR movement comms
-        yield return DNet.Initialize();
+        // yield return DNet.Initialize();
     }
 
     [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.OnDestroy))]
     [HarmonyPostfix]
     private static void OnGameLeave()
     {
-        DNet.Shutdown();
+        // DNet.Shutdown();
     }
 }
