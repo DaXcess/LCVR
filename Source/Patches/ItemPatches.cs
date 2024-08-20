@@ -59,27 +59,4 @@ internal static class UniversalItemPatches
         if (!__runOriginal && __instance.radarIcon != null)
             __instance.radarIcon.position = __instance.transform.position;
     }
-
-    /// <summary>
-    /// Prevent the spray paint item from calling "DiscardItem" too early
-    /// </summary>
-    [HarmonyPatch(typeof(SprayPaintItem), nameof(SprayPaintItem.DiscardItem))]
-    [HarmonyTranspiler]
-    private static IEnumerable<CodeInstruction> SprayPaintMoveDiscard(IEnumerable<CodeInstruction> instructions)
-    {
-        return instructions.Skip(2).AddItem(new CodeInstruction(OpCodes.Ldarg_0)).AddItem(
-            new CodeInstruction(OpCodes.Callvirt,
-                Method(typeof(GrabbableObject), nameof(GrabbableObject.DiscardItem))));
-    }
-
-    /// <summary>
-    /// Correct the "equippedUsableItemQE" field when the walkie talkie is pocketed
-    /// </summary>
-    [HarmonyPatch(typeof(WalkieTalkie), nameof(WalkieTalkie.PocketItem))]
-    [HarmonyPostfix]
-    private static void OnPocketWalkie(WalkieTalkie __instance)
-    {
-        if (__instance.playerHeldBy != null)
-            __instance.playerHeldBy.equippedUsableItemQE = false;
-    }
 }
