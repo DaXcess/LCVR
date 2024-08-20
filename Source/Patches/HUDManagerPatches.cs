@@ -9,6 +9,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 using static HarmonyLib.AccessTools;
+using Object = UnityEngine.Object;
 
 namespace LCVR.Patches;
 
@@ -69,25 +70,28 @@ internal static class HUDManagerPatches
     }
 
     /// <summary>
-    /// Fix that disables all lights on scrap found that otherwise will bleed into the world
+    /// Fix that disables all lights and scan nodes on scrap found
     /// </summary>
     [HarmonyPatch(typeof(HUDManager), nameof(HUDManager.DisplayNewScrapFound))]
     [HarmonyTranspiler]
-    private static IEnumerable<CodeInstruction> ScrapFoundNoLights(IEnumerable<CodeInstruction> instructions)
+    private static IEnumerable<CodeInstruction> ScrapFoundNoLightsAndScan(IEnumerable<CodeInstruction> instructions)
     {
         return new CodeMatcher(instructions)
             .MatchForward(false, new CodeMatch(OpCodes.Stloc_0))
             .Advance(1)
             .InsertAndAdvance(
                 new CodeInstruction(OpCodes.Ldloc_0),
-                new CodeInstruction(OpCodes.Call, ((Action<GameObject>)DisableLight).Method)
+                new CodeInstruction(OpCodes.Call, ((Action<GameObject>)DisableComponents).Method)
             )
             .InstructionEnumeration();
 
-        static void DisableLight(GameObject @object)
+        static void DisableComponents(GameObject @object)
         {
             foreach (var light in @object.GetComponentsInChildren<Light>(true))
                 light.enabled = false;
+            
+            foreach (var node in @object.GetComponentsInChildren<ScanNodeProperties>())
+                Object.Destroy(node);
         }
     }
 }

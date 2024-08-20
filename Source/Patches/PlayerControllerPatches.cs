@@ -1,5 +1,4 @@
-﻿using System;
-using GameNetcodeStuff;
+﻿using GameNetcodeStuff;
 using HarmonyLib;
 using LCVR.Assets;
 using LCVR.Input;
@@ -7,7 +6,6 @@ using LCVR.Networking;
 using LCVR.Player;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Reflection.Emit;
 using UnityEngine;
 using UnityEngine.InputSystem;

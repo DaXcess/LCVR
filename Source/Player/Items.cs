@@ -16,7 +16,8 @@ internal static class Items
         { "Pro-flashlight", typeof(VRFlashlight) },
         { "Flashlight", typeof(VRFlashlight) },
         { "Laser pointer", typeof(VRFlashlight) },
-        { "Kitchen knife", typeof(VRKnife) }
+        { "Kitchen knife", typeof(VRKnife) },
+        { "Maneater", typeof(VRManEaterBaby) }
     };
 
     public static void UpdateVRControlsItemsOffsets()

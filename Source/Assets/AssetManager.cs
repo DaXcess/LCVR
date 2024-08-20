@@ -11,6 +11,7 @@ internal static class AssetManager
     public static GameObject Interactable;
     public static GameObject Keyboard;
     public static GameObject SettingsPanel;
+    public static GameObject KeybindDiscard;
     public static GameObject VolumeManager;
     public static GameObject SpectatorLight;
     public static GameObject SpectatorGhost;
@@ -19,10 +20,10 @@ internal static class AssetManager
 
     public static Material SplashMaterial;
     public static Material DefaultRayMat;
-    public static Material AlwaysOnTopMat;
 
     public static Shader TMPAlwaysOnTop;
-
+    public static Material Fuck;
+    
     public static InputActionAsset VRActions;
     public static InputActionAsset TrackingActions;
     public static InputActionAsset NullActions;
@@ -53,8 +54,9 @@ internal static class AssetManager
         Interactable = assetBundle.LoadAsset<GameObject>("VRInteractable");
         Keyboard = assetBundle.LoadAsset<GameObject>("NonNativeKeyboard");
         SettingsPanel = assetBundle.LoadAsset<GameObject>("Panel");
+        KeybindDiscard = assetBundle.LoadAsset<GameObject>("KeybindDiscard");
         VolumeManager = assetBundle.LoadAsset<GameObject>("Volume Manager");
-        EnemyPrefab = assetBundle.LoadAsset<GameObject>("CompanyCruiser");
+        EnemyPrefab = assetBundle.LoadAsset<GameObject>("CaveDwellerEnemy");
         SpectatorLight = assetBundle.LoadAsset<GameObject>("Spectator Light");
         SpectatorGhost = assetBundle.LoadAsset<GameObject>("SpectatorGhost");
         SteeringWheelPoints = assetBundle.LoadAsset<GameObject>("SnapPointContainer");
@@ -64,13 +66,13 @@ internal static class AssetManager
         NullActions = assetBundle.LoadAsset<InputActionAsset>("NullPlayerActions");
 
         TMPAlwaysOnTop = assetBundle.LoadAsset<Shader>("TextMeshPro Always On Top");
-
+        Fuck = assetBundle.LoadAsset<Material>("FShader");
+        
         RemappableControls =
             assetBundle.LoadAsset<GameObject>("Remappable Controls").GetComponent<RemappableControls>();
 
         SplashMaterial = assetBundle.LoadAsset<Material>("Splash");
         DefaultRayMat = assetBundle.LoadAsset<Material>("Default Ray");
-        AlwaysOnTopMat = assetBundle.LoadAsset<Material>("Always On Top");
 
         GithubImage = assetBundle.LoadAsset<Sprite>("Github");
         KofiImage = assetBundle.LoadAsset<Sprite>("Ko-Fi");

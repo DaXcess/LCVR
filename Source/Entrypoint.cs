@@ -1,7 +1,6 @@
 ﻿using HarmonyLib;
 using UnityEngine;
 using System.Collections;
-using LCVR.Networking;
 using LCVR.Patches;
 using LCVR.Player;
 

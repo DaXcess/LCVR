@@ -1,3 +1,38 @@
+# 1.3.1
+
+## V60! <sub><sup><sub><sup><sub><sup><sub>v61
+
+V60 released barely a single week after me releasing v1.3.0. Very cool!
+
+Anyways here's the update go boil the creatures or something.
+
+**Additions**:
+
+- Added V61 support
+- Added VR support for the V60 cutscene
+- Added Pitch Locked Canvas (enabled by default) for a more pleasant UI experience
+- Added VR interactions to the elevator
+- Added VR interactions to the new door variant
+- Added VR interactions to the new enemy
+- Added the ability to remove keybinds completely
+
+**Changes**:
+
+- Reworked networking, might fix some things
+
+**Bug Fixes**:
+
+- Fixed the spray paint and weed killer spraying offsets
+- Fixed an object leak in the networking system
+- Fixed lights from collected items bleeding into the world
+- Fixed collected items being scannable in the UI
+- Fixed hangar levers not being able to be disabled in settings
+
+**Removals**:
+
+- Removed V56 support
+- Removed the car from the main menu
+
 # 1.3.0
 
 ## Car!

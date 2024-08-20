@@ -119,6 +119,9 @@ internal static class LeverSwitchPatches
     [HarmonyPostfix]
     private static void OnInteractTriggerStart(InteractTrigger __instance)
     {
+        if (Plugin.Config.DisableHangarLeverInteraction.Value)
+            return;
+        
         var go = __instance.gameObject;
         if (go.name is not "LeverSwitchHandle" and not "MagnetLever")
             return;

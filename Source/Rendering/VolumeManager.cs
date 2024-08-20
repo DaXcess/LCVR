@@ -14,10 +14,10 @@ public class VolumeManager : MonoBehaviour
     private ColorAdjustments colorAdjustments;
 
     private Color vignetteColor = Color.black;
-    private float vignetteIntensity = 0;
+    private float vignetteIntensity;
     private float vignetteLerpMul = 1;
 
-    private float saturation = 0;
+    private float saturation;
 
     public float VignetteIntensity
     {

@@ -18,7 +18,8 @@ public class Door : MonoBehaviour, VRInteractable
     {
         ["TestRoom"] = (new Vector3(-0.29f, 0.2336f, -0.025f), Vector3.zero, new Vector3(1, 0.15f, 0.025f)),
         ["SteelDoorMapModel"] = (new Vector3(-0.29f, 0.2336f, -0.025f), Vector3.zero, new Vector3(1, 0.15f, 0.025f)),
-        ["FancyDoorMapModel"] = (new Vector3(-0.29f, 0.2836f, -0.055f), Vector3.zero, new Vector3(1, 0.09f, 0.155f))
+        ["FancyDoorMapModel"] = (new Vector3(-0.29f, 0.2836f, -0.055f), Vector3.zero, new Vector3(1, 0.09f, 0.155f)),
+        ["YellowMineDoor"] = (new Vector3(-0.04f, 0.22f, -0.05f), Vector3.zero, new Vector3(1, 0.1273f, 0.13f))
     };
 
     internal DoorLock door;

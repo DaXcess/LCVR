@@ -1,0 +1,97 @@
+using System.Collections;
+using LCVR.Input;
+using LCVR.Player;
+using UnityEngine;
+
+namespace LCVR.Items;
+
+internal class VRManEaterBaby : VRItem<CaveDwellerPhysicsProp>
+{
+    private ShakeDetector shake;
+    private ShakeDetector shakeBig;
+    
+    private Coroutine stopRockingCoroutine;
+    private bool isRockHard;
+    
+    private new void Awake()
+    {
+        base.Awake();
+
+        if (!IsLocal)
+            return;
+
+        var source = VRSession.Instance.LocalPlayer.PrimaryController.transform;
+        
+        shake = new ShakeDetector(source, 0.015f, true);
+        shakeBig = new ShakeDetector(source, 0.04f, true);
+        
+        shake.onShake += OnShakeMotion;
+        shakeBig.onShake += OnShakeBigMotion;
+    }
+
+    private void OnDestroy()
+    {
+        if (IsLocal)
+            shake.onShake -= OnShakeMotion;
+    }
+
+    private void OnShakeMotion()
+    {
+        if (player.currentlyHeldObjectServer != item || !item.IsOwner)
+            return;
+
+        if (player.isGrabbingObjectAnimation || player.inTerminalMenu || player.inSpecialInteractAnimation)
+            return;
+
+        if (isRockHard)
+            return;
+        
+        if (stopRockingCoroutine != null)
+            StopCoroutine(stopRockingCoroutine);
+
+        StartRocking(false);
+    }
+
+    private void OnShakeBigMotion()
+    {
+        if (player.currentlyHeldObjectServer != item || !item.IsOwner)
+            return;
+
+        if (player.isGrabbingObjectAnimation || player.inTerminalMenu || player.inSpecialInteractAnimation)
+            return;
+        
+        if (stopRockingCoroutine != null)
+            StopCoroutine(stopRockingCoroutine);
+
+        StartRocking(true);
+    }
+
+    private void StartRocking(bool rockHard)
+    {
+        isRockHard = rockHard;
+
+        item.caveDwellerScript.rockingBaby = rockHard ? 2 : 1;
+        item.SetRockingBabyServerRpc(rockHard);
+
+        stopRockingCoroutine = StartCoroutine(StopRockingBaby(rockHard ? 0.5f : 1f));
+    }
+
+    private IEnumerator StopRockingBaby(float timeout)
+    {
+        yield return new WaitForSeconds(timeout);
+
+        if (player.currentlyHeldObjectServer != item)
+            yield break;
+
+        isRockHard = false;
+        item.caveDwellerScript.rockingBaby = 0;
+        item.StopRockingBabyServerRpc();
+        stopRockingCoroutine = null;
+    }
+
+    protected override void OnUpdate()
+    {
+        shake.Update();
+        shakeBig.Update();
+    }
+}

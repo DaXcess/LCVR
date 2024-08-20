@@ -44,12 +44,9 @@ public class VRSession : MonoBehaviour
     public Camera MainCamera { get; private set; }
     public Camera UICamera { get; private set; }
 
-    public MotionDetector MotionDetector { get; private set; }
-
     public Rendering.VolumeManager VolumeManager { get; private set; }
 
     public InteractionManager InteractionManager { get; private set; }
-    public ShipLever ShipLever { get; private set; }
     public CarManager CarManager { get; private set; }
     public MuffleManager MuffleManager { get; private set; }
     public Muffler LocalMuffler { get; private set; }
@@ -71,8 +68,8 @@ public class VRSession : MonoBehaviour
 
         // Initialize universal interactions
         ChargeStation.Create();
+        ShipLever.Create();
         
-        ShipLever = ShipLever.Create();
         MuffleManager = new MuffleManager();
         CarManager = new CarManager();
 
@@ -243,10 +240,6 @@ public class VRSession : MonoBehaviour
 
         terminalKeyboard.OnClosed += (_, _) => { terminal.QuitTerminal(); };
 
-        // Set up motion detector
-        MotionDetector = new GameObject("Motion Detector").AddComponent<MotionDetector>();
-        MotionDetector.gameObject.CreateInteractorController(Utils.Hand.Right, false, true, false);
-
         // Initialize VR Player
         LocalPlayer = StartOfRound.Instance.localPlayerController.gameObject.AddComponent<VRPlayer>();
 
@@ -328,6 +321,9 @@ public class VRSession : MonoBehaviour
         // Hangar Lever
         if (!Plugin.Config.DisableHangarLeverInteraction.Value)
             VRController.DisableInteractTrigger("LeverSwitchInteractable");
+
+        if (!Plugin.Config.DisableElevatorButtonInteraction.Value)
+            VRController.DisableInteractTrigger("ElevatorButtonTrigger");
         
         // Car horn
         if (!Plugin.Config.DisableCarHonkInteraction.Value)

@@ -1,8 +1,10 @@
-﻿using LCVR.Assets;
+﻿using System.Collections.Generic;
+using LCVR.Assets;
 using LCVR.Player;
 using Microsoft.MixedReality.Toolkit.Experimental.UI;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.UI;
 using UnityEngine.XR.Interaction.Toolkit.UI;
@@ -147,9 +149,10 @@ public class VRHUD : MonoBehaviour
         var globalScanInfo = GameObject.Find("GlobalScanInfo");
 
         globalScanInfo.transform.SetParent(PitchLockedCanvas.transform, false);
-        globalScanInfo.transform.localPosition = Vector3.zero;
+        globalScanInfo.transform.localPosition =
+            Plugin.Config.EnablePitchLockedCanvas.Value ? Vector3.down * 150 : Vector3.zero;
         globalScanInfo.transform.localRotation = Quaternion.identity;
-        globalScanInfo.transform.localScale = Vector3.one;
+        globalScanInfo.transform.localScale = Vector3.one * (Plugin.Config.EnablePitchLockedCanvas.Value ? 1.2f : 1);
 
         gameObject.AddComponent<ObjectScanner>();
 
@@ -431,15 +434,27 @@ public class VRHUD : MonoBehaviour
         MoveToFront(PitchLockedCanvas);
         MoveToFront(WorldInteractionCanvas);
         MoveToFront(objectScanner.transform);
-
-        cinematicGraphics.transform.Find("PlanetDescription/Image").GetComponent<Image>().material = null;
     }
+
+    private static readonly Dictionary<Material, Material> materialMappings = [];
 
     private static void MoveToFront(Component component)
     {
         foreach (var element in component.GetComponentsInChildren<Image>(true))
-            element.material = AssetManager.AlwaysOnTopMat;
+        {
+            if (element.materialForRendering == null)
+                continue;
 
+            if (!materialMappings.TryGetValue(element.materialForRendering, out var materialCopy))
+            {
+                materialCopy = new Material(element.materialForRendering);
+                materialMappings.Add(element.materialForRendering, materialCopy);
+            }
+            
+            materialCopy.SetInt("unity_GUIZTestMode", (int)CompareFunction.Always);
+            element.material = materialCopy;
+        }
+        
         foreach (var shit in component.GetComponentsInChildren<TextMeshProUGUI>(true))
         {
             shit.m_fontMaterial = shit.CreateMaterialInstance(shit.m_sharedMaterial);
