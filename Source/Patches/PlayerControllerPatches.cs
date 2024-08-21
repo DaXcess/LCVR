@@ -1,4 +1,5 @@
-﻿using GameNetcodeStuff;
+﻿using System;
+using GameNetcodeStuff;
 using HarmonyLib;
 using LCVR.Assets;
 using LCVR.Input;
@@ -7,6 +8,7 @@ using LCVR.Player;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.XR;
@@ -308,8 +310,7 @@ internal static class PlayerControllerPatches
     }
 
     /// <summary>
-    /// Fix for water suffocation to be calculated from a predetermined offset instead of the camera position,
-    /// which fixes an exploit where being too tall prevents drowning
+    /// Fix for water suffocation to be calculated from a clamped offset, so that play area hacks won't affect drowning
     /// </summary>
     [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.SetFaceUnderwaterFilters))]
     [HarmonyTranspiler]
@@ -321,17 +322,16 @@ internal static class PlayerControllerPatches
             .Advance(-3)
             .RemoveInstructions(3)
             .InsertAndAdvance(new CodeInstruction(OpCodes.Call,
-                PropertyGetter(typeof(Component), nameof(Component.transform))))
-            .InsertAndAdvance(new CodeInstruction(OpCodes.Callvirt,
-                PropertyGetter(typeof(Transform), nameof(Transform.position))))
-            .InsertAndAdvance(new CodeInstruction(OpCodes.Ldc_R4, 0f))
-            .InsertAndAdvance(new CodeInstruction(OpCodes.Ldc_R4, 2.3f))
-            .InsertAndAdvance(new CodeInstruction(OpCodes.Ldc_R4, 0f))
-            .InsertAndAdvance(new CodeInstruction(OpCodes.Newobj,
-                Constructor(typeof(Vector3), [typeof(float), typeof(float), typeof(float)])))
-            .InsertAndAdvance(new CodeInstruction(OpCodes.Call,
-                Method(typeof(Vector3), "op_Addition", [typeof(Vector3), typeof(Vector3)])))
+                ((Func<PlayerControllerB, Vector3>)GetClampedCameraPosition).Method))
             .InstructionEnumeration();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static Vector3 GetClampedCameraPosition(PlayerControllerB player)
+        {
+            var actualHeight = player.transform.InverseTransformPoint(player.gameplayCamera.transform.position).y;
+            
+            return player.transform.position + Vector3.up * Mathf.Clamp(actualHeight, 0.5f, 2.35f);
+        }
     }
 }
 
