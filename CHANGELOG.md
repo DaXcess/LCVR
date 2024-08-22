@@ -27,6 +27,7 @@ Anyways here's the update go boil the creatures or something.
 - Fixed lights from collected items bleeding into the world
 - Fixed collected items being scannable in the UI
 - Fixed hangar levers not being able to be disabled in settings
+- Fixed parenting issues with spectator ghosts due to ternary operation order mistakes
 
 **Removals**:
 

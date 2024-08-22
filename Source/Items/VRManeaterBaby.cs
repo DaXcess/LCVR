@@ -11,6 +11,9 @@ internal class VRManEaterBaby : VRItem<CaveDwellerPhysicsProp>
     private ShakeDetector shakeBig;
     
     private Coroutine stopRockingCoroutine;
+    private Coroutine rockHardCoroutine;
+    
+    private int rockHardTicks;
     private bool isRockHard;
     
     private new void Awake()
@@ -59,11 +62,24 @@ internal class VRManEaterBaby : VRItem<CaveDwellerPhysicsProp>
 
         if (player.isGrabbingObjectAnimation || player.inTerminalMenu || player.inSpecialInteractAnimation)
             return;
-        
-        if (stopRockingCoroutine != null)
-            StopCoroutine(stopRockingCoroutine);
 
-        StartRocking(true);
+        // If already rocking hard, let every tick reset the stop timer
+        if (isRockHard)
+        {
+            if (stopRockingCoroutine != null)
+                StopCoroutine(stopRockingCoroutine);
+
+            StartRocking(true);
+
+            return;
+        }
+        
+        rockHardTicks++;
+
+        if (rockHardCoroutine != null)
+            return;
+
+        rockHardCoroutine = StartCoroutine(KeepRockingHard());
     }
 
     private void StartRocking(bool rockHard)
@@ -87,6 +103,22 @@ internal class VRManEaterBaby : VRItem<CaveDwellerPhysicsProp>
         item.caveDwellerScript.rockingBaby = 0;
         item.StopRockingBabyServerRpc();
         stopRockingCoroutine = null;
+    }
+
+    private IEnumerator KeepRockingHard()
+    {
+        yield return new WaitForSeconds(0.75f);
+
+        if (rockHardTicks > 5)
+        {
+            if (stopRockingCoroutine != null)
+                StopCoroutine(stopRockingCoroutine);
+
+            StartRocking(true);
+        }
+        
+        rockHardTicks = 0;
+        rockHardCoroutine = null;
     }
 
     protected override void OnUpdate()
