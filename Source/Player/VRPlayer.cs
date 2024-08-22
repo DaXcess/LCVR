@@ -549,20 +549,20 @@ public class VRPlayer : MonoBehaviour
             }));
         else
         {
-            var targetTransform = PlayerController.physicsParent ?? PlayerController.isInElevator
+            var parent = PlayerController.physicsParent ?? (PlayerController.isInElevator
                 ? PlayerController.playersManager.elevatorTransform
-                : PlayerController.playersManager.playersContainer;
-
+                : PlayerController.playersManager.playersContainer);
+            
             spectatorRigChannel.SendPacket(Serialization.Serialize(
-                new SpectatorRig()
+                new SpectatorRig
                 {
-                    headPosition = targetTransform.InverseTransformPoint(mainCamera.transform.position),
+                    headPosition = parent.InverseTransformPoint(mainCamera.transform.position),
                     headRotation = mainCamera.transform.eulerAngles,
 
-                    leftHandPosition = targetTransform.InverseTransformPoint(leftController.transform.position),
+                    leftHandPosition = parent.InverseTransformPoint(leftController.transform.position),
                     leftHandRotation = leftController.transform.eulerAngles,
 
-                    rightHandPosition = targetTransform.InverseTransformPoint(rightController.transform.position),
+                    rightHandPosition = parent.InverseTransformPoint(rightController.transform.position),
                     rightHandRotation = rightController.transform.eulerAngles,
 
                     parentedToShip = PlayerController.isInElevator,

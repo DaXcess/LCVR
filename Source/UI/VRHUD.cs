@@ -15,8 +15,8 @@ namespace LCVR.UI;
 
 public class VRHUD : MonoBehaviour
 {
-    // public static readonly int LAYER_TOPMOST = 31;
-    // public static readonly LayerMask MASK_TOPMOST = 1 << LAYER_TOPMOST;
+    // Cache for storing Materials for setting UI to be always on top
+    public static readonly Dictionary<Material, Material> materialMappings = [];
     
     private GameObject selfRed;
     private GameObject self;
@@ -435,8 +435,6 @@ public class VRHUD : MonoBehaviour
         MoveToFront(WorldInteractionCanvas);
         MoveToFront(objectScanner.transform);
     }
-
-    private static readonly Dictionary<Material, Material> materialMappings = [];
 
     private static void MoveToFront(Component component)
     {

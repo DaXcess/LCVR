@@ -481,16 +481,18 @@ public class VRNetPlayer : MonoBehaviour
         var leftHand = playerGhost.transform.Find("Hand.L");
         var rightHand = playerGhost.transform.Find("Hand.R");
 
-        var physicsParent = PlayerController.physicsParent ?? rig.parentedToShip
+        var parent = PlayerController.physicsParent ?? (rig.parentedToShip
             ? StartOfRound.Instance.elevatorTransform
-            : null;
+            : StartOfRound.Instance.playersContainer);
         
-        if (physicsParent != lastSyncedPhysicsParent)
+        if (parent != lastSyncedPhysicsParent)
         {
-            lastSyncedPhysicsParent = physicsParent;
+            lastSyncedPhysicsParent = parent;
             
-            playerGhost.transform.SetParent(physicsParent, true);
+            playerGhost.transform.SetParent(parent, true);
             playerGhost.transform.localPosition = Vector3.zero;
+            playerGhost.transform.localRotation = Quaternion.identity;
+            playerGhost.transform.localScale = Vector3.one;
         }
 
         head.localPosition = rig.headPosition;
