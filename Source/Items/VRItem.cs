@@ -23,11 +23,6 @@ public abstract class VRItem<T> : MonoBehaviour where T : GrabbableObject
     /// </summary>
     protected bool UpdateWhenPocketed { get; set; }
 
-    /// <summary>
-    /// Prevents the game from running LateUpdate calls on this item, which mess with the position and rotation of the object
-    /// </summary>
-    public bool CancelGameUpdate { get; protected set; }
-
     protected bool IsLocal { get; private set; }
 
     protected virtual void Awake()

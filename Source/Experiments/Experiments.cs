@@ -146,3 +146,65 @@ internal static class ExperimentalPatches
     }
 }
 #endif
+
+// TODO: Remove yes
+// [LCVRPatch]
+[HarmonyPatch]
+internal static class ItemOffsetEditorPatches
+{
+    private static Transform _offset;
+    private static Transform Offset =>
+        _offset == null ? _offset = new GameObject("VR Item Offset Editor").transform : _offset;
+
+    [HarmonyPatch(typeof(GrabbableObject), nameof(GrabbableObject.LateUpdate))]
+    [HarmonyPrefix]
+    private static bool OverrideItemOffset(GrabbableObject __instance)
+    {
+        return true;
+        
+        if (!Offset.gameObject.activeSelf)
+            return true;
+        
+        if (__instance.parentObject != null)
+        {
+            var tf = __instance.transform;
+            
+            tf.rotation = __instance.parentObject.rotation;
+            tf.Rotate(Offset.eulerAngles);
+            tf.position = __instance.parentObject.position + __instance.parentObject.rotation * Offset.position;
+        }
+        
+        if (__instance.radarIcon != null)
+        {
+            __instance.radarIcon.position = __instance.transform.position;
+        }
+
+        return false;
+    }
+    
+    [HarmonyPatch(typeof(CaveDwellerPhysicsProp), nameof(CaveDwellerPhysicsProp.LateUpdate))]
+    [HarmonyPrefix]
+    private static bool OverrideCaveDwellerItemOffset(CaveDwellerPhysicsProp __instance)
+    {
+        return true;
+        
+        if (!Offset.gameObject.activeSelf)
+            return true;
+        
+        if (__instance.caveDwellerScript.inSpecialAnimation && __instance.parentObject != null)
+        {
+            var tf = __instance.transform;
+            
+            tf.rotation = __instance.parentObject.rotation;
+            tf.Rotate(Offset.eulerAngles);
+            tf.position = __instance.parentObject.position + __instance.parentObject.rotation * Offset.position;
+        }
+        
+        if (__instance.radarIcon != null)
+        {
+            __instance.radarIcon.position = __instance.transform.position;
+        }
+
+        return false;
+    }
+}

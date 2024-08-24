@@ -110,15 +110,15 @@ internal static class HUDManagerPatches
     /// </summary>
     [HarmonyPatch(typeof(HUDManager), nameof(HUDManager.UpdateBoxesSpectateUI))]
     [HarmonyTranspiler]
-    [HarmonyDebug]
     private static IEnumerable<CodeInstruction> SpectatorBoxAlwaysOnTop(IEnumerable<CodeInstruction> instructions)
     {
         return new CodeMatcher(instructions)
             .MatchForward(false,
                 new CodeMatch(OpCodes.Call,
                     typeof(Object)
-                        .GetMethods(all).SingleOrDefault(method => method.ContainsGenericParameters && method.GetParameters().Length == 3 &&
-                                                                   method.GetParameters()[2].ParameterType == typeof(bool))!
+                        .GetMethods(all).SingleOrDefault(method =>
+                            method.ContainsGenericParameters && method.GetParameters().Length == 3 &&
+                            method.GetParameters()[2].ParameterType == typeof(bool))!
                         .MakeGenericMethod(typeof(GameObject))))
             .Advance(2)
             .InsertAndAdvance(
@@ -134,13 +134,13 @@ internal static class HUDManagerPatches
             {
                 if (element.materialForRendering == null)
                     continue;
-                
+
                 if (!VRHUD.materialMappings.TryGetValue(element.materialForRendering, out var materialCopy))
                 {
                     materialCopy = new Material(element.materialForRendering);
                     VRHUD.materialMappings.Add(element.materialForRendering, materialCopy);
                 }
-                
+
                 materialCopy.SetInt("unity_GUIZTestMode", (int)CompareFunction.Always);
                 element.material = materialCopy;
             }

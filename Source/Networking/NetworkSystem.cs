@@ -123,12 +123,8 @@ public class NetworkSystem : MonoBehaviour
 
     private void OnPlayerLeftSession(VoicePlayerState player)
     {
-        Logger.LogWarning($"Player left session: {player.Name}");
-        
         if (!playerIdByName.TryGetValue(player.Name, out var id))
             return;
-        
-        Logger.LogWarning($"Okay so that was player: {id}");
         
         if (players.TryGetValue(id, out var networkPlayer))
             Destroy(networkPlayer);

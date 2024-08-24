@@ -1,5 +1,5 @@
 ﻿using HarmonyLib;
-using LCVR.Items;
+using LCVR.Networking;
 using LCVR.Player;
 using UnityEngine;
 
@@ -33,26 +33,71 @@ internal static class ItemPatches
 internal static class UniversalItemPatches
 {
     /// <summary>
-    /// Prevents the built in LateUpdate if a VR item disables it
+    /// Handle setting custom VR item offsets, while still allowing non-VR offsets to function normally
     /// </summary>
     [HarmonyPatch(typeof(GrabbableObject), nameof(GrabbableObject.LateUpdate))]
     [HarmonyPrefix]
-    private static bool LateUpdatePrefix(GrabbableObject __instance)
+    private static bool ItemUpdateOffset(GrabbableObject __instance)
     {
-        if (VRItem<GrabbableObject>.itemCache.TryGetValue(__instance, out var item))
-            return !item.CancelGameUpdate;
+        return HandleUpdateItemOffset(__instance);
+    }
+    
+    /// <summary>
+    /// Cave creature is different so need a separate patch
+    /// </summary>
+    [HarmonyPatch(typeof(CaveDwellerPhysicsProp), nameof(CaveDwellerPhysicsProp.LateUpdate))]
+    [HarmonyPrefix]
+    private static bool ItemUpdateOffset(CaveDwellerPhysicsProp __instance)
+    {
+        return !__instance.caveDwellerScript.inSpecialAnimation || HandleUpdateItemOffset(__instance);
+    }
 
-        return true;
+    private static bool HandleUpdateItemOffset(GrabbableObject item)
+    {
+        var isLocalPlayer = item.playerHeldBy == StartOfRound.Instance.localPlayerController;
+        
+        // Don't set custom offset if local player is not in VR
+        if (isLocalPlayer && !VRSession.InVR)
+            return true;
+
+        // If the item isn't held, we don't care
+        if (item.playerHeldBy == null)
+            return true;
+
+        // Don't set custom offset if remote player is not in VR
+        if (!isLocalPlayer && !NetworkSystem.Instance.IsInVR((ushort)item.playerHeldBy.playerClientId))
+            return true;
+
+        // Prevent shovels from updating item offset as we're using our own implementation
+        if (item.GetType() == typeof(Shovel))
+            return false;
+        
+        // Don't set custom offset if item does not have a custom offset
+        if (!Player.Items.itemOffsets.TryGetValue(item.itemProperties.itemName, out var offset))
+            return true;
+
+        var (positionOffset, rotationOffset) = offset;
+
+        if (item.parentObject == null)
+            return false;
+
+        var tf = item.transform;
+
+        tf.rotation = item.parentObject.rotation;
+        tf.Rotate(rotationOffset);
+        tf.position = item.parentObject.position + item.parentObject.rotation * positionOffset;
+
+        return false;
     }
 
     /// <summary>
-    /// Updates radar position of the item if the original LateUpdate function got blocked
+    /// Make sure to set the radar icon position if needed
     /// </summary>
     [HarmonyPatch(typeof(GrabbableObject), nameof(GrabbableObject.LateUpdate))]
     [HarmonyPostfix]
-    private static void LateUpdatePostfix(GrabbableObject __instance, bool __runOriginal)
+    private static void PostfixSetRadarIcon(GrabbableObject __instance)
     {
-        if (!__runOriginal && __instance.radarIcon != null)
+        if (__instance.radarIcon != null)
             __instance.radarIcon.position = __instance.transform.position;
     }
 }

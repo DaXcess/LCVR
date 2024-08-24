@@ -6,7 +6,6 @@ using LCVR.UI;
 using Microsoft.MixedReality.Toolkit.Experimental.UI;
 using System.Collections.Generic;
 using System.Linq;
-using LCVR.Networking;
 using LCVR.Physics.Interactions.Car;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -358,8 +357,6 @@ public class VRSession : MonoBehaviour
 
         // Misc
         VolumeManager = Instantiate(AssetManager.VolumeManager, transform).GetComponent<Rendering.VolumeManager>();
-
-        Items.UpdateVRControlsItemsOffsets();
     }
 
     #region VR
