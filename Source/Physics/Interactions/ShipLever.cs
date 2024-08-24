@@ -69,7 +69,7 @@ public class ShipLever : MonoBehaviour
         animator = GetComponent<Animator>();
         lever = FindObjectOfType<StartMatchLever>();
         
-        channel = VRSession.Instance.NetworkSystem.CreateChannel(ChannelType.ShipLever);
+        channel = NetworkSystem.Instance.CreateChannel(ChannelType.ShipLever);
         channel.OnPacketReceived += OnOtherInteractWithLever;
     }
 
@@ -150,7 +150,7 @@ public class ShipLever : MonoBehaviour
     {
         var interacting = reader.ReadBoolean();
 
-        if (!VRSession.Instance.NetworkSystem.TryGetPlayer(other, out var player))
+        if (!NetworkSystem.Instance.TryGetPlayer(other, out var player))
             return;
 
         switch (interacting)

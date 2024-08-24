@@ -19,7 +19,7 @@ public class ChargeStation : MonoBehaviour, VRInteractable
     {
         trigger = GetComponentInParent<InteractTrigger>();
         charger = GetComponentInParent<ItemCharger>();
-        channel = VRSession.Instance.NetworkSystem.CreateChannel(ChannelType.ChargeStation);
+        channel = NetworkSystem.Instance.CreateChannel(ChannelType.ChargeStation);
 
         channel.OnPacketReceived += (_, _) =>
         {

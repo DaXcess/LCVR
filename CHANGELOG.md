@@ -19,6 +19,7 @@ Anyways here's the update go boil the creatures or something.
 **Changes**:
 
 - Reworked networking, might fix some things
+- Reworked IK, which now no longer needs to replace the player animator
 
 **Bug Fixes**:
 

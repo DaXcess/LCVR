@@ -22,16 +22,12 @@ internal static class AssetManager
     public static Material DefaultRayMat;
 
     public static Shader TMPAlwaysOnTop;
-    public static Material Fuck;
     
     public static InputActionAsset VRActions;
     public static InputActionAsset TrackingActions;
     public static InputActionAsset NullActions;
 
     public static RemappableControls RemappableControls;
-
-    public static RuntimeAnimatorController LocalVrMetarig;
-    public static RuntimeAnimatorController RemoteVrMetarig;
 
     public static Sprite GithubImage;
     public static Sprite KofiImage;
@@ -66,7 +62,6 @@ internal static class AssetManager
         NullActions = assetBundle.LoadAsset<InputActionAsset>("NullPlayerActions");
 
         TMPAlwaysOnTop = assetBundle.LoadAsset<Shader>("TextMeshPro Always On Top");
-        Fuck = assetBundle.LoadAsset<Material>("FShader");
         
         RemappableControls =
             assetBundle.LoadAsset<GameObject>("Remappable Controls").GetComponent<RemappableControls>();
@@ -79,9 +74,6 @@ internal static class AssetManager
         DiscordImage = assetBundle.LoadAsset<Sprite>("Discord");
         WarningImage = assetBundle.LoadAsset<Sprite>("Warning");
         SettingsImage = assetBundle.LoadAsset<Sprite>("lcsettings-icon");
-
-        LocalVrMetarig = assetBundle.LoadAsset<RuntimeAnimatorController>("metarig");
-        RemoteVrMetarig = assetBundle.LoadAsset<RuntimeAnimatorController>("metarigOtherPlayers");
 
         DoorLocked = assetBundle.LoadAsset<AudioClip>("doorlocked");
 

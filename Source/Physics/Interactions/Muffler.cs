@@ -17,7 +17,7 @@ public class MuffleManager
 
     public MuffleManager()
     {
-        channel = VRSession.Instance.NetworkSystem.CreateChannel(ChannelType.Muffle);
+        channel = NetworkSystem.Instance.CreateChannel(ChannelType.Muffle);
         channel.OnPacketReceived += OnOtherPlayerMuffle;
     }
 
@@ -35,7 +35,7 @@ public class MuffleManager
     {
         var muffled = reader.ReadBoolean();
         
-        if (!VRSession.Instance.NetworkSystem.TryGetPlayer(sender, out var player))
+        if (!NetworkSystem.Instance.TryGetPlayer(sender, out var player))
             return;
 
         if (!muffled)

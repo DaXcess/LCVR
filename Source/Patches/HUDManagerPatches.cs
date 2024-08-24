@@ -122,7 +122,7 @@ internal static class HUDManagerPatches
                         .MakeGenericMethod(typeof(GameObject))))
             .Advance(2)
             .InsertAndAdvance(
-                new CodeInstruction(OpCodes.Ldloc_0),
+                new CodeInstruction(OpCodes.Ldloc_1),
                 new CodeInstruction(OpCodes.Call, ((Action<GameObject>)SetAlwaysOnTop).Method)
             )
             .InstructionEnumeration();
@@ -130,17 +130,17 @@ internal static class HUDManagerPatches
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static void SetAlwaysOnTop(GameObject obj)
         {
-            foreach (var element in obj.GetComponentsInChildren<Image>(true))
+            foreach (var element in obj.GetComponentsInChildren<RawImage>(true))
             {
                 if (element.materialForRendering == null)
                     continue;
-
+                
                 if (!VRHUD.materialMappings.TryGetValue(element.materialForRendering, out var materialCopy))
                 {
                     materialCopy = new Material(element.materialForRendering);
                     VRHUD.materialMappings.Add(element.materialForRendering, materialCopy);
                 }
-
+                
                 materialCopy.SetInt("unity_GUIZTestMode", (int)CompareFunction.Always);
                 element.material = materialCopy;
             }

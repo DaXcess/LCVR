@@ -1,11 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Emit;
-using HarmonyLib;
+﻿using HarmonyLib;
 using LCVR.Items;
 using LCVR.Player;
 using UnityEngine;
-using static HarmonyLib.AccessTools;
 
 namespace LCVR.Patches;
 

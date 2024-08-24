@@ -39,7 +39,6 @@ public class VRSession : MonoBehaviour
 
     public VRPlayer LocalPlayer { get; private set; }
     public VRHUD HUD { get; private set; }
-    public NetworkSystem NetworkSystem { get; private set; }
 
     public Camera MainCamera { get; private set; }
     public Camera UICamera { get; private set; }
@@ -60,8 +59,6 @@ public class VRSession : MonoBehaviour
 
         MainCamera = StartOfRound.Instance.activeCamera;
         UICamera = GameObject.Find("UICamera").GetComponent<Camera>();
-
-        NetworkSystem = new GameObject("VR Network System").AddComponent<NetworkSystem>();
 
         if (InVR)
             InitializeVRSession();

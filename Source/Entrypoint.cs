@@ -19,8 +19,6 @@ internal static class Entrypoint
 
     private static IEnumerator Start()
     {
-        Logger.Log("Hello game, I am going to initialize now!");
-
         yield return new WaitUntil(() => StartOfRound.Instance.activeCamera != null);
 
         // Setup session manager (required for both VR and NonVR)

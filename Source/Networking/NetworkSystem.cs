@@ -21,6 +21,12 @@ public class NetworkSystem : MonoBehaviour
     /// Protocol Version, increase this every time a change is made that is not compatible with older versions
     private const ushort PROTOCOL_VERSION = 6;
     
+    private static NetworkSystem _instance;
+
+    public static NetworkSystem Instance => _instance == null
+        ? _instance = new GameObject("VR Network System").AddComponent<NetworkSystem>()
+        : _instance;
+    
     private DissonanceComms dissonance;
     private BaseClient<NfgoServer, NfgoClient, NfgoConn> network;
 
@@ -56,20 +62,26 @@ public class NetworkSystem : MonoBehaviour
     
     private void Awake()
     {
-        dissonance = FindObjectOfType<DissonanceComms>();
-        network = FindObjectOfType<NfgoCommsNetwork>().Client;
-        
         StartCoroutine(Initialize());
     }
 
     private void OnDestroy()
     {
+        if (!dissonance)
+            return;
+        
         dissonance.OnPlayerJoinedSession -= OnPlayerJoinedSession;
         dissonance.OnPlayerLeftSession -= OnPlayerLeftSession;
     }
 
+    // ReSharper disable Unity.PerformanceAnalysis
     private IEnumerator Initialize()
     {
+        yield return new WaitUntil(() => StartOfRound.Instance != null);
+        
+        dissonance = FindObjectOfType<DissonanceComms>();
+        network = FindObjectOfType<NfgoCommsNetwork>().Client;
+        
         // Wait until Dissonance Voip has been set up
         yield return new WaitUntil(() => LocalId.HasValue);
         
@@ -111,8 +123,12 @@ public class NetworkSystem : MonoBehaviour
 
     private void OnPlayerLeftSession(VoicePlayerState player)
     {
+        Logger.LogWarning($"Player left session: {player.Name}");
+        
         if (!playerIdByName.TryGetValue(player.Name, out var id))
             return;
+        
+        Logger.LogWarning($"Okay so that was player: {id}");
         
         if (players.TryGetValue(id, out var networkPlayer))
             Destroy(networkPlayer);
@@ -129,16 +145,16 @@ public class NetworkSystem : MonoBehaviour
         {
             // Create a list of clients to send handshakes to
             var targets = clients.Where(client => !subscribers.Contains(client.Key)).Select(client => client.Value);
-            
+
             // Send handshake request
             SendPacket(MessageType.HandshakeRequest, BitConverter.GetBytes(PROTOCOL_VERSION), targets.ToArray());
 
             yield return new WaitForSeconds(StartOfRound.Instance.inShipPhase ? 1 : 10);
         }
-        
+
         // ReSharper disable once IteratorNeverReturns
     }
-    
+
     #region PACKET SENDING
 
     internal void SendPacket(MessageType type, byte[] payload, params ClientInfo<NfgoConn?>[] targets)
@@ -330,7 +346,7 @@ internal static class NetworkSystemPatches
     [HarmonyPostfix]
     private static void ProcessReceivedPacket(ref ArraySegment<byte> data)
     {
-        if (VRSession.Instance?.NetworkSystem is not { } networkSystem || !networkSystem.Initialized)
+        if (!NetworkSystem.Instance.Initialized)
             return;
         
         try
@@ -351,7 +367,7 @@ internal static class NetworkSystemPatches
             var type = (NetworkSystem.MessageType)messageType;
             var sender = reader.ReadUInt16();
 
-            networkSystem.OnPacketReceived(type, sender, reader);
+            NetworkSystem.Instance.OnPacketReceived(type, sender, reader);
         }
         catch (Exception ex)
         {

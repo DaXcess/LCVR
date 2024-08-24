@@ -32,14 +32,14 @@ public class SteeringWheel : MonoBehaviour
     internal SteeringWheelSnapPoint[] snapPoints;
 
     private VRNetPlayer OtherDriver =>
-        VRSession.Instance.NetworkSystem.Players.FirstOrDefault(player =>
+        NetworkSystem.Instance.Players.FirstOrDefault(player =>
             player.PlayerController == vehicle.currentDriver);
 
     private bool ControlledByLocal => VRSession.InVR && vehicle.localPlayerInControl &&
                                       !Plugin.Config.DisableCarSteeringWheelInteraction.Value;
 
     private bool ControlledByOther => vehicle.currentDriver is not null &&
-                                      VRSession.Instance.NetworkSystem.Players.Any(player =>
+                                      NetworkSystem.Instance.Players.Any(player =>
                                           !player.AdditionalData.DisableSteeringWheel &&
                                           player.PlayerController == vehicle.currentDriver);
 
@@ -48,7 +48,7 @@ public class SteeringWheel : MonoBehaviour
         vehicle = GetComponentInParent<VehicleController>();
         wheelAnimator = GetComponentInParent<Animator>();
 
-        channel = VRSession.Instance.NetworkSystem.CreateChannel(ChannelType.VehicleSteeringWheel,
+        channel = NetworkSystem.Instance.CreateChannel(ChannelType.VehicleSteeringWheel,
             vehicle.NetworkObjectId);
         channel.OnPacketReceived += OnPacketReceived;
     }

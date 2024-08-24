@@ -29,14 +29,14 @@ public class GearStick : MonoBehaviour, VRInteractable
     private bool isHeld;
     private bool isHeldByLocal;
     private Transform localHand;
-    
+
     private void Awake()
     {
         vehicle = GetComponentInParent<VehicleController>();
-        channel = VRSession.Instance.NetworkSystem.CreateChannel(ChannelType.VehicleGearStick, vehicle.NetworkObjectId);
-        
+        channel = NetworkSystem.Instance.CreateChannel(ChannelType.VehicleGearStick, vehicle.NetworkObjectId);
+
         container = transform.parent.parent;
-        
+
         channel.OnPacketReceived += OnPacketReceived;
     }
 
@@ -138,7 +138,7 @@ public class GearStick : MonoBehaviour, VRInteractable
                     break;
 
                 // Check if player exists
-                if (!VRSession.Instance.NetworkSystem.TryGetPlayer(sender, out var player))
+                if (!NetworkSystem.Instance.TryGetPlayer(sender, out var player))
                     break;
 
                 isHeld = true;
@@ -166,7 +166,7 @@ public class GearStick : MonoBehaviour, VRInteractable
                     break;
 
                 // Check if player exists
-                if (!VRSession.Instance.NetworkSystem.TryGetPlayer(sender, out var player))
+                if (!NetworkSystem.Instance.TryGetPlayer(sender, out var player))
                     break;
 
                 isHeld = false;

@@ -1,7 +1,6 @@
 ﻿using System;
 using GameNetcodeStuff;
 using HarmonyLib;
-using LCVR.Assets;
 using LCVR.Input;
 using LCVR.Networking;
 using LCVR.Player;
@@ -152,15 +151,12 @@ internal static class PlayerControllerPatches
     /// </summary>
     [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.Update))]
     [HarmonyPostfix]
-    private static void ApplyVRAnimator(PlayerControllerB __instance)
+    private static void DontTouchArms(PlayerControllerB __instance)
     {
         if (__instance != GameNetworkManager.Instance.localPlayerController)
             return;
 
         __instance.localArmsMatchCamera = false;
-
-        if (__instance.isPlayerControlled)
-            __instance.playerBodyAnimator.runtimeAnimatorController = AssetManager.LocalVrMetarig;
     }
 
     /// <summary>
@@ -346,18 +342,18 @@ internal static class UniversalPlayerControllerPatches
     [HarmonyPostfix]
     private static void KeepRigConstraints(PlayerControllerB __instance)
     {
-        // Skip if local non-vr player or remote non-vr player
-        if ((!__instance.IsLocalPlayer() || !VRSession.InVR) &&
-            VRSession.Instance?.NetworkSystem is { } networkSystem &&
-            !networkSystem.IsInVR((ushort)__instance.playerClientId))
+        // Handle IK for local player
+        if (VRSession.InVR && __instance.IsLocalPlayer() && VRSession.Instance is {} session)
+        {
+            session.LocalPlayer.UpdateIKWeights();
             return;
+        }
 
-        __instance.cameraLookRig1.weight = 0.45f;
-        __instance.cameraLookRig2.weight = 1;
-        __instance.leftArmRigSecondary.weight = 0;
-        __instance.rightArmRigSecondary.weight = 0;
-        __instance.leftArmRig.weight = 1;
-        __instance.rightArmRig.weight = 1;
+        // Handle IK for remote player
+        if (NetworkSystem.Instance.TryGetPlayer((ushort)__instance.playerClientId, out var player))
+        {
+            player.UpdateIKWeights();
+        }
     }
 
     /// <summary>
@@ -402,7 +398,7 @@ internal static class UniversalPlayerControllerPatches
         if (__instance != StartOfRound.Instance.localPlayerController || !__instance.AllowPlayerDeath())
             return;
 
-        foreach (var player in VRSession.Instance.NetworkSystem.Players.Where(player =>
+        foreach (var player in NetworkSystem.Instance.Players.Where(player =>
                      player.PlayerController.isPlayerDead))
             player.ShowSpectatorGhost();
     }
@@ -438,7 +434,7 @@ internal static class UniversalPlayerControllerPatches
     [HarmonyPostfix]
     private static void OnPlayerRevived()
     {
-        foreach (var player in VRSession.Instance.NetworkSystem.Players)
+        foreach (var player in NetworkSystem.Instance.Players)
             player.HideSpectatorGhost();
     }
 }
