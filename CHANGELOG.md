@@ -15,6 +15,7 @@ Anyways here's the update go boil the creatures or something.
 - Added VR interactions to the new door variant
 - Added VR interactions to the new enemy
 - Added the ability to remove keybinds completely
+- Added custom item offsets to a wide range of items, making holding them look more natural
 
 **Changes**:
 

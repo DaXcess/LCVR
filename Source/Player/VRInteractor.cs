@@ -8,6 +8,7 @@ using UnityEngine.XR;
 
 namespace LCVR.Player;
 
+[DefaultExecutionOrder(-100)]
 public class VRInteractor : MonoBehaviour
 {
     private const int INTERACTABLE_OBJECT_MASK = 1 << 11;

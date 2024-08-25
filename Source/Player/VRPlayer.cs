@@ -711,6 +711,7 @@ public class VRPlayer : MonoBehaviour
         PlayerController.rightArmRigSecondary.weight = 0;
         PlayerController.playerBodyAnimator?.SetLayerWeight(
             PlayerController.playerBodyAnimator.GetLayerIndex("UpperBodyEmotes"), 0);
+        PlayerController.playerBodyAnimator?.SetBool("ClimbingLadder", false);
         
         // Vanilla Rigs
         PlayerController.leftArmRig.weight = 0;
