@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection.Emit;
 using GameNetcodeStuff;
 using HarmonyLib;
+using UnityEngine;
 
 namespace LCVR.Patches.Spectating;
 
@@ -151,5 +152,17 @@ internal static class SpectatorEnvironmentPatches
             return;
 
         StartOfRound.Instance.drowningTimer = 1;
+    }
+
+    /// <summary>
+    /// Prevent dead players from interacting with footballs
+    /// </summary>
+    [HarmonyPatch(typeof(SoccerBallProp), nameof(SoccerBallProp.ActivatePhysicsTrigger))]
+    [HarmonyPrefix]
+    private static bool DontTouchBallPatch(SoccerBallProp __instance, Collider other)
+    {
+        return !other.CompareTag("Player") ||
+               other.GetComponent<PlayerControllerB>() != StartOfRound.Instance.localPlayerController ||
+               !StartOfRound.Instance.localPlayerController.isPlayerDead;
     }
 }

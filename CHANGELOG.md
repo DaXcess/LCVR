@@ -1,3 +1,41 @@
+# 1.3.1
+
+## V60! <sub><sup><sub><sup><sub><sup><sub>v62
+
+V60 released barely a single week after me releasing v1.3.0. Very cool!
+
+Anyways here's the update go boil the creatures or something.
+
+**Additions**:
+
+- Added V62 support
+- Added VR support for the V60 cutscene
+- Added Pitch Locked Canvas (enabled by default) for a more pleasant UI experience
+- Added VR interactions to the elevator
+- Added VR interactions to the new door variant
+- Added VR interactions to the new enemy
+- Added the ability to remove keybinds completely
+- Added custom item offsets to a wide range of items, making holding them look more natural
+
+**Changes**:
+
+- Reworked networking, might fix some things
+- Reworked IK, which now no longer needs to replace the player animator
+
+**Bug Fixes**:
+
+- Fixed the spray paint and weed killer spraying offsets
+- Fixed an object leak in the networking system
+- Fixed lights from collected items bleeding into the world
+- Fixed collected items being scannable in the UI
+- Fixed hangar levers not being able to be disabled in settings
+- Fixed parenting issues with spectator ghosts due to ternary operation order mistakes
+
+**Removals**:
+
+- Removed V56 support
+- Removed the car from the main menu
+
 # 1.3.0
 
 ## Car!
@@ -46,7 +84,7 @@ Some bindings are blacklisted from being used, mostly the "touched" bindings on 
 - Added VR interactions for the car honk in the Company Cruiser
 - Added VR interactions for the ignition in the Company Cruiser
 - Added VR interactions for the eject button in the Company Cruiser
-- Added VR interactions for the gear stick in the Company VR
+- Added VR interactions for the gear stick in the Company Cruiser
 - Added VR interactions for the car magnet lever on the ship
 - Added configuration options to disable special car interactions
 - Added controls rebinding in the settings menu

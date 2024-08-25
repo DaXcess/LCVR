@@ -1,14 +1,13 @@
 ﻿using System;
 using GameNetcodeStuff;
 using HarmonyLib;
-using LCVR.Assets;
 using LCVR.Input;
 using LCVR.Networking;
 using LCVR.Player;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Reflection.Emit;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.XR;
@@ -152,15 +151,12 @@ internal static class PlayerControllerPatches
     /// </summary>
     [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.Update))]
     [HarmonyPostfix]
-    private static void ApplyVRAnimator(PlayerControllerB __instance)
+    private static void DontTouchArms(PlayerControllerB __instance)
     {
         if (__instance != GameNetworkManager.Instance.localPlayerController)
             return;
 
         __instance.localArmsMatchCamera = false;
-
-        if (__instance.isPlayerControlled)
-            __instance.playerBodyAnimator.runtimeAnimatorController = AssetManager.LocalVrMetarig;
     }
 
     /// <summary>
@@ -310,8 +306,7 @@ internal static class PlayerControllerPatches
     }
 
     /// <summary>
-    /// Fix for water suffocation to be calculated from a predetermined offset instead of the camera position,
-    /// which fixes an exploit where being too tall prevents drowning
+    /// Fix for water suffocation to be calculated from a clamped offset, so that play area hacks won't affect drowning
     /// </summary>
     [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.SetFaceUnderwaterFilters))]
     [HarmonyTranspiler]
@@ -323,17 +318,16 @@ internal static class PlayerControllerPatches
             .Advance(-3)
             .RemoveInstructions(3)
             .InsertAndAdvance(new CodeInstruction(OpCodes.Call,
-                PropertyGetter(typeof(Component), nameof(Component.transform))))
-            .InsertAndAdvance(new CodeInstruction(OpCodes.Callvirt,
-                PropertyGetter(typeof(Transform), nameof(Transform.position))))
-            .InsertAndAdvance(new CodeInstruction(OpCodes.Ldc_R4, 0f))
-            .InsertAndAdvance(new CodeInstruction(OpCodes.Ldc_R4, 2.3f))
-            .InsertAndAdvance(new CodeInstruction(OpCodes.Ldc_R4, 0f))
-            .InsertAndAdvance(new CodeInstruction(OpCodes.Newobj,
-                Constructor(typeof(Vector3), [typeof(float), typeof(float), typeof(float)])))
-            .InsertAndAdvance(new CodeInstruction(OpCodes.Call,
-                Method(typeof(Vector3), "op_Addition", [typeof(Vector3), typeof(Vector3)])))
+                ((Func<PlayerControllerB, Vector3>)GetClampedCameraPosition).Method))
             .InstructionEnumeration();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static Vector3 GetClampedCameraPosition(PlayerControllerB player)
+        {
+            var actualHeight = player.transform.InverseTransformPoint(player.gameplayCamera.transform.position).y;
+            
+            return player.transform.position + Vector3.up * Mathf.Clamp(actualHeight, 0.5f, 2.35f);
+        }
     }
 }
 
@@ -342,44 +336,38 @@ internal static class PlayerControllerPatches
 internal static class UniversalPlayerControllerPatches
 {
     /// <summary>
-    /// Update player animator
-    /// </summary>
-    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.Update))]
-    [HarmonyPostfix]
-    private static void UpdatePlayerRig(PlayerControllerB __instance)
-    {
-        if (__instance.IsOwner)
-            return;
-
-        if (DNet.TryGetPlayer((ushort)__instance.playerClientId, out _))
-        {
-            if (__instance.playerBodyAnimator.runtimeAnimatorController != AssetManager.RemoteVrMetarig)
-                __instance.playerBodyAnimator.runtimeAnimatorController = AssetManager.RemoteVrMetarig;
-        }
-        // Used to restore the original metarig if a VR player leaves and a non-vr players join in their place
-        else if (__instance.playerBodyAnimator.runtimeAnimatorController == AssetManager.RemoteVrMetarig)
-            __instance.playerBodyAnimator.runtimeAnimatorController =
-                __instance.playersManager.otherClientsAnimatorController;
-    }
-
-    /// <summary>
     /// Prevent the use of the secondary arm rigs, so that VR arms still freely move when inside the Company Cruiser
     /// </summary>
     [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.Update))]
     [HarmonyPostfix]
     private static void KeepRigConstraints(PlayerControllerB __instance)
     {
-        // Skip if local non-vr player or remote non-vr player
-        if ((!__instance.IsLocalPlayer() || !VRSession.InVR) &&
-            !DNet.TryGetPlayer((ushort)__instance.playerClientId, out _))
+        // Handle IK for local player
+        if (VRSession.InVR && __instance.IsLocalPlayer() && VRSession.Instance is {} session)
+        {
+            session.LocalPlayer.UpdateIKWeights();
             return;
+        }
 
-        __instance.cameraLookRig1.weight = 0.45f;
-        __instance.cameraLookRig2.weight = 1;
-        __instance.leftArmRigSecondary.weight = 0;
-        __instance.rightArmRigSecondary.weight = 0;
-        __instance.leftArmRig.weight = 1;
-        __instance.rightArmRig.weight = 1;
+        // Handle IK for remote player
+        if (NetworkSystem.Instance.TryGetPlayer((ushort)__instance.playerClientId, out var player))
+        {
+            player.UpdateIKWeights();
+        }
+    }
+
+    /// <summary>
+    /// Disable the EnterLadder animation to fix some clunkyness with holding items
+    /// </summary>
+    [HarmonyPatch(typeof(InteractTrigger), nameof(InteractTrigger.ladderClimbAnimation), MethodType.Enumerator)]
+    [HarmonyTranspiler]
+    private static IEnumerable<CodeInstruction> DisableLadderAnimation(IEnumerable<CodeInstruction> instructions)
+    {
+        return new CodeMatcher(instructions)
+            .MatchForward(false, new CodeMatch(OpCodes.Ldstr, "EnterLadder"))
+            .Advance(-3)
+            .RemoveInstructions(5)
+            .InstructionEnumeration();
     }
 
     /// <summary>
@@ -421,13 +409,12 @@ internal static class UniversalPlayerControllerPatches
     [HarmonyPostfix]
     private static void OnPlayerDeath(PlayerControllerB __instance)
     {
-        if (__instance != StartOfRound.Instance.localPlayerController)
+        if (__instance != StartOfRound.Instance.localPlayerController || !__instance.AllowPlayerDeath())
             return;
 
-        foreach (var player in DNet.Players.Where(player => player.PlayerController.isPlayerDead))
-        {
+        foreach (var player in NetworkSystem.Instance.Players.Where(player =>
+                     player.PlayerController.isPlayerDead))
             player.ShowSpectatorGhost();
-        }
     }
 
     /// <summary>
@@ -461,9 +448,7 @@ internal static class UniversalPlayerControllerPatches
     [HarmonyPostfix]
     private static void OnPlayerRevived()
     {
-        foreach (var player in DNet.Players)
-        {
+        foreach (var player in NetworkSystem.Instance.Players)
             player.HideSpectatorGhost();
-        }
     }
 }

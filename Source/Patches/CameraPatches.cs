@@ -15,7 +15,8 @@ public class CameraPatches
     [HarmonyPrefix]
     private static bool UpdateCameraTargetTexture(Camera __instance, ref RenderTexture value)
     {
-        if (SceneManager.GetActiveScene().name == "ColdOpen1" || StartOfRound.Instance.activeCamera == __instance)
+        if (SceneManager.GetActiveScene().name is "ColdOpen1" or "ColdOpen2" ||
+            StartOfRound.Instance.activeCamera == __instance)
             value = null;
 
         return true;

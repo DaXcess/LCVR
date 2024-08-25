@@ -23,7 +23,7 @@ internal static class DiversityPatches
     }
     
     /// <summary>
-    /// Disables the glitch fullscreen pass, which is incompatible with Dynamic Resolution in VR
+    /// Disables the glitch fullscreen pass, which is incompatible with Dynamic Resolution
     /// </summary>
     private static void DisableGlitchCustomPass()
     {

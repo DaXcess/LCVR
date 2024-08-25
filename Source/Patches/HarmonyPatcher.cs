@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using System;
 using System.Reflection;
+using LCVR.Experiments;
 
 namespace LCVR.Patches;
 
@@ -17,6 +18,12 @@ internal static class HarmonyPatcher
     public static void PatchVR()
     {
         Patch(vrPatcher, LCVRPatchTarget.VROnly);
+
+        if (!Plugin.Flags.HasFlag(Flags.ItemOffsetEditor))
+            return;
+
+        Logger.LogWarning("Item offset editor is enabled!");
+        vrPatcher.CreateClassProcessor(typeof(ItemOffsetEditorPatches)).Patch();
     }
 
     private static void Patch(Harmony patcher, LCVRPatchTarget target)

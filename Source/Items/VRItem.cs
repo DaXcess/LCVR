@@ -23,23 +23,29 @@ public abstract class VRItem<T> : MonoBehaviour where T : GrabbableObject
     /// </summary>
     protected bool UpdateWhenPocketed { get; set; }
 
-    /// <summary>
-    /// Prevents the game from running LateUpdate calls on this item, which mess with the position and rotation of the object
-    /// </summary>
-    public bool CancelGameUpdate { get; protected set; }
-
     protected bool IsLocal { get; private set; }
 
     protected virtual void Awake()
     {
-        item = GetComponent<T>();
-        player = item.playerHeldBy;
-        networkPlayer = player.GetComponent<VRNetPlayer>();
-        IsLocal = networkPlayer == null;
+        try
+        {
+            item = GetComponent<T>();
+            player = item.playerHeldBy;
+            networkPlayer = player.GetComponent<VRNetPlayer>();
+            IsLocal = networkPlayer == null;
 
-        itemCache.Add(item, this);
+            Logger.LogDebug(
+                $"VRItem[{GetType().Name}] (IsLocal: {IsLocal}) instantiated for item '{item.itemProperties.itemName}'");
 
-        Logger.LogDebug($"VRItem[{GetType().Name}] (IsLocal: {IsLocal}) instantiated for item '{item.itemProperties.itemName}'");
+            itemCache.Add(item, this);
+        }
+        catch
+        {
+            Logger.LogError(
+                $"Failed to create VRItem[{GetType().Name}], player probably joined through LateCompany or LobbyControl");
+
+            Destroy(this);
+        }
     }
 
     protected virtual void LateUpdate()

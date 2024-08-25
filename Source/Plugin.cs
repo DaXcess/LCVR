@@ -1,5 +1,4 @@
 ﻿using BepInEx;
-using BepInEx.Bootstrap;
 using LCVR.Assets;
 using LCVR.Patches;
 using System;
@@ -28,11 +27,11 @@ public class Plugin : BaseUnityPlugin
 {
     public const string PLUGIN_GUID = "io.daxcess.lcvr";
     public const string PLUGIN_NAME = "LCVR";
-    public const string PLUGIN_VERSION = "1.3.0";
+    public const string PLUGIN_VERSION = "1.3.1";
 
     private readonly string[] GAME_ASSEMBLY_HASHES =
     [
-        "A6B2633FE729B9C147466CD4A92168872EF789620EB29FF723A33937837AC9B0", // V56
+        "976BBA44E5F05AC3915A92FA26822F6F7E67BD52F4FFD0371190EF865460F4FB", // V62
     ];
 
     public new static Config Config { get; private set; }
@@ -79,9 +78,14 @@ public class Plugin : BaseUnityPlugin
             }
         }
 
-        if (Environment.GetCommandLineArgs().Contains("--lcvr-debug-interactables"))
+        var args = Environment.GetCommandLineArgs();
+        
+        if (args.Contains("--lcvr-debug-interactables"))
             Flags |= Flags.InteractableDebug;
 
+        if (args.Contains("--lcvr-item-offset-editor"))
+            Flags |= Flags.ItemOffsetEditor;
+        
         // Verify game assembly to detect compatible version
         var allowUnverified = Environment.GetCommandLineArgs().Contains("--lcvr-skip-checksum");
 
@@ -336,4 +340,5 @@ public enum Flags
     RestartRequired = 1 << 1,
     InvalidGameAssembly = 1 << 2,
     InteractableDebug = 1 << 3,
+    ItemOffsetEditor = 1 << 4,
 }

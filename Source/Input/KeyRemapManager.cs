@@ -83,6 +83,8 @@ public class KeyRemapManager : MonoBehaviour
         foreach (var remappableKey in AssetManager.RemappableControls.controls)
         {
             var obj = Instantiate(panel.keyRemapSlotPrefab, panel.keyRemapContainer);
+            var discard = Instantiate(AssetManager.KeybindDiscard, obj.transform);
+            
             panel.keySlots.Add(obj);
 
             obj.GetComponentInChildren<TextMeshProUGUI>().text = remappableKey.controlName;
@@ -107,6 +109,14 @@ public class KeyRemapManager : MonoBehaviour
             position = new Vector2(panel.horizontalOffset * panel.currentHorizontal,
                 -panel.verticalOffset * (panel.currentVertical + vertOffset));
 
+            // Binding reset
+            discard.GetComponent<Button>().onClick.AddListener(() =>
+            {
+                option.rebindableAction.action.ApplyBindingOverride(option.rebindableActionBindingIndex, ""); 
+                
+                ReloadBindings();
+            });
+            
             controlsList.Add((remappableKey, option));
         }
 

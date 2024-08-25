@@ -25,8 +25,6 @@ internal class VRShovelItem : VRItem<Shovel>
     {
         base.Awake();
 
-        CancelGameUpdate = true;
-
         if (!IsLocal)
             return;
 

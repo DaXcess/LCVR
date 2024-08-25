@@ -19,7 +19,7 @@ public class VRController : MonoBehaviour
     private static readonly int cancelHolding = Animator.StringToHash("cancelHolding");
     private static readonly int @throw = Animator.StringToHash("Throw");
 
-    private static readonly HashSet<string> disabledInteractTriggers = [];
+    private static readonly HashSet<string> DisabledInteractTriggers = [];
 
     private static InputAction GrabAction => Actions.Instance["Interact"];
     private static PlayerControllerB PlayerController => StartOfRound.Instance.localPlayerController;
@@ -84,17 +84,17 @@ public class VRController : MonoBehaviour
 
     public static void ResetDisabledInteractTriggers()
     {
-        disabledInteractTriggers.Clear();
+        DisabledInteractTriggers.Clear();
     }
 
     public static void EnableInteractTrigger(string objectName)
     {
-        disabledInteractTriggers.Remove(objectName);
+        DisabledInteractTriggers.Remove(objectName);
     }
 
     public static void DisableInteractTrigger(string objectName)
     {
-        disabledInteractTriggers.Add(objectName);
+        DisabledInteractTriggers.Add(objectName);
     }
 
     public void EnableDebugInteractorVisual(bool enabled = true)
@@ -246,9 +246,9 @@ public class VRController : MonoBehaviour
                     return;
 
                 // Ignore disabled triggers (like ship lever, charging station, etc)
-                if (disabledInteractTriggers.Contains(component.gameObject.name))
+                if (DisabledInteractTriggers.Contains(component.gameObject.name))
                     return;
-
+                
                 if (VRSession.Instance.LocalPlayer.PlayerController.isPlayerDead)
                 {
                     if (component == null)
@@ -300,7 +300,7 @@ public class VRController : MonoBehaviour
                     return;
 
                 // Ignore disabled triggers (like ship lever, charging station, etc)
-                if (disabledInteractTriggers.Contains(hit.collider.gameObject.name))
+                if (DisabledInteractTriggers.Contains(hit.collider.gameObject.name))
                     return;
 
                 VRSession.Instance.HUD.UpdateInteractCanvasPosition(position);
@@ -320,7 +320,7 @@ public class VRController : MonoBehaviour
                     var component = hit.collider.gameObject.GetComponent<GrabbableObject>();
 
                     if (!GameNetworkManager.Instance.gameHasStarted &&
-                        !component.itemProperties.canBeGrabbedBeforeGameStart)
+                        !component.itemProperties.canBeGrabbedBeforeGameStart && StartOfRound.Instance.testRoom == null)
                     {
                         CursorTip = "(Cannot hold until ship has landed)";
                         return;
@@ -358,7 +358,7 @@ public class VRController : MonoBehaviour
             if (PlayerController.twoHanded || PlayerController.sinkingValue > 0.73f) return;
 
             // Ignore disabled triggers (like ship lever, charging station, etc)
-            if (disabledInteractTriggers.Contains(hit.collider.gameObject.name))
+            if (DisabledInteractTriggers.Contains(hit.collider.gameObject.name))
                 return;
 
             GrabItem(hit.collider.transform.gameObject.GetComponent<GrabbableObject>());
@@ -370,7 +370,8 @@ public class VRController : MonoBehaviour
         PlayerController.currentlyGrabbingObject = item;
 
         if (!GameNetworkManager.Instance.gameHasStarted &&
-            !PlayerController.currentlyGrabbingObject.itemProperties.canBeGrabbedBeforeGameStart)
+            !PlayerController.currentlyGrabbingObject.itemProperties.canBeGrabbedBeforeGameStart &&
+            StartOfRound.Instance.testRoom == null)
             return;
 
         PlayerController.grabInvalidated = false;

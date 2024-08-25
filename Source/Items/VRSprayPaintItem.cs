@@ -1,9 +1,12 @@
-﻿using LCVR.Player;
+﻿using LCVR.Input;
+using LCVR.Player;
 
 namespace LCVR.Items;
 
 internal class VRSprayPaintItem : VRItem<SprayPaintItem>
 {
+    private ShakeDetector shake;
+    
     private new void Awake()
     {
         base.Awake();
@@ -11,13 +14,14 @@ internal class VRSprayPaintItem : VRItem<SprayPaintItem>
         if (!IsLocal)
             return;
 
-        VRSession.Instance.MotionDetector.onShake.AddListener(OnShakeMotion);
+        shake = new ShakeDetector(VRSession.Instance.LocalPlayer.PrimaryController.transform, 0.035f, true);
+        shake.onShake += OnShakeMotion;
     }
 
     private void OnDestroy()
     {
         if (IsLocal)
-            VRSession.Instance.MotionDetector.onShake.RemoveListener(OnShakeMotion);
+            shake.onShake -= OnShakeMotion;
     }
 
     private void OnShakeMotion()
@@ -34,5 +38,6 @@ internal class VRSprayPaintItem : VRItem<SprayPaintItem>
 
     protected override void OnUpdate()
     {
+        shake.Update();
     }
 }

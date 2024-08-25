@@ -20,7 +20,7 @@ public class Config(ConfigFile file)
     public ConfigEntry<bool> EnableDynamicResolution { get; } = file.Bind("Performance", "EnableDynamicResolution", false, "Whether or not dynamic resolution should be enabled. Required for most of these settings to have an effect.");
     public ConfigEntry<DynamicResUpscaleFilter> DynamicResolutionUpscaleFilter { get; } = file.Bind("Performance", "DynamicResolutionUpscaleFilter", DynamicResUpscaleFilter.EdgeAdaptiveScalingUpres, new ConfigDescription("The filter/algorithm that will be used to perform dynamic resolution upscaling. Defaulted to FSR (Edge Adaptive Scaling).", new AcceptableValueEnum<DynamicResUpscaleFilter>()));
     public ConfigEntry<float> DynamicResolutionPercentage { get; } = file.Bind("Performance", "DynamicResolutionPercentage", 80f, new ConfigDescription("The percentage of resolution to scale the game down to. The lower the value, the harder the upscale filter has to work which will result in quality loss.", new AcceptableValueRange<float>(0, 100)));
-    public ConfigEntry<float> CameraResolution { get; } = file.Bind("Performance", "CameraResolution", 0.75f, new ConfigDescription("This setting configures the resolution scale of the game, lower values are more performant, but will make the game look worse. From around 0.8 the difference is negligible (on a Quest 2, with dynamic resolution disabled).", new AcceptableValueRange<float>(0.05f, 1f)));
+    public ConfigEntry<float> CameraResolution { get; } = file.Bind("Performance", "CameraResolution", 0.75f, new ConfigDescription("This setting configures the resolution scale of the game, lower values are more performant, but will make the game look worse. From around 0.8 the difference is negligible (on a Quest 2, with dynamic resolution disabled).", new AcceptableValueRange<float>(0.05f, 1.5f)));
     public ConfigEntry<bool> DisableVolumetrics { get; } = file.Bind("Performance", "DisableVolumetrics", false, "Disables volumetrics in the game, which significantly improves performance, but removes all fog and may be considered cheating.");
 
     // Input configuration
@@ -33,6 +33,7 @@ public class Config(ConfigFile file)
 
     // UI configuration
 
+    public ConfigEntry<bool> EnablePitchLockedCanvas { get; } = file.Bind("UI", "EnablePitchLockedCanvas", true, "Whether most of the camera-locked UI elements should only (smoothly) rotate on the Y axis, instead of being stuck on your face.");
     public ConfigEntry<bool> DisableArmHUD { get; } = file.Bind("UI", "DisableArmHUD", false, "Removes the HUD from the arms and displays them in front of the camera.");
     public ConfigEntry<float> HUDOffsetX { get; } = file.Bind("UI", "OffsetX", 0f, "The x offset of the HUD that was placed on the camera instead of the arms. Requires the arm HUD to be disabled.");
     public ConfigEntry<float> HUDOffsetY { get; } = file.Bind("UI", "OffsetY", 0f, "The y offset of the HUD that was placed on the camera instead of the arms. Requires the arm HUD to be disabled.");
@@ -61,7 +62,8 @@ public class Config(ConfigFile file)
     public ConfigEntry<bool> DisableHangarLeverInteraction { get; } = file.Bind("Interaction", "DisableHangarLeverInteraction", false, "Disable needing to physically pull the lever for the big doors on Artiface");
     public ConfigEntry<bool> DisableMuffleInteraction { get; } = file.Bind("Interaction", "DisableMuffleInteraction", false, "Disables the self-muffling feature, which makes it so that holding your hand in front of your mouth will no longer make you inaudible to enemies.");
     public ConfigEntry<bool> DisableFaceInteractions { get; } = file.Bind("Interaction", "DisableFaceInteractions", false, "Disables the functionality to hold certain items up to your face to use them.");
-
+    public ConfigEntry<bool> DisableElevatorButtonInteraction { get; } = file.Bind("Interaction", "DisableElevatorButtonInteraction", false, "Disables needing to physically press the elevator buttons");
+    
     // Car interaction configuration
 
     public ConfigEntry<bool> DisableCarSteeringWheelInteraction { get; } = file.Bind("Car", "DisableCarSteeringWheelInteraction", false, "Disables the need to physically steer the Company Cruiser");

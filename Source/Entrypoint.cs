@@ -1,7 +1,6 @@
 ﻿using HarmonyLib;
 using UnityEngine;
 using System.Collections;
-using LCVR.Networking;
 using LCVR.Patches;
 using LCVR.Player;
 
@@ -20,21 +19,19 @@ internal static class Entrypoint
 
     private static IEnumerator Start()
     {
-        Logger.Log("Hello game, I am going to initialize now!");
-
         yield return new WaitUntil(() => StartOfRound.Instance.activeCamera != null);
 
         // Setup session manager (required for both VR and NonVR)
         new GameObject("LCVR Session Manager").AddComponent<VRSession>();
 
         // Setup Dissonance for VR movement comms
-        yield return DNet.Initialize();
+        // yield return DNet.Initialize();
     }
 
     [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.OnDestroy))]
     [HarmonyPostfix]
     private static void OnGameLeave()
     {
-        DNet.Shutdown();
+        // DNet.Shutdown();
     }
 }

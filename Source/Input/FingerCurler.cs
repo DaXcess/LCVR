@@ -84,9 +84,9 @@ public class FingerCurler
         }
     }
 
-    internal DNet.Fingers GetCurls()
+    internal Fingers GetCurls()
     {
-        return new DNet.Fingers()
+        return new Fingers()
         {
             thumb = (byte)(thumbFinger.curl * 255f),
             index = (byte)(indexFinger.curl * 255f),
@@ -96,7 +96,7 @@ public class FingerCurler
         };
     }
 
-    internal void SetCurls(DNet.Fingers fingers)
+    internal void SetCurls(Fingers fingers)
     {
         thumbFinger.curl = fingers.thumb / 255f;
         indexFinger.curl = fingers.index / 255f;

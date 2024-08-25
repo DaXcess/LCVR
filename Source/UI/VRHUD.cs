@@ -1,8 +1,10 @@
-﻿using LCVR.Assets;
+﻿using System.Collections.Generic;
+using LCVR.Assets;
 using LCVR.Player;
 using Microsoft.MixedReality.Toolkit.Experimental.UI;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.UI;
 using UnityEngine.XR.Interaction.Toolkit.UI;
@@ -13,6 +15,9 @@ namespace LCVR.UI;
 
 public class VRHUD : MonoBehaviour
 {
+    // Cache for storing Materials for setting UI to be always on top
+    public static readonly Dictionary<Material, Material> materialMappings = [];
+    
     private GameObject selfRed;
     private GameObject self;
     private GameObject sprintMeter;
@@ -26,24 +31,86 @@ public class VRHUD : MonoBehaviour
 
     private GameObject spectatorLight;
     
-    public Canvas Canvas { get; private set; }
+    /// <summary>
+    /// The "Face" canvas is a canvas that simulates a screen-space canvas by always being stuck in front of the camera,
+    /// regardless of camera rotation
+    /// </summary>
+    public Canvas FaceCanvas { get; private set; }
+    
+    /// <summary>
+    /// The pitch-locked canvas is a canvas that only smoothly rotates on the Y axis, which might be more pleasant for
+    /// some users
+    /// </summary>
+    public Canvas PitchLockedCanvas { get; private set; }
+    
+    /// <summary>
+    /// The world interaction canvas is the canvas used for showing tooltips and icons on interactable items
+    /// </summary>
     public Canvas WorldInteractionCanvas { get; private set; }
-    public Canvas SpectateCanvas { get; private set; }
+    
+    /// <summary>
+    /// The pause menu screen, which is strategically placed very far below the map as to not interfere with anything.
+    /// </summary>
+    public Canvas PauseMenuCanvas { get; private set; }
+    
+    /// <summary>
+    /// The canvas used for displaying UI elements on or near the left hand
+    /// </summary>
     public Canvas LeftHandCanvas { get; private set; }
+    
+    /// <summary>
+    /// The canvas used for displaying UI elements on or near the right hand
+    /// </summary>
     public Canvas RightHandCanvas { get; private set; }
 
+    /// <summary>
+    /// The keyboard that is used within the pause menu
+    /// </summary>
     public NonNativeKeyboard MenuKeyboard { get; private set; }
+    
+    /// <summary>
+    /// The keyboard that is used within the Terminal
+    /// </summary>
     public NonNativeKeyboard TerminalKeyboard { get; internal set; }
     
     private void Awake()
     {
         // Create canvasses
-        WorldInteractionCanvas = new GameObject("World Interaction Canvas").AddComponent<Canvas>();
+        WorldInteractionCanvas = new GameObject("World Interaction Canvas")
+        {
+            transform =
+            {
+                localScale = Vector3.one * 0.0066f
+            }
+        }.AddComponent<Canvas>();
         WorldInteractionCanvas.worldCamera = VRSession.Instance.MainCamera;
         WorldInteractionCanvas.renderMode = RenderMode.WorldSpace;
-        WorldInteractionCanvas.transform.localScale = Vector3.one * 0.0066f;
-        WorldInteractionCanvas.gameObject.layer = LayerMask.NameToLayer("UI");
+        WorldInteractionCanvas.sortingOrder = 1;
 
+        FaceCanvas = new GameObject("Face VR Canvas")
+        {
+            transform =
+            {
+                parent = transform,
+                localScale = Vector3.one * 0.0007f
+            }
+        }.AddComponent<Canvas>();
+        FaceCanvas.worldCamera = VRSession.Instance.MainCamera;
+        FaceCanvas.renderMode = RenderMode.WorldSpace;
+        FaceCanvas.sortingOrder = 1;
+        
+        PitchLockedCanvas = new GameObject("Pitch Locked VR Canvas")
+        {
+            transform =
+            {
+                parent = transform,
+                localScale = Vector3.one * 0.0007f
+            }
+        }.AddComponent<Canvas>();
+        PitchLockedCanvas.worldCamera = VRSession.Instance.MainCamera;
+        PitchLockedCanvas.renderMode = RenderMode.WorldSpace;
+        PitchLockedCanvas.sortingOrder = 1;
+        
         var xOffset = Plugin.Config.HUDOffsetX.Value;
         var yOffset = Plugin.Config.HUDOffsetY.Value;
 
@@ -67,11 +134,7 @@ public class VRHUD : MonoBehaviour
             RightHandCanvas.transform.localPosition = new Vector3(0, 0, 0);
             RightHandCanvas.transform.localRotation = Quaternion.Euler(0, 0, 0);
         }
-
-        Canvas = gameObject.AddComponent<Canvas>();
-        Canvas.worldCamera = VRSession.Instance.MainCamera;
-        Canvas.renderMode = RenderMode.WorldSpace;
-
+        
         // Flat Canvas: Add tracked graphic raycaster
         GameObject.Find("Systems").Find("UI/Canvas").AddComponent<TrackedDeviceGraphicRaycaster>();
 
@@ -85,10 +148,11 @@ public class VRHUD : MonoBehaviour
 
         var globalScanInfo = GameObject.Find("GlobalScanInfo");
 
-        globalScanInfo.transform.SetParent(transform, false);
-        globalScanInfo.transform.localPosition = Vector3.zero;
+        globalScanInfo.transform.SetParent(PitchLockedCanvas.transform, false);
+        globalScanInfo.transform.localPosition =
+            Plugin.Config.EnablePitchLockedCanvas.Value ? Vector3.down * 150 : Vector3.zero;
         globalScanInfo.transform.localRotation = Quaternion.identity;
-        globalScanInfo.transform.localScale = Vector3.one;
+        globalScanInfo.transform.localScale = Vector3.one * (Plugin.Config.EnablePitchLockedCanvas.Value ? 1.2f : 1);
 
         gameObject.AddComponent<ObjectScanner>();
 
@@ -96,17 +160,6 @@ public class VRHUD : MonoBehaviour
 
         var cursor = GameObject.Find("PlayerCursor");
         cursor.transform.SetParent(WorldInteractionCanvas.transform, false);
-
-        foreach (var image in cursor.GetComponentsInChildren<Image>())
-        {
-            image.material = AssetManager.AlwaysOnTopMat;
-        }
-
-        foreach (var text in cursor.GetComponentsInChildren<TextMeshProUGUI>())
-        {
-            text.fontSharedMaterial = new Material(text.fontSharedMaterial);
-            text.isOverlay = true;
-        }
 
         // SelfRed, Self, SprintMeter, RedGlowBodyParts, WeightUI, PTT: Attach to left hand (unless disabled)
         selfRed = GameObject.Find("SelfRed");
@@ -118,12 +171,12 @@ public class VRHUD : MonoBehaviour
 
         if (Plugin.Config.DisableArmHUD.Value)
         {
-            selfRed.transform.SetParent(transform, false);
-            self.transform.SetParent(transform, false);
-            sprintMeter.transform.SetParent(transform, false);
-            redGlowBodyParts.transform.SetParent(transform, false);
-            weightUi.transform.SetParent(transform, false);
-            pttIcon.transform.SetParent(transform, false);
+            selfRed.transform.SetParent(FaceCanvas.transform, false);
+            self.transform.SetParent(FaceCanvas.transform, false);
+            sprintMeter.transform.SetParent(FaceCanvas.transform, false);
+            redGlowBodyParts.transform.SetParent(FaceCanvas.transform, false);
+            weightUi.transform.SetParent(FaceCanvas.transform, false);
+            pttIcon.transform.SetParent(FaceCanvas.transform, false);
 
             selfRed.transform.localPosition =
                 self.transform.localPosition =
@@ -191,7 +244,7 @@ public class VRHUD : MonoBehaviour
 
         if (Plugin.Config.DisableArmHUD.Value)
         {
-            clock.transform.SetParent(transform, false);
+            clock.transform.SetParent(FaceCanvas.transform, false);
             clock.transform.localPosition = new Vector3(xOffset, yOffset, 0);
             clock.transform.localRotation = Quaternion.identity;
             clock.transform.localScale = Vector3.one;
@@ -209,7 +262,7 @@ public class VRHUD : MonoBehaviour
 
         if (Plugin.Config.DisableArmHUD.Value)
         {
-            battery.transform.SetParent(transform, false);
+            battery.transform.SetParent(FaceCanvas.transform, false);
             battery.transform.localPosition = new Vector3(-324 + xOffset, 164 + yOffset, 0);
             battery.transform.localRotation = Quaternion.identity;
             battery.transform.localScale = Vector3.one * 2;
@@ -240,7 +293,7 @@ public class VRHUD : MonoBehaviour
 
         if (Plugin.Config.DisableArmHUD.Value)
         {
-            inventory.transform.SetParent(transform, false);
+            inventory.transform.SetParent(FaceCanvas.transform, false);
             inventory.transform.localPosition = new Vector3(91 + xOffset, -185 + yOffset, 0);
             inventory.transform.localRotation = Quaternion.identity;
         }
@@ -255,37 +308,43 @@ public class VRHUD : MonoBehaviour
         // Special HUD: In front of eyes
         var specialHud = GameObject.Find("SpecialHUDGraphics");
 
-        specialHud.transform.SetParent(transform, false);
+        specialHud.transform.SetParent(PitchLockedCanvas.transform, false);
         specialHud.transform.localPosition = Vector3.zero;
         specialHud.transform.localRotation = Quaternion.identity;
         specialHud.transform.localScale = Vector3.one;
 
         var hintPanel = GameObject.Find("HintPanelContainer");
 
-        hintPanel.transform.localPosition = new Vector3(0, -17, 8);
+        hintPanel.transform.localPosition = Plugin.Config.EnablePitchLockedCanvas.Value
+            ? new Vector3(0, -375, 8)
+            : new Vector3(0, -17, 8);
         hintPanel.transform.localRotation = Quaternion.identity;
         hintPanel.transform.localScale = Vector3.one;
 
         var globalNotification = GameObject.Find("GlobalNotification");
 
-        globalNotification.transform.localPosition = new Vector3(-188, -72, 8);
+        globalNotification.transform.localPosition = Plugin.Config.EnablePitchLockedCanvas.Value
+            ? new Vector3(-188, -375, 8)
+            : new Vector3(-188, -72, 8);
         globalNotification.transform.localScale = Vector3.one;
 
         // Special Graphics: In front of eyes
         var specialGraphics = GameObject.Find("SpecialGraphics");
 
-        specialGraphics.transform.SetParent(transform, false);
+        specialGraphics.transform.SetParent(PitchLockedCanvas.transform, false);
         specialGraphics.transform.localPosition = Vector3.zero;
         specialGraphics.transform.localRotation = Quaternion.identity;
         specialGraphics.transform.localScale = Vector3.one;
 
         specialGraphics.Find("SinkingUnderCover").SetActive(false);
         specialGraphics.Find("ScrapItemInfo").transform.localPosition = new Vector3(-90, -6, 0);
+        specialGraphics.Find("SystemNotification").transform.localPosition =
+            Plugin.Config.EnablePitchLockedCanvas.Value ? Vector3.down * 250 : Vector3.zero;
 
         // Cinematic Graphics (Planet description)
         var cinematicGraphics = GameObject.Find("CinematicGraphics");
 
-        cinematicGraphics.transform.SetParent(transform, false);
+        cinematicGraphics.transform.SetParent(PitchLockedCanvas.transform, false);
         cinematicGraphics.transform.localPosition = new Vector3(-270, -200, 0);
         cinematicGraphics.transform.localRotation = Quaternion.Euler(0, -9.3337f, 0);
         cinematicGraphics.transform.localScale = Vector3.one;
@@ -293,16 +352,16 @@ public class VRHUD : MonoBehaviour
         // Dialogue Box: In front of eyes
         var dialogueBox = GameObject.Find("DialogueBox").transform;
 
-        dialogueBox.SetParent(transform, false);
-        dialogueBox.localPosition = Vector3.zero;
+        dialogueBox.SetParent(PitchLockedCanvas.transform, false);
+        dialogueBox.localPosition = Plugin.Config.EnablePitchLockedCanvas.Value ? Vector3.down * 250 : Vector3.zero;
         dialogueBox.localRotation = Quaternion.identity;
-        dialogueBox.localScale = Vector3.one;
+        dialogueBox.localScale = Vector3.one * 1.5f;
 
         // Endgame Stats: In front of eyes
         var endgameStats = GameObject.Find("EndgameStats").transform;
         var endgameStatsContainer = new GameObject("EndgameStatsScaleContainer").transform;
 
-        endgameStatsContainer.SetParent(transform, false);
+        endgameStatsContainer.SetParent(PitchLockedCanvas.transform, false);
         endgameStatsContainer.localPosition = Vector3.zero;
         endgameStatsContainer.localRotation = Quaternion.identity;
         endgameStatsContainer.localScale = Vector3.one * 1.4f;
@@ -314,7 +373,7 @@ public class VRHUD : MonoBehaviour
         // Loading Screen: In front of eyes
         var loadingScreen = GameObject.Find("LoadingText");
 
-        loadingScreen.transform.SetParent(transform, false);
+        loadingScreen.transform.SetParent(FaceCanvas.transform, false);
         loadingScreen.transform.localPosition = Vector3.zero;
         loadingScreen.transform.localRotation = Quaternion.identity;
         loadingScreen.transform.localScale = Vector3.one;
@@ -326,7 +385,7 @@ public class VRHUD : MonoBehaviour
         // Fired screen: In front of eyes
         var firedScreen = GameObject.Find("GameOverScreen");
 
-        firedScreen.transform.SetParent(transform, false);
+        firedScreen.transform.SetParent(FaceCanvas.transform, false);
         firedScreen.transform.localPosition = Vector3.zero;
         firedScreen.transform.localRotation = Quaternion.identity;
         firedScreen.transform.localScale = Vector3.one;
@@ -337,8 +396,9 @@ public class VRHUD : MonoBehaviour
         // Death/spectator screen: In front of eyes
         deathScreen = GameObject.Find("Systems/UI/Canvas/DeathScreen");
 
-        deathScreen.transform.SetParent(transform, false);
-        deathScreen.transform.localPosition = Vector3.zero;
+        deathScreen.transform.SetParent(PitchLockedCanvas.transform, false);
+        deathScreen.transform.localPosition =
+            Plugin.Config.EnablePitchLockedCanvas.Value ? Vector3.up * 50 : Vector3.zero;
         deathScreen.transform.localEulerAngles = Vector3.zero;
         deathScreen.transform.localScale = Vector3.one * 1.1f;
         
@@ -346,23 +406,21 @@ public class VRHUD : MonoBehaviour
         var ingamePlayerHud = GameObject.Find("IngamePlayerHUD");
         var systemsOnline = ingamePlayerHud.transform.Find("BottomMiddle/SystemsOnline");
         
-        systemsOnline.SetParent(transform, false);
+        systemsOnline.SetParent(FaceCanvas.transform, false);
         systemsOnline.localPosition = new Vector3(-280, -100, 0);
         systemsOnline.localEulerAngles = Vector3.zero;
         systemsOnline.localScale = Vector3.one * 1.65f;
 
-        // Player screen (Render texture): World space
-        SpectateCanvas = GameObject.Find("Systems/UI/Canvas").GetComponent<Canvas>();
-        SpectateCanvas.worldCamera = GameObject.Find("UICamera").GetComponent<Camera>();
-        SpectateCanvas.renderMode = RenderMode.WorldSpace;
-        SpectateCanvas.transform.position = new Vector3(0, -999, 0);
-
-        var follow = SpectateCanvas.gameObject.AddComponent<CanvasTransformFollow>();
+        // Pause menu screen (Render texture): World space
+        PauseMenuCanvas = GameObject.Find("Systems/UI/Canvas").GetComponent<Canvas>();
+        PauseMenuCanvas.worldCamera = GameObject.Find("UICamera").GetComponent<Camera>();
+        PauseMenuCanvas.renderMode = RenderMode.WorldSpace;
+        PauseMenuCanvas.transform.position = new Vector3(0, -999, 0);
+        
+        var follow = PauseMenuCanvas.gameObject.AddComponent<CanvasTransformFollow>();
         follow.sourceTransform = VRSession.Instance.UICamera.transform;
         follow.heightOffset = -999;
-
-        transform.localScale = Vector3.one * 0.0007f;
-
+            
         InitializeKeyboard();
 
         // Set up a global light for spectators to be able to toggle
@@ -371,18 +429,70 @@ public class VRHUD : MonoBehaviour
         
         // Prevents CullFactory from culling the light
         spectatorLight.hideFlags |= HideFlags.DontSave;
+        
+        MoveToFront(FaceCanvas);
+        MoveToFront(PitchLockedCanvas);
+        MoveToFront(WorldInteractionCanvas);
+        MoveToFront(objectScanner.transform);
+    }
+
+    private static void MoveToFront(Component component)
+    {
+        foreach (var element in component.GetComponentsInChildren<Image>(true))
+        {
+            if (element.materialForRendering == null)
+                continue;
+
+            if (!materialMappings.TryGetValue(element.materialForRendering, out var materialCopy))
+            {
+                materialCopy = new Material(element.materialForRendering);
+                materialMappings.Add(element.materialForRendering, materialCopy);
+            }
+            
+            materialCopy.SetInt("unity_GUIZTestMode", (int)CompareFunction.Always);
+            element.material = materialCopy;
+        }
+        
+        foreach (var shit in component.GetComponentsInChildren<TextMeshProUGUI>(true))
+        {
+            shit.m_fontMaterial = shit.CreateMaterialInstance(shit.m_sharedMaterial);
+            shit.m_sharedMaterial = shit.m_fontMaterial;
+            shit.m_sharedMaterial.shader = AssetManager.TMPAlwaysOnTop;
+        }
     }
 
     private void LateUpdate()
     {
         var camTransform = VRSession.Instance.MainCamera.transform;
-        
-        transform.position = camTransform.position + camTransform.forward * 0.5f;
-        transform.rotation = camTransform.rotation;
 
+        transform.position = camTransform.position;
+
+        // Face canvas
+        FaceCanvas.transform.localPosition = camTransform.forward * 0.5f;
+        FaceCanvas.transform.rotation = camTransform.rotation;
+        
         // Interaction canvas
-        WorldInteractionCanvas.transform.rotation = Quaternion.LookRotation(WorldInteractionCanvas.transform.position - camTransform.position);
+        WorldInteractionCanvas.transform.rotation =
+            Quaternion.LookRotation(WorldInteractionCanvas.transform.position - camTransform.position);
         WorldInteractionCanvas.transform.position += WorldInteractionCanvas.transform.forward * -0.2f;
+
+        // Pitch locked canvas
+        if (Plugin.Config.EnablePitchLockedCanvas.Value)
+        {
+            var fwd = new Vector3(camTransform.forward.x, 0, camTransform.forward.z).normalized * 0.5f;
+            var rot = Quaternion.Euler(0, camTransform.rotation.eulerAngles.y, 0);
+
+            PitchLockedCanvas.transform.localPosition =
+                Vector3.Lerp(PitchLockedCanvas.transform.localPosition, fwd, 0.1f);
+            PitchLockedCanvas.transform.rotation = Quaternion.Slerp(PitchLockedCanvas.transform.rotation, rot, 0.1f);
+        }
+        else
+        {
+            // If disabled, behave like FaceCanvas
+            
+            PitchLockedCanvas.transform.localPosition = camTransform.forward * 0.5f;
+            PitchLockedCanvas.transform.eulerAngles = camTransform.eulerAngles;
+        }
     }
 
     public void UpdateInteractCanvasPosition(Vector3 position)

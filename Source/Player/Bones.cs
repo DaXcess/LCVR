@@ -11,7 +11,8 @@ public class Bones(Transform player)
     public Transform Metarig => Model.Find("metarig");
 
     #region Local bones and rigs
-    public Transform LocalMetarig => Metarig.Find("ScavengerModelArmsOnly/metarig");
+    public Transform ModelArmsOnly => Metarig.Find("ScavengerModelArmsOnly");
+    public Transform LocalMetarig => ModelArmsOnly.Find("metarig");
     public Transform LocalSpine => LocalMetarig.Find("spine.003");
 
     public Transform LocalLeftShoulder => LocalSpine.Find("shoulder.L");
@@ -25,6 +26,8 @@ public class Bones(Transform player)
 
     public Transform LocalLeftHand => LocalLeftLowerArm.Find("hand.L");
     public Transform LocalRightHand => LocalRightLowerArm.Find("hand.R");
+
+    public Transform LocalItemHolder => LocalRightHand.Find("LocalItemHolder");
 
     public Transform LocalArmsRig => LocalSpine.Find("RigArms");
 
