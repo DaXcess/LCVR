@@ -348,7 +348,6 @@ public class VRPlayer : MonoBehaviour
         Bones.Metarig.localPosition = Vector3.zero;
 
         RigTracker ??= fullModel.AddComponent<RigTracker>();
-        RigTracker.enabled = false;
 
         // Setting up the left arm
 
@@ -710,6 +709,8 @@ public class VRPlayer : MonoBehaviour
         PlayerController.cameraLookRig2.weight = 1;
         PlayerController.leftArmRigSecondary.weight = 0;
         PlayerController.rightArmRigSecondary.weight = 0;
+        PlayerController.playerBodyAnimator?.SetLayerWeight(
+            PlayerController.playerBodyAnimator.GetLayerIndex("UpperBodyEmotes"), 0);
         
         // Vanilla Rigs
         PlayerController.leftArmRig.weight = 0;
@@ -783,7 +784,7 @@ public class VRPlayer : MonoBehaviour
 
     private void TurnBodyToCamera(float turnWeight)
     {
-        var newRotation = Quaternion.Euler(transform.rotation.eulerAngles.x, mainCamera.transform.eulerAngles.y, transform.rotation.eulerAngles.z);
+        var newRotation = Quaternion.Euler(transform.eulerAngles.x, mainCamera.transform.eulerAngles.y, transform.eulerAngles.z);
         transform.rotation = Quaternion.Lerp(transform.rotation, newRotation, Time.deltaTime * turnWeight);
     }
 

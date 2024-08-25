@@ -34,6 +34,8 @@ internal static class Items
         { "Soccer ball", (new Vector3(-0.07f, 0.17f, -0.19f), Vector3.zero) },
         { "Control pad", (new Vector3(0.25f, -0.22f, 0.27f), new Vector3(340, 248, 167)) },
         { "Garbage lid", (new Vector3(0.23f, -0.1f, 0.44f), new Vector3(14, 15, 17)) },
+        { "Hive", (new Vector3(0.13f, -0.15f, 0.16f), Vector3.zero) },
+        { "Plastic fish", (new Vector3(0, 0.12f, -0.06f), new Vector3(0, 80, 165)) },
         { "Maneater", (new Vector3(0.24f, -0.15f, 0.35f), new Vector3(-6, 167, 14)) }
     };
 }

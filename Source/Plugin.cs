@@ -78,9 +78,14 @@ public class Plugin : BaseUnityPlugin
             }
         }
 
-        if (Environment.GetCommandLineArgs().Contains("--lcvr-debug-interactables"))
+        var args = Environment.GetCommandLineArgs();
+        
+        if (args.Contains("--lcvr-debug-interactables"))
             Flags |= Flags.InteractableDebug;
 
+        if (args.Contains("--lcvr-item-offset-editor"))
+            Flags |= Flags.ItemOffsetEditor;
+        
         // Verify game assembly to detect compatible version
         var allowUnverified = Environment.GetCommandLineArgs().Contains("--lcvr-skip-checksum");
 
@@ -335,4 +340,5 @@ public enum Flags
     RestartRequired = 1 << 1,
     InvalidGameAssembly = 1 << 2,
     InteractableDebug = 1 << 3,
+    ItemOffsetEditor = 1 << 4,
 }

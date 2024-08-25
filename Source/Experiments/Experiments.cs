@@ -147,8 +147,7 @@ internal static class ExperimentalPatches
 }
 #endif
 
-// TODO: Remove yes
-// [LCVRPatch]
+// This patch will only get added if the --lcvr-item-offset-editor flag is passed
 [HarmonyPatch]
 internal static class ItemOffsetEditorPatches
 {
@@ -157,11 +156,10 @@ internal static class ItemOffsetEditorPatches
         _offset == null ? _offset = new GameObject("VR Item Offset Editor").transform : _offset;
 
     [HarmonyPatch(typeof(GrabbableObject), nameof(GrabbableObject.LateUpdate))]
+    [HarmonyPriority(Priority.Last)]
     [HarmonyPrefix]
     private static bool OverrideItemOffset(GrabbableObject __instance)
     {
-        return true;
-        
         if (!Offset.gameObject.activeSelf)
             return true;
         
@@ -182,12 +180,11 @@ internal static class ItemOffsetEditorPatches
         return false;
     }
     
-    [HarmonyPatch(typeof(CaveDwellerPhysicsProp), nameof(CaveDwellerPhysicsProp.LateUpdate))]
+    [HarmonyPatch(typeof(CaveDwellerPhysicsProp), nameof(CaveDwellerPhysicsProp.LateUpdate))]    
+    [HarmonyPriority(Priority.Last)]
     [HarmonyPrefix]
     private static bool OverrideCaveDwellerItemOffset(CaveDwellerPhysicsProp __instance)
     {
-        return true;
-        
         if (!Offset.gameObject.activeSelf)
             return true;
         
