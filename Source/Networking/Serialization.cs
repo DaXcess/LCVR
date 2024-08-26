@@ -9,7 +9,7 @@ using UnityEngine;
 namespace LCVR.Networking;
 
 /// <summary>
-/// A special serializer that can be used within DNet.
+/// A special serializer that can be used within the networking system.
 ///
 /// This serializer allows easy serialization from structs and classes to bytes and vice-versa.
 /// It supports most basic primitive types (numbers, bools, strings), Vector3's, Quaternions, and any other class

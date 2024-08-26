@@ -17,21 +17,12 @@ internal static class Entrypoint
         StartOfRound.Instance.StartCoroutine(Start());
     }
 
+    // ReSharper disable Unity.PerformanceAnalysis
     private static IEnumerator Start()
     {
         yield return new WaitUntil(() => StartOfRound.Instance.activeCamera != null);
 
         // Setup session manager (required for both VR and NonVR)
         new GameObject("LCVR Session Manager").AddComponent<VRSession>();
-
-        // Setup Dissonance for VR movement comms
-        // yield return DNet.Initialize();
-    }
-
-    [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.OnDestroy))]
-    [HarmonyPostfix]
-    private static void OnGameLeave()
-    {
-        // DNet.Shutdown();
     }
 }

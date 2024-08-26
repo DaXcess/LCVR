@@ -20,13 +20,13 @@ public class NetworkSystem : MonoBehaviour
 {
     /// Protocol Version, increase this every time a change is made that is not compatible with older versions
     private const ushort PROTOCOL_VERSION = 6;
-    
+
     private static NetworkSystem _instance;
 
     public static NetworkSystem Instance => _instance == null
         ? _instance = new GameObject("VR Network System").AddComponent<NetworkSystem>()
         : _instance;
-    
+
     private DissonanceComms dissonance;
     private BaseClient<NfgoServer, NfgoClient, NfgoConn> network;
 
@@ -34,7 +34,7 @@ public class NetworkSystem : MonoBehaviour
     /// List of active clients in the session
     /// </summary>
     private readonly Dictionary<ushort, ClientInfo<NfgoConn?>> clients = [];
-    
+
     /// <summary>
     /// List of VR players
     /// </summary>
@@ -44,9 +44,9 @@ public class NetworkSystem : MonoBehaviour
     /// Player ID lookup table
     /// </summary>
     private readonly Dictionary<string, ushort> playerIdByName = [];
-    
+
     /// <summary>
-    /// List of client IDs (from Dissonance Voice) which support DNet
+    /// List of client IDs (from Dissonance Voice) which support LCVR networking
     /// </summary>
     private static readonly HashSet<ushort> subscribers = [];
 
@@ -54,12 +54,12 @@ public class NetworkSystem : MonoBehaviour
     /// List of active channels we have, which can be used to communicate data over
     /// </summary>
     private readonly Dictionary<ChannelType, List<Channel>> channels = [];
-    
+
     private ushort? LocalId => network?._serverNegotiator.LocalId;
-    
+
     public bool Initialized { get; private set; }
     public VRNetPlayer[] Players => players.Values.ToArray();
-    
+
     private void Awake()
     {
         StartCoroutine(Initialize());
@@ -69,7 +69,7 @@ public class NetworkSystem : MonoBehaviour
     {
         if (!dissonance)
             return;
-        
+
         dissonance.OnPlayerJoinedSession -= OnPlayerJoinedSession;
         dissonance.OnPlayerLeftSession -= OnPlayerLeftSession;
     }
@@ -78,18 +78,18 @@ public class NetworkSystem : MonoBehaviour
     private IEnumerator Initialize()
     {
         yield return new WaitUntil(() => StartOfRound.Instance != null);
-        
+
         dissonance = FindObjectOfType<DissonanceComms>();
         network = FindObjectOfType<NfgoCommsNetwork>().Client;
-        
+
         // Wait until Dissonance Voip has been set up
         yield return new WaitUntil(() => LocalId.HasValue);
-        
+
         Logger.LogDebug("Connected to Dissonance Voip");
 
         dissonance.OnPlayerJoinedSession += OnPlayerJoinedSession;
         dissonance.OnPlayerLeftSession += OnPlayerLeftSession;
-        
+
         foreach (var player in dissonance.Players)
             if (!player.IsLocalPlayer && network._peers.TryGetClientInfoByName(player.Name, out var client))
             {
@@ -116,7 +116,7 @@ public class NetworkSystem : MonoBehaviour
     {
         if (!network._peers.TryGetClientInfoByName(player.Name, out var client))
             return;
-        
+
         clients.Add(client.PlayerId, client);
         playerIdByName.Add(player.Name, client.PlayerId);
     }
@@ -125,7 +125,7 @@ public class NetworkSystem : MonoBehaviour
     {
         if (!playerIdByName.TryGetValue(player.Name, out var id))
             return;
-        
+
         if (players.TryGetValue(id, out var networkPlayer))
             Destroy(networkPlayer);
 
@@ -157,7 +157,7 @@ public class NetworkSystem : MonoBehaviour
     {
         if (LocalId is not { } sender)
             return;
-        
+
         network.SendReliableP2P([.. targets], ConstructPacket(type, sender, payload));
     }
 
@@ -168,7 +168,7 @@ public class NetworkSystem : MonoBehaviour
 
         var targets = subscribers.Where(key => clients.TryGetValue(key, out _)).Select(value => clients[value])
             .ToList();
-        
+
         network.SendReliableP2P(targets, ConstructPacket(type, sender, payload));
     }
 
@@ -176,24 +176,24 @@ public class NetworkSystem : MonoBehaviour
     {
         using var memory = new MemoryStream();
         using var writer = new BinaryWriter(memory);
-        
+
         // Magic
         writer.Write((ushort)51083);
-        
+
         // Message type
         writer.Write((byte)type);
-        
+
         // Sender Id
         writer.Write(sender);
-        
+
         // Rest of payload
         writer.Write(payload);
 
         return memory.ToArray();
     }
-    
+
     #endregion
-    
+
     #region PACKET HANDLING
 
     public void OnPacketReceived(MessageType messageType, ushort sender, BinaryReader reader)
@@ -203,11 +203,11 @@ public class NetworkSystem : MonoBehaviour
             case MessageType.HandshakeRequest:
                 HandleHandshakeRequest(sender, reader.ReadUInt16());
                 break;
-            
+
             case MessageType.HandshakeResponse:
                 StartCoroutine(HandleHandshakeResponse(sender, reader.ReadBoolean()));
                 break;
-            
+
             case MessageType.Channel:
                 HandleChannelMessage(sender, reader);
                 break;
@@ -230,16 +230,17 @@ public class NetworkSystem : MonoBehaviour
             Logger.LogError($"Cannot send handshake response to {sender}: Client info is missing!");
             return;
         }
-        
+
         Logger.LogDebug($"Received handshake request from {sender}");
 
         SendPacket(MessageType.HandshakeResponse, [VRSession.InVR ? (byte)1 : (byte)0], target);
     }
 
+    // ReSharper disable Unity.PerformanceAnalysis
     private IEnumerator HandleHandshakeResponse(ushort sender, bool inVR)
     {
         Logger.LogDebug($"Received handshake response from {sender}");
-        
+
         subscribers.Add(sender);
 
         if (!inVR)
@@ -247,27 +248,29 @@ public class NetworkSystem : MonoBehaviour
 
         // Wait until client is a part of the peers list
         yield return new WaitUntilTimeout(10, () => network._peers.TryGetClientInfoById(sender, out _));
-        
+
         if (!network._peers.TryGetClientInfoById(sender, out var client))
         {
-            Logger.LogError($"Failed to resolve client for Player Id {sender} after 10s. No VR movements will be synchronized.");
+            Logger.LogError(
+                $"Failed to resolve client for Player Id {sender} after 10s. No VR movements will be synchronized.");
 
             yield break;
         }
-        
+
         var player = dissonance.FindPlayer(client.PlayerName);
         if (player == null)
         {
-            Logger.LogError($"Failed to resolve client for Player {client.PlayerName}. No VR movements will be synchronized.");
+            Logger.LogError(
+                $"Failed to resolve client for Player {client.PlayerName}. No VR movements will be synchronized.");
             yield break;
         }
 
         yield return new WaitUntil(() => player.Tracker != null);
-        
+
         // Ignore players that have already been registered
         if (players.ContainsKey(sender))
             yield break;
-        
+
         var playerObject = ((NfgoPlayer)player.Tracker!).gameObject;
         var playerController = playerObject.GetComponent<PlayerControllerB>();
         var networkPlayer = playerObject.AddComponent<VRNetPlayer>();
@@ -279,7 +282,7 @@ public class NetworkSystem : MonoBehaviour
 
         Logger.LogError(
             "VR player already exists? Destroying VR player script! Player will look like a vanilla player.");
-            
+
         Destroy(networkPlayer);
         OnPlayerLeftSession(player);
     }
@@ -301,9 +304,9 @@ public class NetworkSystem : MonoBehaviour
         else
             channelList.Do(channel => channel.ReceivedPacket(sender, reader.Clone()));
     }
-    
+
     #endregion
-    
+
     #region CHANNELS
 
     public Channel CreateChannel(ChannelType type, ulong? instanceId = null)
@@ -323,7 +326,7 @@ public class NetworkSystem : MonoBehaviour
 
         channelList.Remove(channel);
     }
-    
+
     #endregion
 
     public enum MessageType : byte
