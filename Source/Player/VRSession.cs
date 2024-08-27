@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using LCVR.Physics.Interactions.Car;
 using UnityEngine;
+using UnityEngine.Experimental.Rendering;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.InputSystem.XR;
@@ -167,7 +168,6 @@ public class VRSession : MonoBehaviour
             hdCamera.DisableQualitySetting(FrameSettingsField.Volumetrics);
 
         XRSettings.eyeTextureResolutionScale = Plugin.Config.CameraResolution.Value;
-        XRSettings.useOcclusionMesh = false;
 
         // Disable lens distortion effects
         var profiles = new[]

@@ -298,7 +298,7 @@ public class Plugin : BaseUnityPlugin
             Config.DynamicResolutionPercentage.Value;
         settings.supportMotionVectors = true;
 
-        settings.xrSettings.occlusionMesh = false;
+        settings.xrSettings.occlusionMesh = Config.EnableOcclusionMesh.Value;
         settings.xrSettings.singlePass = false;
 
         settings.lodBias = new FloatScalableSetting([Config.LODBias.Value, Config.LODBias.Value, Config.LODBias.Value],

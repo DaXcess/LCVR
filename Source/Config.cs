@@ -17,6 +17,7 @@ public class Config(ConfigFile file)
 
     // Performance configuration
 
+    public ConfigEntry<bool> EnableOcclusionMesh { get; } = file.Bind("Performance", "EnableOcclusionMesh", true, "The occlusion mesh will cause the game to stop rendering pixels outside of the lens views, which increases performance.");
     public ConfigEntry<bool> EnableDynamicResolution { get; } = file.Bind("Performance", "EnableDynamicResolution", false, "Whether or not dynamic resolution should be enabled. Required for most of these settings to have an effect.");
     public ConfigEntry<DynamicResUpscaleFilter> DynamicResolutionUpscaleFilter { get; } = file.Bind("Performance", "DynamicResolutionUpscaleFilter", DynamicResUpscaleFilter.EdgeAdaptiveScalingUpres, new ConfigDescription("The filter/algorithm that will be used to perform dynamic resolution upscaling. Defaulted to FSR (Edge Adaptive Scaling).", new AcceptableValueEnum<DynamicResUpscaleFilter>()));
     public ConfigEntry<float> DynamicResolutionPercentage { get; } = file.Bind("Performance", "DynamicResolutionPercentage", 80f, new ConfigDescription("The percentage of resolution to scale the game down to. The lower the value, the harder the upscale filter has to work which will result in quality loss.", new AcceptableValueRange<float>(0, 100)));
@@ -47,6 +48,8 @@ public class Config(ConfigFile file)
     public ConfigEntry<float> LODBias { get; } = file.Bind("Rendering", "LODBias", 2f, new ConfigDescription("The LOD bias is a multiplier that dictates when an LOD must reduce their quality. Higher values means that more detailed LODs will persist for longer.", new AcceptableValueRange<float>(1, 5)));
     public ConfigEntry<bool> DisableLensDistortion { get; } = file.Bind("Rendering", "DisableLensDistortion", false, "Disables the warping effects that you experience when you are under water, use the TZP-inhalant and more.");
     public ConfigEntry<bool> SpectatorLightRemovesVolumetrics { get; } = file.Bind("Rendering", "SpectatorLightRemovesVolumetrics", false, "When spectating, also disable all volumetrics (fog) while the fullbright lighting is enabled for more visibility.");
+    public ConfigEntry<float> MirrorXOffset { get; } = file.Bind("Internal", "MirrorXOffset", 0f, "The X offset that is added to the XR Mirror View shader. Do not touch if you don't know what this means.");
+    public ConfigEntry<float> MirrorYOffset { get; } = file.Bind("Internal", "MirrorYOffset", 0f, "The Y offset that is added to the XR Mirror View shader. Do not touch if you don't know what this means.");
     
     // Interaction configuration
 

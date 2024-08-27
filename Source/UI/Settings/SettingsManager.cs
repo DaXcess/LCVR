@@ -15,8 +15,6 @@ public class SettingsManager : MonoBehaviour
 {
     private MenuManager menuManager;
 
-    [Header("Prefabs")]
-
     [SerializeField] private GameObject categoryTemplate;
     [SerializeField] private GameObject dropdownTemplate;
     [SerializeField] private GameObject textTemplate;
@@ -26,9 +24,8 @@ public class SettingsManager : MonoBehaviour
 
     [SerializeField] private Transform content;
 
-    [Header("Specific Fields")]
-
     [SerializeField] private TextMeshProUGUI versionText;
+
     [SerializeField] private TextMeshProUGUI descriptionText;
     [SerializeField] private TMP_Dropdown runtimesDropdown;
 
@@ -65,7 +62,8 @@ public class SettingsManager : MonoBehaviour
 
             runtimesDropdown.AddOptions(["System Default", .. runtimes.Select(rt => rt.Name)]);
             runtimesDropdown.value = selectedIndex;
-        } else
+        }
+        else
             runtimesDropdown.AddOptions(["System Default"]);
 
         // Dynamically add sections for other settings
@@ -118,7 +116,8 @@ public class SettingsManager : MonoBehaviour
                     dropdown.AddOptions([.. names]);
                     dropdown.SetValueWithoutNotify(idx);
                 }
-                else if (config.SettingType == typeof(float) && config.Description.AcceptableValues is AcceptableValueRange<float> values)
+                else if (config.SettingType == typeof(float) &&
+                         config.Description.AcceptableValues is AcceptableValueRange<float> values)
                 {
                     var sliderOption = Instantiate(sliderTemplate, categoryObject.transform);
                     var title = sliderOption.GetComponentInChildren<TextMeshProUGUI>();
@@ -169,7 +168,8 @@ public class SettingsManager : MonoBehaviour
                     entry.name = name;
 
                     toggle.SetIsOnWithoutNotify((bool)config.BoxedValue);
-                } else if (config.SettingType == typeof(string))
+                }
+                else if (config.SettingType == typeof(string))
                 {
                     var textUI = Instantiate(textTemplate, categoryObject.transform);
                     var title = textUI.GetComponentInChildren<TextMeshProUGUI>();
@@ -238,7 +238,7 @@ public class SettingsManager : MonoBehaviour
             return;
 
         PlayChangeSFX();
-        
+
         Logger.LogDebug($"Updating setting: [{category}] {name} = {value}");
 
         var entry = Plugin.Config.File[category, name];
@@ -258,8 +258,9 @@ public class SettingsManager : MonoBehaviour
     {
         if (!VRSession.InVR)
             return;
-        
+
         #region Reload and apply HDRP pipeline settings
+
         var asset = QualitySettings.renderPipeline as HDRenderPipelineAsset;
 
         if (!asset)
@@ -267,21 +268,26 @@ public class SettingsManager : MonoBehaviour
             Logger.LogError("Failed to apply render pipeline changes: Render pipeline is null??");
             return;
         }
-        
+
         var settings = asset.currentPlatformRenderPipelineSettings;
 
         settings.dynamicResolutionSettings.enabled = Plugin.Config.EnableDynamicResolution.Value;
         settings.dynamicResolutionSettings.dynResType = DynamicResolutionType.Hardware;
         settings.dynamicResolutionSettings.upsampleFilter = Plugin.Config.DynamicResolutionUpscaleFilter.Value;
-        settings.dynamicResolutionSettings.minPercentage = settings.dynamicResolutionSettings.maxPercentage = Plugin.Config.DynamicResolutionPercentage.Value;
+        settings.dynamicResolutionSettings.minPercentage = settings.dynamicResolutionSettings.maxPercentage =
+            Plugin.Config.DynamicResolutionPercentage.Value;
         settings.supportMotionVectors = true;
 
-        settings.xrSettings.occlusionMesh = false;
+        settings.xrSettings.occlusionMesh = Plugin.Config.EnableOcclusionMesh.Value;
         settings.xrSettings.singlePass = false;
-        
-        settings.lodBias = new FloatScalableSetting([Plugin.Config.LODBias.Value, Plugin.Config.LODBias.Value, Plugin.Config.LODBias.Value], ScalableSettingSchemaId.With3Levels);
+
+        settings.lodBias =
+            new FloatScalableSetting(
+                [Plugin.Config.LODBias.Value, Plugin.Config.LODBias.Value, Plugin.Config.LODBias.Value],
+                ScalableSettingSchemaId.With3Levels);
 
         asset.currentPlatformRenderPipelineSettings = settings;
+
         #endregion
     }
 }
