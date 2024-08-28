@@ -67,7 +67,7 @@ public class Door : MonoBehaviour, VRInteractable
             {
                 var position = lockpicker.GetLockPickerDoorPosition(door);
 
-                lockpicker.playerHeldBy.DiscardHeldObject(true, door.NetworkObject, position, true);
+                lockpicker.playerHeldBy.DiscardHeldObject(true, door.NetworkObject, position);
                 lockpicker.PlaceLockPickerServerRpc(door.NetworkObject, lockpicker.placeOnLockPicker1);
                 lockpicker.PlaceOnDoor(door, lockpicker.placeOnLockPicker1);
             }

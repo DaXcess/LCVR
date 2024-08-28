@@ -57,14 +57,14 @@ public static class Preload
             File.WriteAllText(manifest, VR_MANIFEST);
 
         var plugins = Path.Combine(root, "Plugins");
-        var uoxrTarget = Path.Combine(plugins, "UnityOpenXR.dll");
+        var oxrPluginTarget = Path.Combine(plugins, "UnityOpenXR.dll");
         var oxrLoaderTarget = Path.Combine(plugins, "openxr_loader.dll");
 
-        var current = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-        var uoxr = Path.Combine(current, "RuntimeDeps/UnityOpenXR.dll");
+        var current = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
+        var oxrPlugin = Path.Combine(current, "RuntimeDeps/UnityOpenXR.dll");
         var oxrLoader = Path.Combine(current, "RuntimeDeps/openxr_loader.dll");
 
-        if (!CopyResourceFile(uoxr, uoxrTarget))
+        if (!CopyResourceFile(oxrPlugin, oxrPluginTarget))
             Logger.LogWarning("Could not find plugin UnityOpenXR.dll, VR might not work!");
 
         if (!CopyResourceFile(oxrLoader, oxrLoaderTarget))
