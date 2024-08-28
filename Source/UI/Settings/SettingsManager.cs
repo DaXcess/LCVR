@@ -5,6 +5,7 @@ using System.Linq;
 using LCVR.Player;
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.UI;
@@ -287,6 +288,8 @@ public class SettingsManager : MonoBehaviour
                 ScalableSettingSchemaId.With3Levels);
 
         asset.currentPlatformRenderPipelineSettings = settings;
+
+        InputSystem.settings.defaultButtonPressPoint = Plugin.Config.ButtonPressPoint.Value;
 
         #endregion
     }

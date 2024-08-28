@@ -236,6 +236,9 @@ public class Plugin : BaseUnityPlugin
             ScalableSettingSchemaId.With3Levels);
 
         asset.currentPlatformRenderPipelineSettings = settings;
+        
+        // Input settings
+        InputSystem.settings.defaultButtonPressPoint = Config.ButtonPressPoint.Value;
 
         return true;
     }

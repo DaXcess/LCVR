@@ -298,8 +298,8 @@ public class NetworkSystem : MonoBehaviour
         if (!channels.TryGetValue(type, out var channelList))
             return;
 
-        var data = reader.ReadBytes(int.MaxValue);
-
+        var data = reader.ReadBytes((int)reader.ReadUInt32());
+        
         if (instanceId.HasValue)
             channelList.Where(channel => channel.InstanceId == instanceId.Value)
                 .Do(channel =>

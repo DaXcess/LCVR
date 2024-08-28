@@ -123,6 +123,9 @@ internal class VRManEaterBaby : VRItem<CaveDwellerPhysicsProp>
 
     protected override void OnUpdate()
     {
+        if (!IsLocal)
+            return;
+        
         shake.Update();
         shakeBig.Update();
     }

@@ -25,6 +25,7 @@ public class Channel(NetworkSystem network, ChannelType type, ulong? instanceId)
         else
             bw.Write(false);
         
+        bw.Write((uint)packet.Length);
         bw.Write(packet);
 
         network.BroadcastPacket(NetworkSystem.MessageType.Channel, mem.ToArray());

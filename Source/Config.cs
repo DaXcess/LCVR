@@ -31,7 +31,8 @@ public class Config(ConfigFile file)
     public ConfigEntry<float> SnapTurnSize { get; } = file.Bind("Input", "SnapTurnSize", 45f, new ConfigDescription("The amount of rotation that is applied when performing a snap turn. Requires turn provider to be set to snap.", new AcceptableValueRange<float>(10, 180)));
     public ConfigEntry<bool> ToggleSprint { get; } = file.Bind("Input", "ToggleSprint", false, "Whether the sprint button should toggle sprint instead of having to hold it down.");
     public ConfigEntry<float> MovementSprintToggleCooldown { get; } = file.Bind("Input", "MovementSprintToggleCooldown", 1f, new ConfigDescription("The amount of seconds that you need to stand still for sprint to be toggled off automatically. Requires sprint toggle to be enabled.", new AcceptableValueRange<float>(0, 60)));
-
+    public ConfigEntry<float> ButtonPressPoint { get; } = file.Bind("Input", "ButtonPressPoint", 0.25f, new ConfigDescription("The amount of force required to register a UI button press. The lower the value, the more sensitive UI presses become.", new AcceptableValueRange<float>(0, 1)));
+    
     // UI configuration
 
     public ConfigEntry<bool> EnablePitchLockedCanvas { get; } = file.Bind("UI", "EnablePitchLockedCanvas", true, "Whether most of the camera-locked UI elements should only (smoothly) rotate on the Y axis, instead of being stuck on your face.");

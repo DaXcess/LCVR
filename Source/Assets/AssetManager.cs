@@ -24,7 +24,7 @@ internal static class AssetManager
     public static Shader TMPAlwaysOnTop;
     
     public static InputActionAsset VRActions;
-    public static InputActionAsset TrackingActions;
+    public static InputActionAsset DefaultXRActions;
     public static InputActionAsset NullActions;
 
     public static RemappableControls RemappableControls;
@@ -58,7 +58,7 @@ internal static class AssetManager
         SteeringWheelPoints = assetBundle.LoadAsset<GameObject>("SnapPointContainer");
 
         VRActions = assetBundle.LoadAsset<InputActionAsset>("VRActions");
-        TrackingActions = assetBundle.LoadAsset<InputActionAsset>("TrackingActions");
+        DefaultXRActions = assetBundle.LoadAsset<InputActionAsset>("DefaultXRActions");
         NullActions = assetBundle.LoadAsset<InputActionAsset>("NullPlayerActions");
 
         TMPAlwaysOnTop = assetBundle.LoadAsset<Shader>("TextMeshPro Always On Top");
