@@ -47,9 +47,10 @@ jobs:
           unzip ~/lcvr/package-template.zip -d ./package
 
           # Copy and sign release binaries
-          cp bin/Release/netstandard2.1/LCVR*.dll ./package/BepInEx/plugins/LCVR/
+          cp bin/Release/netstandard2.1/LCVR.dll ./package/BepInEx/plugins/LCVR/
+          cp bin/Release/netstandard2.1/LCVR.Preload.dll ./package/BepInEx/patchers/LCVR/
           gpg --output ./package/BepInEx/plugins/LCVR/LCVR.dll.sig --detach-sig ./package/BepInEx/plugins/LCVR/LCVR.dll
-          gpg --output ./package/BepInEx/plugins/LCVR/LCVR.Preload.dll.sig --detach-sig ./package/BepInEx/plugins/LCVR/LCVR.Preload.dll
+          gpg --output ./package/BepInEx/patchers/LCVR/LCVR.Preload.dll.sig --detach-sig ./package/BepInEx/patchers/LCVR/LCVR.Preload.dll
 
           # Copy docs and license
           cp CHANGELOG.md ./package/CHANGELOG.md
