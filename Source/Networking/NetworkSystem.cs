@@ -298,11 +298,23 @@ public class NetworkSystem : MonoBehaviour
         if (!channels.TryGetValue(type, out var channelList))
             return;
 
+        var data = reader.ReadBytes(int.MaxValue);
+
         if (instanceId.HasValue)
             channelList.Where(channel => channel.InstanceId == instanceId.Value)
-                .Do(channel => channel.ReceivedPacket(sender, reader.Clone()));
+                .Do(channel =>
+                {
+                    using var wrappedData = new BinaryReader(new MemoryStream(data));
+                    
+                    channel.ReceivedPacket(sender, wrappedData);
+                });
         else
-            channelList.Do(channel => channel.ReceivedPacket(sender, reader.Clone()));
+            channelList.Do(channel =>
+            {               
+                using var wrappedData = new BinaryReader(new MemoryStream(data));
+                
+                channel.ReceivedPacket(sender, wrappedData);
+            });
     }
 
     #endregion

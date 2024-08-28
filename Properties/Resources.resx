@@ -122,21 +122,4 @@
     <value>..\Resources\lethalcompanyvr;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral,
       PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="UnitySubsystemsManifest" xml:space="preserve">
-    <value>{
-        "name": "OpenXR XR Plugin",
-        "version": "1.8.2",
-        "libraryName": "UnityOpenXR",
-        "displays": [
-                {
-                        "id": "OpenXR Display"
-                }
-        ],
-        "inputs": [
-                {
-                        "id": "OpenXR Input"
-                }
-        ]
-}</value>
-  </data>
 </root>

@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <Description>LCVR Preloader</Description>
+        <Authors>DaXcess</Authors>
+        <Version>1.3.2</Version>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <LangVersion>12.0</LangVersion>
+        <Title>LCVR.Preload</Title>
+        <Copyright>Copyright (c) DaXcess 2024</Copyright>
+        <PackageProjectUrl>https://lcvr.daxcess.io</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/DaXcess/LCVR</RepositoryUrl>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <PackageId>LCVR.Preload</PackageId>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <OutputPath>../bin/Debug</OutputPath>
+      <DebugSymbols>false</DebugSymbols>
+      <DebugType>none</DebugType>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <OutputPath>../bin/Release</OutputPath>
+      <DebugType>none</DebugType>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="BepInEx.Core" Version="5.4.21" />
+    </ItemGroup>
+
+</Project>

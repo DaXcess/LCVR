@@ -174,13 +174,6 @@ internal static class Utils
         return UnityEngine.Physics.Raycast(ray, out hit, maxDistance, layerMask);
     }
 
-    public static bool BoxCast(this Ray ray, float radius, out RaycastHit hit, float maxDistance = Mathf.Infinity,
-        int layerMask = UnityEngine.Physics.DefaultRaycastLayers)
-    {
-        return UnityEngine.Physics.BoxCast(ray.origin, Vector3.one * radius, ray.direction, out hit,
-            Quaternion.identity, maxDistance, layerMask);
-    }
-
     public enum Hand
     {
         Left,
@@ -228,20 +221,5 @@ internal static class Utils
     public static IEnumerator NopRoutine()
     {
         yield break;
-    }
-}
-
-public static class BinaryReaderExtensions
-{
-    public static BinaryReader Clone(this BinaryReader reader)
-    {
-        var mem = new MemoryStream();
-        var pos = reader.BaseStream.Position;
-
-        reader.BaseStream.CopyTo(mem);
-        reader.BaseStream.Position = pos;
-        mem.Position = 0;
-
-        return new BinaryReader(mem);
     }
 }

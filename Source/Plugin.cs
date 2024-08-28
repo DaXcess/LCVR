@@ -27,7 +27,7 @@ public class Plugin : BaseUnityPlugin
 {
     public const string PLUGIN_GUID = "io.daxcess.lcvr";
     public const string PLUGIN_NAME = "LCVR";
-    public const string PLUGIN_VERSION = "1.3.1";
+    public const string PLUGIN_VERSION = "1.3.2";
 
     private readonly string[] GAME_ASSEMBLY_HASHES =
     [
@@ -122,7 +122,6 @@ public class Plugin : BaseUnityPlugin
         if (!disableVr && InitializeVR())
         {
             Flags |= Flags.VR;
-            Flags &= ~Flags.RestartRequired;
 
             StartCoroutine(HijackSplashScreen());
         }
@@ -196,79 +195,11 @@ public class Plugin : BaseUnityPlugin
 
         return true;
     }
-    
-     /// <summary>
-    /// Helper function for SetupRuntimeAssets() to copy resource files and return false if the source does not exist
-    /// </summary>
-    private bool CopyResourceFile(string sourceFile, string destinationFile)
-    {
-        if (!File.Exists(sourceFile))
-            return false;
-
-        if (File.Exists(destinationFile))
-        {
-            var sourceHash = Utils.ComputeHash(File.ReadAllBytes(sourceFile));
-            var destHash = Utils.ComputeHash(File.ReadAllBytes(destinationFile));
-
-            if (sourceHash.SequenceEqual(destHash))
-                return true;
-        }
-
-        File.Copy(sourceFile, destinationFile, true);
-
-        return true;
-    }
-
-    /// <summary>
-    /// Place required runtime libraries and configuration in the game files to allow VR to be started
-    /// </summary>
-    private bool SetupRuntimeAssets()
-    {
-        var mustRestart = false;
-
-        var root = Path.Combine(Paths.GameRootPath, "Lethal Company_Data");
-        var subsystems = Path.Combine(root, "UnitySubsystems");
-        if (!Directory.Exists(subsystems))
-            Directory.CreateDirectory(subsystems);
-
-        var openXr = Path.Combine(subsystems, "UnityOpenXR");
-        if (!Directory.Exists(openXr))
-            Directory.CreateDirectory(openXr);
-
-        var manifest = Path.Combine(openXr, "UnitySubsystemsManifest.json");
-        if (!File.Exists(manifest))
-        {
-            File.WriteAllText(manifest, Properties.Resources.UnitySubsystemsManifest);
-            mustRestart = true;
-        }
-
-        var plugins = Path.Combine(root, "Plugins");
-        var uoxrTarget = Path.Combine(plugins, "UnityOpenXR.dll");
-        var oxrLoaderTarget = Path.Combine(plugins, "openxr_loader.dll");
-
-        var current = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-        var uoxr = Path.Combine(current, "RuntimeDeps/UnityOpenXR.dll");
-        var oxrLoader = Path.Combine(current, "RuntimeDeps/openxr_loader.dll");
-
-        if (!CopyResourceFile(uoxr, uoxrTarget))
-            Logger.LogWarning("Could not find UnityOpenXR.dll to copy to the game, VR might not work!");
-
-        if (!CopyResourceFile(oxrLoader, oxrLoaderTarget))
-            Logger.LogWarning("Could not find openxr_loader.dll to copy to the game, VR might not work!");
-
-        return mustRestart;
-    }
 
     private bool InitializeVR()
     {
         Logger.LogInfo("Loading VR...");
         
-        if (SetupRuntimeAssets())
-        {
-            Logger.LogWarning("You might have to restart the game to allow VR to function properly");
-            Flags |= Flags.RestartRequired;
-        }
-
         if (!OpenXR.Loader.InitializeXR())
         {
             Logger.LogError("Failed to start in VR Mode! Only Non-VR features are available!");
@@ -337,8 +268,7 @@ public class Plugin : BaseUnityPlugin
 public enum Flags
 {
     VR = 1 << 0,
-    RestartRequired = 1 << 1,
-    InvalidGameAssembly = 1 << 2,
-    InteractableDebug = 1 << 3,
-    ItemOffsetEditor = 1 << 4,
+    InvalidGameAssembly = 1 << 1,
+    InteractableDebug = 1 << 2,
+    ItemOffsetEditor = 1 << 3,
 }
