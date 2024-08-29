@@ -1,6 +1,7 @@
-﻿using LCVR.Assets;
+using LCVR.Assets;
 using LCVR.Networking;
 using LCVR.Player;
+using System;
 using System.Collections;
 using System.IO;
 using UnityEngine;
@@ -10,7 +11,7 @@ namespace LCVR.Physics.Interactions;
 internal class ShipLeverInteractable : MonoBehaviour, VRInteractable
 {
     private ShipLever lever;
-    private VRInteractor currentInteractor;
+    private VRInteractor interactor;
 
     public InteractableFlags Flags => InteractableFlags.BothHands;
 
@@ -21,8 +22,8 @@ internal class ShipLeverInteractable : MonoBehaviour, VRInteractable
 
     private void Update()
     {
-        if (!lever.CanInteract && currentInteractor != null)
-            OnButtonRelease(currentInteractor);
+        if (!lever.CanInteract && interactor != null)
+            OnButtonRelease(interactor);
     }
 
     public bool OnButtonPress(VRInteractor interactor)
@@ -30,18 +31,18 @@ internal class ShipLeverInteractable : MonoBehaviour, VRInteractable
         if (!lever.CanInteract || Plugin.Config.DisableShipLeverInteraction.Value)
             return false;
 
-        currentInteractor = interactor;
+        this.interactor = interactor;
 
         interactor.FingerCurler.ForceFist(true);
 
-        lever.StartInteracting(interactor.transform, ShipLever.Actor.Self);
+        lever.StartInteracting(interactor.transform, ShipLever.Actor.Self, interactor);
 
         return true;
     }
 
     public void OnButtonRelease(VRInteractor interactor)
     {
-        currentInteractor = null;
+        this.interactor = null;
 
         interactor.FingerCurler.ForceFist(false);
 
@@ -62,6 +63,7 @@ public class ShipLever : MonoBehaviour
     private Channel channel;
 
     public bool CanInteract => lever.triggerScript.interactable && currentActor != Actor.Other;
+    public Actor CurrentActor => currentActor;
 
     private void Awake()
     {
@@ -71,7 +73,7 @@ public class ShipLever : MonoBehaviour
         channel = NetworkSystem.Instance.CreateChannel(ChannelType.ShipLever);
         channel.OnPacketReceived += OnOtherInteractWithLever;
     }
-
+    VRInteractor interactor;
     private void Update()
     {
         if (rotateTo == null)
@@ -80,6 +82,9 @@ public class ShipLever : MonoBehaviour
         // There are better ways to do this rotation stuff, I have no clue how though, so this is the best that I could come up with
         var direction = rotateTo.TransformPoint(new Vector3(0.02f, 0.05f, 0f)) - transform.position;
         var eulerAngles = Quaternion.LookRotation(direction).eulerAngles;
+
+        if(interactor != null)
+            interactor.Vibrate(0.1f, 0.1f);
 
         if (eulerAngles.y > 180)
         {
@@ -101,12 +106,14 @@ public class ShipLever : MonoBehaviour
         transform.eulerAngles = eulerAngles;
     }
 
-    public void StartInteracting(Transform target, Actor actor)
+    public void StartInteracting(Transform target, Actor actor, VRInteractor vrInteractor)
     {
         currentActor = actor;
         animator.enabled = false;
         rotateTo = target;
-        
+        interactor = vrInteractor;
+
+
         if (actor == Actor.Self)
             channel.SendPacket([1]);
     }
@@ -117,7 +124,7 @@ public class ShipLever : MonoBehaviour
         {
             if (shouldTrigger == TriggerDirection.LandShip && lever.playersManager.inShipPhase || shouldTrigger == TriggerDirection.DepartShip && !lever.playersManager.inShipPhase)
             {
-                StartCoroutine(PerformLeverAction(currentActor == Actor.Self));
+                StartCoroutine(performLeverAction(currentActor == Actor.Self));
                 return;
             }
 
@@ -135,7 +142,7 @@ public class ShipLever : MonoBehaviour
         }
     }
 
-    private IEnumerator PerformLeverAction(bool isLocal)
+    private IEnumerator performLeverAction(bool isLocal)
     {
         if (isLocal) lever.LeverAnimation();
 
@@ -154,30 +161,32 @@ public class ShipLever : MonoBehaviour
 
         switch (interacting)
         {
-            case true when currentActor == Actor.None:
-                StartInteracting(player.Bones.RightHand, Actor.Other);
+            case true when CurrentActor == ShipLever.Actor.None:
+                StartInteracting(player.Bones.RightHand, ShipLever.Actor.Other, null);
                 break;
-            case false when currentActor == Actor.Other:
+            case false when CurrentActor == ShipLever.Actor.Other:
                 StopInteracting();
                 break;
         }
     }
 
-    public static void Create()
+    public static ShipLever Create()
     {
         var startMatch = FindObjectOfType<StartMatchLever>();
-        startMatch.leverAnimatorObject.gameObject.AddComponent<ShipLever>();
+        var lever = startMatch.leverAnimatorObject.gameObject.AddComponent<ShipLever>();
 
-        if (!VRSession.InVR)
-            return;
+        if (VRSession.InVR)
+        {
+            var leverObject = startMatch.leverAnimatorObject.gameObject;
+            var interactable = Instantiate(AssetManager.Interactable, leverObject.transform);
 
-        var leverObject = startMatch.leverAnimatorObject.gameObject;
-        var interactable = Instantiate(AssetManager.Interactable, leverObject.transform);
+            interactable.transform.localPosition = new Vector3(0.2327f, 0.0404f, 11.6164f);
+            interactable.transform.localScale = new Vector3(1, 1, 4);
 
-        interactable.transform.localPosition = new Vector3(0.2327f, 0.0404f, 11.6164f);
-        interactable.transform.localScale = new Vector3(1, 1, 4);
+            interactable.AddComponent<ShipLeverInteractable>();
+        }
 
-        interactable.AddComponent<ShipLeverInteractable>();
+        return lever;
     }
 
     public enum Actor
