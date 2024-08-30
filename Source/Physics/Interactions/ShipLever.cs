@@ -61,7 +61,7 @@ public class ShipLever : MonoBehaviour
     private Actor currentActor;
     private Channel channel;
     VRInteractor CurrentInteractor;
-    float LastRot;
+    float LastVibrateRotation;
 
     public bool CanInteract => lever.triggerScript.interactable && currentActor != Actor.Other;
 
@@ -100,10 +100,12 @@ public class ShipLever : MonoBehaviour
             shouldTrigger = eulerAngles.x > 290 ? TriggerDirection.DepartShip : TriggerDirection.None;
         }
 
-        if (CurrentInteractor != null && Mathf.Abs(LastRot - eulerAngles.y) >= 5)
+        eulerAngles.x = Mathf.Clamp(eulerAngles.x, 270, 310); //Fixes the lever from clipping if you rotate it too much
+
+        if (CurrentInteractor != null && Mathf.Abs(LastVibrateRotation - eulerAngles.x) >= 10) //Vibrate the controller if the lever has been rotated too much
         {
             CurrentInteractor.Vibrate(0.1f, 0.3f);
-            LastRot = eulerAngles.y;
+            LastVibrateRotation = eulerAngles.x;
         }
 
         transform.eulerAngles = eulerAngles;
@@ -147,6 +149,8 @@ public class ShipLever : MonoBehaviour
 
     private IEnumerator PerformLeverAction(bool isLocal)
     {
+        if(CurrentInteractor != null)
+            CurrentInteractor.Vibrate(.3f, 0.5f);
         if (isLocal) lever.LeverAnimation();
 
         yield return new WaitForSeconds(1.67f);
