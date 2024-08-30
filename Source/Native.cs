@@ -82,6 +82,44 @@ internal static class Native
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool CloseHandle(IntPtr handle);
 
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+    private struct NotifyIconData
+    {
+        public int cbSize;
+        public IntPtr hWnd;
+        public int uID;
+        public int uFlags;
+        public int uCallbackMessage;
+        public IntPtr hIcon;
+
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
+        public string szTip;
+
+        public int dwState;
+        public int dwStateMask;
+
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
+        public string szInfo;
+
+        public int uTimeoutOrVersion;
+
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 64)]
+        public string szInfoTitle;
+
+        public int dwInfoFlags;
+        public Guid guidItem;
+        public IntPtr hBalloonIcon;
+    }
+
+    [DllImport("Shell32.dll", CharSet = CharSet.Auto)]
+    private static extern bool Shell_NotifyIcon(int dwMessage, ref NotifyIconData lpData);
+
+    [DllImport("Kernel32.dll")]
+    private static extern IntPtr GetConsoleWindow();
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr LoadIcon(IntPtr a, IntPtr b);
+    
     public static bool RegOpenSubKey(ref IntPtr hKey, string lpSubKey, int samDesired)
     {
         var result = RegOpenKeyEx(hKey, lpSubKey, 0, samDesired, out var hNewKey) == 0;
@@ -92,6 +130,24 @@ internal static class Native
         hKey = hNewKey;
 
         return true;
+    }
+
+    public static void ShowNotification(string title, string message)
+    {
+        var data = new NotifyIconData
+        {
+            cbSize = Marshal.SizeOf<NotifyIconData>(),
+            hWnd = GetConsoleWindow(),
+            uFlags = 0x13,
+            dwInfoFlags = 0x3,
+            uCallbackMessage = 0x401,
+            hIcon = LoadIcon(IntPtr.Zero, new IntPtr(32512)),
+            szInfo = message,
+            szInfoTitle = title
+        };
+
+        Shell_NotifyIcon(0, ref data);
+        Shell_NotifyIcon(2, ref data);
     }
 
     private delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);

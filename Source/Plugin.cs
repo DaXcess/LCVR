@@ -205,6 +205,9 @@ public class Plugin : BaseUnityPlugin
             Logger.LogError("Failed to start in VR Mode! Only Non-VR features are available!");
             Logger.LogWarning("If you are not intending to play in VR, you can ignore the previous error.");
 
+            Native.ShowNotification("Lethal Company VR",
+                "Failed to start VR, please check the console logs for more information");
+
             return false;
         }
 
