@@ -20,10 +20,9 @@ public class VRPlayer : MonoBehaviour
 {
     private const float SCALE_FACTOR = 1.5f;
     private const int CAMERA_CLIP_MASK = 1 << 8 | 1 << 26;
-    
-    private const float SQR_MOVE_THRESHOLD = 1E-5f;
+
+    private const float SQR_MOVE_THRESHOLD = 0.001f;
     private const float TURN_ANGLE_THRESHOLD = 120.0f;
-    private const float TURN_WEIGHT_SHARP = 15.0f;
 
     private Coroutine stopSprintingCoroutine;
     private Coroutine resetHeightCoroutine;
@@ -40,7 +39,7 @@ public class VRPlayer : MonoBehaviour
 
     private Camera mainCamera;
     private CharacterController characterController;
-    
+
     private GameObject leftController;
     private GameObject rightController;
 
@@ -69,6 +68,7 @@ public class VRPlayer : MonoBehaviour
     private Channel spectatorRigChannel;
 
     #region Public Accessors
+
     public PlayerControllerB PlayerController { get; private set; }
     public Bones Bones { get; private set; }
     public TurningProvider TurningProvider { get; private set; }
@@ -82,14 +82,14 @@ public class VRPlayer : MonoBehaviour
     public VRFingerCurler RightFingerCurler { get; private set; }
 
     // IK Constraints
-    public TwoBoneIKConstraint LocalLeftArmVRRig { get; private set; }
-    public TwoBoneIKConstraint LocalRightArmVRRig { get; private set; }
-    public TwoBoneIKConstraint LeftArmVRRig { get; private set; }
-    public TwoBoneIKConstraint RightArmVRRig { get; private set; }
-    
+    private TwoBoneIKConstraint LocalLeftArmVRRig { get; set; }
+    private TwoBoneIKConstraint LocalRightArmVRRig { get; set; }
+    private TwoBoneIKConstraint LeftArmVRRig { get; set; }
+    private TwoBoneIKConstraint RightArmVRRig { get; set; }
+
     public Transform LeftHandVRTarget { get; private set; }
     public Transform RightHandVRTarget { get; private set; }
-    
+
     public bool IsRoomCrouching { get; private set; }
 
     #endregion
@@ -97,7 +97,7 @@ public class VRPlayer : MonoBehaviour
     private void Awake()
     {
         Logger.LogDebug("Going to initialize XR Rig");
-        
+
         PlayerController = GetComponent<PlayerControllerB>();
         characterController = GetComponent<CharacterController>();
         Bones = new Bones(transform);
@@ -164,8 +164,10 @@ public class VRPlayer : MonoBehaviour
         rightHandInteractor = Bones.LocalRightHand.gameObject.AddComponent<VRInteractor>();
 
         // Add ray interactors for VR keyboard
-        leftControllerRayInteractor = new GameObject("Left Ray Interactor").CreateInteractorController(Utils.Hand.Left, false, false);
-        rightControllerRayInteractor = new GameObject("Right Ray Interactor").CreateInteractorController(Utils.Hand.Right, false, false);
+        leftControllerRayInteractor =
+            new GameObject("Left Ray Interactor").CreateInteractorController(Utils.Hand.Left, false, false);
+        rightControllerRayInteractor =
+            new GameObject("Right Ray Interactor").CreateInteractorController(Utils.Hand.Right, false, false);
 
         leftControllerRayInteractor.transform.SetParent(leftController.transform, false);
         rightControllerRayInteractor.transform.SetParent(rightController.transform, false);
@@ -188,7 +190,7 @@ public class VRPlayer : MonoBehaviour
         // Input actions
         Actions.Instance["Reset Height"].performed += ResetHeight_performed;
         Actions.Instance["Sprint"].performed += Sprint_performed;
-        
+
         ResetHeight();
 
         // Set up item holders
@@ -214,11 +216,11 @@ public class VRPlayer : MonoBehaviour
         Logger.LogDebug("Initialized XR Rig");
 
         var networkSystem = NetworkSystem.Instance;
-        
+
         prefsChannel = networkSystem.CreateChannel(ChannelType.PlayerPrefs, PlayerController.playerClientId);
         rigChannel = networkSystem.CreateChannel(ChannelType.Rig, PlayerController.playerClientId);
         spectatorRigChannel = networkSystem.CreateChannel(ChannelType.SpectatorRig, PlayerController.playerClientId);
-        
+
         StartCoroutine(UpdatePlayerPrefs());
     }
 
@@ -228,19 +230,19 @@ public class VRPlayer : MonoBehaviour
         Bones.ResetToPrefabPositions();
 
         // ARMS ONLY RIG
-        
+
         UpdateRigOffsets();
 
         RigTrackerLocal ??= Bones.LocalMetarig.gameObject.AddComponent<RigTracker>();
 
         // Setting up the head
         RigTrackerLocal.head = mainCamera.transform;
-        
+
         // Setting up the left arm
 
         // Disable built-in constraints since they don't support hints (fucks up the elbows)
         Bones.LocalLeftArmRig.GetComponent<ChainIKConstraint>().weight = 0;
-        
+
         // Create new hints and targets for the VR rig
         var localLeftArmRigTarget = new GameObject("VR Left Arm Rig Target")
         {
@@ -252,7 +254,7 @@ public class VRPlayer : MonoBehaviour
                 localScale = Bones.LocalLeftArmRigTarget.localScale
             }
         }.transform;
-        
+
         var localLeftArmRigHint = new GameObject("VR Left Arm Rig Hint")
         {
             transform =
@@ -263,7 +265,7 @@ public class VRPlayer : MonoBehaviour
                 localScale = Bones.LocalLeftArmRigHint.localScale
             }
         }.transform;
-        
+
         LocalLeftArmVRRig = Bones.LocalLeftArmRig.gameObject.AddComponent<TwoBoneIKConstraint>();
 
         LocalLeftArmVRRig.data.root = Bones.LocalLeftUpperArm;
@@ -283,12 +285,12 @@ public class VRPlayer : MonoBehaviour
             positionOffset = Vector3.zero,
             rotationOffset = Vector3.zero
         };
-        
+
         // Setting up the right arm
 
         // Disable built-in constraints since they don't support hints (fucks up the elbows)
         Bones.LocalRightArmRig.GetComponent<ChainIKConstraint>().weight = 0;
-        
+
         // Create new hints and targets for the VR rig
         var localRightArmRigTarget = new GameObject("VR Right Arm Rig Target")
         {
@@ -300,7 +302,7 @@ public class VRPlayer : MonoBehaviour
                 localScale = Bones.LocalRightArmRigTarget.localScale
             }
         }.transform;
-        
+
         var localRightArmRigHint = new GameObject("VR Right Arm Rig Hint")
         {
             transform =
@@ -311,7 +313,7 @@ public class VRPlayer : MonoBehaviour
                 localScale = Bones.LocalRightArmRigHint.localScale
             }
         }.transform;
-        
+
         LocalRightArmVRRig = Bones.LocalRightArmRig.gameObject.AddComponent<TwoBoneIKConstraint>();
 
         LocalRightArmVRRig.data.root = Bones.LocalRightUpperArm;
@@ -353,7 +355,7 @@ public class VRPlayer : MonoBehaviour
 
         // Disable built-in constraints since they don't support hints (fucks up the elbows)
         Bones.LeftArmRig.GetComponent<ChainIKConstraint>().weight = 0;
-        
+
         // Create new hints and targets for the VR rig
         var leftArmRigTarget = new GameObject("VR Left Arm Rig Target")
         {
@@ -365,7 +367,7 @@ public class VRPlayer : MonoBehaviour
                 localScale = Bones.LeftArmRigTarget.localScale
             }
         }.transform;
-        
+
         var leftArmRigHint = new GameObject("VR Left Arm Rig Hint")
         {
             transform =
@@ -376,7 +378,7 @@ public class VRPlayer : MonoBehaviour
                 localScale = Bones.LeftArmRigHint.localScale
             }
         }.transform;
-        
+
         LeftArmVRRig = Bones.LeftArmRig.gameObject.AddComponent<TwoBoneIKConstraint>();
 
         LeftArmVRRig.data.root = Bones.LeftUpperArm;
@@ -397,10 +399,10 @@ public class VRPlayer : MonoBehaviour
         };
 
         // Setting up the right arm
-        
+
         // Disable built-in constraints since they don't support hints (fucks up the elbows)
         Bones.RightArmRig.GetComponent<ChainIKConstraint>().weight = 0;
-        
+
         // Create new hints and targets for the VR rig
         var rightArmRigTarget = new GameObject("VR Right Arm Rig Target")
         {
@@ -412,7 +414,7 @@ public class VRPlayer : MonoBehaviour
                 localScale = Bones.RightArmRigTarget.localScale
             }
         }.transform;
-        
+
         var rightArmRigHint = new GameObject("VR Right Arm Rig Hint")
         {
             transform =
@@ -423,7 +425,7 @@ public class VRPlayer : MonoBehaviour
                 localScale = Bones.RightArmRigHint.localScale
             }
         }.transform;
-        
+
         RightArmVRRig = Bones.RightArmRig.gameObject.AddComponent<TwoBoneIKConstraint>();
 
         RightArmVRRig.data.root = Bones.RightUpperArm;
@@ -467,7 +469,7 @@ public class VRPlayer : MonoBehaviour
         if (obj.performed)
             ResetHeight();
     }
-    
+
     private void Update()
     {
         // Make sure the XR Origin has the same parent as the player
@@ -476,7 +478,7 @@ public class VRPlayer : MonoBehaviour
             xrOrigin.parent = transform.parent;
             TurningProvider.SetOffset(xrOrigin.transform.localEulerAngles.y);
         }
-        
+
         var movement = mainCamera.transform.localPosition - lastFrameHmdPosition;
         movement.y = 0;
 
@@ -495,7 +497,7 @@ public class VRPlayer : MonoBehaviour
                                              (new Vector3(mainCamera.transform.localPosition.x, 0,
                                                  mainCamera.transform.localPosition.z) * -SCALE_FACTOR)
                                              .Divide(transform.parent.localScale);
-            
+
             isSprinting = false;
         }
 
@@ -515,7 +517,9 @@ public class VRPlayer : MonoBehaviour
         };
 
         var movementAccounted = rotationOffset * movement;
-        var cameraPosAccounted = rotationOffset * new Vector3(mainCamera.transform.localPosition.x, 0, mainCamera.transform.localPosition.z);
+        var cameraPosAccounted = rotationOffset *
+                                 new Vector3(mainCamera.transform.localPosition.x, 0,
+                                     mainCamera.transform.localPosition.z);
 
         wasInSpecialAnimation = PlayerController.inSpecialInteractAnimation;
         wasInEnemyAnimation = PlayerController.inAnimationWithEnemy is not null;
@@ -550,14 +554,14 @@ public class VRPlayer : MonoBehaviour
         if (!ShipBuildModeManager.Instance.InBuildMode && !PlayerController.inSpecialInteractAnimation)
             TurningProvider.Update();
 
-        var lastOriginPos = xrOrigin.localPosition;
-
         // If we are in special animation allow 6 DOF but don't update player position
         if (!PlayerController.inSpecialInteractAnimation)
             xrOrigin.localPosition = new Vector3(
-                transform.localPosition.x + (totalMovementSinceLastMove.x * SCALE_FACTOR) - (cameraPosAccounted.x * SCALE_FACTOR),
+                transform.localPosition.x + totalMovementSinceLastMove.x * SCALE_FACTOR -
+                cameraPosAccounted.x * SCALE_FACTOR,
                 transform.localPosition.y,
-                transform.localPosition.z + (totalMovementSinceLastMove.z * SCALE_FACTOR) - (cameraPosAccounted.z * SCALE_FACTOR)
+                transform.localPosition.z + totalMovementSinceLastMove.z * SCALE_FACTOR -
+                cameraPosAccounted.z * SCALE_FACTOR
             );
         else
             xrOrigin.localPosition = transform.localPosition + specialAnimationPositionOffset;
@@ -578,7 +582,7 @@ public class VRPlayer : MonoBehaviour
 
         // Apply crouch offset (don't offset if roomscale)
         crouchOffset = Mathf.Lerp(crouchOffset, !IsRoomCrouching && PlayerController.isCrouching ? -1 : 0, 0.2f);
-        
+
         // Apply car animation offset
         var carOffset = PlayerController.inVehicleAnimation ? -0.5f : 0f;
 
@@ -587,12 +591,12 @@ public class VRPlayer : MonoBehaviour
             cameraFloorOffset + crouchOffset - PlayerController.sinkingValue * 2.5f + carOffset, 0);
         xrOrigin.localRotation = rotationOffset;
 
-        if ((xrOrigin.localPosition - lastOriginPos).sqrMagnitude > SQR_MOVE_THRESHOLD) // player moved
-                                                                                 // Rotate body sharply but still smoothly
-            TurnBodyToCamera(TURN_WEIGHT_SHARP);
-        else if (!PlayerController.inSpecialInteractAnimation && GetBodyToCameraAngle() is var angle and > TURN_ANGLE_THRESHOLD)
-            // Rotate body as smoothly as possible but prevent 360 deg head twists on quick rotations
-            TurnBodyToCamera(TURN_WEIGHT_SHARP * Mathf.InverseLerp(TURN_ANGLE_THRESHOLD, 170f, angle));
+        // If head rotated too much, or we moved, force new player rotation
+        if (PlayerController.moveInputVector.sqrMagnitude > SQR_MOVE_THRESHOLD ||
+            (!PlayerController.inSpecialInteractAnimation &&
+             GetBodyToCameraAngle() > TURN_ANGLE_THRESHOLD))
+            transform.eulerAngles = new Vector3(transform.eulerAngles.x, mainCamera.transform.eulerAngles.y,
+                transform.eulerAngles.z);
 
         if (!PlayerController.inSpecialInteractAnimation)
             lastFrameHmdPosition = mainCamera.transform.localPosition;
@@ -612,12 +616,12 @@ public class VRPlayer : MonoBehaviour
                 stopSprintingCoroutine = null;
             }
 
-
-            PlayerControllerB_Sprint_Patch.sprint = !IsRoomCrouching && !PlayerController.isCrouching && isSprinting ? 1 : 0;
+            PlayerControllerB_Sprint_Patch.sprint =
+                !IsRoomCrouching && !PlayerController.isCrouching && isSprinting ? 1 : 0;
         }
         else
             PlayerControllerB_Sprint_Patch.sprint = !IsRoomCrouching && Actions.Instance["Sprint"].IsPressed() ? 1 : 0;
-        
+
         if (!PlayerController.isPlayerDead)
             rigChannel.SendPacket(Serialization.Serialize(new Rig()
             {
@@ -648,7 +652,7 @@ public class VRPlayer : MonoBehaviour
             var parent = PlayerController.physicsParent ?? (PlayerController.isInElevator
                 ? PlayerController.playersManager.elevatorTransform
                 : PlayerController.playersManager.playersContainer);
-            
+
             spectatorRigChannel.SendPacket(Serialization.Serialize(
                 new SpectatorRig
                 {
@@ -669,7 +673,7 @@ public class VRPlayer : MonoBehaviour
     private void LateUpdate()
     {
         UpdateRigOffsets();
-        
+
         var angles = mainCamera.transform.eulerAngles;
         var deltaAngles = new Vector3(
             Mathf.DeltaAngle(lastFrameHmdRotation.x, angles.x),
@@ -693,11 +697,11 @@ public class VRPlayer : MonoBehaviour
         if (height is > 3f or < 0f)
             ResetHeight();
     }
-    
+
     private void OnDestroy()
     {
         prefsChannel.Dispose();
-        
+
         Actions.Instance["Sprint"].performed -= Sprint_performed;
         Actions.Instance["Reset Height"].performed -= ResetHeight_performed;
     }
@@ -712,18 +716,18 @@ public class VRPlayer : MonoBehaviour
         PlayerController.playerBodyAnimator?.SetLayerWeight(
             PlayerController.playerBodyAnimator.GetLayerIndex("UpperBodyEmotes"), 0);
         PlayerController.playerBodyAnimator?.SetBool("ClimbingLadder", false);
-        
+
         // Vanilla Rigs
         PlayerController.leftArmRig.weight = 0;
         PlayerController.rightArmRig.weight = 0;
-        
+
         // VR Rigs
         LocalLeftArmVRRig.weight = 1;
         LocalRightArmVRRig.weight = 1;
         LeftArmVRRig.weight = 1;
         RightArmVRRig.weight = 1;
     }
-    
+
     public void EnableInteractorVisuals(bool visible = true)
     {
         leftControllerRayInteractor.GetComponent<XRInteractorLineVisual>().enabled = visible;
@@ -734,14 +738,14 @@ public class VRPlayer : MonoBehaviour
     {
         if (resetHeightCoroutine is not null)
             return;
-        
+
         resetHeightCoroutine = StartCoroutine(ResetHeightRoutine());
     }
 
     private IEnumerator ResetHeightRoutine()
     {
         const float targetHeight = 2.3f;
-        
+
         yield return new WaitForSeconds(0.2f);
 
         realHeight = mainCamera.transform.localPosition.y * SCALE_FACTOR;
@@ -774,7 +778,7 @@ public class VRPlayer : MonoBehaviour
 
     private IEnumerator UpdatePlayerPrefs()
     {
-        while (true)
+        while (this)
         {
             // More concise layout if more prefs need to be synced
             prefsChannel.SendPacket([Plugin.Config.DisableCarSteeringWheelInteraction.Value ? (byte)1 : (byte)0]);
@@ -783,15 +787,10 @@ public class VRPlayer : MonoBehaviour
         }
     }
 
-    private void TurnBodyToCamera(float turnWeight)
-    {
-        var newRotation = Quaternion.Euler(transform.eulerAngles.x, mainCamera.transform.eulerAngles.y, transform.eulerAngles.z);
-        transform.rotation = Quaternion.Lerp(transform.rotation, newRotation, Time.deltaTime * turnWeight);
-    }
-
     private float GetBodyToCameraAngle()
     {
-        return Quaternion.Angle(Quaternion.Euler(0, transform.eulerAngles.y, 0), Quaternion.Euler(0, mainCamera.transform.eulerAngles.y, 0));
+        return Quaternion.Angle(Quaternion.Euler(0, transform.eulerAngles.y, 0),
+            Quaternion.Euler(0, mainCamera.transform.eulerAngles.y, 0));
     }
 }
 

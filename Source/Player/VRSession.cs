@@ -448,10 +448,10 @@ public class VRSession : MonoBehaviour
         UICamera.nearClipPlane = 0.01f;
         UICamera.farClipPlane = 150f;
         UICamera.enabled = true;
+        
+        XRSettings.eyeTextureResolutionScale = 1.2f;
 
         FindObjectsOfType<CanvasTransformFollow>().Do(follow => follow.ResetPosition(true));
-
-        XRSettings.eyeTextureResolutionScale = 1;
     }
 
     private void SwitchToGameCamera()

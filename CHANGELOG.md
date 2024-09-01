@@ -1,3 +1,25 @@
+# 1.3.2
+
+**Additions**:
+
+- Added the XR Occlusion Mesh as a performance option. Will cause artifacts on low framerates.
+- Added XR Mirror View patches that allow moving the monitor view around a bit. Invalid values will cause the monitor view to break.
+- Added an option to change UI press sensitivity, which has also been made more sensitive by default
+- Added a toast notification for when VR fails informing the user to **check the damn logs**
+
+**Changes**:
+
+- The face-locked UI position and rotation is now smoothed a bit
+- Moved some startup logic to a patcher plugin, which means restarting is no longer required when first using LCVR
+- Optimized the networking system a bit more
+- The main menu and pause menu resolutions have been increased by 20%
+
+**Bug fixes:**
+
+- Fixed error spam in Maneater baby and spray paint items
+- Fixed TZP steering the player towards the wrong direction
+- Fixed potential denial-of-service exploit in networking system
+
 # 1.3.1
 
 ## V60! <sub><sup><sub><sup><sub><sup><sub>v62

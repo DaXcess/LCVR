@@ -9,6 +9,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
+using UnityEngine.XR;
 using UnityEngine.XR.Interaction.Toolkit.UI;
 
 namespace LCVR.Patches;
@@ -117,6 +118,8 @@ internal static class UIPatches
 
         leftControllerInteractor.rayOriginTransform.localRotation = Quaternion.Euler(60, 347, 90);
         rightControllerInteractor.rayOriginTransform.localRotation = Quaternion.Euler(60, 347, 270);
+
+        XRSettings.eyeTextureResolutionScale = 1.2f;
     }
 
     /// <summary>

@@ -467,9 +467,10 @@ public class VRHUD : MonoBehaviour
 
         transform.position = camTransform.position;
 
-        // Face canvas
-        FaceCanvas.transform.localPosition = camTransform.forward * 0.5f;
-        FaceCanvas.transform.rotation = camTransform.rotation;
+        // Face canvas        
+        FaceCanvas.transform.localPosition =
+            Vector3.Lerp(FaceCanvas.transform.localPosition, camTransform.forward * 0.5f, 0.4f);
+        FaceCanvas.transform.rotation = Quaternion.Slerp(FaceCanvas.transform.rotation, camTransform.rotation, 0.4f);
         
         // Interaction canvas
         WorldInteractionCanvas.transform.rotation =
