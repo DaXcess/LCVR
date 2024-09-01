@@ -558,10 +558,10 @@ public class VRPlayer : MonoBehaviour
         if (!PlayerController.inSpecialInteractAnimation)
             xrOrigin.localPosition = new Vector3(
                 transform.localPosition.x + totalMovementSinceLastMove.x * SCALE_FACTOR -
-                cameraPosAccounted.x * SCALE_FACTOR,
+                cameraPosAccounted.x * SCALE_FACTOR * transform.localScale.x,
                 transform.localPosition.y,
                 transform.localPosition.z + totalMovementSinceLastMove.z * SCALE_FACTOR -
-                cameraPosAccounted.z * SCALE_FACTOR
+                cameraPosAccounted.z * SCALE_FACTOR * transform.localScale.z
             );
         else
             xrOrigin.localPosition = transform.localPosition + specialAnimationPositionOffset;
@@ -588,7 +588,9 @@ public class VRPlayer : MonoBehaviour
 
         // Apply height and rotation offsets
         xrOrigin.localPosition += new Vector3(0,
-            cameraFloorOffset + crouchOffset - PlayerController.sinkingValue * 2.5f + carOffset, 0);
+                                      cameraFloorOffset + crouchOffset - PlayerController.sinkingValue * 2.5f +
+                                      carOffset, 0) *
+                                  transform.localScale.y;
         xrOrigin.localRotation = rotationOffset;
 
         // If head rotated too much, or we moved, force new player rotation

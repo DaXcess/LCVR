@@ -19,6 +19,7 @@
 - Fixed error spam in Maneater baby and spray paint items
 - Fixed TZP steering the player towards the wrong direction
 - Fixed potential denial-of-service exploit in networking system
+- Fixed issues with positioning when standing on top of physics objects (car, elevator)
 
 # 1.3.1
 
