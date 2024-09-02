@@ -369,7 +369,13 @@ public class VRHUD : MonoBehaviour
         endgameStats.SetParent(endgameStatsContainer, false);
         endgameStats.localPosition = Vector3.zero;
         endgameStats.localRotation = Quaternion.identity;
-
+        
+        // Meteor Shower Alert
+        var meteorShowerContainer = specialHud.transform.Find("MeteorShowerWarning");
+        meteorShowerContainer.Find("Image/Image").gameObject.SetActive(false); // Remove BG
+        meteorShowerContainer.localScale = Vector3.one * 0.8f;
+        meteorShowerContainer.localPosition = Vector3.down * 100;
+        
         // Loading Screen: In front of eyes
         var loadingScreen = GameObject.Find("LoadingText");
 
@@ -434,6 +440,9 @@ public class VRHUD : MonoBehaviour
         MoveToFront(PitchLockedCanvas);
         MoveToFront(WorldInteractionCanvas);
         MoveToFront(objectScanner.transform);
+        
+        // Set up belt bag UI
+        FindObjectOfType<BeltBagInventoryUI>(true).gameObject.AddComponent<BeltBagUI>();
     }
 
     private static void MoveToFront(Component component)

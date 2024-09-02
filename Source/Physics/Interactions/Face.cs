@@ -120,7 +120,7 @@ internal static class FaceItemInteractionPatches
     [HarmonyPrefix]
     private static bool CanInteractUsingController()
     {
-        return VRSession.Instance?.Face is not { } face || face.IsInteracting;
+        return VRSession.Instance?.Face is not { IsInteracting: true };
     }
 
     /// <summary>
@@ -130,6 +130,6 @@ internal static class FaceItemInteractionPatches
     [HarmonyPrefix]
     private static bool CanStopInteractUsingController()
     {
-        return VRSession.Instance?.Face is not { } face || face.IsInteracting;
+        return VRSession.Instance?.Face is not { IsInteracting: true };
     }
 }

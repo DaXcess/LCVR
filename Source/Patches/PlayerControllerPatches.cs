@@ -329,6 +329,21 @@ internal static class PlayerControllerPatches
             return player.transform.position + Vector3.up * Mathf.Clamp(actualHeight, 0.5f, 2.35f);
         }
     }
+
+    /// <summary>
+    /// Allow interacting with items even when we're inside of a special menu
+    /// </summary>
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.ActivateItem_performed))]
+    [HarmonyTranspiler]
+    private static IEnumerable<CodeInstruction> AllowActivateDuringMenu(IEnumerable<CodeInstruction> instructions)
+    {
+        return new CodeMatcher(instructions)
+            .MatchForward(false,
+                new CodeMatch(OpCodes.Ldfld, Field(typeof(PlayerControllerB), nameof(PlayerControllerB.inSpecialMenu))))
+            .Advance(-1)
+            .RemoveInstructions(4)
+            .InstructionEnumeration();
+    }
 }
 
 [LCVRPatch(LCVRPatchTarget.Universal)]

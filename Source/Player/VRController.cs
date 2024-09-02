@@ -7,6 +7,7 @@ using LCVR.Input;
 using LCVR.Assets;
 using LCVR.UI;
 using System.Collections.Generic;
+using LCVR.Experiments;
 
 namespace LCVR.Player;
 
@@ -51,7 +52,7 @@ public class VRController : MonoBehaviour
         debugLineRenderer.widthCurve.keys = [new Keyframe(0, 1)];
         debugLineRenderer.widthMultiplier = 0.005f;
         debugLineRenderer.positionCount = 2;
-        debugLineRenderer.SetPositions(new[] { Vector3.zero, Vector3.zero });
+        debugLineRenderer.SetPositions([Vector3.zero, Vector3.zero]);
         debugLineRenderer.numCornerVertices = 4;
         debugLineRenderer.numCapVertices = 4;
         debugLineRenderer.alignment = LineAlignment.View;
@@ -131,6 +132,13 @@ public class VRController : MonoBehaviour
             if (StartOfRound.Instance.suckingPlayersOutOfShip)
                 return;
 
+            // Handle belt bag item
+            if (PlayerController.currentlyHeldObjectServer is { itemProperties.itemId: 20 })
+            {
+                BeginBagTool();
+                return;
+            }
+
             // Here we try and pickup the item if it's possible
             if (!PlayerController.activatingItem && !VRSession.Instance.LocalPlayer.PlayerController.isPlayerDead)
                 BeginGrabObject();
@@ -202,9 +210,7 @@ public class VRController : MonoBehaviour
     private void Update()
     {
         if (PlayerController.IsOwner && PlayerController.isPlayerControlled)
-        {
             ClickHoldInteraction();
-        }
     }
 
     private void LateUpdate()
@@ -242,7 +248,7 @@ public class VRController : MonoBehaviour
                     PlayerController.previousHoveringOverTrigger.isBeingHeldByPlayer = false;
                 }
 
-                if (component == null)
+                if (component == null || !component.enabled)
                     return;
 
                 // Ignore disabled triggers (like ship lever, charging station, etc)
@@ -251,16 +257,10 @@ public class VRController : MonoBehaviour
                 
                 if (VRSession.Instance.LocalPlayer.PlayerController.isPlayerDead)
                 {
-                    if (component == null)
-                        return;
-
                     // Only ladders and entrance trigger are allowed
                     if (!component.isLadder && hit.transform.gameObject.GetComponent<EntranceTeleport>() == null)
                         return;
                 }
-
-                if (component == null)
-                    return;
 
                 VRSession.Instance.HUD.UpdateInteractCanvasPosition(position);
 
@@ -326,7 +326,13 @@ public class VRController : MonoBehaviour
                         return;
                     }
 
-                    if (component != null && !string.IsNullOrEmpty(component.customGrabTooltip))
+                    if (component is null)
+                        return;
+
+                    if (PlayerController.currentlyHeldObjectServer is { itemProperties.itemId: 20 } &&
+                        CanBeInsertedIntoBag(component))
+                        CursorTip = "Store in bag";
+                    else if (!string.IsNullOrEmpty(component.customGrabTooltip))
                         CursorTip = component.customGrabTooltip;
                     else
                         CursorTip = "Grab";
@@ -352,17 +358,35 @@ public class VRController : MonoBehaviour
     private void BeginGrabObject()
     {
         var ray = new Ray(InteractOrigin.position, InteractOrigin.forward);
-        if (ray.Raycast(out var hit, PlayerController.grabDistance, INTERACTABLE_OBJECTS_MASK) &&
-            hit.collider.gameObject.layer != 8 && hit.collider.CompareTag("PhysicsProp"))
-        {
-            if (PlayerController.twoHanded || PlayerController.sinkingValue > 0.73f) return;
+        if (!ray.Raycast(out var hit, PlayerController.grabDistance, INTERACTABLE_OBJECTS_MASK) ||
+            hit.collider.gameObject.layer == 8 || !hit.collider.CompareTag("PhysicsProp"))
+            return;
 
-            // Ignore disabled triggers (like ship lever, charging station, etc)
-            if (DisabledInteractTriggers.Contains(hit.collider.gameObject.name))
-                return;
+        if (PlayerController.twoHanded || PlayerController.sinkingValue > 0.73f) return;
 
-            GrabItem(hit.collider.transform.gameObject.GetComponent<GrabbableObject>());
-        }
+        // Ignore disabled triggers (like ship lever, charging station, etc)
+        if (DisabledInteractTriggers.Contains(hit.collider.gameObject.name))
+            return;
+
+        GrabItem(hit.collider.transform.gameObject.GetComponent<GrabbableObject>());
+    }
+    
+    private void BeginBagTool()
+    {
+        // TODO: Remove line
+        var line = DebugLinePool.GetLine("BagTool");
+        line.startColor = line.endColor = Color.red;
+        line.SetPositions([InteractOrigin.position, InteractOrigin.position + InteractOrigin.forward * 4]);
+        
+        var ray = new Ray(InteractOrigin.position, InteractOrigin.forward);
+        if (!ray.Raycast(out var hit, 4, 1073742144))
+            return;
+
+        var item = hit.collider.GetComponent<GrabbableObject>();
+        if (item == null || item == PlayerController.currentlyHeldObjectServer || !CanBeInsertedIntoBag(item))
+            return;
+
+        ((BeltBagItem)PlayerController.currentlyHeldObjectServer).TryAddObjectToBag(item);
     }
 
     public void GrabItem(GrabbableObject item)
@@ -413,5 +437,11 @@ public class VRController : MonoBehaviour
 
             PlayerController.grabObjectCoroutine = PlayerController.StartCoroutine(PlayerController.GrabObject());
         }
+    }
+
+    private static bool CanBeInsertedIntoBag(GrabbableObject item)
+    {
+        return !item.itemProperties.isScrap && !item.isHeld && !item.isHeldByEnemy &&
+               item.itemProperties.itemId != 123984 && item.itemProperties.itemId != 819501;
     }
 }

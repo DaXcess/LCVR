@@ -1,3 +1,4 @@
+using BepInEx.Bootstrap;
 using HarmonyLib;
 using UnityEngine;
 
@@ -14,6 +15,9 @@ internal static class CursorPatches
     [HarmonyPrefix]
     private static void PatchCursorVisibility(ref bool value)
     {
+        if (Chainloader.PluginInfos.ContainsKey("com.sinai.unityexplorer"))
+            return;
+        
         value = false;
     }
 
@@ -24,6 +28,9 @@ internal static class CursorPatches
     [HarmonyPrefix]
     private static void PatchCursorLockState(ref CursorLockMode value)
     {
+        if (Chainloader.PluginInfos.ContainsKey("com.sinai.unityexplorer"))
+            return;
+        
         value = CursorLockMode.None;
     }
 }
