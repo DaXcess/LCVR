@@ -17,7 +17,8 @@ internal static class Items
         { "Flashlight", typeof(VRFlashlight) },
         { "Laser pointer", typeof(VRFlashlight) },
         { "Kitchen knife", typeof(VRKnife) },
-        { "Maneater", typeof(VRManEaterBaby) }
+        { "Maneater", typeof(VRManEaterBaby) },
+        { "Belt bag", typeof(VRBeltBagItem) }
     };
 
     public static readonly Dictionary<string, (Vector3, Vector3)> itemOffsets = new()

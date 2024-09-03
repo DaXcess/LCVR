@@ -98,9 +98,9 @@ public class VRController : MonoBehaviour
         DisabledInteractTriggers.Add(objectName);
     }
 
-    public void EnableDebugInteractorVisual(bool enabled = true)
+    public void ShowDebugInteractorVisual(bool visible = true)
     {
-        debugLineRenderer.enabled = enabled && Plugin.Config.EnableInteractRay.Value;
+        debugLineRenderer.enabled = visible && Plugin.Config.EnableInteractRay.Value;
     }
 
     private void OnInteractPerformed(InputAction.CallbackContext context)
@@ -133,9 +133,9 @@ public class VRController : MonoBehaviour
                 return;
 
             // Handle belt bag item
-            if (PlayerController.currentlyHeldObjectServer is { itemProperties.itemId: 20 })
+            if (PlayerController.currentlyHeldObjectServer is BeltBagItem bag)
             {
-                BeginBagTool();
+                BeginBagTool(bag);
                 return;
             }
 
@@ -371,13 +371,8 @@ public class VRController : MonoBehaviour
         GrabItem(hit.collider.transform.gameObject.GetComponent<GrabbableObject>());
     }
     
-    private void BeginBagTool()
+    private void BeginBagTool(BeltBagItem bag)
     {
-        // TODO: Remove line
-        var line = DebugLinePool.GetLine("BagTool");
-        line.startColor = line.endColor = Color.red;
-        line.SetPositions([InteractOrigin.position, InteractOrigin.position + InteractOrigin.forward * 4]);
-        
         var ray = new Ray(InteractOrigin.position, InteractOrigin.forward);
         if (!ray.Raycast(out var hit, 4, 1073742144))
             return;
@@ -386,7 +381,7 @@ public class VRController : MonoBehaviour
         if (item == null || item == PlayerController.currentlyHeldObjectServer || !CanBeInsertedIntoBag(item))
             return;
 
-        ((BeltBagItem)PlayerController.currentlyHeldObjectServer).TryAddObjectToBag(item);
+        bag.TryAddObjectToBag(item);
     }
 
     public void GrabItem(GrabbableObject item)

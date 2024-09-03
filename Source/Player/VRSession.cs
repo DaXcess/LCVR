@@ -394,7 +394,7 @@ public class VRSession : MonoBehaviour
         HUD.TerminalKeyboard.PresentKeyboard();
 
         LocalPlayer.EnableInteractorVisuals();
-        LocalPlayer.PrimaryController.EnableDebugInteractorVisual(false);
+        LocalPlayer.PrimaryController.ShowDebugInteractorVisual(false);
     }
 
     public void OnExitTerminal()
@@ -403,7 +403,7 @@ public class VRSession : MonoBehaviour
             HUD.TerminalKeyboard.Close();
 
         LocalPlayer.EnableInteractorVisuals(false);
-        LocalPlayer.PrimaryController.EnableDebugInteractorVisual();
+        LocalPlayer.PrimaryController.ShowDebugInteractorVisual();
     }
 
     public void OnPauseMenuOpened()

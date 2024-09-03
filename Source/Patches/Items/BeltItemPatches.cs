@@ -41,6 +41,5 @@ internal static class BeltItemPatches
 
         StartOfRound.Instance.localPlayerController.SetInSpecialMenu(false);
         return false;
-
     }
 }

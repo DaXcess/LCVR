@@ -26,7 +26,7 @@ internal class VRManEaterBaby : VRItem<CaveDwellerPhysicsProp>
         var source = VRSession.Instance.LocalPlayer.PrimaryController.transform;
         
         shake = new ShakeDetector(source, 0.015f, true);
-        shakeBig = new ShakeDetector(source, 0.04f, true);
+        shakeBig = new ShakeDetector(source, 0.05f, true);
         
         shake.onShake += OnShakeMotion;
         shakeBig.onShake += OnShakeBigMotion;

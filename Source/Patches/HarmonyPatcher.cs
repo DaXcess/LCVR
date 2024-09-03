@@ -49,7 +49,7 @@ internal static class HarmonyPatcher
             }
             catch (Exception e)
             {
-                Logger.LogError($"Failed to apply patches from {type}: {e.Message}");
+                Logger.LogError($"Failed to apply patches from {type}: {e.Message}, {e.InnerException}");
             }
         });
     }

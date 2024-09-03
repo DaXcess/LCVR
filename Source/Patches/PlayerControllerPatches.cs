@@ -341,7 +341,8 @@ internal static class PlayerControllerPatches
             .MatchForward(false,
                 new CodeMatch(OpCodes.Ldfld, Field(typeof(PlayerControllerB), nameof(PlayerControllerB.inSpecialMenu))))
             .Advance(-1)
-            .RemoveInstructions(4)
+            .SetOpcodeAndAdvance(OpCodes.Nop)
+            .RemoveInstructions(3)
             .InstructionEnumeration();
     }
 }
