@@ -1,5 +1,4 @@
-﻿using BepInEx.Bootstrap;
-using HarmonyLib;
+﻿using HarmonyLib;
 using LCVR.Assets;
 using LCVR.Player;
 using LCVR.UI;
@@ -8,6 +7,7 @@ using Microsoft.MixedReality.Toolkit.Experimental.UI;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem.UI;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using UnityEngine.XR;
 using UnityEngine.XR.Interaction.Toolkit.UI;
@@ -259,56 +259,61 @@ internal static class UniversalUIPatches
         if (__instance.isInitScene)
             return;
 
-        InjectSettingsScreen();
-
 #if DEBUG
         InjectDebugScreen();
 #endif
     }
 
-    private static void InjectSettingsScreen()
+    [HarmonyPatch(typeof(SettingsOption), nameof(SettingsOption.OnEnable))]
+    [HarmonyPostfix]
+    private static void Something(SettingsOption __instance)
     {
-        if (Plugin.Config.DisableSettingsButton.Value)
+        if (Plugin.Config.DisableSettingsButton.Value || __instance.name is not "SetToDefault")
             return;
+        
+        var isInGame = SceneManager.GetActiveScene().name is not "MainMenu";
+        if (isInGame && !VRSession.InVR)
+            return;
+        
+        Object.Destroy(__instance);
 
-        // Add button to main menu
-        var container = GameObject.Find("Canvas/MenuContainer");
-        var mainButtons = container.Find("MainButtons");
-        var settingsObject = new GameObject("LCVRSettings");
+        var buttonObject = Object.Instantiate(__instance.gameObject, __instance.transform.parent);
+        var button = buttonObject.GetComponent<Button>();
 
-        settingsObject.transform.parent = mainButtons.transform;
-        settingsObject.transform.localPosition = new Vector3(370,
-            -130 + (Chainloader.PluginInfos.ContainsKey("ainavt.lc.lethalconfig") ? -38.5f : 0f), 0);
-        settingsObject.transform.localEulerAngles = Vector3.zero;
-        settingsObject.transform.localScale = Vector3.one * 0.7f;
+        buttonObject.name = "VRSettings";
+        buttonObject.transform.localPosition += Vector3.up * 36;
+        buttonObject.GetComponentInChildren<TextMeshProUGUI>().text = "> VR Settings";
 
-        var settingsImage = settingsObject.AddComponent<Image>();
-        var settingsButton = settingsObject.AddComponent<Button>();
-        var settingsButtonColors = settingsButton.colors;
+        var settingsPanel = Object.Instantiate(AssetManager.SettingsPanel,
+            isInGame ? __instance.transform.parent.parent : __instance.transform.parent.parent.parent);
+        var settingsManager = settingsPanel.GetComponent<SettingsManager>();
 
-        settingsImage.sprite = AssetManager.SettingsImage;
-        settingsButtonColors.highlightedColor = new Color(0.8f, 0.8f, 0.8f);
-        settingsButtonColors.pressedColor = new Color(0.7f, 0.7f, 0.7f);
-        settingsButtonColors.fadeDuration = 0.1f;
-
-        settingsButton.colors = settingsButtonColors;
-
-        // Insert settings panel
-        var settingsPanel = Object.Instantiate(AssetManager.SettingsPanel, container.transform);
-
+        if (isInGame)
+        {
+            settingsManager.DisableCategory("interaction");
+            settingsManager.DisableCategory("car");
+        }
+        
         settingsPanel.transform.localPosition = Vector3.zero;
         settingsPanel.transform.localEulerAngles = Vector3.zero;
         settingsPanel.transform.localScale = Vector3.one;
         settingsPanel.transform.SetSiblingIndex(6);
         settingsPanel.SetActive(false);
 
-        var settingsManager = settingsPanel.GetComponent<SettingsManager>();
-
-        settingsButton.onClick.AddListener(() =>
+        button.onClick.RemoveAllListeners();
+        button.onClick.m_PersistentCalls.Clear();
+        button.onClick.AddListener(() =>
         {
             settingsManager.PlayButtonPressSFX();
             settingsPanel.SetActive(true);
         });
+    }
+
+    [HarmonyPatch(typeof(QuickMenuManager), nameof(QuickMenuManager.CloseQuickMenu))]
+    [HarmonyPostfix]
+    private static void Guh()
+    {
+        Object.FindObjectOfType<SettingsManager>(true)?.gameObject.SetActive(false);
     }
 
 #if DEBUG

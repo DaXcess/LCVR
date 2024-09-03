@@ -26,9 +26,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="ThirdParty\**" />
-    <EmbeddedResource Remove="ThirdParty\**" />
-    <None Remove="ThirdParty\**" />
     <Compile Remove="Preloader\**" />
     <EmbeddedResource Remove="Preloader\**" />
     <None Remove="Preloader\**" />
@@ -60,22 +57,8 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="Properties\Resources.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Update="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2"
+      PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>

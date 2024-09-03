@@ -2,6 +2,7 @@
 
 **Additions**:
 
+- Added support for V64 features
 - Added the XR Occlusion Mesh as a performance option. Will cause artifacts on low framerates.
 - Added XR Mirror View patches that allow moving the monitor view around a bit. Invalid values will cause the monitor view to break.
 - Added an option to change UI press sensitivity, which has also been made more sensitive by default
@@ -13,6 +14,8 @@
 - Moved some startup logic to a patcher plugin, which means restarting is no longer required when first using LCVR
 - Optimized the networking system a bit more
 - The main menu and pause menu resolutions have been increased by 20%
+- Moved the VR settings into the settings menu
+- Most settings can now be changed from within the game
 
 **Bug fixes:**
 

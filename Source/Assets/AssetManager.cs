@@ -1,3 +1,4 @@
+using System.IO;
 using LCVR.Input;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -33,13 +34,14 @@ internal static class AssetManager
     public static Sprite KofiImage;
     public static Sprite DiscordImage;
     public static Sprite WarningImage;
-    public static Sprite SettingsImage;
 
     public static AudioClip DoorLocked;
 
     public static bool LoadAssets()
     {
-        assetBundle = AssetBundle.LoadFromMemory(Properties.Resources.lethalcompanyvr);
+        assetBundle =
+            AssetBundle.LoadFromFile(Path.Combine(Path.GetDirectoryName(Plugin.Config.AssemblyPath)!,
+                "lethalcompanyvr"));
 
         if (assetBundle == null)
         {
@@ -73,7 +75,6 @@ internal static class AssetManager
         KofiImage = assetBundle.LoadAsset<Sprite>("Ko-Fi");
         DiscordImage = assetBundle.LoadAsset<Sprite>("Discord");
         WarningImage = assetBundle.LoadAsset<Sprite>("Warning");
-        SettingsImage = assetBundle.LoadAsset<Sprite>("lcsettings-icon");
 
         DoorLocked = assetBundle.LoadAsset<AudioClip>("doorlocked");
 

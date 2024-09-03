@@ -49,7 +49,7 @@ public class Plugin : BaseUnityPlugin
 
         // Plugin startup logic
         LCVR.Logger.SetSource(Logger);
-        Config = new Config(base.Config);
+        Config = new Config(Info.Location, base.Config);
 
         Logger.LogInfo($"Starting {PLUGIN_NAME} v{PLUGIN_VERSION} ({GetCommitHash()})");
 

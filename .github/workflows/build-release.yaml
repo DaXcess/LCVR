@@ -52,6 +52,9 @@ jobs:
           gpg --output ./package/BepInEx/plugins/LCVR/LCVR.dll.sig --detach-sig ./package/BepInEx/plugins/LCVR/LCVR.dll
           gpg --output ./package/BepInEx/patchers/LCVR/LCVR.Preload.dll.sig --detach-sig ./package/BepInEx/patchers/LCVR/LCVR.Preload.dll
 
+          # Copy assets
+          cp ~/lcvr/lethalcompanyvr ./package/BepInEx/plugins/LCVR/lethalcompanyvr
+
           # Copy docs and license
           cp CHANGELOG.md ./package/CHANGELOG.md
           cp Docs/Thunderstore/README.md ./package/README.md

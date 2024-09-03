@@ -30,6 +30,7 @@ public class SettingsManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI descriptionText;
     [SerializeField] private TMP_Dropdown runtimesDropdown;
 
+    private readonly List<string> disabledCategories = ["internal"];
     private bool isInitializing = true;
 
     private void Awake()
@@ -73,8 +74,8 @@ public class SettingsManager : MonoBehaviour
 
         foreach (var entry in Plugin.Config.File)
         {
-            // Skip internal
-            if (entry.Key.Section.ToLower() == "internal")
+            // Skip disabled categories
+            if (disabledCategories.Contains(entry.Key.Section.ToLowerInvariant()))
                 continue;
 
             if (!categories.TryGetValue(entry.Key.Section, out var list))
@@ -192,24 +193,29 @@ public class SettingsManager : MonoBehaviour
         isInitializing = false;
     }
 
+    public void DisableCategory(string categoryName)
+    {
+        disabledCategories.Add(categoryName.ToLowerInvariant());
+    }
+    
     public void PlayButtonPressSFX()
     {
-        menuManager.PlayConfirmSFX();
+        menuManager?.PlayConfirmSFX();
     }
 
     public void PlayCancelSFX()
     {
-        menuManager.PlayCancelSFX();
+        menuManager?.PlayCancelSFX();
     }
 
     public void PlayHoverSFX()
     {
-        menuManager.MenuAudio.PlayOneShot(GameNetworkManager.Instance.buttonSelectSFX);
+        menuManager?.MenuAudio.PlayOneShot(GameNetworkManager.Instance.buttonSelectSFX);
     }
 
     public void PlayChangeSFX()
     {
-        menuManager.MenuAudio.PlayOneShot(GameNetworkManager.Instance.buttonTuneSFX);
+        menuManager?.MenuAudio.PlayOneShot(GameNetworkManager.Instance.buttonTuneSFX);
     }
 
     public void SetOpenXRRuntime(int index)
@@ -260,7 +266,7 @@ public class SettingsManager : MonoBehaviour
         if (!VRSession.InVR)
             return;
 
-        #region Reload and apply HDRP pipeline settings
+        #region Reload and apply HDRP pipeline and input settings
 
         var asset = QualitySettings.renderPipeline as HDRenderPipelineAsset;
 

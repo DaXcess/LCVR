@@ -7,7 +7,6 @@ using LCVR.Input;
 using LCVR.Assets;
 using LCVR.UI;
 using System.Collections.Generic;
-using LCVR.Experiments;
 
 namespace LCVR.Player;
 
@@ -61,6 +60,9 @@ public class VRController : MonoBehaviour
         debugLineRenderer.maskInteraction = SpriteMaskInteraction.None;
         debugLineRenderer.SetMaterials([AssetManager.DefaultRayMat]);
         debugLineRenderer.enabled = Plugin.Config.EnableInteractRay.Value;
+
+        Plugin.Config.EnableInteractRay.SettingChanged +=
+            (_, _) => debugLineRenderer.enabled = Plugin.Config.EnableInteractRay.Value;
 
         // Re-enable local player controller to make sure our "Interact" runs first
         Actions.Instance["Interact"].performed += OnInteractPerformed;

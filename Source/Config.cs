@@ -4,8 +4,9 @@ using UnityEngine.Rendering;
 
 namespace LCVR;
 
-public class Config(ConfigFile file)
+public class Config(string assemblyPath, ConfigFile file)
 {
+    public string AssemblyPath { get; } = assemblyPath;
     public ConfigFile File { get; } = file;
 
     // General configuration

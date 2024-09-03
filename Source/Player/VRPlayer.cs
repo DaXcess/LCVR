@@ -179,13 +179,7 @@ public class VRPlayer : MonoBehaviour
         rightControllerRayInteractor.transform.localRotation = Quaternion.Euler(80, 0, 0);
 
         // Add turning provider
-        TurningProvider = Plugin.Config.TurnProvider.Value switch
-        {
-            Config.TurnProviderOption.Snap => new SnapTurningProvider(),
-            Config.TurnProviderOption.Smooth => new SmoothTurningProvider(),
-            Config.TurnProviderOption.Disabled => new NullTurningProvider(),
-            _ => throw new ArgumentException("Unknown turn provider configuration option provided")
-        };
+        ReloadTurningProvider();
 
         // Input actions
         Actions.Instance["Reset Height"].performed += ResetHeight_performed;
@@ -222,6 +216,22 @@ public class VRPlayer : MonoBehaviour
         spectatorRigChannel = networkSystem.CreateChannel(ChannelType.SpectatorRig, PlayerController.playerClientId);
 
         StartCoroutine(UpdatePlayerPrefs());
+        
+        // Settings changes listener
+        Plugin.Config.TurnProvider.SettingChanged += (_, _) => ReloadTurningProvider();
+        Plugin.Config.SnapTurnSize.SettingChanged += (_, _) => ReloadTurningProvider();
+        Plugin.Config.SmoothTurnSpeedModifier.SettingChanged += (_, _) => ReloadTurningProvider();
+    }
+
+    private void ReloadTurningProvider()
+    {
+        TurningProvider = Plugin.Config.TurnProvider.Value switch
+        {
+            Config.TurnProviderOption.Snap => new SnapTurningProvider(),
+            Config.TurnProviderOption.Smooth => new SmoothTurningProvider(),
+            Config.TurnProviderOption.Disabled => new NullTurningProvider(),
+            _ => throw new ArgumentException("Unknown turn provider configuration option provided")
+        };
     }
 
     private void BuildVRRig()
