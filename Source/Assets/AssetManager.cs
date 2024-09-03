@@ -34,6 +34,7 @@ internal static class AssetManager
     public static Sprite KofiImage;
     public static Sprite DiscordImage;
     public static Sprite WarningImage;
+    public static Sprite SprintImage;
 
     public static AudioClip DoorLocked;
 
@@ -75,6 +76,7 @@ internal static class AssetManager
         KofiImage = assetBundle.LoadAsset<Sprite>("Ko-Fi");
         DiscordImage = assetBundle.LoadAsset<Sprite>("Discord");
         WarningImage = assetBundle.LoadAsset<Sprite>("Warning");
+        SprintImage = assetBundle.LoadAsset<Sprite>("Aguy");
 
         DoorLocked = assetBundle.LoadAsset<AudioClip>("doorlocked");
 

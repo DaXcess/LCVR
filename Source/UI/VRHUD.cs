@@ -24,6 +24,7 @@ public class VRHUD : MonoBehaviour
     private GameObject redGlowBodyParts;
     private GameObject weightUi;
     private GameObject pttIcon;
+    private GameObject sprintIcon;
     private GameObject clock;
     private GameObject battery;
     private GameObject inventory;
@@ -72,6 +73,11 @@ public class VRHUD : MonoBehaviour
     /// The keyboard that is used within the Terminal
     /// </summary>
     public NonNativeKeyboard TerminalKeyboard { get; internal set; }
+    
+    /// <summary>
+    /// The sprint icon used for toggle sprint
+    /// </summary>
+    public Image SprintIcon { get; private set; }
     
     private void Awake()
     {
@@ -168,7 +174,13 @@ public class VRHUD : MonoBehaviour
         redGlowBodyParts = GameObject.Find("RedGlowBodyParts");
         weightUi = GameObject.Find("WeightUI");
         pttIcon = GameObject.Find("PTTIcon");
+        
+        sprintIcon = Instantiate(pttIcon, pttIcon.transform.parent);
+        sprintIcon.name = "SprintIcon";
+        sprintIcon.GetComponent<Image>().sprite = AssetManager.SprintImage;
 
+        SprintIcon = sprintIcon.GetComponent<Image>();
+        
         if (Plugin.Config.DisableArmHUD.Value)
         {
             selfRed.transform.SetParent(FaceCanvas.transform, false);
@@ -177,6 +189,7 @@ public class VRHUD : MonoBehaviour
             redGlowBodyParts.transform.SetParent(FaceCanvas.transform, false);
             weightUi.transform.SetParent(FaceCanvas.transform, false);
             pttIcon.transform.SetParent(FaceCanvas.transform, false);
+            sprintIcon.transform.SetParent(FaceCanvas.transform, false);
 
             selfRed.transform.localPosition =
                 self.transform.localPosition =
@@ -184,19 +197,22 @@ public class VRHUD : MonoBehaviour
             sprintMeter.transform.localPosition = new Vector3(-284 + xOffset, 80 + yOffset, 0);
             weightUi.transform.localPosition = new Vector3(-195 + xOffset, 25 + yOffset, 0);
             pttIcon.transform.localPosition = new Vector3(-195 + xOffset, 165 + yOffset, 0);
+            sprintIcon.transform.localPosition = new Vector3(-175 + xOffset, 115 + yOffset, 0);
 
             selfRed.transform.localRotation =
                 self.transform.localRotation =
                     sprintMeter.transform.localRotation =
                         redGlowBodyParts.transform.localRotation =
                             weightUi.transform.localRotation =
-                                pttIcon.transform.localRotation = Quaternion.identity;
+                                pttIcon.transform.localRotation =
+                                    sprintIcon.transform.localRotation = Quaternion.identity;
 
             selfRed.transform.localScale =
                 self.transform.localScale =
                     sprintMeter.transform.localScale =
                         redGlowBodyParts.transform.localScale = 
-                            pttIcon.transform.localScale = Vector3.one * 2;
+                            pttIcon.transform.localScale = 
+                                sprintIcon.transform.localScale = Vector3.one * 2;
 
             weightUi.transform.localScale = Vector3.one;
             weightUi.transform.Find("Weight").localScale = Vector3.one * 1.4f;
@@ -213,6 +229,7 @@ public class VRHUD : MonoBehaviour
             redGlowBodyParts.transform.SetParent(LeftHandCanvas.transform, false);
             weightUi.transform.SetParent(LeftHandCanvas.transform, false);
             pttIcon.transform.SetParent(LeftHandCanvas.transform, false);
+            sprintIcon.transform.SetParent(LeftHandCanvas.transform, false);
 
             selfRed.transform.localPosition =
                 self.transform.localPosition =
@@ -220,21 +237,23 @@ public class VRHUD : MonoBehaviour
             sprintMeter.transform.localPosition = new Vector3(-50, 100, 72);
             weightUi.transform.localPosition = new Vector3(-50, 80, 65);
             pttIcon.transform.localPosition = new Vector3(-50, 145, 35);
+            sprintIcon.transform.localPosition = new Vector3(-50, 124, 22);
 
-            // idk what the official formatting rule is for this kind of code but I guess this looks fine
             selfRed.transform.localRotation =
                 self.transform.localRotation =
                     sprintMeter.transform.localRotation =
                         redGlowBodyParts.transform.localRotation =
                             weightUi.transform.localRotation =
-                                pttIcon.transform.localRotation = Quaternion.Euler(0, 90, 0);
+                                pttIcon.transform.localRotation = 
+                                    sprintIcon.transform.localRotation = Quaternion.Euler(0, 90, 0);
 
             selfRed.transform.localScale =
                 self.transform.localScale =
                     sprintMeter.transform.localScale =
                         redGlowBodyParts.transform.localScale =
                             weightUi.transform.localScale =
-                                pttIcon.transform.localScale = Vector3.one;
+                                pttIcon.transform.localScale = 
+                                    sprintIcon.transform.localScale = Vector3.one;
 
             weightUi.transform.Find("Weight").localScale = Vector3.one * 0.7f;
         }
@@ -518,6 +537,7 @@ public class VRHUD : MonoBehaviour
         redGlowBodyParts.SetActive(!hide);
         weightUi.SetActive(!hide);
         pttIcon.SetActive(!hide);
+        sprintIcon.SetActive(!hide);
         
         // Keep clock UI for spectators to be able to see the time
         

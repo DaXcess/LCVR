@@ -630,6 +630,8 @@ public class VRPlayer : MonoBehaviour
 
             PlayerControllerB_Sprint_Patch.sprint =
                 !IsRoomCrouching && !PlayerController.isCrouching && isSprinting ? 1 : 0;
+            VRSession.Instance.HUD.SprintIcon.enabled =
+                !IsRoomCrouching && !PlayerController.isCrouching && isSprinting;
         }
         else
             PlayerControllerB_Sprint_Patch.sprint = !IsRoomCrouching && Actions.Instance["Sprint"].IsPressed() ? 1 : 0;
