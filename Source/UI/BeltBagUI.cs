@@ -7,11 +7,10 @@ namespace LCVR.UI;
 
 public class BeltBagUI : MonoBehaviour
 {
-    private const float UI_SCALE_GROUNDED = 0.004f;
-    private const float UI_SCALE_IN_HAND = 0.003f;
-    
+    private const float UI_SCALE_GROUNDED = 0.002f;
+    private const float UI_SCALE_IN_HAND = 0.0015f;
+
     private BeltBagInventoryUI inventoryUI;
-    private BeltBagItem currentBeltBag;
     private Canvas canvas;
 
     private void Awake()
@@ -33,10 +32,10 @@ public class BeltBagUI : MonoBehaviour
         beltUI.SetParent(canvas.transform, false);
         beltUI.localPosition = Vector3.zero;
         beltUI.localRotation = Quaternion.identity;
-        
+
         // Remove X button
         beltUI.transform.Find("Buttons/ExitButton").gameObject.SetActive(false);
-        
+
         // Set up interactables
         for (var i = 0; i < inventoryUI.inventorySlots.Length; i++)
         {
@@ -54,35 +53,32 @@ public class BeltBagUI : MonoBehaviour
         if (inventoryUI.currentBeltBag is null)
             return;
 
-        if (inventoryUI.currentBeltBag != currentBeltBag)
-            UpdateCanvas();
-
-        currentBeltBag = inventoryUI.currentBeltBag;
-
-        if (currentBeltBag.playerHeldBy is null)
+        if (inventoryUI.currentBeltBag.playerHeldBy is null)
             UpdateGrounded();
-        else if (currentBeltBag.playerHeldBy == StartOfRound.Instance.localPlayerController)
+        else if (inventoryUI.currentBeltBag.playerHeldBy == StartOfRound.Instance.localPlayerController)
             UpdateHand();
     }
 
-    private void UpdateCanvas()
+    private void LateUpdate()
     {
+        if (inventoryUI.currentBeltBag is null)
+            return;
+
         var itemTransform = inventoryUI.currentBeltBag.transform;
         var canvasTransform = canvas.transform;
 
-        canvasTransform.SetParent(itemTransform);
-        canvasTransform.localEulerAngles = new Vector3(290, 180, 0);
-        canvasTransform.localPosition = new Vector3(0, 0.2f, 1);
+        canvasTransform.rotation = itemTransform.rotation * Quaternion.Euler(290, 180, 0);
+        canvasTransform.position = itemTransform.TransformPoint(new Vector3(0, 0.15f, 1));
     }
 
     private void UpdateGrounded()
     {
-        if (currentBeltBag.currentPlayerChecking != StartOfRound.Instance.localPlayerController)
+        if (inventoryUI.currentBeltBag.currentPlayerChecking != StartOfRound.Instance.localPlayerController)
             return;
-        
+
         canvas.transform.localScale = Vector3.one * UI_SCALE_GROUNDED;
 
-        var vpPos = VRSession.Instance.MainCamera.WorldToViewportPoint(currentBeltBag.transform.position);
+        var vpPos = VRSession.Instance.MainCamera.WorldToViewportPoint(inventoryUI.currentBeltBag.transform.position);
         if (vpPos.x is >= 0 and <= 1 && vpPos.y is >= 0 and <= 1f && vpPos.z > 0f)
             return;
 

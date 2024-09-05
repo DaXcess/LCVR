@@ -18,7 +18,10 @@ public class VRBeltBagItem : VRItem<BeltBagItem>
     protected override void Awake()
     {
         base.Awake();
-
+        
+        if (!IsLocal)
+            return;
+        
         shake = new ShakeDetector(transform, 0.06f, true);
         shakeBig = new ShakeDetector(transform, 0.1f, true);
         inventoryUI = FindObjectOfType<BeltBagInventoryUI>(true);
@@ -57,6 +60,9 @@ public class VRBeltBagItem : VRItem<BeltBagItem>
 
     protected override void OnUpdate()
     {
+        if (!IsLocal)
+            return;
+        
         shake.Update();
         shakeBig.Update();
     }

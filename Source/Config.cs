@@ -50,8 +50,8 @@ public class Config(string assemblyPath, ConfigFile file)
     public ConfigEntry<float> LODBias { get; } = file.Bind("Rendering", "LODBias", 2f, new ConfigDescription("The LOD bias is a multiplier that dictates when an LOD must reduce their quality. Higher values means that more detailed LODs will persist for longer.", new AcceptableValueRange<float>(1, 5)));
     public ConfigEntry<bool> DisableLensDistortion { get; } = file.Bind("Rendering", "DisableLensDistortion", false, "Disables the warping effects that you experience when you are under water, use the TZP-inhalant and more.");
     public ConfigEntry<bool> SpectatorLightRemovesVolumetrics { get; } = file.Bind("Rendering", "SpectatorLightRemovesVolumetrics", false, "When spectating, also disable all volumetrics (fog) while the fullbright lighting is enabled for more visibility.");
-    public ConfigEntry<float> MirrorXOffset { get; } = file.Bind("Internal", "MirrorXOffset", 0f, "The X offset that is added to the XR Mirror View shader. Do not touch if you don't know what this means.");
-    public ConfigEntry<float> MirrorYOffset { get; } = file.Bind("Internal", "MirrorYOffset", 0f, "The Y offset that is added to the XR Mirror View shader. Do not touch if you don't know what this means.");
+    public ConfigEntry<float> MirrorXOffset { get; } = file.Bind("Rendering", "MirrorXOffset", 0f, new ConfigDescription("The X offset that is added to the XR Mirror View shader. Do not touch if you don't know what this means.", new AcceptableValueRange<float>(-1, 1)));
+    public ConfigEntry<float> MirrorYOffset { get; } = file.Bind("Rendering", "MirrorYOffset", 0f, new ConfigDescription("The Y offset that is added to the XR Mirror View shader. Do not touch if you don't know what this means.", new AcceptableValueRange<float>(-1, 1)));
     
     // Interaction configuration
 
