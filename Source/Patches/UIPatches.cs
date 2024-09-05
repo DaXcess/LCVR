@@ -264,9 +264,12 @@ internal static class UniversalUIPatches
 #endif
     }
 
+    /// <summary>
+    /// Create the VR settings menu when the UI loads
+    /// </summary>
     [HarmonyPatch(typeof(SettingsOption), nameof(SettingsOption.OnEnable))]
     [HarmonyPostfix]
-    private static void Something(SettingsOption __instance)
+    private static void InjectSettingsMenu(SettingsOption __instance)
     {
         if (Plugin.Config.DisableSettingsButton.Value || __instance.name is not "SetToDefault")
             return;
@@ -309,9 +312,12 @@ internal static class UniversalUIPatches
         });
     }
 
+    /// <summary>
+    /// Make sure the VR settings menu is closed when the pause menu is closed
+    /// </summary>
     [HarmonyPatch(typeof(QuickMenuManager), nameof(QuickMenuManager.CloseQuickMenu))]
     [HarmonyPostfix]
-    private static void Guh()
+    private static void CloseVRSettingsOnUnpause()
     {
         Object.FindObjectOfType<SettingsManager>(true)?.gameObject.SetActive(false);
     }

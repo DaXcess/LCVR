@@ -32,6 +32,37 @@ internal static class ShipBuildModeManagerPatches
             __instance.ghostObject.eulerAngles.y + Time.deltaTime * pivotAmount * 1f,
             __instance.ghostObject.eulerAngles.z);
     }
+    
+    /// <summary>
+    /// Make the entering of build mode check the target structure from the hand, instead of from the camera
+    /// </summary>
+    [HarmonyPatch(typeof(ShipBuildModeManager), nameof(ShipBuildModeManager.EnterBuildMode))]
+    [HarmonyTranspiler]
+    private static IEnumerable<CodeInstruction> ShipBuilderEnterFromHand(IEnumerable<CodeInstruction> instructions)
+    {
+        var matcher = new CodeMatcher(instructions);
+
+        for (var i = 0; i < 2; i++)
+        {
+            matcher.MatchForward(false,
+                    new CodeMatch(OpCodes.Ldfld,
+                        Field(typeof(PlayerControllerB), nameof(PlayerControllerB.gameplayCamera))))
+                .Advance(-2)
+                .SetOpcodeAndAdvance(OpCodes.Nop)
+                .RemoveInstructions(3)
+                .InsertAndAdvance(
+                    new CodeInstruction(OpCodes.Call, PropertyGetter(typeof(VRSession), nameof(VRSession.Instance))),
+                    new CodeInstruction(OpCodes.Callvirt,
+                        PropertyGetter(typeof(VRSession), nameof(VRSession.LocalPlayer))),
+                    new CodeInstruction(OpCodes.Callvirt,
+                        PropertyGetter(typeof(VRPlayer), nameof(VRPlayer.PrimaryController))),
+                    new CodeInstruction(OpCodes.Callvirt,
+                        PropertyGetter(typeof(VRController), nameof(VRController.InteractOrigin)))
+                );
+        }
+        
+        return matcher.InstructionEnumeration();
+    }
 
     /// <summary>
     /// Make the placement of objects follow the hand rotation instead of the head rotation

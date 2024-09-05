@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using HarmonyLib;
 using LCVR.Assets;
 using LCVR.Player;
 using Microsoft.MixedReality.Toolkit.Experimental.UI;
@@ -151,6 +152,7 @@ public class VRHUD : MonoBehaviour
         // Object scanner: Custom handler
         var objectScanner = GameObject.Find("ObjectScanner");
         objectScanner.transform.parent = null;
+        objectScanner.transform.localScale = Vector3.one * 0.01f;
 
         var globalScanInfo = GameObject.Find("GlobalScanInfo");
 
@@ -199,20 +201,12 @@ public class VRHUD : MonoBehaviour
             pttIcon.transform.localPosition = new Vector3(-195 + xOffset, 165 + yOffset, 0);
             sprintIcon.transform.localPosition = new Vector3(-175 + xOffset, 115 + yOffset, 0);
 
-            selfRed.transform.localRotation =
-                self.transform.localRotation =
-                    sprintMeter.transform.localRotation =
-                        redGlowBodyParts.transform.localRotation =
-                            weightUi.transform.localRotation =
-                                pttIcon.transform.localRotation =
-                                    sprintIcon.transform.localRotation = Quaternion.identity;
-
-            selfRed.transform.localScale =
-                self.transform.localScale =
-                    sprintMeter.transform.localScale =
-                        redGlowBodyParts.transform.localScale = 
-                            pttIcon.transform.localScale = 
-                                sprintIcon.transform.localScale = Vector3.one * 2;
+            ((IEnumerable<GameObject>) [selfRed, self, sprintMeter, redGlowBodyParts, weightUi, pttIcon, sprintIcon])
+                .Do(e =>
+                {
+                    e.transform.localRotation = Quaternion.identity;
+                    e.transform.localScale = Vector3.one * 2;
+                });
 
             weightUi.transform.localScale = Vector3.one;
             weightUi.transform.Find("Weight").localScale = Vector3.one * 1.4f;
@@ -239,21 +233,12 @@ public class VRHUD : MonoBehaviour
             pttIcon.transform.localPosition = new Vector3(-50, 145, 35);
             sprintIcon.transform.localPosition = new Vector3(-50, 124, 22);
 
-            selfRed.transform.localRotation =
-                self.transform.localRotation =
-                    sprintMeter.transform.localRotation =
-                        redGlowBodyParts.transform.localRotation =
-                            weightUi.transform.localRotation =
-                                pttIcon.transform.localRotation = 
-                                    sprintIcon.transform.localRotation = Quaternion.Euler(0, 90, 0);
-
-            selfRed.transform.localScale =
-                self.transform.localScale =
-                    sprintMeter.transform.localScale =
-                        redGlowBodyParts.transform.localScale =
-                            weightUi.transform.localScale =
-                                pttIcon.transform.localScale = 
-                                    sprintIcon.transform.localScale = Vector3.one;
+            ((IEnumerable<GameObject>) [selfRed, self, sprintMeter, redGlowBodyParts, weightUi, pttIcon, sprintIcon])
+                .Do(e =>
+                {
+                    e.transform.localEulerAngles = new Vector3(0, 90, 0);
+                    e.transform.localScale = Vector3.one;
+                });
 
             weightUi.transform.Find("Weight").localScale = Vector3.one * 0.7f;
         }
@@ -441,6 +426,7 @@ public class VRHUD : MonoBehaviour
         PauseMenuCanvas.worldCamera = GameObject.Find("UICamera").GetComponent<Camera>();
         PauseMenuCanvas.renderMode = RenderMode.WorldSpace;
         PauseMenuCanvas.transform.position = new Vector3(0, -999, 0);
+        PauseMenuCanvas.transform.localScale = Vector3.one * 0.01f;
         
         var follow = PauseMenuCanvas.gameObject.AddComponent<CanvasTransformFollow>();
         follow.sourceTransform = VRSession.Instance.UICamera.transform;

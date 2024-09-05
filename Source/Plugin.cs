@@ -18,11 +18,9 @@ using DependencyFlags = BepInEx.BepInDependency.DependencyFlags;
 namespace LCVR;
 
 [BepInPlugin(PLUGIN_GUID, PLUGIN_NAME, PLUGIN_VERSION)]
-#region Compatibility Dependencies
 [BepInDependency("me.swipez.melonloader.morecompany", DependencyFlags.SoftDependency)]
 [BepInDependency("x753.Mimics", DependencyFlags.SoftDependency)]
 [BepInDependency("com.fumiko.CullFactory", DependencyFlags.SoftDependency)]
-#endregion
 public class Plugin : BaseUnityPlugin
 {
     public const string PLUGIN_GUID = "io.daxcess.lcvr";
@@ -31,7 +29,7 @@ public class Plugin : BaseUnityPlugin
 
     private readonly string[] GAME_ASSEMBLY_HASHES =
     [
-        "323BFD6C60F97171C1011F758E7C2205730DB939C31E3DABEEA2D68EFF0B722F", // V64 Beta
+        "BFF45683C267F402429049EF7D8095C078D5CD534E5300E56317ACB6056D70FB", // V64
     ];
 
     public new static Config Config { get; private set; }
@@ -56,7 +54,7 @@ public class Plugin : BaseUnityPlugin
         // Allow disabling VR via config and command line
         var disableVr = Config.DisableVR.Value ||
                         Environment.GetCommandLineArgs().Contains("--disable-vr", StringComparer.OrdinalIgnoreCase);
-        
+
         if (disableVr)
             Logger.LogWarning("VR has been disabled by config or the `--disable-vr` command line flag");
         else if (Config.AskOnStartup.Value)
@@ -79,13 +77,13 @@ public class Plugin : BaseUnityPlugin
         }
 
         var args = Environment.GetCommandLineArgs();
-        
+
         if (args.Contains("--lcvr-debug-interactables"))
             Flags |= Flags.InteractableDebug;
 
         if (args.Contains("--lcvr-item-offset-editor"))
             Flags |= Flags.ItemOffsetEditor;
-        
+
         // Verify game assembly to detect compatible version
         var allowUnverified = Environment.GetCommandLineArgs().Contains("--lcvr-skip-checksum");
 
@@ -102,11 +100,11 @@ public class Plugin : BaseUnityPlugin
                 Logger.LogError("This usually happens if Lethal Company got updated recently.");
                 Logger.LogWarning(
                     "To bypass this check, add the following flag to your launch options in Steam: --lcvr-skip-checksum");
-                
+
                 return;
             }
         }
-        
+
         if (!LoadEarlyRuntimeDependencies())
         {
             Logger.LogError("Disabling mod because required runtime dependencies could not be loaded!");
@@ -188,10 +186,10 @@ public class Plugin : BaseUnityPlugin
         }
         catch (Exception ex)
         {
-            Logger.LogError($"Unexpected error occured while loading early runtime dependencies (incorrect folder structure?): {ex.Message}");
+            Logger.LogError(
+                $"Unexpected error occured while loading early runtime dependencies (incorrect folder structure?): {ex.Message}");
             return false;
         }
-
 
         return true;
     }
@@ -199,7 +197,7 @@ public class Plugin : BaseUnityPlugin
     private bool InitializeVR()
     {
         Logger.LogInfo("Loading VR...");
-        
+
         if (!OpenXR.Loader.InitializeXR())
         {
             Logger.LogError("Failed to start in VR Mode! Only Non-VR features are available!");
@@ -239,7 +237,7 @@ public class Plugin : BaseUnityPlugin
             ScalableSettingSchemaId.With3Levels);
 
         asset.currentPlatformRenderPipelineSettings = settings;
-        
+
         // Input settings
         InputSystem.settings.defaultButtonPressPoint = Config.ButtonPressPoint.Value;
 
