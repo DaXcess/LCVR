@@ -16,6 +16,7 @@ using Rig = LCVR.Networking.Rig;
 
 namespace LCVR.Player;
 
+[DefaultExecutionOrder(-100)]
 public class VRPlayer : MonoBehaviour
 {
     private const float SCALE_FACTOR = 1.5f;
@@ -23,6 +24,7 @@ public class VRPlayer : MonoBehaviour
 
     private const float SQR_MOVE_THRESHOLD = 0.001f;
     private const float TURN_ANGLE_THRESHOLD = 120.0f;
+    private const float TURN_WEIGHT_SHARP = 15.0f;
 
     private Coroutine stopSprintingCoroutine;
     private Coroutine resetHeightCoroutine;
@@ -63,6 +65,11 @@ public class VRPlayer : MonoBehaviour
 
     private Transform mysteriousCube;
 
+    private TwoBoneIKConstraint localLeftArmVRRig;
+    private TwoBoneIKConstraint localRightArmVRRig;
+    private TwoBoneIKConstraint leftArmVRRig;
+    private TwoBoneIKConstraint rightArmVRRig;
+
     private Channel prefsChannel;
     private Channel rigChannel;
     private Channel spectatorRigChannel;
@@ -80,12 +87,6 @@ public class VRPlayer : MonoBehaviour
     public VRInteractor RightHandInteractor => rightHandInteractor;
     public VRFingerCurler LeftFingerCurler { get; private set; }
     public VRFingerCurler RightFingerCurler { get; private set; }
-
-    // IK Constraints
-    private TwoBoneIKConstraint LocalLeftArmVRRig { get; set; }
-    private TwoBoneIKConstraint LocalRightArmVRRig { get; set; }
-    private TwoBoneIKConstraint LeftArmVRRig { get; set; }
-    private TwoBoneIKConstraint RightArmVRRig { get; set; }
 
     public Transform LeftHandVRTarget { get; private set; }
     public Transform RightHandVRTarget { get; private set; }
@@ -276,17 +277,17 @@ public class VRPlayer : MonoBehaviour
             }
         }.transform;
 
-        LocalLeftArmVRRig = Bones.LocalLeftArmRig.gameObject.AddComponent<TwoBoneIKConstraint>();
+        localLeftArmVRRig = Bones.LocalLeftArmRig.gameObject.AddComponent<TwoBoneIKConstraint>();
 
-        LocalLeftArmVRRig.data.root = Bones.LocalLeftUpperArm;
-        LocalLeftArmVRRig.data.mid = Bones.LocalLeftLowerArm;
-        LocalLeftArmVRRig.data.tip = Bones.LocalLeftHand;
-        LocalLeftArmVRRig.data.target = localLeftArmRigTarget;
-        LocalLeftArmVRRig.data.hint = localLeftArmRigHint;
-        LocalLeftArmVRRig.data.hintWeight = 1;
-        LocalLeftArmVRRig.data.targetRotationWeight = 1;
-        LocalLeftArmVRRig.data.targetPositionWeight = 1;
-        LocalLeftArmVRRig.weight = 1;
+        localLeftArmVRRig.data.root = Bones.LocalLeftUpperArm;
+        localLeftArmVRRig.data.mid = Bones.LocalLeftLowerArm;
+        localLeftArmVRRig.data.tip = Bones.LocalLeftHand;
+        localLeftArmVRRig.data.target = localLeftArmRigTarget;
+        localLeftArmVRRig.data.hint = localLeftArmRigHint;
+        localLeftArmVRRig.data.hintWeight = 1;
+        localLeftArmVRRig.data.targetRotationWeight = 1;
+        localLeftArmVRRig.data.targetPositionWeight = 1;
+        localLeftArmVRRig.weight = 1;
 
         RigTrackerLocal.leftHand = new RigTracker.Tracker
         {
@@ -324,17 +325,17 @@ public class VRPlayer : MonoBehaviour
             }
         }.transform;
 
-        LocalRightArmVRRig = Bones.LocalRightArmRig.gameObject.AddComponent<TwoBoneIKConstraint>();
+        localRightArmVRRig = Bones.LocalRightArmRig.gameObject.AddComponent<TwoBoneIKConstraint>();
 
-        LocalRightArmVRRig.data.root = Bones.LocalRightUpperArm;
-        LocalRightArmVRRig.data.mid = Bones.LocalRightLowerArm;
-        LocalRightArmVRRig.data.tip = Bones.LocalRightHand;
-        LocalRightArmVRRig.data.target = localRightArmRigTarget;
-        LocalRightArmVRRig.data.hint = localRightArmRigHint;
-        LocalRightArmVRRig.data.hintWeight = 1;
-        LocalRightArmVRRig.data.targetRotationWeight = 1;
-        LocalRightArmVRRig.data.targetPositionWeight = 1;
-        LocalRightArmVRRig.weight = 1;
+        localRightArmVRRig.data.root = Bones.LocalRightUpperArm;
+        localRightArmVRRig.data.mid = Bones.LocalRightLowerArm;
+        localRightArmVRRig.data.tip = Bones.LocalRightHand;
+        localRightArmVRRig.data.target = localRightArmRigTarget;
+        localRightArmVRRig.data.hint = localRightArmRigHint;
+        localRightArmVRRig.data.hintWeight = 1;
+        localRightArmVRRig.data.targetRotationWeight = 1;
+        localRightArmVRRig.data.targetPositionWeight = 1;
+        localRightArmVRRig.weight = 1;
 
         RigTrackerLocal.rightHand = new RigTracker.Tracker
         {
@@ -389,16 +390,16 @@ public class VRPlayer : MonoBehaviour
             }
         }.transform;
 
-        LeftArmVRRig = Bones.LeftArmRig.gameObject.AddComponent<TwoBoneIKConstraint>();
+        leftArmVRRig = Bones.LeftArmRig.gameObject.AddComponent<TwoBoneIKConstraint>();
 
-        LeftArmVRRig.data.root = Bones.LeftUpperArm;
-        LeftArmVRRig.data.mid = Bones.LeftLowerArm;
-        LeftArmVRRig.data.tip = Bones.LeftHand;
-        LeftArmVRRig.data.target = leftArmRigTarget;
-        LeftArmVRRig.data.hint = leftArmRigHint;
-        LeftArmVRRig.data.hintWeight = 1;
-        LeftArmVRRig.data.targetRotationWeight = 1;
-        LeftArmVRRig.data.targetPositionWeight = 1;
+        leftArmVRRig.data.root = Bones.LeftUpperArm;
+        leftArmVRRig.data.mid = Bones.LeftLowerArm;
+        leftArmVRRig.data.tip = Bones.LeftHand;
+        leftArmVRRig.data.target = leftArmRigTarget;
+        leftArmVRRig.data.hint = leftArmRigHint;
+        leftArmVRRig.data.hintWeight = 1;
+        leftArmVRRig.data.targetRotationWeight = 1;
+        leftArmVRRig.data.targetPositionWeight = 1;
 
         RigTracker.leftHand = new RigTracker.Tracker
         {
@@ -436,16 +437,16 @@ public class VRPlayer : MonoBehaviour
             }
         }.transform;
 
-        RightArmVRRig = Bones.RightArmRig.gameObject.AddComponent<TwoBoneIKConstraint>();
+        rightArmVRRig = Bones.RightArmRig.gameObject.AddComponent<TwoBoneIKConstraint>();
 
-        RightArmVRRig.data.root = Bones.RightUpperArm;
-        RightArmVRRig.data.mid = Bones.RightLowerArm;
-        RightArmVRRig.data.tip = Bones.RightHand;
-        RightArmVRRig.data.target = rightArmRigTarget;
-        RightArmVRRig.data.hint = rightArmRigHint;
-        RightArmVRRig.data.hintWeight = 1;
-        RightArmVRRig.data.targetRotationWeight = 1;
-        RightArmVRRig.data.targetPositionWeight = 1;
+        rightArmVRRig.data.root = Bones.RightUpperArm;
+        rightArmVRRig.data.mid = Bones.RightLowerArm;
+        rightArmVRRig.data.tip = Bones.RightHand;
+        rightArmVRRig.data.target = rightArmRigTarget;
+        rightArmVRRig.data.hint = rightArmRigHint;
+        rightArmVRRig.data.hintWeight = 1;
+        rightArmVRRig.data.targetRotationWeight = 1;
+        rightArmVRRig.data.targetPositionWeight = 1;
 
         RigTracker.rightHand = new RigTracker.Tracker
         {
@@ -464,6 +465,8 @@ public class VRPlayer : MonoBehaviour
         Bones.LocalRightArmRigHint.localPosition = new Vector3(12.5f, -2f, -1f);
         Bones.LeftArmRigHint.localPosition = new Vector3(-10f, -2f, -1f);
         Bones.RightArmRigHint.localPosition = new Vector3(12.5f, -2f, -1f);
+        Bones.LocalItemHolder.localPosition = new Vector3(-0.002f, 0.036f, -0.042f);
+        Bones.LocalItemHolder.localEulerAngles = new Vector3(356.3837f, 357.6979f, 0.1453f);
     }
 
     private void Sprint_performed(InputAction.CallbackContext obj)
@@ -604,11 +607,11 @@ public class VRPlayer : MonoBehaviour
         xrOrigin.localRotation = rotationOffset;
 
         // If head rotated too much, or we moved, force new player rotation
-        if (PlayerController.moveInputVector.sqrMagnitude > SQR_MOVE_THRESHOLD ||
-            (!PlayerController.inSpecialInteractAnimation &&
-             GetBodyToCameraAngle() > TURN_ANGLE_THRESHOLD))
-            transform.eulerAngles = new Vector3(transform.eulerAngles.x, mainCamera.transform.eulerAngles.y,
-                transform.eulerAngles.z);
+        if (PlayerController.moveInputVector.sqrMagnitude > SQR_MOVE_THRESHOLD)
+            TurnBodyToCamera(TURN_WEIGHT_SHARP * 0.25f);
+        else if (!PlayerController.inSpecialInteractAnimation &&
+                 GetBodyToCameraAngle() is var angle and > TURN_ANGLE_THRESHOLD)
+            TurnBodyToCamera(TURN_WEIGHT_SHARP * Mathf.InverseLerp(TURN_ANGLE_THRESHOLD, 170f, angle));
 
         if (!PlayerController.inSpecialInteractAnimation)
             lastFrameHmdPosition = mainCamera.transform.localPosition;
@@ -736,10 +739,10 @@ public class VRPlayer : MonoBehaviour
         PlayerController.rightArmRig.weight = 0;
 
         // VR Rigs
-        LocalLeftArmVRRig.weight = 1;
-        LocalRightArmVRRig.weight = 1;
-        LeftArmVRRig.weight = 1;
-        RightArmVRRig.weight = 1;
+        localLeftArmVRRig.weight = 1;
+        localRightArmVRRig.weight = 1;
+        leftArmVRRig.weight = 1;
+        rightArmVRRig.weight = 1;
     }
 
     public void EnableInteractorVisuals(bool visible = true)
@@ -799,6 +802,13 @@ public class VRPlayer : MonoBehaviour
 
             yield return new WaitForSeconds(5f);
         }
+    }
+
+    private void TurnBodyToCamera(float turnWeight)
+    {
+        var newRotation = Quaternion.Euler(transform.eulerAngles.x, mainCamera.transform.eulerAngles.y,
+            transform.eulerAngles.z);
+        transform.rotation = Quaternion.Lerp(transform.rotation, newRotation, Time.deltaTime * turnWeight);
     }
 
     private float GetBodyToCameraAngle()
