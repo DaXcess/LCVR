@@ -575,15 +575,16 @@ public class VRHUD : MonoBehaviour
     private void InitializeKeyboard()
     {
         var canvas = GameObject.Find("Systems/UI/Canvas").GetComponent<Canvas>();
-        MenuKeyboard = Instantiate(AssetManager.Keyboard).GetComponent<NonNativeKeyboard>();
+        MenuKeyboard = Instantiate(AssetManager.Keyboard, canvas.transform).GetComponent<NonNativeKeyboard>();
 
-        MenuKeyboard.transform.SetParent(canvas.transform, false);
         MenuKeyboard.transform.localPosition = new Vector3(0, -470, -40);
         MenuKeyboard.transform.localEulerAngles = new Vector3(13, 0, 0);
         MenuKeyboard.transform.localScale = Vector3.one * 0.8f;
 
         MenuKeyboard.gameObject.Find("keyboard_Alpha/Deny_Button").SetActive(false);
         MenuKeyboard.gameObject.Find("keyboard_Alpha/Confirm_Button").SetActive(false);
+        
+        MenuKeyboard.SubmitOnEnter = true;
 
         var component = canvas.gameObject.AddComponent<Keyboard>();
         component.keyboard = MenuKeyboard;

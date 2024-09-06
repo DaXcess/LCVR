@@ -26,4 +26,4 @@ Alternitavely if you're building a finished product run this command:
 $ dotnet build --configuration Release
 ```
 
-The built plugin assembly can now be found inside the `bin` folder.
+The built plugin assemblies can now be found inside the `bin` folder.
