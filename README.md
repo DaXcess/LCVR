@@ -127,4 +127,8 @@ In this folder, also create a new directory called `RuntimeDeps` (again, has to 
 - openxr_loader.dll
 - UnityOpenXR.dll
 
+Your directory structure (excluding BepInEx internals) should now look like this:
+
+![image](https://github.com/user-attachments/assets/6cfc3384-6f0c-4d93-9a62-11bb5a009b69)
+
 You can now run the game with LCVR installed.
