@@ -37,6 +37,7 @@ internal static class Items
         { "Garbage lid", (new Vector3(-0.02f, 0.11f, -0.08f), new Vector3(0, 0, 90)) },
         { "Hive", (new Vector3(0.04f, 0.32f, -0.38f), Vector3.zero) },
         { "Plastic fish", (new Vector3(0, 0.12f, -0.06f), new Vector3(0, 80, 165)) },
+        { "Belt bag", (new Vector3(0.02f, 0.09f, -0.18f), new Vector3(0, 90, 0)) },
         { "Maneater", (new Vector3(-0.07f, 0.02f, -0.11f), new Vector3(6, 218, 85)) }
     };
 }

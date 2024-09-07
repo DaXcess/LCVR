@@ -16,7 +16,6 @@ using Rig = LCVR.Networking.Rig;
 
 namespace LCVR.Player;
 
-[DefaultExecutionOrder(-100)]
 public class VRPlayer : MonoBehaviour
 {
     private const float SCALE_FACTOR = 1.5f;
@@ -465,8 +464,6 @@ public class VRPlayer : MonoBehaviour
         Bones.LocalRightArmRigHint.localPosition = new Vector3(12.5f, -2f, -1f);
         Bones.LeftArmRigHint.localPosition = new Vector3(-10f, -2f, -1f);
         Bones.RightArmRigHint.localPosition = new Vector3(12.5f, -2f, -1f);
-        Bones.LocalItemHolder.localPosition = new Vector3(-0.002f, 0.036f, -0.042f);
-        Bones.LocalItemHolder.localEulerAngles = new Vector3(356.3837f, 357.6979f, 0.1453f);
     }
 
     private void Sprint_performed(InputAction.CallbackContext obj)

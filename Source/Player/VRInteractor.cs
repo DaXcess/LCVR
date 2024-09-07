@@ -1,4 +1,5 @@
-﻿using LCVR.Assets;
+﻿using System;
+using LCVR.Assets;
 using LCVR.Input;
 using LCVR.Physics;
 using System.Collections.Generic;
@@ -95,6 +96,17 @@ public class VRInteractor : MonoBehaviour
             .Where(i => i != null);
 
         VRSession.Instance.InteractionManager.ReportInteractables(this, interactables.ToArray());
+    }
+
+    /// <summary>
+    /// Reset LocalItemHolder transforms after the animator modifies them but before vanilla scripts access them
+    /// </summary>
+    private void LateUpdate()
+    {
+        var bones = VRSession.Instance.LocalPlayer.Bones;
+        
+        bones.LocalItemHolder.localPosition = new Vector3(-0.002f, 0.036f, -0.042f);
+        bones.LocalItemHolder.localEulerAngles = new Vector3(356.3837f, 357.6979f, 0.1453f);
     }
 
     private void OnDisable()
