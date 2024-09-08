@@ -84,6 +84,9 @@ public class Plugin : BaseUnityPlugin
         if (args.Contains("--lcvr-item-offset-editor"))
             Flags |= Flags.ItemOffsetEditor;
 
+        if (args.Contains("--lcvr-disable-car-ownership-patch"))
+            Flags |= Flags.ExperimentalDisableCarOwnershipPatch;
+
         // Verify game assembly to detect compatible version
         var allowUnverified = Environment.GetCommandLineArgs().Contains("--lcvr-skip-checksum");
 
@@ -275,4 +278,5 @@ public enum Flags
     InvalidGameAssembly = 1 << 1,
     InteractableDebug = 1 << 2,
     ItemOffsetEditor = 1 << 3,
+    ExperimentalDisableCarOwnershipPatch = 1 << 4,
 }
