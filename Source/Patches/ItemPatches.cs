@@ -61,7 +61,8 @@ internal static class UniversalItemPatches
             return true;
 
         // If the item isn't held, we don't care
-        if (item.playerHeldBy == null || item.playerHeldBy.currentlyHeldObjectServer != item)
+        if (item.playerHeldBy == null || (item.playerHeldBy == StartOfRound.Instance.localPlayerController &&
+                                          item.playerHeldBy.currentlyHeldObjectServer != item))
             return true;
 
         // Don't set custom offset if remote player is not in VR
