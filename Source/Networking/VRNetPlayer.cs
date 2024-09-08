@@ -15,6 +15,7 @@ namespace LCVR.Networking;
 /// <summary>
 /// A behaviour that is attached to other VR players
 /// </summary>
+[DefaultExecutionOrder(-100)]
 public class VRNetPlayer : MonoBehaviour
 {
     private GameObject playerGhost;
