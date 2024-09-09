@@ -135,11 +135,8 @@ public class VRController : MonoBehaviour
                 return;
 
             // Handle belt bag item
-            if (PlayerController.currentlyHeldObjectServer is BeltBagItem bag)
-            {
-                BeginBagTool(bag);
+            if (PlayerController.currentlyHeldObjectServer is BeltBagItem bag && TryBagTool(bag))
                 return;
-            }
 
             // Here we try and pickup the item if it's possible
             if (!PlayerController.activatingItem && !VRSession.Instance.LocalPlayer.PlayerController.isPlayerDead)
@@ -373,17 +370,19 @@ public class VRController : MonoBehaviour
         GrabItem(hit.collider.transform.gameObject.GetComponent<GrabbableObject>());
     }
     
-    private void BeginBagTool(BeltBagItem bag)
+    private bool TryBagTool(BeltBagItem bag)
     {
         var ray = new Ray(InteractOrigin.position, InteractOrigin.forward);
         if (!ray.Raycast(out var hit, 4, 1073742144))
-            return;
+            return false;
 
         var item = hit.collider.GetComponent<GrabbableObject>();
         if (item == null || item == PlayerController.currentlyHeldObjectServer || !CanBeInsertedIntoBag(item))
-            return;
+            return false;
 
         bag.TryAddObjectToBag(item);
+
+        return true;
     }
 
     public void GrabItem(GrabbableObject item)
@@ -439,6 +438,6 @@ public class VRController : MonoBehaviour
     private static bool CanBeInsertedIntoBag(GrabbableObject item)
     {
         return !item.itemProperties.isScrap && !item.isHeld && !item.isHeldByEnemy &&
-               item.itemProperties.itemId != 123984 && item.itemProperties.itemId != 819501;
+               item.itemProperties.itemId is not (123984 or 819501);
     }
 }
