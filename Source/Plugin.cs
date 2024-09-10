@@ -18,20 +18,18 @@ using DependencyFlags = BepInEx.BepInDependency.DependencyFlags;
 namespace LCVR;
 
 [BepInPlugin(PLUGIN_GUID, PLUGIN_NAME, PLUGIN_VERSION)]
-#region Compatibility Dependencies
 [BepInDependency("me.swipez.melonloader.morecompany", DependencyFlags.SoftDependency)]
 [BepInDependency("x753.Mimics", DependencyFlags.SoftDependency)]
 [BepInDependency("com.fumiko.CullFactory", DependencyFlags.SoftDependency)]
-#endregion
 public class Plugin : BaseUnityPlugin
 {
     public const string PLUGIN_GUID = "io.daxcess.lcvr";
     public const string PLUGIN_NAME = "LCVR";
-    public const string PLUGIN_VERSION = "1.3.1";
+    public const string PLUGIN_VERSION = "1.3.2";
 
     private readonly string[] GAME_ASSEMBLY_HASHES =
     [
-        "976BBA44E5F05AC3915A92FA26822F6F7E67BD52F4FFD0371190EF865460F4FB", // V62
+        "BFF45683C267F402429049EF7D8095C078D5CD534E5300E56317ACB6056D70FB", // V64
     ];
 
     public new static Config Config { get; private set; }
@@ -49,14 +47,14 @@ public class Plugin : BaseUnityPlugin
 
         // Plugin startup logic
         LCVR.Logger.SetSource(Logger);
-        Config = new Config(base.Config);
+        Config = new Config(Info.Location, base.Config);
 
         Logger.LogInfo($"Starting {PLUGIN_NAME} v{PLUGIN_VERSION} ({GetCommitHash()})");
 
         // Allow disabling VR via config and command line
         var disableVr = Config.DisableVR.Value ||
                         Environment.GetCommandLineArgs().Contains("--disable-vr", StringComparer.OrdinalIgnoreCase);
-        
+
         if (disableVr)
             Logger.LogWarning("VR has been disabled by config or the `--disable-vr` command line flag");
         else if (Config.AskOnStartup.Value)
@@ -79,13 +77,16 @@ public class Plugin : BaseUnityPlugin
         }
 
         var args = Environment.GetCommandLineArgs();
-        
+
         if (args.Contains("--lcvr-debug-interactables"))
             Flags |= Flags.InteractableDebug;
 
         if (args.Contains("--lcvr-item-offset-editor"))
             Flags |= Flags.ItemOffsetEditor;
-        
+
+        if (args.Contains("--lcvr-disable-car-ownership-patch"))
+            Flags |= Flags.ExperimentalDisableCarOwnershipPatch;
+
         // Verify game assembly to detect compatible version
         var allowUnverified = Environment.GetCommandLineArgs().Contains("--lcvr-skip-checksum");
 
@@ -102,11 +103,11 @@ public class Plugin : BaseUnityPlugin
                 Logger.LogError("This usually happens if Lethal Company got updated recently.");
                 Logger.LogWarning(
                     "To bypass this check, add the following flag to your launch options in Steam: --lcvr-skip-checksum");
-                
+
                 return;
             }
         }
-        
+
         if (!LoadEarlyRuntimeDependencies())
         {
             Logger.LogError("Disabling mod because required runtime dependencies could not be loaded!");
@@ -122,7 +123,6 @@ public class Plugin : BaseUnityPlugin
         if (!disableVr && InitializeVR())
         {
             Flags |= Flags.VR;
-            Flags &= ~Flags.RestartRequired;
 
             StartCoroutine(HijackSplashScreen());
         }
@@ -189,90 +189,25 @@ public class Plugin : BaseUnityPlugin
         }
         catch (Exception ex)
         {
-            Logger.LogError($"Unexpected error occured while loading early runtime dependencies (incorrect folder structure?): {ex.Message}");
+            Logger.LogError(
+                $"Unexpected error occured while loading early runtime dependencies (incorrect folder structure?): {ex.Message}");
             return false;
         }
 
-
         return true;
-    }
-    
-     /// <summary>
-    /// Helper function for SetupRuntimeAssets() to copy resource files and return false if the source does not exist
-    /// </summary>
-    private bool CopyResourceFile(string sourceFile, string destinationFile)
-    {
-        if (!File.Exists(sourceFile))
-            return false;
-
-        if (File.Exists(destinationFile))
-        {
-            var sourceHash = Utils.ComputeHash(File.ReadAllBytes(sourceFile));
-            var destHash = Utils.ComputeHash(File.ReadAllBytes(destinationFile));
-
-            if (sourceHash.SequenceEqual(destHash))
-                return true;
-        }
-
-        File.Copy(sourceFile, destinationFile, true);
-
-        return true;
-    }
-
-    /// <summary>
-    /// Place required runtime libraries and configuration in the game files to allow VR to be started
-    /// </summary>
-    private bool SetupRuntimeAssets()
-    {
-        var mustRestart = false;
-
-        var root = Path.Combine(Paths.GameRootPath, "Lethal Company_Data");
-        var subsystems = Path.Combine(root, "UnitySubsystems");
-        if (!Directory.Exists(subsystems))
-            Directory.CreateDirectory(subsystems);
-
-        var openXr = Path.Combine(subsystems, "UnityOpenXR");
-        if (!Directory.Exists(openXr))
-            Directory.CreateDirectory(openXr);
-
-        var manifest = Path.Combine(openXr, "UnitySubsystemsManifest.json");
-        if (!File.Exists(manifest))
-        {
-            File.WriteAllText(manifest, Properties.Resources.UnitySubsystemsManifest);
-            mustRestart = true;
-        }
-
-        var plugins = Path.Combine(root, "Plugins");
-        var uoxrTarget = Path.Combine(plugins, "UnityOpenXR.dll");
-        var oxrLoaderTarget = Path.Combine(plugins, "openxr_loader.dll");
-
-        var current = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-        var uoxr = Path.Combine(current, "RuntimeDeps/UnityOpenXR.dll");
-        var oxrLoader = Path.Combine(current, "RuntimeDeps/openxr_loader.dll");
-
-        if (!CopyResourceFile(uoxr, uoxrTarget))
-            Logger.LogWarning("Could not find UnityOpenXR.dll to copy to the game, VR might not work!");
-
-        if (!CopyResourceFile(oxrLoader, oxrLoaderTarget))
-            Logger.LogWarning("Could not find openxr_loader.dll to copy to the game, VR might not work!");
-
-        return mustRestart;
     }
 
     private bool InitializeVR()
     {
         Logger.LogInfo("Loading VR...");
-        
-        if (SetupRuntimeAssets())
-        {
-            Logger.LogWarning("You might have to restart the game to allow VR to function properly");
-            Flags |= Flags.RestartRequired;
-        }
 
         if (!OpenXR.Loader.InitializeXR())
         {
             Logger.LogError("Failed to start in VR Mode! Only Non-VR features are available!");
             Logger.LogWarning("If you are not intending to play in VR, you can ignore the previous error.");
+
+            Native.ShowNotification("Lethal Company VR",
+                "Failed to start VR, please check the console logs for more information");
 
             return false;
         }
@@ -298,13 +233,16 @@ public class Plugin : BaseUnityPlugin
             Config.DynamicResolutionPercentage.Value;
         settings.supportMotionVectors = true;
 
-        settings.xrSettings.occlusionMesh = false;
+        settings.xrSettings.occlusionMesh = Config.EnableOcclusionMesh.Value;
         settings.xrSettings.singlePass = false;
 
         settings.lodBias = new FloatScalableSetting([Config.LODBias.Value, Config.LODBias.Value, Config.LODBias.Value],
             ScalableSettingSchemaId.With3Levels);
 
         asset.currentPlatformRenderPipelineSettings = settings;
+
+        // Input settings
+        InputSystem.settings.defaultButtonPressPoint = Config.ButtonPressPoint.Value;
 
         return true;
     }
@@ -337,8 +275,8 @@ public class Plugin : BaseUnityPlugin
 public enum Flags
 {
     VR = 1 << 0,
-    RestartRequired = 1 << 1,
-    InvalidGameAssembly = 1 << 2,
-    InteractableDebug = 1 << 3,
-    ItemOffsetEditor = 1 << 4,
+    InvalidGameAssembly = 1 << 1,
+    InteractableDebug = 1 << 2,
+    ItemOffsetEditor = 1 << 3,
+    ExperimentalDisableCarOwnershipPatch = 1 << 4,
 }

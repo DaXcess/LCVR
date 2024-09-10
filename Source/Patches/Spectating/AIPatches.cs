@@ -44,19 +44,25 @@ internal static class SpectatorAIPatches
     /// </summary>
     [HarmonyPatch(typeof(EnemyAI), nameof(EnemyAI.CheckLineOfSightForPlayer))]
     [HarmonyTranspiler]
-    private static IEnumerable<CodeInstruction> LineOfSightPlayerIgnoreDeadPlayer(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+    private static IEnumerable<CodeInstruction> LineOfSightPlayerIgnoreDeadPlayer(
+        IEnumerable<CodeInstruction> instructions, ILGenerator generator)
     {
         return new CodeMatcher(instructions, generator)
-            .MatchForward(false, new CodeMatch(i => i.opcode == OpCodes.Ldfld && (FieldInfo)i.operand == Field(typeof(StartOfRound), nameof(StartOfRound.allPlayerScripts))))
+            .MatchForward(false,
+                new CodeMatch(i => i.opcode == OpCodes.Ldfld && (FieldInfo)i.operand ==
+                    Field(typeof(StartOfRound), nameof(StartOfRound.allPlayerScripts))))
             .Advance(-1)
-            .Insert(new CodeInstruction(OpCodes.Call, PropertyGetter(typeof(StartOfRound), nameof(StartOfRound.Instance))))
+            .Insert(new CodeInstruction(OpCodes.Call,
+                PropertyGetter(typeof(StartOfRound), nameof(StartOfRound.Instance))))
             .CreateLabel(out var label)
             .Advance(1)
-            .InsertAndAdvance(new CodeInstruction(OpCodes.Ldfld, Field(typeof(StartOfRound), nameof(StartOfRound.allPlayerScripts))))
+            .InsertAndAdvance(new CodeInstruction(OpCodes.Ldfld,
+                Field(typeof(StartOfRound), nameof(StartOfRound.allPlayerScripts))))
             .InsertAndAdvance(new CodeInstruction(OpCodes.Ldloc_1))
             .InsertAndAdvance(new CodeInstruction(OpCodes.Ldelem_Ref))
-            .InsertAndAdvance(new CodeInstruction(OpCodes.Ldfld, Field(typeof(PlayerControllerB), nameof(PlayerControllerB.isPlayerDead))))
-            .InsertBranchAndAdvance(OpCodes.Brtrue, 77)
+            .InsertAndAdvance(new CodeInstruction(OpCodes.Ldfld,
+                Field(typeof(PlayerControllerB), nameof(PlayerControllerB.isPlayerDead))))
+            .InsertBranchAndAdvance(OpCodes.Brtrue, 78)
             .MatchForward(false, new CodeMatch(OpCodes.Blt))
             .Advance(1)
             .MatchForward(false, new CodeMatch(OpCodes.Blt))
@@ -65,22 +71,28 @@ internal static class SpectatorAIPatches
     }
 
     /// <summary>
-    /// Prevent closest player line of sight detection for dead players
+    /// Prevent "closest player line of sight detection" for dead players
     /// </summary>
     [HarmonyPatch(typeof(EnemyAI), nameof(EnemyAI.CheckLineOfSightForClosestPlayer))]
     [HarmonyTranspiler]
-    private static IEnumerable<CodeInstruction> LineOfSightClosestPlayerIgnoreDeadPlayer(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+    private static IEnumerable<CodeInstruction> LineOfSightClosestPlayerIgnoreDeadPlayer(
+        IEnumerable<CodeInstruction> instructions, ILGenerator generator)
     {
         return new CodeMatcher(instructions, generator)
-            .MatchForward(false, new CodeMatch(i => i.opcode == OpCodes.Ldfld && (FieldInfo)i.operand == Field(typeof(StartOfRound), nameof(StartOfRound.allPlayerScripts))))
+            .MatchForward(false,
+                new CodeMatch(i => i.opcode == OpCodes.Ldfld && (FieldInfo)i.operand ==
+                    Field(typeof(StartOfRound), nameof(StartOfRound.allPlayerScripts))))
             .Advance(-1)
-            .Insert(new CodeInstruction(OpCodes.Call, PropertyGetter(typeof(StartOfRound), nameof(StartOfRound.Instance))))
+            .Insert(new CodeInstruction(OpCodes.Call,
+                PropertyGetter(typeof(StartOfRound), nameof(StartOfRound.Instance))))
             .CreateLabel(out var label)
             .Advance(1)
-            .InsertAndAdvance(new CodeInstruction(OpCodes.Ldfld, Field(typeof(StartOfRound), nameof(StartOfRound.allPlayerScripts))))
+            .InsertAndAdvance(new CodeInstruction(OpCodes.Ldfld,
+                Field(typeof(StartOfRound), nameof(StartOfRound.allPlayerScripts))))
             .InsertAndAdvance(new CodeInstruction(OpCodes.Ldloc_S, 4))
             .InsertAndAdvance(new CodeInstruction(OpCodes.Ldelem_Ref))
-            .InsertAndAdvance(new CodeInstruction(OpCodes.Ldfld, Field(typeof(PlayerControllerB), nameof(PlayerControllerB.isPlayerDead))))
+            .InsertAndAdvance(new CodeInstruction(OpCodes.Ldfld,
+                Field(typeof(PlayerControllerB), nameof(PlayerControllerB.isPlayerDead))))
             .InsertBranchAndAdvance(OpCodes.Brtrue, 79)
             .MatchForward(false, new CodeMatch(OpCodes.Blt))
             .Advance(1)

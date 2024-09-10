@@ -5,6 +5,7 @@ using System.Linq;
 using LCVR.Player;
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.UI;
@@ -15,8 +16,6 @@ public class SettingsManager : MonoBehaviour
 {
     private MenuManager menuManager;
 
-    [Header("Prefabs")]
-
     [SerializeField] private GameObject categoryTemplate;
     [SerializeField] private GameObject dropdownTemplate;
     [SerializeField] private GameObject textTemplate;
@@ -26,12 +25,12 @@ public class SettingsManager : MonoBehaviour
 
     [SerializeField] private Transform content;
 
-    [Header("Specific Fields")]
-
     [SerializeField] private TextMeshProUGUI versionText;
+
     [SerializeField] private TextMeshProUGUI descriptionText;
     [SerializeField] private TMP_Dropdown runtimesDropdown;
 
+    private readonly List<string> disabledCategories = ["internal"];
     private bool isInitializing = true;
 
     private void Awake()
@@ -65,7 +64,8 @@ public class SettingsManager : MonoBehaviour
 
             runtimesDropdown.AddOptions(["System Default", .. runtimes.Select(rt => rt.Name)]);
             runtimesDropdown.value = selectedIndex;
-        } else
+        }
+        else
             runtimesDropdown.AddOptions(["System Default"]);
 
         // Dynamically add sections for other settings
@@ -74,8 +74,8 @@ public class SettingsManager : MonoBehaviour
 
         foreach (var entry in Plugin.Config.File)
         {
-            // Skip internal
-            if (entry.Key.Section.ToLower() == "internal")
+            // Skip disabled categories
+            if (disabledCategories.Contains(entry.Key.Section.ToLowerInvariant()))
                 continue;
 
             if (!categories.TryGetValue(entry.Key.Section, out var list))
@@ -118,7 +118,8 @@ public class SettingsManager : MonoBehaviour
                     dropdown.AddOptions([.. names]);
                     dropdown.SetValueWithoutNotify(idx);
                 }
-                else if (config.SettingType == typeof(float) && config.Description.AcceptableValues is AcceptableValueRange<float> values)
+                else if (config.SettingType == typeof(float) &&
+                         config.Description.AcceptableValues is AcceptableValueRange<float> values)
                 {
                     var sliderOption = Instantiate(sliderTemplate, categoryObject.transform);
                     var title = sliderOption.GetComponentInChildren<TextMeshProUGUI>();
@@ -169,7 +170,8 @@ public class SettingsManager : MonoBehaviour
                     entry.name = name;
 
                     toggle.SetIsOnWithoutNotify((bool)config.BoxedValue);
-                } else if (config.SettingType == typeof(string))
+                }
+                else if (config.SettingType == typeof(string))
                 {
                     var textUI = Instantiate(textTemplate, categoryObject.transform);
                     var title = textUI.GetComponentInChildren<TextMeshProUGUI>();
@@ -191,24 +193,29 @@ public class SettingsManager : MonoBehaviour
         isInitializing = false;
     }
 
+    public void DisableCategory(string categoryName)
+    {
+        disabledCategories.Add(categoryName.ToLowerInvariant());
+    }
+    
     public void PlayButtonPressSFX()
     {
-        menuManager.PlayConfirmSFX();
+        menuManager?.PlayConfirmSFX();
     }
 
     public void PlayCancelSFX()
     {
-        menuManager.PlayCancelSFX();
+        menuManager?.PlayCancelSFX();
     }
 
     public void PlayHoverSFX()
     {
-        menuManager.MenuAudio.PlayOneShot(GameNetworkManager.Instance.buttonSelectSFX);
+        menuManager?.MenuAudio.PlayOneShot(GameNetworkManager.Instance.buttonSelectSFX);
     }
 
     public void PlayChangeSFX()
     {
-        menuManager.MenuAudio.PlayOneShot(GameNetworkManager.Instance.buttonTuneSFX);
+        menuManager?.MenuAudio.PlayOneShot(GameNetworkManager.Instance.buttonTuneSFX);
     }
 
     public void SetOpenXRRuntime(int index)
@@ -238,7 +245,7 @@ public class SettingsManager : MonoBehaviour
             return;
 
         PlayChangeSFX();
-        
+
         Logger.LogDebug($"Updating setting: [{category}] {name} = {value}");
 
         var entry = Plugin.Config.File[category, name];
@@ -258,8 +265,9 @@ public class SettingsManager : MonoBehaviour
     {
         if (!VRSession.InVR)
             return;
-        
-        #region Reload and apply HDRP pipeline settings
+
+        #region Reload and apply HDRP pipeline and input settings
+
         var asset = QualitySettings.renderPipeline as HDRenderPipelineAsset;
 
         if (!asset)
@@ -267,21 +275,28 @@ public class SettingsManager : MonoBehaviour
             Logger.LogError("Failed to apply render pipeline changes: Render pipeline is null??");
             return;
         }
-        
+
         var settings = asset.currentPlatformRenderPipelineSettings;
 
         settings.dynamicResolutionSettings.enabled = Plugin.Config.EnableDynamicResolution.Value;
         settings.dynamicResolutionSettings.dynResType = DynamicResolutionType.Hardware;
         settings.dynamicResolutionSettings.upsampleFilter = Plugin.Config.DynamicResolutionUpscaleFilter.Value;
-        settings.dynamicResolutionSettings.minPercentage = settings.dynamicResolutionSettings.maxPercentage = Plugin.Config.DynamicResolutionPercentage.Value;
+        settings.dynamicResolutionSettings.minPercentage = settings.dynamicResolutionSettings.maxPercentage =
+            Plugin.Config.DynamicResolutionPercentage.Value;
         settings.supportMotionVectors = true;
 
-        settings.xrSettings.occlusionMesh = false;
+        settings.xrSettings.occlusionMesh = Plugin.Config.EnableOcclusionMesh.Value;
         settings.xrSettings.singlePass = false;
-        
-        settings.lodBias = new FloatScalableSetting([Plugin.Config.LODBias.Value, Plugin.Config.LODBias.Value, Plugin.Config.LODBias.Value], ScalableSettingSchemaId.With3Levels);
+
+        settings.lodBias =
+            new FloatScalableSetting(
+                [Plugin.Config.LODBias.Value, Plugin.Config.LODBias.Value, Plugin.Config.LODBias.Value],
+                ScalableSettingSchemaId.With3Levels);
 
         asset.currentPlatformRenderPipelineSettings = settings;
+
+        InputSystem.settings.defaultButtonPressPoint = Plugin.Config.ButtonPressPoint.Value;
+
         #endregion
     }
 }

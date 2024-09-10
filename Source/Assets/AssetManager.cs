@@ -1,3 +1,4 @@
+using System.IO;
 using LCVR.Input;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -24,7 +25,7 @@ internal static class AssetManager
     public static Shader TMPAlwaysOnTop;
     
     public static InputActionAsset VRActions;
-    public static InputActionAsset TrackingActions;
+    public static InputActionAsset DefaultXRActions;
     public static InputActionAsset NullActions;
 
     public static RemappableControls RemappableControls;
@@ -33,13 +34,15 @@ internal static class AssetManager
     public static Sprite KofiImage;
     public static Sprite DiscordImage;
     public static Sprite WarningImage;
-    public static Sprite SettingsImage;
+    public static Sprite SprintImage;
 
     public static AudioClip DoorLocked;
 
     public static bool LoadAssets()
     {
-        assetBundle = AssetBundle.LoadFromMemory(Properties.Resources.lethalcompanyvr);
+        assetBundle =
+            AssetBundle.LoadFromFile(Path.Combine(Path.GetDirectoryName(Plugin.Config.AssemblyPath)!,
+                "lethalcompanyvr"));
 
         if (assetBundle == null)
         {
@@ -58,7 +61,7 @@ internal static class AssetManager
         SteeringWheelPoints = assetBundle.LoadAsset<GameObject>("SnapPointContainer");
 
         VRActions = assetBundle.LoadAsset<InputActionAsset>("VRActions");
-        TrackingActions = assetBundle.LoadAsset<InputActionAsset>("TrackingActions");
+        DefaultXRActions = assetBundle.LoadAsset<InputActionAsset>("DefaultXRActions");
         NullActions = assetBundle.LoadAsset<InputActionAsset>("NullPlayerActions");
 
         TMPAlwaysOnTop = assetBundle.LoadAsset<Shader>("TextMeshPro Always On Top");
@@ -73,7 +76,7 @@ internal static class AssetManager
         KofiImage = assetBundle.LoadAsset<Sprite>("Ko-Fi");
         DiscordImage = assetBundle.LoadAsset<Sprite>("Discord");
         WarningImage = assetBundle.LoadAsset<Sprite>("Warning");
-        SettingsImage = assetBundle.LoadAsset<Sprite>("lcsettings-icon");
+        SprintImage = assetBundle.LoadAsset<Sprite>("Aguy");
 
         DoorLocked = assetBundle.LoadAsset<AudioClip>("doorlocked");
 

@@ -11,6 +11,7 @@ namespace LCVR.Physics.Interactions.Car;
 
 public class GearStick : MonoBehaviour, VRInteractable
 {
+    private static readonly int CarAnimation = Animator.StringToHash("SA_CarAnim");
     public InteractableFlags Flags => InteractableFlags.BothHands | InteractableFlags.NotWhileHeld;
     
     private VehicleController vehicle;
@@ -71,7 +72,7 @@ public class GearStick : MonoBehaviour, VRInteractable
         if (vehicle.currentDriver != VRSession.Instance.LocalPlayer.PlayerController)
             return;
         
-        vehicle.currentDriver.playerBodyAnimator.SetInteger("SA_CarAnim", HAND_NEAR_GEAR);
+        vehicle.currentDriver.playerBodyAnimator.SetInteger(CarAnimation, HAND_NEAR_GEAR);
     }
 
     public void OnColliderExit(VRInteractor interactor)
@@ -79,7 +80,7 @@ public class GearStick : MonoBehaviour, VRInteractable
         if (vehicle.currentDriver != VRSession.Instance.LocalPlayer.PlayerController)
             return;
 
-        vehicle.currentDriver.playerBodyAnimator.SetInteger("SA_CarAnim",
+        vehicle.currentDriver.playerBodyAnimator.SetInteger(CarAnimation,
             vehicle.ignitionStarted ? HANDS_ON_WHEEL : HANDS_ON_LEGS);
     }
 
@@ -104,7 +105,7 @@ public class GearStick : MonoBehaviour, VRInteractable
         channel.SendPacket([(byte)GearStickCommand.GrabStick, interactor.IsRightHand ? (byte)1 : (byte)0]);
         
         if (vehicle.currentDriver == VRSession.Instance.LocalPlayer.PlayerController)
-            vehicle.currentDriver.playerBodyAnimator.SetInteger("SA_CarAnim", HAND_ON_GEAR);
+            vehicle.currentDriver.playerBodyAnimator.SetInteger(CarAnimation, HAND_ON_GEAR);
 
         return true;
     }
@@ -124,7 +125,7 @@ public class GearStick : MonoBehaviour, VRInteractable
         channel.SendPacket([(byte)GearStickCommand.ReleaseStick, interactor.IsRightHand ? (byte)1 : (byte)0]);
         
         if (vehicle.currentDriver == VRSession.Instance.LocalPlayer.PlayerController)
-            vehicle.currentDriver.playerBodyAnimator.SetInteger("SA_CarAnim", HAND_NEAR_GEAR);
+            vehicle.currentDriver.playerBodyAnimator.SetInteger(CarAnimation, HAND_NEAR_GEAR);
     }
     
     private void OnPacketReceived(ushort sender, BinaryReader reader)

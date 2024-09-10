@@ -9,7 +9,7 @@ using UnityEngine;
 namespace LCVR.Networking;
 
 /// <summary>
-/// A special serializer that can be used within DNet.
+/// A special serializer that can be used within the networking system.
 ///
 /// This serializer allows easy serialization from structs and classes to bytes and vice-versa.
 /// It supports most basic primitive types (numbers, bools, strings), Vector3's, Quaternions, and any other class
@@ -19,6 +19,8 @@ namespace LCVR.Networking;
 /// </summary>
 public static class Serialization
 {
+    private const uint MAX_ARRAY_LENGTH = 4096;
+    
     private static readonly Dictionary<Type, FieldInfo[]> typeCache = [];
     
     private static IEnumerable<FieldInfo> GetFields(Type type)
@@ -68,6 +70,9 @@ public static class Serialization
             if (value.GetType().IsArray)
             {
                 var array = (Array)value;
+                if (array.Length > MAX_ARRAY_LENGTH)
+                    throw new ArgumentException($"Tried to serialize an array larger than {MAX_ARRAY_LENGTH} elements");
+                
                 bw.Write(array.Length);
 
                 foreach (var arrayEl in array)
@@ -113,6 +118,10 @@ public static class Serialization
             if (field.FieldType.IsArray)
             {
                 var size = br.ReadInt32();
+                if (size > MAX_ARRAY_LENGTH)
+                    throw new ArgumentException(
+                        $"Tried to deserialize an array larger than {MAX_ARRAY_LENGTH} elements");
+                
                 var targetArray = Array.CreateInstance(field.FieldType.GetElementType()!, size);
 
                 for (var i = 0; i < size; i++)

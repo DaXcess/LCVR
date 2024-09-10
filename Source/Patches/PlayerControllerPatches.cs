@@ -106,6 +106,32 @@ internal static class PlayerControllerB_LateUpdate_Patches
 internal static class PlayerControllerPatches
 {
     /// <summary>
+    /// Apply walking force based on camera rotation instead of player rotation
+    /// </summary>
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.Update))]
+    [HarmonyTranspiler]
+    private static IEnumerable<CodeInstruction> WalkTowardsCameraDirection(IEnumerable<CodeInstruction> instructions)
+    {
+        return new CodeMatcher(instructions)
+            .MatchForward(false,
+                new CodeMatch(OpCodes.Stfld, Field(typeof(PlayerControllerB), nameof(PlayerControllerB.walkForce))))
+            .Advance(-18)
+            .RemoveInstructions(14)
+            .InsertAndAdvance(
+                new CodeInstruction(OpCodes.Call, ((Func<PlayerControllerB, Vector3>)GetWalkForce).Method))
+            .InstructionEnumeration();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static Vector3 GetWalkForce(PlayerControllerB player)
+        {
+            var rotation = Quaternion.Euler(0, player.gameplayCamera.transform.eulerAngles.y, 0);
+
+            return rotation * Vector3.right * player.moveInputVector.x +
+                   rotation * Vector3.forward * player.moveInputVector.y;
+        }
+    }
+
+    /// <summary>
     /// Prevent the local player visor from being moved when the player dies
     /// </summary>
     [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.KillPlayer))]
@@ -328,6 +354,22 @@ internal static class PlayerControllerPatches
             
             return player.transform.position + Vector3.up * Mathf.Clamp(actualHeight, 0.5f, 2.35f);
         }
+    }
+
+    /// <summary>
+    /// Allow interacting with items even when we're inside of a special menu
+    /// </summary>
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.ActivateItem_performed))]
+    [HarmonyTranspiler]
+    private static IEnumerable<CodeInstruction> AllowActivateDuringMenu(IEnumerable<CodeInstruction> instructions)
+    {
+        return new CodeMatcher(instructions)
+            .MatchForward(false,
+                new CodeMatch(OpCodes.Ldfld, Field(typeof(PlayerControllerB), nameof(PlayerControllerB.inSpecialMenu))))
+            .Advance(-1)
+            .SetOpcodeAndAdvance(OpCodes.Nop)
+            .RemoveInstructions(3)
+            .InstructionEnumeration();
     }
 }
 

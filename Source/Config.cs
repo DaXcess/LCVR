@@ -4,8 +4,9 @@ using UnityEngine.Rendering;
 
 namespace LCVR;
 
-public class Config(ConfigFile file)
+public class Config(string assemblyPath, ConfigFile file)
 {
+    public string AssemblyPath { get; } = assemblyPath;
     public ConfigFile File { get; } = file;
 
     // General configuration
@@ -17,6 +18,7 @@ public class Config(ConfigFile file)
 
     // Performance configuration
 
+    public ConfigEntry<bool> EnableOcclusionMesh { get; } = file.Bind("Performance", "EnableOcclusionMesh", true, "The occlusion mesh will cause the game to stop rendering pixels outside of the lens views, which increases performance.");
     public ConfigEntry<bool> EnableDynamicResolution { get; } = file.Bind("Performance", "EnableDynamicResolution", false, "Whether or not dynamic resolution should be enabled. Required for most of these settings to have an effect.");
     public ConfigEntry<DynamicResUpscaleFilter> DynamicResolutionUpscaleFilter { get; } = file.Bind("Performance", "DynamicResolutionUpscaleFilter", DynamicResUpscaleFilter.EdgeAdaptiveScalingUpres, new ConfigDescription("The filter/algorithm that will be used to perform dynamic resolution upscaling. Defaulted to FSR (Edge Adaptive Scaling).", new AcceptableValueEnum<DynamicResUpscaleFilter>()));
     public ConfigEntry<float> DynamicResolutionPercentage { get; } = file.Bind("Performance", "DynamicResolutionPercentage", 80f, new ConfigDescription("The percentage of resolution to scale the game down to. The lower the value, the harder the upscale filter has to work which will result in quality loss.", new AcceptableValueRange<float>(0, 100)));
@@ -30,7 +32,8 @@ public class Config(ConfigFile file)
     public ConfigEntry<float> SnapTurnSize { get; } = file.Bind("Input", "SnapTurnSize", 45f, new ConfigDescription("The amount of rotation that is applied when performing a snap turn. Requires turn provider to be set to snap.", new AcceptableValueRange<float>(10, 180)));
     public ConfigEntry<bool> ToggleSprint { get; } = file.Bind("Input", "ToggleSprint", false, "Whether the sprint button should toggle sprint instead of having to hold it down.");
     public ConfigEntry<float> MovementSprintToggleCooldown { get; } = file.Bind("Input", "MovementSprintToggleCooldown", 1f, new ConfigDescription("The amount of seconds that you need to stand still for sprint to be toggled off automatically. Requires sprint toggle to be enabled.", new AcceptableValueRange<float>(0, 60)));
-
+    public ConfigEntry<float> ButtonPressPoint { get; } = file.Bind("Input", "ButtonPressPoint", 0.25f, new ConfigDescription("The amount of force required to register a UI button press. The lower the value, the more sensitive UI presses become.", new AcceptableValueRange<float>(0, 1)));
+    
     // UI configuration
 
     public ConfigEntry<bool> EnablePitchLockedCanvas { get; } = file.Bind("UI", "EnablePitchLockedCanvas", true, "Whether most of the camera-locked UI elements should only (smoothly) rotate on the Y axis, instead of being stuck on your face.");
@@ -47,6 +50,8 @@ public class Config(ConfigFile file)
     public ConfigEntry<float> LODBias { get; } = file.Bind("Rendering", "LODBias", 2f, new ConfigDescription("The LOD bias is a multiplier that dictates when an LOD must reduce their quality. Higher values means that more detailed LODs will persist for longer.", new AcceptableValueRange<float>(1, 5)));
     public ConfigEntry<bool> DisableLensDistortion { get; } = file.Bind("Rendering", "DisableLensDistortion", false, "Disables the warping effects that you experience when you are under water, use the TZP-inhalant and more.");
     public ConfigEntry<bool> SpectatorLightRemovesVolumetrics { get; } = file.Bind("Rendering", "SpectatorLightRemovesVolumetrics", false, "When spectating, also disable all volumetrics (fog) while the fullbright lighting is enabled for more visibility.");
+    public ConfigEntry<float> MirrorXOffset { get; } = file.Bind("Rendering", "MirrorXOffset", 0f, new ConfigDescription("The X offset that is added to the XR Mirror View shader. Do not touch if you don't know what this means.", new AcceptableValueRange<float>(-1, 1)));
+    public ConfigEntry<float> MirrorYOffset { get; } = file.Bind("Rendering", "MirrorYOffset", 0f, new ConfigDescription("The Y offset that is added to the XR Mirror View shader. Do not touch if you don't know what this means.", new AcceptableValueRange<float>(-1, 1)));
     
     // Interaction configuration
 

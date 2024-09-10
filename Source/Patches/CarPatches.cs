@@ -67,6 +67,9 @@ internal static class VRCarPatches
     [HarmonyPostfix]
     private static void OnRemoveDriver(VehicleController __instance)
     {
+        if (Plugin.Flags.HasFlag(Flags.ExperimentalDisableCarOwnershipPatch))
+            return;
+        
         if (!NetworkManager.Singleton.IsHost)
             return;
 
@@ -92,6 +95,9 @@ internal static class VRCarPatches
     [HarmonyPostfix]
     private static void OnUnloadMap()
     {
+        if (Plugin.Flags.HasFlag(Flags.ExperimentalDisableCarOwnershipPatch))
+            return;
+        
         if (!NetworkManager.Singleton.IsServer)
             return;
         

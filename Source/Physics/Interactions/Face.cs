@@ -34,11 +34,12 @@ public class Face : MonoBehaviour, VRInteractable
             return;
 
         var item = GetItem();
-        if (item && heldItem != item && VRSession.Instance.LocalPlayer.PlayerController.timeSinceSwitchingSlots > 0.075f)
-        {
-            heldItem = item;
-            heldItem.UseItemOnClient(true);
-        }
+        if (!item || heldItem == item ||
+            VRSession.Instance.LocalPlayer.PlayerController.timeSinceSwitchingSlots < 0.075f)
+            return;
+
+        heldItem = item;
+        heldItem.UseItemOnClient();
     }
 
     public void OnColliderEnter(VRInteractor _)
@@ -64,10 +65,10 @@ public class Face : MonoBehaviour, VRInteractable
 
     public void OnColliderExit(VRInteractor _)
     {
-        stopInteractingCoroutine = StartCoroutine(delayedStopUsing());
+        stopInteractingCoroutine = StartCoroutine(DelayedStopUsing());
     }
 
-    private IEnumerator delayedStopUsing()
+    private IEnumerator DelayedStopUsing()
     {
         yield return new WaitForSeconds(0.25f);
 
@@ -112,17 +113,23 @@ public class Face : MonoBehaviour, VRInteractable
 [HarmonyPatch]
 internal static class FaceItemInteractionPatches
 {
+    /// <summary>
+    /// Prevent the item activation keybind from doing anything if we're currently holding an active item up to our face
+    /// </summary>
     [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.ActivateItem_performed))]
     [HarmonyPrefix]
     private static bool CanInteractUsingController()
     {
-        return !VRSession.Instance?.Face?.IsInteracting ?? true;
+        return VRSession.Instance?.Face is not { IsInteracting: true };
     }
 
+    /// <summary>
+    /// Prevent the item activation keybind from doing anything if we're currently holding an active item up to our face
+    /// </summary>
     [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.ActivateItem_canceled))]
     [HarmonyPrefix]
     private static bool CanStopInteractUsingController()
     {
-        return !VRSession.Instance?.Face?.IsInteracting ?? true;
+        return VRSession.Instance?.Face is not { IsInteracting: true };
     }
 }

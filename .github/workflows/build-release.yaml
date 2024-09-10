@@ -8,13 +8,16 @@ on:
 
 jobs:
   build:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     env:
       DOTNET_INSTALL_DIR: ~/.dotnet
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          filter: tree:0
 
       - name: Set up variables
         id: vars
@@ -41,14 +44,26 @@ jobs:
       - name: Build app
         run: dotnet build -c Release
 
+      - name: Configure GPG Key
+        run: |
+          echo -n "$GPG_SIGNING_KEY" | base64 --decode | gpg --import
+        env:
+          GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
+
       - name: Prepare and bundle package
         run: |
           # Set up template
-          unzip ~/lcvr/package-template.zip -d ./package
+          mkdir package
+          git --work-tree=./package checkout origin/thunderstore ./
 
-          # Copy and sign release binary
+          # Copy and sign release binaries
           cp bin/Release/netstandard2.1/LCVR.dll ./package/BepInEx/plugins/LCVR/
+          cp bin/Release/netstandard2.1/LCVR.Preload.dll ./package/BepInEx/patchers/LCVR/
           gpg --output ./package/BepInEx/plugins/LCVR/LCVR.dll.sig --detach-sig ./package/BepInEx/plugins/LCVR/LCVR.dll
+          gpg --output ./package/BepInEx/patchers/LCVR/LCVR.Preload.dll.sig --detach-sig ./package/BepInEx/patchers/LCVR/LCVR.Preload.dll
+
+          # Move assets
+          mv ./package/lethalcompanyvr ./package/BepInEx/plugins/LCVR/lethalcompanyvr
 
           # Copy docs and license
           cp CHANGELOG.md ./package/CHANGELOG.md

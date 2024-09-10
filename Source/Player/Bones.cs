@@ -65,6 +65,8 @@ public class Bones(Transform player)
 
     public Transform LeftArmRigTarget => Spine.Find("LeftArm_target");
     public Transform RightArmRigTarget => Spine.Find("RightArm_target");
+
+    public Transform ServerItemHolder => RightHand.Find("ServerItemHolder");
     #endregion
 
     public void ResetToPrefabPositions()

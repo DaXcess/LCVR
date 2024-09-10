@@ -7,23 +7,23 @@ namespace LCVR.Patches;
 
 internal static class HarmonyPatcher
 {
-    private static readonly Harmony vrPatcher = new("io.daxcess.lcvr");
-    private static readonly Harmony universalPatcher = new("io.daxcess.lcvr-universal");
+    private static readonly Harmony VRPatcher = new("io.daxcess.lcvr");
+    private static readonly Harmony UniversalPatcher = new("io.daxcess.lcvr-universal");
 
     public static void PatchUniversal()
     {
-        Patch(universalPatcher, LCVRPatchTarget.Universal);
+        Patch(UniversalPatcher, LCVRPatchTarget.Universal);
     }
 
     public static void PatchVR()
     {
-        Patch(vrPatcher, LCVRPatchTarget.VROnly);
+        Patch(VRPatcher, LCVRPatchTarget.VROnly);
 
         if (!Plugin.Flags.HasFlag(Flags.ItemOffsetEditor))
             return;
 
         Logger.LogWarning("Item offset editor is enabled!");
-        vrPatcher.CreateClassProcessor(typeof(ItemOffsetEditorPatches)).Patch();
+        VRPatcher.CreateClassProcessor(typeof(ItemOffsetEditorPatches)).Patch();
     }
 
     private static void Patch(Harmony patcher, LCVRPatchTarget target)
@@ -49,7 +49,7 @@ internal static class HarmonyPatcher
             }
             catch (Exception e)
             {
-                Logger.LogError($"Failed to apply patches from {type}: {e.Message}");
+                Logger.LogError($"Failed to apply patches from {type}: {e.Message}, {e.InnerException}");
             }
         });
     }

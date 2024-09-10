@@ -21,17 +21,17 @@ public class Actions
 
     private Actions()
     {
-        HeadPosition = AssetManager.TrackingActions.FindAction("Head/Position");
-        HeadRotation = AssetManager.TrackingActions.FindAction("Head/Rotation");
-        HeadTrackingState = AssetManager.TrackingActions.FindAction("Head/Tracking State");
+        HeadPosition = AssetManager.DefaultXRActions.FindAction("Head/Position");
+        HeadRotation = AssetManager.DefaultXRActions.FindAction("Head/Rotation");
+        HeadTrackingState = AssetManager.DefaultXRActions.FindAction("Head/Tracking State");
 
-        LeftHandPosition = AssetManager.TrackingActions.FindAction("Left/Position");
-        LeftHandRotation = AssetManager.TrackingActions.FindAction("Left/Rotation");
-        LeftHandTrackingState = AssetManager.TrackingActions.FindAction("Left/Tracking State");
+        LeftHandPosition = AssetManager.DefaultXRActions.FindAction("Left/Position");
+        LeftHandRotation = AssetManager.DefaultXRActions.FindAction("Left/Rotation");
+        LeftHandTrackingState = AssetManager.DefaultXRActions.FindAction("Left/Tracking State");
 
-        RightHandPosition = AssetManager.TrackingActions.FindAction("Right/Position");
-        RightHandRotation = AssetManager.TrackingActions.FindAction("Right/Rotation");
-        RightHandTrackingState = AssetManager.TrackingActions.FindAction("Right/Tracking State");
+        RightHandPosition = AssetManager.DefaultXRActions.FindAction("Right/Position");
+        RightHandRotation = AssetManager.DefaultXRActions.FindAction("Right/Rotation");
+        RightHandTrackingState = AssetManager.DefaultXRActions.FindAction("Right/Tracking State");
     }
 
     public InputAction this[string name] => IngamePlayerSettings.Instance.playerInput.actions[name];

@@ -43,8 +43,9 @@ Here is a list of LCVR versions and which version(s) of Lethal Company it suppor
 
 | LCVR              | Lethal Company    |
 |-------------------|-------------------|
-| v1.3.1 *(BETA)*   | V62               |
-| v1.3.0 *(LATEST)* | V56               |
+| v1.3.2 *(LATEST)* | V64               |
+| v1.3.1            | V62               |
+| v1.3.0            | V56               |
 | v1.2.5            | V50               |
 | v1.2.4            | V50               |
 | v1.2.3            | V50               |
@@ -74,7 +75,7 @@ Also make sure you know how to use BepInEx Dependencies and assembly referencing
 
 To install the mod from the source code, you will first have to compile the mod. Instructions for this are available in [COMPILING.md](COMPILING.md).
 
-Next up you'll need to grab a copy of some **Runtime Dependencies**. You can either grab these from [one of the releases](https://github.com/DaXcess/LCVR/releases), or if you truly want the no hand holding experience, you can retrieve them from a Unity project.
+Next up you'll need to grab a copy of some **Runtime Dependencies** and the [**Asset Bundle**](https://github.com/DaXcess/LCVR/blob/thunderstore/lethalcompanyvr). You can grab both of these from [the thunderstore branch](https://github.com/DaXcess/LCVR/tree/thunderstore). You can also manually retrieve the **Runtime Dependencies** from a manually compiled Unity project.
 
 ## Retrieving Runtime Dependencies from a Unity Project
 
@@ -107,4 +108,27 @@ Once BepInEx has been installed and run at least once, you can start installing 
 
 First of all, in the `BepInEx/plugins` folder, create a new folder called `LCVR` (doesn't have to be named that specifically, but makes identification easier). Inside this folder, place the `LCVR.dll` file that was generated during the [COMPILING.md](COMPILING.md) steps.
 
-After this has been completed, create a new directory called `RuntimeDeps` (has to be named exactly that) inside of the `LCVR` folder. Inside this folder you will need to put the DLLs that you have retrieved during the [Retrieving Runtime Depenencies](#retrieving-runtime-dependencies-from-a-unity-project) step. You can now run the game with LCVR installed.
+After this has been completed, create a new directory called `RuntimeDeps` (has to be named exactly that) inside the `LCVR` folder. Inside this folder you will need to put the following DLLs:
+
+- UnityEngine.SpatialTracking.dll
+- Unity.XR.CoreUtils.dll
+- Unity.XR.Interaction.Toolkit.dll
+- Unity.XR.Management.dll
+- Unity.XR.OpenXR.dll
+
+These files should have been retrieved either during the [Retrieving Runtime Dependencies](#retrieving-runtime-dependencies-from-a-unity-project) step, or from grabbing them from the latest release.
+
+Next up, grab the **Asset Bundle** from one of the releases, and place them into the same folder as the `LCVR.dll` file. This asset bundle file needs to be called `lethalcompanyvr`.
+
+Finally, in the `BepInEx/patchers` folder, also create a new folder called `LCVR` (again, doesn't have to be exact). Inside this folder, place the `LCVR.Preload.dll` file that was also generated during the [COMPILING.md](COMPILING.md) steps.
+
+In this folder, also create a new directory called `RuntimeDeps` (again, has to be exactly named that), and place the following DLLs inside:
+
+- openxr_loader.dll
+- UnityOpenXR.dll
+
+Your directory structure (excluding BepInEx internals) should now look like this:
+
+![image](https://github.com/user-attachments/assets/6cfc3384-6f0c-4d93-9a62-11bb5a009b69)
+
+You can now run the game with LCVR installed.

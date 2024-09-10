@@ -15,6 +15,7 @@ namespace LCVR.Networking;
 /// <summary>
 /// A behaviour that is attached to other VR players
 /// </summary>
+[DefaultExecutionOrder(-100)]
 public class VRNetPlayer : MonoBehaviour
 {
     private GameObject playerGhost;
@@ -294,6 +295,8 @@ public class VRNetPlayer : MonoBehaviour
 
     private void LateUpdate()
     {
+        UpdateBones();
+        
         var positionOffset = new Vector3(0, crouchState switch
         {
             CrouchState.Roomscale => 0.1f,
@@ -366,6 +369,12 @@ public class VRNetPlayer : MonoBehaviour
         // Rotate spectator username billboard
         if (StartOfRound.Instance.localPlayerController.localVisorTargetPoint is not null)
             usernameBillboard.LookAt(StartOfRound.Instance.localPlayerController.localVisorTargetPoint);
+    }
+
+    private void UpdateBones()
+    {
+        Bones.ServerItemHolder.localPosition = new Vector3(0.002f, 0.056f, -0.046f);
+        Bones.ServerItemHolder.localRotation = Quaternion.identity;
     }
     
     public void UpdateIKWeights()

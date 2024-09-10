@@ -65,7 +65,7 @@ public class Muffler : MonoBehaviour, VRInteractable
     /// <summary>
     /// A list of items names which should prevent muffling with the right hand if held
     /// </summary>
-    private static readonly HashSet<string> MUFFLED_ITEMS_IGNORE = [
+    private static readonly HashSet<string> MuffledItemsIgnore = [
         "Walkie-talkie",
         "TZP-Inhalant"
     ];
@@ -97,7 +97,7 @@ public class Muffler : MonoBehaviour, VRInteractable
         if (heldItem && heldItem.itemProperties.twoHanded)
             return;
         
-        if (interactor.IsRightHand && heldItem && MUFFLED_ITEMS_IGNORE.Contains(heldItem.itemProperties.itemName))
+        if (interactor.IsRightHand && heldItem && MuffledItemsIgnore.Contains(heldItem.itemProperties.itemName))
             return;
 
         if (stopMuffleCoroutine != null)
@@ -118,17 +118,17 @@ public class Muffler : MonoBehaviour, VRInteractable
 
         if (interactor.IsRightHand)
         {
-            if (heldItem && MUFFLED_ITEMS_IGNORE.Contains(heldItem.itemProperties.itemName))
+            if (heldItem && MuffledItemsIgnore.Contains(heldItem.itemProperties.itemName))
                 return;
         }
 
         if (stopMuffleCoroutine != null)
             StopCoroutine(stopMuffleCoroutine);
         
-        stopMuffleCoroutine = StartCoroutine(delayedStopMuffle(interactor));
+        stopMuffleCoroutine = StartCoroutine(DelayedStopMuffle(interactor));
     }
 
-    private IEnumerator delayedStopMuffle(VRInteractor interactor)
+    private IEnumerator DelayedStopMuffle(VRInteractor interactor)
     {
         yield return new WaitForSeconds(0.5f);
 

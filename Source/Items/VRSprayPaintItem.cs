@@ -38,6 +38,9 @@ internal class VRSprayPaintItem : VRItem<SprayPaintItem>
 
     protected override void OnUpdate()
     {
+        if (!IsLocal)
+            return;
+        
         shake.Update();
     }
 }

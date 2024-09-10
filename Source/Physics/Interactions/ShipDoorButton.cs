@@ -12,7 +12,8 @@ internal class ShipDoorButton : MonoBehaviour, VRInteractable
     public ShipDoorButton otherButton;
 
     public InteractableFlags Flags => InteractableFlags.BothHands;
-    public bool CanInteract => trigger.interactable && Time.realtimeSinceStartup - lastInteractTime > 0.5f;
+    
+    private bool CanInteract => trigger.interactable && Time.realtimeSinceStartup - lastInteractTime > 0.5f;
 
     private void Awake()
     {

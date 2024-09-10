@@ -10,7 +10,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System;
 using System.Collections;
-using System.IO;
 using GameNetcodeStuff;
 
 namespace LCVR;
@@ -146,39 +145,32 @@ internal static class Utils
         controller.trackingStateAction = new InputActionProperty(hand.TrackingState());
 
         controller.enableInputActions = actionsEnabled;
-        controller.selectAction = new InputActionProperty(AssetManager.TrackingActions.FindAction($"{hand}/Select"));
+        controller.selectAction = new InputActionProperty(AssetManager.DefaultXRActions.FindAction($"{hand}/Select"));
         controller.selectActionValue =
-            new InputActionProperty(AssetManager.TrackingActions.FindAction($"{hand}/Select Value"));
+            new InputActionProperty(AssetManager.DefaultXRActions.FindAction($"{hand}/Select Value"));
         controller.activateAction =
-            new InputActionProperty(AssetManager.TrackingActions.FindAction($"{hand}/Activate"));
+            new InputActionProperty(AssetManager.DefaultXRActions.FindAction($"{hand}/Activate"));
         controller.activateActionValue =
-            new InputActionProperty(AssetManager.TrackingActions.FindAction($"{hand}/Activate Value"));
-        controller.uiPressAction = new InputActionProperty(AssetManager.TrackingActions.FindAction($"{hand}/UI Press"));
+            new InputActionProperty(AssetManager.DefaultXRActions.FindAction($"{hand}/Activate Value"));
+        controller.uiPressAction = new InputActionProperty(AssetManager.DefaultXRActions.FindAction($"{hand}/UI Press"));
         controller.uiPressActionValue =
-            new InputActionProperty(AssetManager.TrackingActions.FindAction($"{hand}/UI Press Value"));
+            new InputActionProperty(AssetManager.DefaultXRActions.FindAction($"{hand}/UI Press Value"));
         controller.uiScrollAction =
-            new InputActionProperty(AssetManager.TrackingActions.FindAction($"{hand}/UI Scroll"));
+            new InputActionProperty(AssetManager.DefaultXRActions.FindAction($"{hand}/UI Scroll"));
         controller.rotateAnchorAction =
-            new InputActionProperty(AssetManager.TrackingActions.FindAction($"{hand}/Rotate Anchor"));
+            new InputActionProperty(AssetManager.DefaultXRActions.FindAction($"{hand}/Rotate Anchor"));
         controller.translateAnchorAction =
-            new InputActionProperty(AssetManager.TrackingActions.FindAction($"{hand}/Translate Anchor"));
+            new InputActionProperty(AssetManager.DefaultXRActions.FindAction($"{hand}/Translate Anchor"));
         controller.scaleToggleAction =
-            new InputActionProperty(AssetManager.TrackingActions.FindAction($"{hand}/Scale Toggle"));
+            new InputActionProperty(AssetManager.DefaultXRActions.FindAction($"{hand}/Scale Toggle"));
         controller.scaleDeltaAction =
-            new InputActionProperty(AssetManager.TrackingActions.FindAction($"{hand}/Scale Delta"));
+            new InputActionProperty(AssetManager.DefaultXRActions.FindAction($"{hand}/Scale Delta"));
     }
 
     public static bool Raycast(this Ray ray, out RaycastHit hit, float maxDistance = Mathf.Infinity,
         int layerMask = UnityEngine.Physics.DefaultRaycastLayers)
     {
         return UnityEngine.Physics.Raycast(ray, out hit, maxDistance, layerMask);
-    }
-
-    public static bool BoxCast(this Ray ray, float radius, out RaycastHit hit, float maxDistance = Mathf.Infinity,
-        int layerMask = UnityEngine.Physics.DefaultRaycastLayers)
-    {
-        return UnityEngine.Physics.BoxCast(ray.origin, Vector3.one * radius, ray.direction, out hit,
-            Quaternion.identity, maxDistance, layerMask);
     }
 
     public enum Hand
@@ -228,20 +220,5 @@ internal static class Utils
     public static IEnumerator NopRoutine()
     {
         yield break;
-    }
-}
-
-public static class BinaryReaderExtensions
-{
-    public static BinaryReader Clone(this BinaryReader reader)
-    {
-        var mem = new MemoryStream();
-        var pos = reader.BaseStream.Position;
-
-        reader.BaseStream.CopyTo(mem);
-        reader.BaseStream.Position = pos;
-        mem.Position = 0;
-
-        return new BinaryReader(mem);
     }
 }

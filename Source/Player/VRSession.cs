@@ -102,6 +102,10 @@ public class VRSession : MonoBehaviour
 
         // Toggle helmet visor visibility
         helmetModel.SetActive(Plugin.Config.EnableHelmetVisor.Value);
+        
+        // Listen to setting change for helmet model
+        Plugin.Config.EnableHelmetVisor.SettingChanged +=
+            (_, _) => helmetModel.SetActive(Plugin.Config.EnableHelmetVisor.Value);
 
         // Move helmet model to child of target point
         var helmetTarget = StartOfRound.Instance.localPlayerController.gameObject
@@ -112,7 +116,7 @@ public class VRSession : MonoBehaviour
         helmetContainer.transform.localEulerAngles = Vector3.zero;
 
         // Disable shadows on the helmet models
-        helmetContainer.GetComponentsInChildren<MeshRenderer>()
+        helmetContainer.GetComponentsInChildren<MeshRenderer>(true)
             .Do(renderer => renderer.shadowCastingMode = ShadowCastingMode.Off);
 
         helmetTarget.localPosition = new Vector3(0.01f, -0.068f, -0.073f);
@@ -166,8 +170,16 @@ public class VRSession : MonoBehaviour
         if (Plugin.Config.DisableVolumetrics.Value)
             hdCamera.DisableQualitySetting(FrameSettingsField.Volumetrics);
 
+        // Handle volumetric setting change
+        Plugin.Config.DisableVolumetrics.SettingChanged += (_, _) =>
+        {
+            if (Plugin.Config.DisableVolumetrics.Value)
+                hdCamera.DisableQualitySetting(FrameSettingsField.Volumetrics);
+            else
+                hdCamera.EnableQualitySetting(FrameSettingsField.Volumetrics);
+        };
+        
         XRSettings.eyeTextureResolutionScale = Plugin.Config.CameraResolution.Value;
-        XRSettings.useOcclusionMesh = false;
 
         // Disable lens distortion effects
         var profiles = new[]
@@ -388,6 +400,12 @@ public class VRSession : MonoBehaviour
         hdDesktopCamera.xrRendering = false;
 
         children.Do(child => child.SetParent(MainCamera.transform, true));
+
+        // Settings listeners
+        Plugin.Config.CustomCameraFOV.SettingChanged +=
+            (_, _) => customCamera.fieldOfView = Plugin.Config.CustomCameraFOV.Value;
+        Plugin.Config.CustomCameraLerpFactor.SettingChanged += (_, _) =>
+            customCameraLerpFactor = Mathf.Clamp(Plugin.Config.CustomCameraLerpFactor.Value, 0.01f, 1f);
     }
 
     public void OnEnterTerminal()
@@ -395,7 +413,7 @@ public class VRSession : MonoBehaviour
         HUD.TerminalKeyboard.PresentKeyboard();
 
         LocalPlayer.EnableInteractorVisuals();
-        LocalPlayer.PrimaryController.EnableDebugInteractorVisual(false);
+        LocalPlayer.PrimaryController.ShowDebugInteractorVisual(false);
     }
 
     public void OnExitTerminal()
@@ -404,7 +422,7 @@ public class VRSession : MonoBehaviour
             HUD.TerminalKeyboard.Close();
 
         LocalPlayer.EnableInteractorVisuals(false);
-        LocalPlayer.PrimaryController.EnableDebugInteractorVisual();
+        LocalPlayer.PrimaryController.ShowDebugInteractorVisual();
     }
 
     public void OnPauseMenuOpened()
@@ -449,10 +467,10 @@ public class VRSession : MonoBehaviour
         UICamera.nearClipPlane = 0.01f;
         UICamera.farClipPlane = 150f;
         UICamera.enabled = true;
+        
+        XRSettings.eyeTextureResolutionScale = 1.2f;
 
         FindObjectsOfType<CanvasTransformFollow>().Do(follow => follow.ResetPosition(true));
-
-        XRSettings.eyeTextureResolutionScale = 1;
     }
 
     private void SwitchToGameCamera()

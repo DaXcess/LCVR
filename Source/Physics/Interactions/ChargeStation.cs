@@ -8,6 +8,8 @@ namespace LCVR.Physics.Interactions;
 
 public class ChargeStation : MonoBehaviour, VRInteractable
 {
+    private static readonly int Zap = Animator.StringToHash("zap");
+    
     private InteractTrigger trigger;
     private ItemCharger charger;
     private Coroutine chargeItemCoroutine;
@@ -41,7 +43,7 @@ public class ChargeStation : MonoBehaviour, VRInteractable
         if (chargeItemCoroutine != null)
             StopCoroutine(chargeItemCoroutine);
 
-        chargeItemCoroutine = StartCoroutine(chargeItemDelayed(item));
+        chargeItemCoroutine = StartCoroutine(ChargeItemDelayed(item));
     }
 
     public void OnColliderExit(VRInteractor _)
@@ -55,12 +57,12 @@ public class ChargeStation : MonoBehaviour, VRInteractable
         channel.SendPacket([]);
     }
 
-    private IEnumerator chargeItemDelayed(GrabbableObject item)
+    private IEnumerator ChargeItemDelayed(GrabbableObject item)
     {
         charger.zapAudio.Play();
         yield return new WaitForSeconds(0.75f);
 
-        charger.chargeStationAnimator.SetTrigger("zap");
+        charger.chargeStationAnimator.SetTrigger(Zap);
         item.insertedBattery = new Battery(false, 1);
         item.SyncBatteryServerRpc(100);
 
