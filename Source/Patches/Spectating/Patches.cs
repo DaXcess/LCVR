@@ -127,7 +127,7 @@ internal static class SpectatorPlayerPatches
         shipDoorWall.GetComponent<BoxCollider>().isTrigger = true;
         
         // Make sure any cars are not owned by us if we're the host
-        if (NetworkManager.Singleton.IsHost)
+        if (NetworkManager.Singleton.IsHost && !Plugin.Flags.HasFlag(Flags.ExperimentalDisableCarOwnershipPatch))
         {
             var alivePlayer = StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => !player.isPlayerDead);
             if (alivePlayer)

@@ -71,7 +71,7 @@ internal static class SpectatorAIPatches
     }
 
     /// <summary>
-    /// Prevent the closest player line of sight detection for dead players
+    /// Prevent "closest player line of sight detection" for dead players
     /// </summary>
     [HarmonyPatch(typeof(EnemyAI), nameof(EnemyAI.CheckLineOfSightForClosestPlayer))]
     [HarmonyTranspiler]

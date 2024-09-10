@@ -7,6 +7,7 @@
 - Added XR Mirror View patches that allow moving the monitor view around a bit. Invalid values will cause the monitor view to break.
 - Added an option to change UI press sensitivity, which has also been made more sensitive by default
 - Added a toast notification for when VR fails informing the user to **check the damn logs**
+- Added an experiment that can be enabled by passing `--lcvr-disable-car-ownership-patch` to the start options, which might fix the car exploding randomly
 
 **Changes**:
 
@@ -23,6 +24,7 @@
 - Fixed TZP steering the player towards the wrong direction
 - Fixed potential denial-of-service exploit in networking system
 - Fixed issues with positioning when standing on top of physics objects (car, elevator)
+- Fixed crash on death in V64 caused by stack corruption
 
 # 1.3.1
 
