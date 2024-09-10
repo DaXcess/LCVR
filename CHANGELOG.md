@@ -4,7 +4,7 @@
 
 - Added support for V64 features
 - Added the XR Occlusion Mesh as a performance option. Will cause artifacts on low framerates.
-- Added XR Mirror View patches that allow moving the monitor view around a bit. Invalid values will cause the monitor view to break.
+- Added XR Mirror View patches and options that allow moving the monitor view around a bit. Invalid values will cause the monitor view to break. *(Has no effect when using custom camera, except for in the main and pause menus)*
 - Added an option to change UI press sensitivity, which has also been made more sensitive by default
 - Added a toast notification for when VR fails informing the user to **check the damn logs**
 - Added an experiment that can be enabled by passing `--lcvr-disable-car-ownership-patch` to the start options, which might fix the car exploding randomly

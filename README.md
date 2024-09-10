@@ -43,8 +43,8 @@ Here is a list of LCVR versions and which version(s) of Lethal Company it suppor
 
 | LCVR              | Lethal Company    |
 |-------------------|-------------------|
-| v1.3.2 *(BETA)*   | V64               |
-| v1.3.1 *(LATEST)* | V62               |
+| v1.3.2 *(LATEST)* | V64               |
+| v1.3.1            | V62               |
 | v1.3.0            | V56               |
 | v1.2.5            | V50               |
 | v1.2.4            | V50               |
@@ -75,7 +75,7 @@ Also make sure you know how to use BepInEx Dependencies and assembly referencing
 
 To install the mod from the source code, you will first have to compile the mod. Instructions for this are available in [COMPILING.md](COMPILING.md).
 
-Next up you'll need to grab a copy of some **Runtime Dependencies** and the [**Asset Bundle**](https://github.com/DaXcess/LCVR/blob/thunderstore/lethalcompanyvr). You can either grab both of these from [the thunderstore branch](https://github.com/DaXcess/LCVR/tree/thunderstore). You can also manually retrieve the **Runtime Dependencies** from a manually compiled Unity project.
+Next up you'll need to grab a copy of some **Runtime Dependencies** and the [**Asset Bundle**](https://github.com/DaXcess/LCVR/blob/thunderstore/lethalcompanyvr). You can grab both of these from [the thunderstore branch](https://github.com/DaXcess/LCVR/tree/thunderstore). You can also manually retrieve the **Runtime Dependencies** from a manually compiled Unity project.
 
 ## Retrieving Runtime Dependencies from a Unity Project
 
