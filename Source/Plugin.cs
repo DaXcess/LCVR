@@ -25,8 +25,14 @@ public class Plugin : BaseUnityPlugin
 {
     public const string PLUGIN_GUID = "io.daxcess.lcvr";
     public const string PLUGIN_NAME = "LCVR";
-    public const string PLUGIN_VERSION = "1.3.2";
+    public const string PLUGIN_VERSION = "1.3.3";
 
+#if DEBUG
+    private const string SKIP_CHECKSUM_VAR = $"--lcvr-skip-checksum={PLUGIN_VERSION}-dev";
+#else
+    private const string SKIP_CHECKSUM_VAR = $"--lcvr-skip-checksum={PLUGIN_VERSION}";
+#endif
+    
     private readonly string[] GAME_ASSEMBLY_HASHES =
     [
         "BFF45683C267F402429049EF7D8095C078D5CD534E5300E56317ACB6056D70FB", // V64
@@ -88,7 +94,7 @@ public class Plugin : BaseUnityPlugin
             Flags |= Flags.ExperimentalDisableCarOwnershipPatch;
 
         // Verify game assembly to detect compatible version
-        var allowUnverified = Environment.GetCommandLineArgs().Contains("--lcvr-skip-checksum");
+        var allowUnverified = Environment.GetCommandLineArgs().Contains(SKIP_CHECKSUM_VAR);
 
         if (!VerifyGameVersion())
         {
@@ -102,7 +108,7 @@ public class Plugin : BaseUnityPlugin
                 Logger.LogError("Error: Unsupported game version, or corrupted game detected!");
                 Logger.LogError("This usually happens if Lethal Company got updated recently.");
                 Logger.LogWarning(
-                    "To bypass this check, add the following flag to your launch options in Steam: --lcvr-skip-checksum");
+                    $"To bypass this check, add the following flag to your launch options in Steam: {SKIP_CHECKSUM_VAR}");
 
                 return;
             }
