@@ -1,7 +1,10 @@
 # 1.3.3
 
+**Additions**:
+- Added support for V64 Patch 1
+
 **Changes**:
-- The `--lcvr-skip-checksum` flag now requires the LCVR version as a suffix (e.g. `--lcvr-skip-checksum=1.3.3`)
+- The `--lcvr-skip-checksum` flag now requires the current LCVR version as a suffix (e.g. `--lcvr-skip-checksum=1.3.3`)
 
 # 1.3.2
 
