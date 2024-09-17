@@ -15,7 +15,6 @@ namespace LCVR.Networking;
 /// <summary>
 /// A behaviour that is attached to other VR players
 /// </summary>
-[DefaultExecutionOrder(-100)]
 public class VRNetPlayer : MonoBehaviour
 {
     private GameObject playerGhost;
@@ -171,6 +170,9 @@ public class VRNetPlayer : MonoBehaviour
             else
                 component.enabled = true;
         }
+        
+        // Create a "prefix" script that runs before other game scripts
+        gameObject.AddComponent<VRNetPlayerEarly>();
     }
 
     private void BuildVRRig()
@@ -247,6 +249,8 @@ public class VRNetPlayer : MonoBehaviour
 
     private void Update()
     {
+        UpdateIKWeights();
+        
         // Apply crouch offset
         crouchOffset = Mathf.Lerp(crouchOffset, crouchState switch
         {
@@ -295,8 +299,6 @@ public class VRNetPlayer : MonoBehaviour
 
     private void LateUpdate()
     {
-        UpdateBones();
-        
         var positionOffset = new Vector3(0, crouchState switch
         {
             CrouchState.Roomscale => 0.1f,
@@ -370,14 +372,8 @@ public class VRNetPlayer : MonoBehaviour
         if (StartOfRound.Instance.localPlayerController.localVisorTargetPoint is not null)
             usernameBillboard.LookAt(StartOfRound.Instance.localPlayerController.localVisorTargetPoint);
     }
-
-    private void UpdateBones()
-    {
-        Bones.ServerItemHolder.localPosition = new Vector3(0.002f, 0.056f, -0.046f);
-        Bones.ServerItemHolder.localRotation = Quaternion.identity;
-    }
     
-    public void UpdateIKWeights()
+    private void UpdateIKWeights()
     {
         // Constants
         PlayerController.cameraLookRig1.weight = 0.45f;
@@ -565,6 +561,31 @@ public class VRNetPlayer : MonoBehaviour
     public class PlayerData
     {
         public bool DisableSteeringWheel { get; set; }
+    }
+
+    /// <summary>
+    /// A script for remote VR players that runs before other scripts in the game
+    /// </summary>
+    [DefaultExecutionOrder(-100)]
+    private class VRNetPlayerEarly : MonoBehaviour
+    {
+        private VRNetPlayer player;
+
+        private void Awake()
+        {
+            player = GetComponent<VRNetPlayer>();
+        }
+
+        private void LateUpdate()
+        {
+            UpdateBones();
+        }
+
+        private void UpdateBones()
+        {
+            player.Bones.ServerItemHolder.localPosition = new Vector3(0.002f, 0.056f, -0.046f);
+            player.Bones.ServerItemHolder.localRotation = Quaternion.identity;
+        }
     }
 }
 

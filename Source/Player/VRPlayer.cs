@@ -482,6 +482,8 @@ public class VRPlayer : MonoBehaviour
 
     private void Update()
     {
+        UpdateIKWeights();
+        
         // Make sure the XR Origin has the same parent as the player
         if (xrOrigin.parent != transform.parent)
         {
@@ -720,7 +722,7 @@ public class VRPlayer : MonoBehaviour
         Actions.Instance["Reset Height"].performed -= ResetHeight_performed;
     }
 
-    public void UpdateIKWeights()
+    private void UpdateIKWeights()
     {
         // Constants
         PlayerController.cameraLookRig1.weight = 0.45f;
