@@ -1,3 +1,12 @@
+# 1.3.4
+
+**Changes**:
+- Stick-turning will now instantly apply rotation to the player body
+- Removed car ownership patches, which potentially fixes the car exploding at random times
+
+**Bug fixes**:
+- Fixed player head rotation being applied in the wrong order
+
 # 1.3.3
 
 **Additions**:
