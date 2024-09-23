@@ -564,7 +564,7 @@ public class VRPlayer : MonoBehaviour
 
         // Update rotation offset after adding movement from frame (if not in build mode)
         if (!ShipBuildModeManager.Instance.InBuildMode && !PlayerController.inSpecialInteractAnimation)
-            TurningProvider.Update();
+            transform.localEulerAngles += TurningProvider.Update() * Vector3.up;
 
         // If we are in special animation allow 6 DOF but don't update player position
         if (!PlayerController.inSpecialInteractAnimation)
