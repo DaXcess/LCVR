@@ -6,6 +6,7 @@
 
 **Bug fixes**:
 - Fixed player head rotation being applied in the wrong order
+- Fixed CullFactory breaking item rendering when traversing an entrance
 
 # 1.3.3
 
