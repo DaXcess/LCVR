@@ -10,6 +10,7 @@ using UnityEngine.XR.Interaction.Toolkit;
 using LCVR.Patches;
 using UnityEngine.Animations.Rigging;
 using System.Linq;
+using HarmonyLib;
 using Unity.XR.CoreUtils;
 using CrouchState = LCVR.Networking.Rig.CrouchState;
 using Rig = LCVR.Networking.Rig;
@@ -18,7 +19,8 @@ namespace LCVR.Player;
 
 public class VRPlayer : MonoBehaviour
 {
-    private const float SCALE_FACTOR = 1.5f;
+    public const float SCALE_FACTOR = 1.5f;
+    
     private const int CAMERA_CLIP_MASK = 1 << 8 | 1 << 26;
 
     private const float SQR_MOVE_THRESHOLD = 0.001f;
@@ -178,15 +180,6 @@ public class VRPlayer : MonoBehaviour
         rightControllerRayInteractor.transform.localPosition = new Vector3(-0.01f, 0, 0);
         rightControllerRayInteractor.transform.localRotation = Quaternion.Euler(80, 0, 0);
 
-        // Add turning provider
-        ReloadTurningProvider();
-
-        // Input actions
-        Actions.Instance["Reset Height"].performed += ResetHeight_performed;
-        Actions.Instance["Sprint"].performed += Sprint_performed;
-
-        ResetHeight();
-
         // Set up item holders
         var leftHolder = new GameObject("Left Hand Item Holder");
         var rightHolder = new GameObject("Right Hand Item Holder");
@@ -216,6 +209,15 @@ public class VRPlayer : MonoBehaviour
         spectatorRigChannel = networkSystem.CreateChannel(ChannelType.SpectatorRig, PlayerController.playerClientId);
 
         StartCoroutine(UpdatePlayerPrefs());
+
+        // Add turning provider
+        ReloadTurningProvider();
+
+        // Input actions
+        Actions.Instance["Reset Height"].performed += ResetHeight_performed;
+        Actions.Instance["Sprint"].performed += Sprint_performed;
+
+        ResetHeight();
         
         // Settings changes listener
         Plugin.Config.TurnProvider.SettingChanged += (_, _) => ReloadTurningProvider();
@@ -660,7 +662,7 @@ public class VRPlayer : MonoBehaviour
                     (true, false) => CrouchState.Button,
                     (false, _) => CrouchState.None
                 },
-                rotationOffset = rotationOffset.eulerAngles.y,
+                rotationOffset = rotationOffset.eulerAngles,
                 cameraFloorOffset = cameraFloorOffset,
             }));
         else
@@ -716,6 +718,9 @@ public class VRPlayer : MonoBehaviour
 
     private void OnDestroy()
     {
+        // Disable rig because burst crashes due to "invalid transform"
+        GetComponentInChildren<RigBuilder>().enabled = false;
+        
         prefsChannel.Dispose();
 
         Actions.Instance["Sprint"].performed -= Sprint_performed;

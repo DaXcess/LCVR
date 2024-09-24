@@ -29,6 +29,8 @@ public class VRNetPlayer : MonoBehaviour
     private Transform rightController;
     private Transform leftHandVRTarget;
     private Transform rightHandVRTarget;
+    private Transform leftArmRigTarget;
+    private Transform rightArmRigTarget;
 
     private TwoBoneIKConstraint leftArmVRRig;
     private TwoBoneIKConstraint rightArmVRRig;
@@ -39,7 +41,7 @@ public class VRNetPlayer : MonoBehaviour
     private Transform camera;
 
     private float cameraFloorOffset;
-    private float rotationOffset;
+    private Vector3 rotationOffset;
 
     private Vector3 cameraEulers;
     private Vector3 cameraPosAccounted;
@@ -77,19 +79,24 @@ public class VRNetPlayer : MonoBehaviour
         xrOrigin = new GameObject("XR Origin").transform;
         xrOrigin.localPosition = Vector3.zero;
         xrOrigin.localEulerAngles = Vector3.zero;
-        xrOrigin.localScale = Vector3.one;
+        xrOrigin.localScale = Vector3.one * VRPlayer.SCALE_FACTOR;
 
         // Create controller objects & VR targets
         leftController = new GameObject("Left Controller").transform;
         rightController = new GameObject("Right Controller").transform;
         leftHandVRTarget = new GameObject("Left Hand VR Target").transform;
         rightHandVRTarget = new GameObject("Right Hand VR Target").transform;
+        leftArmRigTarget = new GameObject("Left Hand Rig Target").transform;
+        rightArmRigTarget = new GameObject("Right Hand Rig Target").transform;
 
         leftController.SetParent(xrOrigin, false);
         rightController.SetParent(xrOrigin, false);
 
         leftHandVRTarget.SetParent(leftController, false);
         rightHandVRTarget.SetParent(rightController, false);
+        
+        leftArmRigTarget.SetParent(xrOrigin, false);
+        rightArmRigTarget.SetParent(xrOrigin, false);
 
         rightHandVRTarget.localPosition = new Vector3(0.0279f, 0.0353f, -0.0044f);
         rightHandVRTarget.localEulerAngles = new Vector3(0, 90, 168);
@@ -113,6 +120,7 @@ public class VRNetPlayer : MonoBehaviour
         RightItemHolder.localPosition = new Vector3(-0.002f, 0.036f, -0.042f);
         RightItemHolder.localEulerAngles = new Vector3(356.3837f, 357.6979f, 0.1453f);
         
+        cleanupPool.Add(xrOrigin.gameObject);
         cleanupPool.Add(LeftItemHolder.gameObject);
         cleanupPool.Add(RightItemHolder.gameObject);
 
@@ -205,7 +213,7 @@ public class VRNetPlayer : MonoBehaviour
         leftArmVRRig.data.root = Bones.LeftUpperArm;
         leftArmVRRig.data.mid = Bones.LeftLowerArm;
         leftArmVRRig.data.tip = Bones.LeftHand;
-        leftArmVRRig.data.target = leftHandVRTarget;
+        leftArmVRRig.data.target = leftArmRigTarget;
         leftArmVRRig.data.hint = leftArmRigHint;
         leftArmVRRig.data.hintWeight = 1;
         leftArmVRRig.data.targetRotationWeight = 1;
@@ -237,7 +245,7 @@ public class VRNetPlayer : MonoBehaviour
         rightArmVRRig.data.root = Bones.RightUpperArm;
         rightArmVRRig.data.mid = Bones.RightLowerArm;
         rightArmVRRig.data.tip = Bones.RightHand;
-        rightArmVRRig.data.target = rightHandVRTarget;
+        rightArmVRRig.data.target = rightArmRigTarget;
         rightArmVRRig.data.hint = rightArmRigHint;
         rightArmVRRig.data.hintWeight = 1;
         rightArmVRRig.data.targetRotationWeight = 1;
@@ -259,15 +267,18 @@ public class VRNetPlayer : MonoBehaviour
         }, 0.2f);
 
         // Apply origin transforms
-        xrOrigin.position = transform.position;
-
+        if (xrOrigin.parent != transform.parent)
+            xrOrigin.parent = transform.parent;
+        
         // If we are in special animation allow 6 DOF but don't update player position
         if (!PlayerController.inSpecialInteractAnimation)
         {
-            xrOrigin.position = new Vector3(
-                transform.position.x + (modelOffset.x * 1.5f) - (cameraPosAccounted.x * 1.5f),
-                transform.position.y,
-                transform.position.z + (modelOffset.z * 1.5f) - (cameraPosAccounted.z * 1.5f)
+            xrOrigin.localPosition = new Vector3(
+                transform.localPosition.x + modelOffset.x * VRPlayer.SCALE_FACTOR -
+                cameraPosAccounted.x * VRPlayer.SCALE_FACTOR * transform.localScale.x,
+                transform.localPosition.y,
+                transform.localPosition.z + modelOffset.z * VRPlayer.SCALE_FACTOR -
+                cameraPosAccounted.z * VRPlayer.SCALE_FACTOR * transform.localScale.z
             );
 
             Bones.Model.localPosition = transform.InverseTransformPoint(transform.position + modelOffset) +
@@ -275,22 +286,23 @@ public class VRNetPlayer : MonoBehaviour
         }
         else
         {
-            xrOrigin.position = transform.position + specialAnimationPositionOffset;
+            xrOrigin.localPosition = transform.localPosition + specialAnimationPositionOffset;
             Bones.Model.localPosition = Vector3.zero;
         }
 
         // Apply car animation offset
         var carOffset = PlayerController.inVehicleAnimation ? -0.5f : 0f;
 
-        xrOrigin.position += new Vector3(0,
-            cameraFloorOffset + crouchOffset - PlayerController.sinkingValue * 2.5f + carOffset, 0);
-        xrOrigin.eulerAngles = new Vector3(0, rotationOffset, 0);
-        xrOrigin.localScale = Vector3.one * 1.5f;
+        xrOrigin.localPosition += new Vector3(0,
+                                      cameraFloorOffset + crouchOffset - PlayerController.sinkingValue * 2.5f +
+                                      carOffset, 0) *
+                                  transform.localScale.y;
+        xrOrigin.localEulerAngles = rotationOffset;
 
         // Arms need to be moved forward when crouched
         if (crouchState != CrouchState.None)
-            xrOrigin.position += transform.forward * 0.55f;
-
+            xrOrigin.localPosition += transform.forward * 0.2f;
+        
         usernameAlpha.alpha -= Time.deltaTime;
         
         // Set camera (head) rotation
@@ -324,14 +336,14 @@ public class VRNetPlayer : MonoBehaviour
                 return;
             }
             
-            Bones.LeftArmRigTarget.position = leftOverride.transform.TransformPoint(leftOverride.positionOffset);
-            Bones.LeftArmRigTarget.rotation =
+            leftArmRigTarget.position = leftOverride.transform.TransformPoint(leftOverride.positionOffset);
+            leftArmRigTarget.rotation =
                 leftOverride.transform.rotation * Quaternion.Euler(leftOverride.rotationOffset);
         }
         else
         {
-            Bones.LeftArmRigTarget.position = leftHandVRTarget.position + positionOffset;
-            Bones.LeftArmRigTarget.rotation = leftHandVRTarget.rotation;
+            leftArmRigTarget.position = leftHandVRTarget.position + positionOffset;
+            leftArmRigTarget.rotation = leftHandVRTarget.rotation;
         }
 
         if (rightHandTargetOverride is {} rightOverride)
@@ -352,14 +364,14 @@ public class VRNetPlayer : MonoBehaviour
                 return;
             }
             
-            Bones.RightArmRigTarget.position = rightOverride.transform.TransformPoint(rightOverride.positionOffset);
-            Bones.RightArmRigTarget.rotation =
+            rightArmRigTarget.position = rightOverride.transform.TransformPoint(rightOverride.positionOffset);
+            rightArmRigTarget.rotation =
                 rightOverride.transform.rotation * Quaternion.Euler(rightOverride.rotationOffset);
         }
         else
         {
-            Bones.RightArmRigTarget.position = rightHandVRTarget.position + positionOffset;
-            Bones.RightArmRigTarget.rotation = rightHandVRTarget.rotation;
+            rightArmRigTarget.position = rightHandVRTarget.position + positionOffset;
+            rightArmRigTarget.rotation = rightHandVRTarget.rotation;
         }
 
         // Update tracked finger curls after animator update
@@ -479,7 +491,6 @@ public class VRNetPlayer : MonoBehaviour
         GetComponentInChildren<RigBuilder>().Build();
         
         Destroy(playerGhost);
-        Destroy(xrOrigin.gameObject);
         
         foreach (var el in cleanupPool)
             Destroy(el);
@@ -606,7 +617,7 @@ public struct Rig
     public Vector3 specialAnimationPositionOffset;
         
     public CrouchState crouchState;
-    public float rotationOffset;
+    public Vector3 rotationOffset;
     public float cameraFloorOffset;
 
     public enum CrouchState : byte
