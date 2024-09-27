@@ -10,6 +10,7 @@
 - Fixed CullFactory breaking item rendering when traversing an entrance
 - Fixed a crash when leaving the game while on top of a car (?)
 - Fixed snap points not working for remote VR players
+- Fix item holding offset on the Zed Dog item
 
 # 1.3.3
 
