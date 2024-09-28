@@ -1,9 +1,7 @@
 using System.Collections;
-using System.Linq;
 using GameNetcodeStuff;
 using HarmonyLib;
 using LCVR.Player;
-using Unity.Netcode;
 using UnityEngine;
 
 namespace LCVR.Patches.Spectating;

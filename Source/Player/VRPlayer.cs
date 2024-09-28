@@ -10,7 +10,6 @@ using UnityEngine.XR.Interaction.Toolkit;
 using LCVR.Patches;
 using UnityEngine.Animations.Rigging;
 using System.Linq;
-using HarmonyLib;
 using Unity.XR.CoreUtils;
 using CrouchState = LCVR.Networking.Rig.CrouchState;
 using Rig = LCVR.Networking.Rig;
