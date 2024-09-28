@@ -27,6 +27,7 @@ internal static class GameNetworkManagerPatches
             return;
 
         foreach (var player in NetworkSystem.Instance.Players)
-            player.GetComponent<RigBuilder>().enabled = false;
+            if (player.TryGetComponent<RigBuilder>(out var rb))
+                rb.enabled = false;
     }
 }
