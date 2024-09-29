@@ -357,7 +357,7 @@ internal static class PlayerControllerPatches
     }
 
     /// <summary>
-    /// Allow interacting with items even when we're inside of a special menu
+    /// Allow interacting with items even when we're inside a special menu
     /// </summary>
     [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.ActivateItem_performed))]
     [HarmonyTranspiler]
@@ -377,27 +377,6 @@ internal static class PlayerControllerPatches
 [HarmonyPatch]
 internal static class UniversalPlayerControllerPatches
 {
-    /// <summary>
-    /// Prevent the use of the secondary arm rigs, so that VR arms still freely move when inside the Company Cruiser
-    /// </summary>
-    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.Update))]
-    [HarmonyPostfix]
-    private static void KeepRigConstraints(PlayerControllerB __instance)
-    {
-        // Handle IK for local player
-        if (VRSession.InVR && __instance.IsLocalPlayer() && VRSession.Instance is {} session)
-        {
-            session.LocalPlayer.UpdateIKWeights();
-            return;
-        }
-
-        // Handle IK for remote player
-        if (NetworkSystem.Instance.TryGetPlayer((ushort)__instance.playerClientId, out var player))
-        {
-            player.UpdateIKWeights();
-        }
-    }
-
     /// <summary>
     /// Disable the EnterLadder animation to fix some clunkyness with holding items
     /// </summary>

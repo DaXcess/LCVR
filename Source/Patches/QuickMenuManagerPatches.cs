@@ -8,7 +8,7 @@ namespace LCVR.Patches;
 internal static class QuickMenuManagerPatches
 {
     /// <summary>
-    /// Detech when the pause menu opens
+    /// Detect when the pause menu opens
     /// </summary>
     [HarmonyPatch(typeof(QuickMenuManager), nameof(QuickMenuManager.OpenQuickMenu))]
     [HarmonyPostfix]
@@ -18,7 +18,7 @@ internal static class QuickMenuManagerPatches
     }
 
     /// <summary>
-    /// Detech when the pause menu closes
+    /// Detect when the pause menu closes
     /// </summary>
     [HarmonyPatch(typeof(QuickMenuManager), nameof(QuickMenuManager.CloseQuickMenu))]
     [HarmonyPostfix]

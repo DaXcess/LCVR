@@ -25,7 +25,7 @@ public class Plugin : BaseUnityPlugin
 {
     public const string PLUGIN_GUID = "io.daxcess.lcvr";
     public const string PLUGIN_NAME = "LCVR";
-    public const string PLUGIN_VERSION = "1.3.3";
+    public const string PLUGIN_VERSION = "1.3.4";
 
 #if DEBUG
     private const string SKIP_CHECKSUM_VAR = $"--lcvr-skip-checksum={PLUGIN_VERSION}-dev";
@@ -91,9 +91,6 @@ public class Plugin : BaseUnityPlugin
         if (args.Contains("--lcvr-item-offset-editor"))
             Flags |= Flags.ItemOffsetEditor;
 
-        if (args.Contains("--lcvr-disable-car-ownership-patch"))
-            Flags |= Flags.ExperimentalDisableCarOwnershipPatch;
-
         // Verify game assembly to detect compatible version
         var allowUnverified = Environment.GetCommandLineArgs().Contains(SKIP_CHECKSUM_VAR);
 
@@ -154,18 +151,18 @@ public class Plugin : BaseUnityPlugin
         catch
         {
             LCVR.Logger.LogWarning(
-                "Failed to retrieve commit hash (compiled outside of git repo?). Using placeholder.");
+                "Failed to retrieve commit hash (compiled outside of git repo?).");
 
-            return "badbeef";
+            return "unknown";
         }
     }
 
     private bool VerifyGameVersion()
     {
         var location = Path.Combine(Paths.ManagedPath, "Assembly-CSharp.dll");
-        var shasum = BitConverter.ToString(Utils.ComputeHash(File.ReadAllBytes(location))).Replace("-", "");
+        var hash = BitConverter.ToString(Utils.ComputeHash(File.ReadAllBytes(location))).Replace("-", "");
 
-        return GAME_ASSEMBLY_HASHES.Contains(shasum);
+        return GAME_ASSEMBLY_HASHES.Contains(hash);
     }
 
     private bool LoadEarlyRuntimeDependencies()
@@ -254,6 +251,8 @@ public class Plugin : BaseUnityPlugin
         return true;
     }
 
+    // ReSharper disable Unity.PerformanceAnalysis
+    
     /// <summary>
     /// Modify the splash screen logo
     /// </summary>
@@ -285,5 +284,4 @@ public enum Flags
     InvalidGameAssembly = 1 << 1,
     InteractableDebug = 1 << 2,
     ItemOffsetEditor = 1 << 3,
-    ExperimentalDisableCarOwnershipPatch = 1 << 4,
 }

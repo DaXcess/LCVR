@@ -19,7 +19,7 @@ namespace LCVR.Networking;
 public class NetworkSystem : MonoBehaviour
 {
     /// Protocol Version, increase this every time a change is made that is not compatible with older versions
-    private const ushort PROTOCOL_VERSION = 7;
+    private const ushort PROTOCOL_VERSION = 8;
 
     /// Packet size limit to prevent denial-of-service attacks
     private const uint PACKET_MAX_SIZE = 4 * 1024;

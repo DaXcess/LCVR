@@ -1,3 +1,17 @@
+# 1.3.4
+
+**Changes**:
+- Stick-turning will now instantly apply rotation to the player body
+- Improved tracking accuracy for remote VR players
+- Removed car ownership patches, which potentially fixes the car exploding at random times
+
+**Bug fixes**:
+- Fixed player head rotation being applied in the wrong order
+- Fixed CullFactory breaking item rendering when traversing an entrance
+- Fixed a crash when leaving the game while on top of a car (?)
+- Fixed snap points not working for remote VR players
+- Fix item holding offset on the Zed Dog item
+
 # 1.3.3
 
 **Additions**:

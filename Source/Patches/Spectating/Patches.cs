@@ -1,9 +1,7 @@
 using System.Collections;
-using System.Linq;
 using GameNetcodeStuff;
 using HarmonyLib;
 using LCVR.Player;
-using Unity.Netcode;
 using UnityEngine;
 
 namespace LCVR.Patches.Spectating;
@@ -125,24 +123,6 @@ internal static class SpectatorPlayerPatches
         shipDoorLeft.GetComponent<BoxCollider>().isTrigger = true;
         shipDoorRight.GetComponent<BoxCollider>().isTrigger = true;
         shipDoorWall.GetComponent<BoxCollider>().isTrigger = true;
-        
-        // Make sure any cars are not owned by us if we're the host
-        if (NetworkManager.Singleton.IsHost && !Plugin.Flags.HasFlag(Flags.ExperimentalDisableCarOwnershipPatch))
-        {
-            var alivePlayer = StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => !player.isPlayerDead);
-            if (alivePlayer)
-            {
-                foreach (var car in Object.FindObjectsOfType<VehicleController>().Where(car => car.IsOwner))
-                {
-                    car.syncCarPositionInterval = 1f;
-                    car.syncedPosition = Vector3.zero;
-                    car.syncedRotation = Quaternion.identity;
-                    car.SyncCarPhysicsToOtherClients();
-                    
-                    car.NetworkObject.ChangeOwnership(alivePlayer.actualClientId);
-                }
-            }
-        }
 
         // Of course, Nutcracker with special AI behavior
         var nutcrackers = Object.FindObjectsOfType<NutcrackerEnemyAI>();

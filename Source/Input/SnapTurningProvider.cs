@@ -7,7 +7,7 @@ internal class SnapTurningProvider : TurningProvider
     private bool turnedLastInput;
     private float offset;
 
-    public void Update()
+    public float Update()
     {
         var value = Actions.Instance["Turn"].ReadValue<float>();
         var shouldExecute = MathF.Abs(value) > 0.75;
@@ -15,15 +15,18 @@ internal class SnapTurningProvider : TurningProvider
         if (shouldExecute)
         {
             var turnAmount = Plugin.Config.SnapTurnSize.Value;
-            if (turnedLastInput) return;
+            if (turnedLastInput) return 0;
 
+            turnAmount = value > 0 ? turnAmount : -turnAmount;
             turnedLastInput = true;
-            offset += value > 0 ? turnAmount : -turnAmount;
+            offset += turnAmount;
+
+            return turnAmount;
         }
-        else
-        {
-            turnedLastInput = false;
-        }
+
+        turnedLastInput = false;
+
+        return 0;
     }
 
     public void SetOffset(float offset)

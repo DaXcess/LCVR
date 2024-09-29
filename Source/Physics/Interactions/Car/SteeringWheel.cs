@@ -247,7 +247,7 @@ public class SteeringWheelSnapPoint : MonoBehaviour, VRInteractable
     private Transform handTransform;
 
     internal int pointIndex;
-    
+
     public InteractableFlags Flags => InteractableFlags.BothHands;
 
     private void Awake()
@@ -268,10 +268,10 @@ public class SteeringWheelSnapPoint : MonoBehaviour, VRInteractable
     {
         if (Plugin.Config.DisableCarSteeringWheelInteraction.Value)
             return false;
-        
+
         if (vehicle.carDestroyed || !vehicle.localPlayerInControl || !vehicle.ignitionStarted)
             return false;
-        
+
         interactor.FingerCurler.ForceFist(true);
         interactor.SnapTo(transform.parent, new Vector3(0, -0.4f, -0.1f), new Vector3(0, 180, 0));
         handTransform = interactor.IsRightHand
@@ -282,7 +282,7 @@ public class SteeringWheelSnapPoint : MonoBehaviour, VRInteractable
             VRSession.Instance.LocalPlayer.PrimaryController.enabled = false;
 
         steeringWheel.HandAttachedToWheel(interactor.IsRightHand, pointIndex);
-        
+
         return true;
     }
 
@@ -291,15 +291,20 @@ public class SteeringWheelSnapPoint : MonoBehaviour, VRInteractable
         interactor.FingerCurler.ForceFist(false);
         interactor.SnapTo(null);
         handTransform = null;
-        
+
         if (interactor.IsRightHand)
             VRSession.Instance.LocalPlayer.PrimaryController.enabled = true;
-        
+
         steeringWheel.HandDetachedFromWheel(interactor.IsRightHand);
     }
-    
-    public void OnColliderEnter(VRInteractor _) { }
-    public void OnColliderExit(VRInteractor _) { }
+
+    public void OnColliderEnter(VRInteractor _)
+    {
+    }
+
+    public void OnColliderExit(VRInteractor _)
+    {
+    }
 }
 
 [LCVRPatch(LCVRPatchTarget.Universal)]
@@ -319,7 +324,7 @@ internal static class SteeringWheelPatches
             {
                 var snapPoint = point.gameObject.AddComponent<SteeringWheelSnapPoint>();
                 snapPoint.pointIndex = i;
-                
+
                 return snapPoint;
             }).ToArray();
 

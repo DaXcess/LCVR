@@ -2,7 +2,7 @@
 
 public interface TurningProvider
 {
-    void Update();
+    float Update();
 
     void SetOffset(float offset);
 
@@ -20,7 +20,8 @@ public class NullTurningProvider : TurningProvider
     { 
     }
 
-    public void Update()
+    public float Update()
     {
+        return 0;
     }
 }
