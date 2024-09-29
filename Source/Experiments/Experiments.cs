@@ -2,9 +2,11 @@
 using LCVR.Patches;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Emit;
 using LCVR.Assets;
 using Unity.Netcode;
 using UnityEngine;
+using static HarmonyLib.AccessTools;
 
 namespace LCVR.Experiments;
 
@@ -131,18 +133,94 @@ internal static class DebugLinePool
 #if DEBUG
 [LCVRPatch(LCVRPatchTarget.Universal)]
 [HarmonyPatch]
-internal static class ExperimentalPatches
-{
-    /// <summary>
-    /// Enables the game's built in debug mode
-    /// </summary>
-    [HarmonyPatch(typeof(Application), nameof(Application.isEditor), MethodType.Getter)]
-    [HarmonyPrefix]
-    private static bool DeveloperMode(ref bool __result)
-    {
-        __result = true;
+internal static class ExperimentalPatches;
 
-        return false;
+/// <summary>
+/// All the patches in this class will enable the debug menu in Lethal Company
+/// </summary>
+[LCVRPatch(LCVRPatchTarget.Universal)]
+[HarmonyPatch]
+internal static class DebugMenuPatches
+{
+    private static IEnumerable<CodeInstruction> PatchIsEditor(IEnumerable<CodeInstruction> instructions)
+    {
+        return new CodeMatcher(instructions)
+            .MatchForward(false,
+                new CodeMatch(OpCodes.Call, PropertyGetter(typeof(Application), nameof(Application.isEditor))))
+            .SetOpcodeAndAdvance(OpCodes.Ldc_I4_1)
+            .InstructionEnumeration();
+    }
+
+    [HarmonyPatch(typeof(QuickMenuManager), nameof(QuickMenuManager.CanEnableDebugMenu))]
+    [HarmonyTranspiler]
+    private static IEnumerable<CodeInstruction> CanEnableDebugMenu(IEnumerable<CodeInstruction> instructions)
+    {
+        return PatchIsEditor(instructions);
+    }
+
+    [HarmonyPatch(typeof(QuickMenuManager), nameof(QuickMenuManager.Debug_KillLocalPlayer))]
+    [HarmonyTranspiler]
+    private static IEnumerable<CodeInstruction> Debug_KillLocalPlayer(IEnumerable<CodeInstruction> instructions)
+    {
+        return PatchIsEditor(instructions);
+    }
+
+    [HarmonyPatch(typeof(QuickMenuManager), nameof(QuickMenuManager.Debug_SpawnEnemy))]
+    [HarmonyTranspiler]
+    private static IEnumerable<CodeInstruction> Debug_SpawnEnemy(IEnumerable<CodeInstruction> instructions)
+    {
+        return PatchIsEditor(instructions);
+    }
+
+    [HarmonyPatch(typeof(QuickMenuManager), nameof(QuickMenuManager.Debug_SpawnItem))]
+    [HarmonyTranspiler]
+    private static IEnumerable<CodeInstruction> Debug_SpawnItem(IEnumerable<CodeInstruction> instructions)
+    {
+        return PatchIsEditor(instructions);
+    }
+
+    [HarmonyPatch(typeof(QuickMenuManager), nameof(QuickMenuManager.Debug_SpawnTruck))]
+    [HarmonyTranspiler]
+    private static IEnumerable<CodeInstruction> Debug_SpawnTruck(IEnumerable<CodeInstruction> instructions)
+    {
+        return PatchIsEditor(instructions);
+    }
+
+    [HarmonyPatch(typeof(QuickMenuManager), nameof(QuickMenuManager.Debug_ToggleAllowDeath))]
+    [HarmonyTranspiler]
+    private static IEnumerable<CodeInstruction> Debug_ToggleAllowDeath(IEnumerable<CodeInstruction> instructions)
+    {
+        return PatchIsEditor(instructions);
+    }
+
+    [HarmonyPatch(typeof(QuickMenuManager), nameof(QuickMenuManager.Debug_ToggleTestRoom))]
+    [HarmonyTranspiler]
+    private static IEnumerable<CodeInstruction> Debug_ToggleTestRoom(IEnumerable<CodeInstruction> instructions)
+    {
+        return PatchIsEditor(instructions);
+    }
+
+    [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.Debug_EnableTestRoomServerRpc))]
+    [HarmonyTranspiler]
+    private static IEnumerable<CodeInstruction> Debug_EnableTestRoomServerRpc(IEnumerable<CodeInstruction> instructions)
+    {
+        return PatchIsEditor(instructions);
+    }
+
+    [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.Debug_ReviveAllPlayersServerRpc))]
+    [HarmonyTranspiler]
+    private static IEnumerable<CodeInstruction> Debug_ReviveAllPlayersServerRpc(
+        IEnumerable<CodeInstruction> instructions)
+    {
+        return PatchIsEditor(instructions);
+    }
+
+    [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.Debug_ToggleAllowDeathServerRpc))]
+    [HarmonyTranspiler]
+    private static IEnumerable<CodeInstruction> Debug_ToggleAllowDeathServerRpc(
+        IEnumerable<CodeInstruction> instructions)
+    {
+        return PatchIsEditor(instructions);
     }
 }
 #endif
