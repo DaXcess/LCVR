@@ -1,3 +1,8 @@
+# 1.3.5
+
+**Additions**:
+- Added support for V65
+
 # 1.3.4
 
 **Changes**:
