@@ -19,7 +19,7 @@ internal static class MoreCompanyUIPatches
     [HarmonyPostfix]
     private static void AfterUpdateCosmetics()
     {
-        CosmeticRegistry.cosmeticApplication.spawnedCosmetics.Do(cosmetic => cosmetic.transform.localScale *= 0.5f);
+        CosmeticRegistry.displayGuyCosmeticApplication.spawnedCosmetics.Do(cosmetic => cosmetic.transform.localScale *= 0.5f);
     }
 
     // Spin dragger patches
