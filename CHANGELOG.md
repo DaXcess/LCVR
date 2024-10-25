@@ -1,7 +1,7 @@
 # 1.3.5
 
 **Additions**:
-- Added support for V65
+- Added support for V66
 
 **Compatibility**:
 - Fixed compatibility with MoreCompany 1.10.2
