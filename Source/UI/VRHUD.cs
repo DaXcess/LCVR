@@ -448,6 +448,10 @@ public class VRHUD : MonoBehaviour
         
         // Set up belt bag UI
         FindObjectOfType<BeltBagInventoryUI>(true).gameObject.AddComponent<BeltBagUI>();
+        
+        // MoreCompany compatibility
+        if (Compat.IsLoaded(Compat.MoreCompany))
+            Compatibility.MoreCompany.MoreCompanyCompatibility.SetupMoreCompanyUIInGame();
     }
 
     private static void MoveToFront(Component component)

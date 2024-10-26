@@ -25,7 +25,7 @@ public class Plugin : BaseUnityPlugin
 {
     public const string PLUGIN_GUID = "io.daxcess.lcvr";
     public const string PLUGIN_NAME = "LCVR";
-    public const string PLUGIN_VERSION = "1.3.4";
+    public const string PLUGIN_VERSION = "1.3.5";
 
 #if DEBUG
     private const string SKIP_CHECKSUM_VAR = $"--lcvr-skip-checksum={PLUGIN_VERSION}-dev";
@@ -37,6 +37,7 @@ public class Plugin : BaseUnityPlugin
     [
         "BFF45683C267F402429049EF7D8095C078D5CD534E5300E56317ACB6056D70FB", // V64
         "A6BDE2EB39028B36CB1667DCFB4ED10F688FB3FF72E71491AC25C5CB47A7EF6C", // V64.1
+        "B0BC7D3392FDAD3BB6515C0769363A51FF3599E67325FAE153948E0B82EB7596", // V66
     ];
 
     public new static Config Config { get; private set; }

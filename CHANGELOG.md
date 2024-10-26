@@ -1,3 +1,12 @@
+# 1.3.5
+
+**Additions**:
+- Added support for V66
+
+**Compatibility**:
+- Fixed compatibility with MoreCompany 1.10.2
+- Removed Spin Drag functionality for MoreCompany in LCVR, as it was already broken for a long time
+
 # 1.3.4
 
 **Changes**:
