@@ -34,14 +34,14 @@ public class Plugin : BaseUnityPlugin
     private const string SKIP_CHECKSUM_VAR = $"--lcvr-skip-checksum={PLUGIN_VERSION}";
 #endif
     
-    private const string HASHES_OVERRIDE_URL = "https://gist.githubusercontent.com/DaXcess/72c4fbac0f18c76ebc99e6b769f19389/raw/e65b6d68c37244b1909e9d6aa992ae39d9a34922/LCVR%2520Game%2520Hashes";
+    private const string HASHES_OVERRIDE_URL = "https://gist.githubusercontent.com/DaXcess/72c4fbac0f18c76ebc99e6b769f19389/raw/LCVR%2520Game%2520Hashes";
 
     private readonly string[] GAME_ASSEMBLY_HASHES =
     [
         "BFF45683C267F402429049EF7D8095C078D5CD534E5300E56317ACB6056D70FB", // V64
         "A6BDE2EB39028B36CB1667DCFB4ED10F688FB3FF72E71491AC25C5CB47A7EF6C", // V64.1
         "B0BC7D3392FDAD3BB6515C0769363A51FF3599E67325FAE153948E0B82EB7596", // V66
-        "TBD", // V67
+        "B644AD19F3CE1E82071AC5F45D1E96D76B9FC06C11763381E1979BCDC5889607", // V67
     ];
 
     public new static Config Config { get; private set; }
@@ -117,7 +117,7 @@ public class Plugin : BaseUnityPlugin
             }
         }
 
-        if (!LoadEarlyRuntimeDependencies())
+        if (!PreloadRuntimeDependencies())
         {
             Logger.LogError("Disabling mod because required runtime dependencies could not be loaded!");
             return;
@@ -167,24 +167,39 @@ public class Plugin : BaseUnityPlugin
         var location = Path.Combine(Paths.ManagedPath, "Assembly-CSharp.dll");
         var hash = BitConverter.ToString(Utils.ComputeHash(File.ReadAllBytes(location))).Replace("-", "");
 
+        // Attempt local lookup first
+        if (GAME_ASSEMBLY_HASHES.Contains(hash))
+        {
+            Logger.LogInfo("Game version verified using local hashes");
+            
+            return true;
+        }
+
+        Logger.LogWarning("Failed to verify game version using local hashes, checking remotely for updated hashes...");
+        
         // Attempt to fetch a gist with known working assembly hashes
         // This allows me to keep LCVR up and running if the game updates, without code changes
         try
         {
             var contents = new WebClient().DownloadString(HASHES_OVERRIDE_URL);
             var hashes = Utils.ParseConfig(contents);
+            
+            if (!hashes.Contains(hash))
+                return false;
 
-            return hashes.Contains(hash);
+            Logger.LogInfo("Game version verified using remote hashes");
+
+            return true;
         }
-        catch
+        catch (Exception ex)
         {
-            // If anything fails, fall back to local lookup
+            Logger.LogWarning($"Failed to verify using remote hashes: {ex.Message}");
+            
+            return false;
         }
-        
-        return GAME_ASSEMBLY_HASHES.Contains(hash);
     }
 
-    private bool LoadEarlyRuntimeDependencies()
+    private bool PreloadRuntimeDependencies()
     {
         try
         {
@@ -198,7 +213,7 @@ public class Plugin : BaseUnityPlugin
                 if (filename is "UnityOpenXR.dll" or "openxr_loader.dll")
                     continue;
 
-                Logger.LogDebug($"Early loading {filename}");
+                Logger.LogDebug($"Preloading '{filename}'...");
 
                 try
                 {
@@ -206,14 +221,14 @@ public class Plugin : BaseUnityPlugin
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogWarning($"Failed to early load {filename}: {ex.Message}");
+                    Logger.LogWarning($"Failed to preload '{filename}': {ex.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
             Logger.LogError(
-                $"Unexpected error occured while loading early runtime dependencies (incorrect folder structure?): {ex.Message}");
+                $"Unexpected error occured while preloading runtime dependencies (incorrect folder structure?): {ex.Message}");
             return false;
         }
 
