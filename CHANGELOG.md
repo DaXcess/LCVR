@@ -1,3 +1,9 @@
+# 1.3.6
+
+**Additions**:
+- Added support for V67
+- Added startup functionality that fetches game versions from a remote resource, allowing easier LCVR compatibility updates with less downtime
+
 # 1.3.5
 
 **Additions**:

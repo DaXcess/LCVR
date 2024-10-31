@@ -10,6 +10,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System;
 using System.Collections;
+using System.Linq;
 using GameNetcodeStuff;
 
 namespace LCVR;
@@ -29,6 +30,19 @@ internal static class Utils
         using var sha = SHA256.Create();
 
         return sha.ComputeHash(input);
+    }
+
+    public static string[] ParseConfig(string content)
+    {
+        var lines = content.Split("\n", StringSplitOptions.RemoveEmptyEntries);
+
+        return (from line in lines
+            where !line.TrimStart().StartsWith("#")
+            let commentIndex = line.IndexOf('#')
+            select commentIndex >= 0 ? line[..commentIndex].Trim() : line.Trim()
+            into parsedLine
+            where !string.IsNullOrEmpty(parsedLine)
+            select parsedLine).ToArray();
     }
 
     public static string FormatPascalAndAcronym(string input)
