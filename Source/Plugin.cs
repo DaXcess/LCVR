@@ -6,6 +6,7 @@ using System.Collections;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -25,7 +26,7 @@ public class Plugin : BaseUnityPlugin
 {
     public const string PLUGIN_GUID = "io.daxcess.lcvr";
     public const string PLUGIN_NAME = "LCVR";
-    public const string PLUGIN_VERSION = "1.3.5";
+    public const string PLUGIN_VERSION = "1.3.6";
 
 #if DEBUG
     private const string SKIP_CHECKSUM_VAR = $"--lcvr-skip-checksum={PLUGIN_VERSION}-dev";
@@ -33,11 +34,14 @@ public class Plugin : BaseUnityPlugin
     private const string SKIP_CHECKSUM_VAR = $"--lcvr-skip-checksum={PLUGIN_VERSION}";
 #endif
     
+    private const string HASHES_OVERRIDE_URL = "https://gist.githubusercontent.com/DaXcess/72c4fbac0f18c76ebc99e6b769f19389/raw/e65b6d68c37244b1909e9d6aa992ae39d9a34922/LCVR%2520Game%2520Hashes";
+
     private readonly string[] GAME_ASSEMBLY_HASHES =
     [
         "BFF45683C267F402429049EF7D8095C078D5CD534E5300E56317ACB6056D70FB", // V64
         "A6BDE2EB39028B36CB1667DCFB4ED10F688FB3FF72E71491AC25C5CB47A7EF6C", // V64.1
         "B0BC7D3392FDAD3BB6515C0769363A51FF3599E67325FAE153948E0B82EB7596", // V66
+        "TBD", // V67
     ];
 
     public new static Config Config { get; private set; }
@@ -163,6 +167,20 @@ public class Plugin : BaseUnityPlugin
         var location = Path.Combine(Paths.ManagedPath, "Assembly-CSharp.dll");
         var hash = BitConverter.ToString(Utils.ComputeHash(File.ReadAllBytes(location))).Replace("-", "");
 
+        // Attempt to fetch a gist with known working assembly hashes
+        // This allows me to keep LCVR up and running if the game updates, without code changes
+        try
+        {
+            var contents = new WebClient().DownloadString(HASHES_OVERRIDE_URL);
+            var hashes = Utils.ParseConfig(contents);
+
+            return hashes.Contains(hash);
+        }
+        catch
+        {
+            // If anything fails, fall back to local lookup
+        }
+        
         return GAME_ASSEMBLY_HASHES.Contains(hash);
     }
 
