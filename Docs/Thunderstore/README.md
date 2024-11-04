@@ -15,7 +15,7 @@
 <details>
   <summary>Jumpscare</summary>
 
-  <img src="https://github.com/DaXcess/LCVR/blob/assets/pino.jpg?raw=true" />
+  <img src="https://github.com/DaXcess/LCVR/blob/assets/pino.jpg?raw=true" alt="Kitty" />
 </details>
 <br/>
 
@@ -45,7 +45,7 @@ The public key which can be used to verify the file is [9422426F6125277B82CC477D
 
 ### Bypassing integrity checks
 
-To prevent completely destroying the game, this mod scans the game assembly and tries to detect whether it's using a supported version or not. If this check fails, the mod will assume that either the game was updated, or the game files have been corrupted, and will refuse to start the mod. You can disable this behaviour by passing `--lcvr-skip-checksum` to the game's launch options in Steam.
+To prevent completely destroying the game, this mod scans the game assembly and tries to detect whether it's using a supported version or not. If this check fails, the mod will assume that either the game was updated, or the game files have been corrupted, and will refuse to start the mod. You can disable this behaviour by passing `--lcvr-skip-checksum=<version>` to the game's launch options in Steam, where `<version>` is the LCVR version being used.
 
 ### Discord Server
 
@@ -59,7 +59,9 @@ Here is a list of LCVR versions and which version(s) of Lethal Company it suppor
 
 | LCVR              | Lethal Company    |
 |-------------------|-------------------|
-| v1.3.4 *(LATEST)* | V64 and V64.1     |
+| v1.3.6 *(LATEST)* | V64 - V67         |
+| v1.3.5            | V64 - V66         |
+| v1.3.4            | V64 and V64.1     |
 | v1.3.3            | V64 and V64.1     |
 | v1.3.2            | V64               |
 | v1.3.1            | V62               |
@@ -80,6 +82,8 @@ Here is a list of LCVR versions and which version(s) of Lethal Company it suppor
 | v1.1.0            | V45 and V49       |
 | v1.0.1            | V45 and V49       |
 | v1.0.0            | V45 and V49       |
+
+> LCVR versions from 1.3.6 and above also check hashes remotely, meaning newer Lethal Company versions might be supported even though they aren't listed here.
 
 # Compatibility
 
@@ -121,13 +125,13 @@ Go to the settings, then press "Change keybinds", and scroll all the way down to
 
 # Main Menu
 
-<img src="https://github.com/DaXcess/LCVR/blob/assets/main-menu.webp?raw=true" height="300" />
+<img src="https://github.com/DaXcess/LCVR/blob/assets/main-menu.webp?raw=true" height="300" alt="The main menu in VR" />
 
 The main menu is controlled by ray interactors. You can use any controller to point towards any UI element and click using the trigger button on the corresponding controller. In the main menu you also have access to a keyboard when you focus any input element, so that you can change your lobby name, tags, or change settings using the VR settings menu.
 
 # The Terminal
 
-<img src="https://github.com/DaXcess/LCVR/blob/assets/terminal.webp?raw=true" height="300" />
+<img src="https://github.com/DaXcess/LCVR/blob/assets/terminal.webp?raw=true" height="300 alt="The terminal in VR" />
 
 Since in VR you don't have access to a keyboard (under normal circumstances), the mod displays a virtual keyboard when you enter the terminal. You can use this keyboard to interact with the terminal like you would on PC.
 
@@ -139,7 +143,7 @@ You can exit the terminal by pressing the pause button or by clicking on the clo
 
 LCVR features a bunch of new interactions that VR players can use to interact with the world around them, without having to use a boring invisible laser and a simple controller binding.
 
-> All of the following interactions can be disabled individually inside the config
+> All the following interactions can be disabled individually inside the config
 
 - **Ship Lever**
 
@@ -151,7 +155,7 @@ LCVR features a bunch of new interactions that VR players can use to interact wi
 
 - **Charging Station**
 
-  Hate being forced to stand in front of the charging station every time you charge an item? Well now you can just hold any item that has a battery, and just hold it up to the charging station. Voila, your item has now been charged. If you pull the item out too quickly though, the charger will not charge your item!
+  Hate being forced to stand in front of the charging station every time you charge an item? Well now you can just hold any item that has a battery, and just hold it up to the charging station. Voilà, your item has now been charged. If you pull the item out too quickly though, the charger will not charge your item!
   _This interaction only works on the right hand. Putting your left hand inside the charger will make you just look like an idiot._
 
 - **Ship Door**
@@ -177,7 +181,7 @@ LCVR features a bunch of new interactions that VR players can use to interact wi
   _This interaction only works when you are using your pointer finger, a fist or flat hand will not work_
 
 - **Doors**
-  Always had the issue where like a billion people tried to open the same door and it just keeps opening and closing and you can't get through? Well now you actually have to interact with the door handle to open and close the door. Is a door locked? Find out by trying to open the door and listen for the sound cue (or just notice that it doesn't open, whatever). To use a key on a door, interact with the door handle using your right hand while holding a key. Same thing for the lockpicker, however picking up the lockpicker when it is placed on a door also requires you to physically grab it. When the lockpicker is an item on the floor, it will behave normally, and can be picked up from a distance.
+  Always had the issue where like a billion people tried to open the same door, and it just keeps opening and closing, and you can't get through? Well now you actually have to interact with the door handle to open and close the door. Is a door locked? Find out by trying to open the door and listen for the sound cue (or just notice that it doesn't open, whatever). To use a key on a door, interact with the door handle using your right hand while holding a key. Same thing for the lockpicker, however picking up the lockpicker when it is placed on a door also requires you to physically grab it. When the lockpicker is an item on the floor, it will behave normally, and can be picked up from a distance.
 
 - **Face**
 
@@ -186,13 +190,13 @@ LCVR features a bunch of new interactions that VR players can use to interact wi
 
 ### Muffle
 
-Hate it when you die to a dog because your frantic screaming caused you to lure the canines towards your location? Just hold your hand in front of your mouth, and none of the enemies will be able to hear you anymore! As a bonus, anyone with the VR mod will now hear your voice muffled, as if you got snatched by a snare flea. However be warned, the longer you hold your hand in front of your mouth, the less you will be able to see _(only until a hard limit, you will not be completely blinded)_.
+Hate it when you die to a dog because your frantic screaming caused you to lure the canines towards your location? Just hold your hand in front of your mouth, and none of the enemies will be able to hear you anymore! As a bonus, anyone with the VR mod will now hear your voice muffled, as if you got snatched by a snare flea. Be warned however, the longer you hold your hand in front of your mouth, the less you will be able to see _(only until a hard limit, you will not be completely blinded)_.
 
 # VR additions
 
 <div>
-  <img src="https://github.com/DaXcess/LCVR/blob/assets/shovel.webp?raw=true" height="250" />
-  <img src="https://github.com/DaXcess/LCVR/blob/assets/spray.webp?raw=true" height="250" />
+  <img src="https://github.com/DaXcess/LCVR/blob/assets/shovel.webp?raw=true" height="250" alt="Using the shovel in VR" />
+  <img src="https://github.com/DaXcess/LCVR/blob/assets/spray.webp?raw=true" height="250" alt="Using the spray paint in VR" />
 </div>
 
 This mod, in addition to adding VR and motion controls, also adds a few special interactions that you can perform in VR. At the time of writing, these currently are:
@@ -210,7 +214,7 @@ Hate having to just watch a flat screen where your fellow employees die to the h
 
 _Since the company was a big fan of using Linux for the Device©, the colors look more gray when dead since they cheaped out on the HDR support._
 
-You can teleport to other employees, like you would using the old spectator view, by using the **Interact** _(Default: Right Controller Trigger)_ button. This will cycle through each employee in the lobby that has not yet met their maker. Use this to quickly see how a fellow employee is going about their day, or to get unstuck if you have fallen into a pit.
+You can teleport to other employees by using the **Interact** _(Default: Right Controller Trigger)_ button. This will cycle through each employee in the lobby that has not yet met their maker. Use this to quickly see how a fellow employee is going about their day, or to get unstuck if you have fallen into a pit.
 
 _Since the Device© is making use of simulated consciousness, physical barriers like doors act like air, so you can walk right through them no problem!_
 
