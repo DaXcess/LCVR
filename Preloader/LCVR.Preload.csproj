@@ -4,7 +4,7 @@
         <TargetFramework>netstandard2.1</TargetFramework>
         <Description>LCVR Preloader</Description>
         <Authors>DaXcess</Authors>
-        <Version>1.3.7</Version>
+        <Version>1.3.8</Version>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <LangVersion>12.0</LangVersion>
         <Title>LCVR.Preload</Title>

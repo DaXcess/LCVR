@@ -19,14 +19,13 @@ using DependencyFlags = BepInEx.BepInDependency.DependencyFlags;
 namespace LCVR;
 
 [BepInPlugin(PLUGIN_GUID, PLUGIN_NAME, PLUGIN_VERSION)]
-[BepInDependency("me.swipez.melonloader.morecompany", DependencyFlags.SoftDependency)]
-[BepInDependency("x753.Mimics", DependencyFlags.SoftDependency)]
-[BepInDependency("com.fumiko.CullFactory", DependencyFlags.SoftDependency)]
+[BepInDependency(Compat.MoreCompany, DependencyFlags.SoftDependency)]
+[BepInDependency(Compat.CullFactory, DependencyFlags.SoftDependency)]
 public class Plugin : BaseUnityPlugin
 {
     public const string PLUGIN_GUID = "io.daxcess.lcvr";
     public const string PLUGIN_NAME = "LCVR";
-    public const string PLUGIN_VERSION = "1.3.7";
+    public const string PLUGIN_VERSION = "1.3.8";
 
 #if DEBUG
     private const string SKIP_CHECKSUM_VAR = $"--lcvr-skip-checksum={PLUGIN_VERSION}-dev";
@@ -42,6 +41,8 @@ public class Plugin : BaseUnityPlugin
         "A6BDE2EB39028B36CB1667DCFB4ED10F688FB3FF72E71491AC25C5CB47A7EF6C", // V64.1
         "B0BC7D3392FDAD3BB6515C0769363A51FF3599E67325FAE153948E0B82EB7596", // V66
         "B644AD19F3CE1E82071AC5F45D1E96D76B9FC06C11763381E1979BCDC5889607", // V67
+        "6F822FD5F804B519FA95D91DC2B2AE13A646C51D7BF1DE87A0A3D270A889A2DF", // V68
+        "BA9028C8F8DBDEF4CD179FF2A2AD57549C8D7135911B1AD48B53F638ABD3D595", // V69
     ];
 
     public new static Config Config { get; private set; }

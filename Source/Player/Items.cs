@@ -13,9 +13,6 @@ internal static class Items
         { "Yield sign", typeof(VRShovelItem) },
         { "Stop sign", typeof(VRShovelItem) },
         { "Spray paint", typeof(VRSprayPaintItem) },
-        { "Pro-flashlight", typeof(VRFlashlight) },
-        { "Flashlight", typeof(VRFlashlight) },
-        { "Laser pointer", typeof(VRFlashlight) },
         { "Kitchen knife", typeof(VRKnife) },
         { "Maneater", typeof(VRManEaterBaby) },
         { "Belt bag", typeof(VRBeltBagItem) }

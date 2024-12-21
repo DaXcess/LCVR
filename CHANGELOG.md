@@ -1,3 +1,11 @@
+# 1.3.8
+
+**Bug fixes**:
+- Fixed flashlight beam sync issue for remote VR players
+
+**Removals**:
+- Removed built in support for the Mimics (fake exits) mod
+
 # 1.3.7
 
 **Changes**:

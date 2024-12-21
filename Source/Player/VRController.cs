@@ -234,9 +234,6 @@ public class VRController : MonoBehaviour
 
             // Place interaction hud on object
             var position = hit.transform.position;
-            var offsetComponent = hit.transform.gameObject.GetComponent<InteractCanvasPositionOffset>();
-            if (offsetComponent != null)
-                position = hit.transform.TransformPoint(offsetComponent.offset);
 
             if (hit.collider.gameObject.CompareTag("InteractTrigger"))
             {
