@@ -59,7 +59,8 @@ Here is a list of LCVR versions and which version(s) of Lethal Company it suppor
 
 | LCVR              | Lethal Company    |
 |-------------------|-------------------|
-| v1.3.6 *(LATEST)* | V64 - V67         |
+| v1.3.7 *(LATEST)* | V64 - V69*        |
+| v1.3.6            | V64 - V67         |
 | v1.3.5            | V64 - V66         |
 | v1.3.4            | V64 and V64.1     |
 | v1.3.3            | V64 and V64.1     |
@@ -83,7 +84,7 @@ Here is a list of LCVR versions and which version(s) of Lethal Company it suppor
 | v1.0.1            | V45 and V49       |
 | v1.0.0            | V45 and V49       |
 
-> LCVR versions from 1.3.6 and above also check hashes remotely, meaning newer Lethal Company versions might be supported even though they aren't listed here.
+> \* LCVR versions from 1.3.6 and above also check hashes remotely, meaning newer Lethal Company versions might be supported even though they aren't listed here.
 
 # Compatibility
 

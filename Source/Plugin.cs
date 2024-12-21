@@ -26,7 +26,7 @@ public class Plugin : BaseUnityPlugin
 {
     public const string PLUGIN_GUID = "io.daxcess.lcvr";
     public const string PLUGIN_NAME = "LCVR";
-    public const string PLUGIN_VERSION = "1.3.6";
+    public const string PLUGIN_VERSION = "1.3.7";
 
 #if DEBUG
     private const string SKIP_CHECKSUM_VAR = $"--lcvr-skip-checksum={PLUGIN_VERSION}-dev";
@@ -242,7 +242,7 @@ public class Plugin : BaseUnityPlugin
         if (!OpenXR.Loader.InitializeXR())
         {
             Logger.LogError("Failed to start in VR Mode! Only Non-VR features are available!");
-            Logger.LogWarning("If you are not intending to play in VR, you can ignore the previous error.");
+            Logger.LogWarning("You may ignore the previous error if you are intending to play without VR");
 
             Native.ShowNotification("Lethal Company VR",
                 "Failed to start VR, please check the console logs for more information");

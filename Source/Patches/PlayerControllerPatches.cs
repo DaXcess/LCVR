@@ -378,20 +378,6 @@ internal static class PlayerControllerPatches
 internal static class UniversalPlayerControllerPatches
 {
     /// <summary>
-    /// Disable the EnterLadder animation to fix some clunkyness with holding items
-    /// </summary>
-    [HarmonyPatch(typeof(InteractTrigger), nameof(InteractTrigger.ladderClimbAnimation), MethodType.Enumerator)]
-    [HarmonyTranspiler]
-    private static IEnumerable<CodeInstruction> DisableLadderAnimation(IEnumerable<CodeInstruction> instructions)
-    {
-        return new CodeMatcher(instructions)
-            .MatchForward(false, new CodeMatch(OpCodes.Ldstr, "EnterLadder"))
-            .Advance(-3)
-            .RemoveInstructions(5)
-            .InstructionEnumeration();
-    }
-
-    /// <summary>
     /// Detect when a VR player switches to a VR special item and apply scripts to that item
     /// </summary>
     [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.SwitchToItemSlot))]

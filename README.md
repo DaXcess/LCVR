@@ -36,14 +36,12 @@ For more documentation on using the mod, check out the [LethalCompanyVR Thunders
 
 # Versions
 
-> [!NOTE]
-> Versions annotated with **(BETA)** are not available on Thunderstore, and must be downloaded or compiled manually
-
 Here is a list of LCVR versions and which version(s) of Lethal Company it supports
 
 | LCVR              | Lethal Company    |
 |-------------------|-------------------|
-| v1.3.6 *(LATEST)* | V64 - V67         |
+| v1.3.7 *(LATEST)* | V64 - V69*        |
+| v1.3.6            | V64 - V67         |
 | v1.3.5            | V64 - V66         |
 | v1.3.4            | V64 and V64.1     |
 | v1.3.3            | V64 and V64.1     |
@@ -67,7 +65,7 @@ Here is a list of LCVR versions and which version(s) of Lethal Company it suppor
 | v1.0.1            | V45 and V49       |
 | v1.0.0            | V45 and V49       |
 
-> LCVR versions from 1.3.6 and above also check hashes remotely, meaning newer Lethal Company versions might be supported even though they aren't listed here.
+> \* LCVR versions from 1.3.6 and above also check hashes remotely, meaning newer Lethal Company versions might be supported even though they aren't listed here.
 
 # For developers
 
@@ -87,7 +85,7 @@ Next up you'll need to grab a copy of some **Runtime Dependencies** and the [**A
 
 > You can skip this part if you have taken the runtime dependencies from the releases page.
 
-First of all start by installing Unity 2022.3.9f1, which is the Unity version that Lethal Company uses. Once you have installed the editor, create a new Unity project. If you are planning on adding prefabs to the mod, use the HDRP template and add the XR modules via the HDRP helper or by manually installing the Unity OpenXR plugins (Google is your friend), otherwise you can just use the VR template.
+First of all start by installing Unity 2022.3.9f1, which is the Unity version that Lethal Company uses. Once you have installed the editor, create a new Unity project. If you are planning on adding prefabs to the mod, use the HDRP template and add the XR modules via the HDRP helper or by manually installing the Unity OpenXR plugins (Google is your friend). Otherwise you can just use the VR template.
 
 Make sure you set the scripting backend to Mono, and not to Il2Cpp (Unity will warn you when you try to compile a VR game with Il2Cpp enabled). You can now build your dummy game. Once the game is built you can navigate to it's `<Project Name>_Data/Managed` directory. There you will need to extract the following files:
 
@@ -106,7 +104,7 @@ And from the `<Project Name>_Data/Plugins/x86_64` directory:
 
 BepInEx is the modloader that LCVR uses to mod the game. You can download BepInEx from their [GitHub Releases](https://github.com/BepInEx/BepInEx/releases) (LCVR currently targets BepInEx 5.4.22).
 
-To install BepInEx, you can follow their [Installation Guide](https://docs.bepinex.dev/articles/user_guide/installation/index.html#installing-bepinex-1).
+To install BepInEx, you can follow their [Installation Gude](https://docs.bepinex.dev/articles/user_guide/installation/index.html#installing-bepinex-1).
 
 ## Installing the mod
 

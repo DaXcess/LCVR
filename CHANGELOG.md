@@ -1,3 +1,12 @@
+# 1.3.7
+
+**Changes**:
+- Updated the compatible game version list to the latest LC
+- Increased logging verbosity for OpenXR initialization failures
+
+**Bug fixes**:
+- Fixed ladder animations and sounds
+
 # 1.3.6
 
 **Additions**:

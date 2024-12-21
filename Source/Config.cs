@@ -12,10 +12,10 @@ public class Config(string assemblyPath, ConfigFile file)
     // General configuration
 
     public ConfigEntry<bool> DisableVR { get; } = file.Bind("General", "DisableVR", false, "Disables the main functionality of this mod, can be used if you want to play without VR while keeping the mod installed.");
-
     public ConfigEntry<bool> AskOnStartup { get; } = file.Bind("General", "AskOnStartup", false, "When enabled, shows a popup on game launch where you are asked whether or not you want to play in VR. If DisableVR is set to true, this popup will not show.");
     public ConfigEntry<bool> EnableHelmetVisor { get; } = file.Bind("General", "EnableHelmetVisor", false, "Enables the first person helmet visor and helmet. This will restrict your field of view, but looks more immersive.");
-
+    public ConfigEntry<bool> EnableVerboseLogging { get; } = file.Bind("General", "EnableVerboseLogging", false, "Enables verbose debug logging during OpenXR initialization");
+    
     // Performance configuration
 
     public ConfigEntry<bool> EnableOcclusionMesh { get; } = file.Bind("Performance", "EnableOcclusionMesh", true, "The occlusion mesh will cause the game to stop rendering pixels outside of the lens views, which increases performance.");
@@ -27,7 +27,7 @@ public class Config(string assemblyPath, ConfigFile file)
 
     // Input configuration
 
-    public ConfigEntry<TurnProviderOption> TurnProvider = file.Bind("Input", "TurnProvider", TurnProviderOption.Snap, new ConfigDescription($"Specify which turning provider your player uses, if any.", new AcceptableValueEnum<TurnProviderOption>()));
+    public ConfigEntry<TurnProviderOption> TurnProvider { get; } = file.Bind("Input", "TurnProvider", TurnProviderOption.Snap, new ConfigDescription($"Specify which turning provider your player uses, if any.", new AcceptableValueEnum<TurnProviderOption>()));
     public ConfigEntry<float> SmoothTurnSpeedModifier { get; } = file.Bind("Input", "SmoothTurnSpeedModifier", 1f, new ConfigDescription("A multiplier that is added to the smooth turning speed. Requires turn provider to be set to smooth.", new AcceptableValueRange<float>(0.25f, 5)));
     public ConfigEntry<float> SnapTurnSize { get; } = file.Bind("Input", "SnapTurnSize", 45f, new ConfigDescription("The amount of rotation that is applied when performing a snap turn. Requires turn provider to be set to snap.", new AcceptableValueRange<float>(10, 180)));
     public ConfigEntry<bool> ToggleSprint { get; } = file.Bind("Input", "ToggleSprint", false, "Whether the sprint button should toggle sprint instead of having to hold it down.");

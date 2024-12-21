@@ -18,12 +18,33 @@ namespace LCVR;
 
 internal static class OpenXR
 {
+    [DllImport("UnityOpenXR", EntryPoint = "DiagnosticReport_GenerateReport")]
+    private static extern IntPtr Internal_GenerateReport();
+
+    [DllImport("UnityOpenXR", EntryPoint = "DiagnosticReport_ReleaseReport")]
+    private static extern void Internal_ReleaseReport(IntPtr report);
+    
     [DllImport("UnityOpenXR", EntryPoint = "NativeConfig_GetRuntimeName")]
     private static extern bool Internal_GetRuntimeName(out IntPtr runtimeNamePtr);
 
     [DllImport("UnityOpenXR", EntryPoint = "NativeConfig_GetRuntimeVersion")]
     private static extern bool Internal_GetRuntimeVersion(out ushort major, out ushort minor, out ushort patch);
 
+    /// <summary>
+    /// Generate an OpenXR diagnostics report
+    /// </summary>
+    private static string GenerateReport()
+    {
+        var handle = Internal_GenerateReport();
+        if (handle == IntPtr.Zero)
+            return "";
+
+        var result = Marshal.PtrToStringAnsi(handle);
+        Internal_ReleaseReport(handle);
+
+        return result;
+    }
+    
     /// <summary>
     /// Attempt to enumerate installed OpenXR runtimes as described by the <a href="https://registry.khronos.org/OpenXR/specs/1.1/loader.html#runtime-discovery">OpenXR standard</a>.
     /// </summary>
@@ -292,6 +313,18 @@ internal static class OpenXR
 
             var displays = new List<XRDisplaySubsystem>();
             SubsystemManager.GetInstances(displays);
+
+            if (Plugin.Config.EnableVerboseLogging.Value)
+            {
+                Logger.LogWarning("OpenXR Diagnostics Report:");
+
+                foreach (var line in GenerateReport().Split("\n"))
+                    Logger.LogWarning(line);
+
+                Logger.LogWarning("");
+                Logger.LogWarning(
+                    "To prevent diagnostics report from being printed, disable the 'EnableVerboseLogging' option in the settings.");
+            }
 
             return displays.Count > 0;
         }
