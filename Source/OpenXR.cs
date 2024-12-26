@@ -248,7 +248,7 @@ internal static class OpenXR
                 // On failure, revert back to pre 1.2.4 behavior (Default runtime or the one specified by the config)
                 return InitializeXR(string.IsNullOrEmpty(Plugin.Config.OpenXRRuntimeFile.Value)
                     ? null
-                    : new Runtime()
+                    : new Runtime
                     {
                         Name = "LCVR OpenXR Override",
                         Path = Plugin.Config.OpenXRRuntimeFile.Value
@@ -261,7 +261,7 @@ internal static class OpenXR
 
                 if (InitializeXR(rtFound
                         ? rt
-                        : new Runtime()
+                        : new Runtime
                         {
                             Name = "LCVR OpenXR Override",
                             Path = Plugin.Config.OpenXRRuntimeFile.Value

@@ -5,7 +5,6 @@ namespace LCVR;
 public static class Compat
 {
     public const string MoreCompany = "me.swipez.melonloader.morecompany";
-    public const string Diversity = "Chaos.Diversity";
     public const string CullFactory = "com.fumiko.CullFactory";
 
     public static bool IsLoaded(string modId)

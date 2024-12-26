@@ -28,7 +28,7 @@ public static class FlashlightItemPatches
     }
     
     /// <summary>
-    /// Make sure to enable to "body" flashlight beam if a VR player pockets their flashlight while it's still active
+    /// Make sure to enable the "helmet" flashlight beam if a VR player pockets their flashlight while it's still active
     /// </summary>
     [HarmonyPatch(typeof(FlashlightItem), nameof(FlashlightItem.PocketFlashlightClientRpc))]
     [HarmonyPostfix]
