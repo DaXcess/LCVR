@@ -25,7 +25,7 @@ public class Plugin : BaseUnityPlugin
 {
     public const string PLUGIN_GUID = "io.daxcess.lcvr";
     public const string PLUGIN_NAME = "LCVR";
-    public const string PLUGIN_VERSION = "1.3.8";
+    public const string PLUGIN_VERSION = "1.3.9";
 
 #if DEBUG
     private const string SKIP_CHECKSUM_VAR = $"--lcvr-skip-checksum={PLUGIN_VERSION}-dev";
@@ -43,6 +43,7 @@ public class Plugin : BaseUnityPlugin
         "B644AD19F3CE1E82071AC5F45D1E96D76B9FC06C11763381E1979BCDC5889607", // V67
         "6F822FD5F804B519FA95D91DC2B2AE13A646C51D7BF1DE87A0A3D270A889A2DF", // V68
         "BA9028C8F8DBDEF4CD179FF2A2AD57549C8D7135911B1AD48B53F638ABD3D595", // V69
+        "2AF191104F9E57F0E3CF2C24153C5AAFC64D8E6DA56CD49E9BE580B19B3A1833", // V69.1
     ];
 
     public new static Config Config { get; private set; }
@@ -236,30 +237,48 @@ public class Plugin : BaseUnityPlugin
         return true;
     }
 
-    private bool InitializeVR()
+    public static void ToggleVR()
     {
-        Logger.LogInfo("Loading VR...");
+        if (Flags.HasFlag(Flags.VR))
+        {
+            OpenXR.Loader.DeinitializeXR();
+            HarmonyPatcher.UnpatchVR();
+
+            Flags &= ~Flags.VR;
+        }
+        else
+        {
+            if (!InitializeVR())
+                return;
+
+            Flags |= Flags.VR;
+            Flags &= ~Flags.StartupFailed;
+        }
+    }
+
+    private static bool InitializeVR()
+    {
+        LCVR.Logger.LogInfo("Loading VR...");
 
         if (!OpenXR.Loader.InitializeXR())
         {
-            Logger.LogError("Failed to start in VR Mode! Only Non-VR features are available!");
-            Logger.LogWarning("You may ignore the previous error if you are intending to play without VR");
+            LCVR.Logger.LogError("Failed to start in VR Mode! Only Non-VR features are available!");
+            LCVR.Logger.LogWarning("You may ignore the previous error if you are intending to play without VR");
 
-            Native.ShowNotification("Lethal Company VR",
-                "Failed to start VR, please check the console logs for more information");
+            Flags |= Flags.StartupFailed;
 
             return false;
         }
 
         if (OpenXR.GetActiveRuntimeName(out var name) &&
             OpenXR.GetActiveRuntimeVersion(out var major, out var minor, out var patch))
-            Logger.LogInfo($"OpenXR runtime being used: {name} ({major}.{minor}.{patch})");
+            LCVR.Logger.LogInfo($"OpenXR runtime being used: {name} ({major}.{minor}.{patch})");
         else
-            Logger.LogError("Could not get OpenXR runtime info?");
+            LCVR.Logger.LogError("Could not get OpenXR runtime info?");
 
         HarmonyPatcher.PatchVR();
 
-        Logger.LogDebug("Inserted VR patches using Harmony");
+        LCVR.Logger.LogDebug("Inserted VR patches using Harmony");
 
         // Change HDRP settings
         var asset = QualitySettings.renderPipeline as HDRenderPipelineAsset;
@@ -319,4 +338,5 @@ public enum Flags
     InvalidGameAssembly = 1 << 1,
     InteractableDebug = 1 << 2,
     ItemOffsetEditor = 1 << 3,
+    StartupFailed = 1 << 4,
 }

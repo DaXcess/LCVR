@@ -6,7 +6,7 @@ namespace LCVR.Patches;
 
 [LCVRPatch]
 [HarmonyPatch]
-public class CameraPatches
+internal static class CameraPatches
 {
     /// <summary>
     /// Prevents the game camera from setting a target texture, which would make the output not render to the headset

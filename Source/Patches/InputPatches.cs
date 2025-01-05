@@ -14,14 +14,18 @@ namespace LCVR.Patches;
 [HarmonyPatch]
 public class InputPatches
 {
+    private static InputActionAsset originalInputActions;
+    
     /// <summary>
     /// Replace the lethal company inputs with VR inputs
     /// </summary>
     [HarmonyPatch(typeof(IngamePlayerSettings), nameof(IngamePlayerSettings.Awake))]
     [HarmonyPostfix]
-    private static void OnCreateSettings(IngamePlayerSettings __instance)
+    internal static void OnCreateSettings(IngamePlayerSettings __instance)
     {
         var playerInput = __instance.playerInput;
+
+        originalInputActions = playerInput.actions;
         
         playerInput.actions = AssetManager.VRActions;
         playerInput.defaultActionMap = "Movement";
@@ -29,6 +33,15 @@ public class InputPatches
         playerInput.notificationBehavior = PlayerNotifications.InvokeCSharpEvents;
         
         // Re-enable player input because otherwise it's stuck at no devices in some cases
+        playerInput.enabled = false;
+        playerInput.enabled = true;
+    }
+
+    internal static void RestoreOriginalBindings()
+    {
+        var playerInput = IngamePlayerSettings.Instance.playerInput;
+
+        playerInput.actions = originalInputActions;
         playerInput.enabled = false;
         playerInput.enabled = true;
     }

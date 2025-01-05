@@ -2,6 +2,7 @@
 using System;
 using System.Reflection;
 using LCVR.Experiments;
+using UnityEngine;
 
 namespace LCVR.Patches;
 
@@ -24,6 +25,11 @@ internal static class HarmonyPatcher
 
         Logger.LogWarning("Item offset editor is enabled!");
         VRPatcher.CreateClassProcessor(typeof(ItemOffsetEditorPatches)).Patch();
+    }
+
+    public static void UnpatchVR()
+    {
+        VRPatcher.UnpatchSelf();
     }
 
     private static void Patch(Harmony patcher, LCVRPatchTarget target)
@@ -66,4 +72,24 @@ internal enum LCVRPatchTarget
 {
     Universal,
     VROnly
+}
+
+[LCVRPatch(LCVRPatchTarget.Universal)]
+[HarmonyPatch]
+internal static class HarmonyLibPatches
+{
+    /// <summary>
+    /// Ironically, patching harmony like this fixes some issues with unpatching
+    /// </summary>
+    [HarmonyPatch(typeof(MethodBaseExtensions), nameof(MethodBaseExtensions.HasMethodBody))]
+    [HarmonyPrefix]
+    private static bool OnUnpatch(MethodBase member, ref bool __result)
+    {
+        if (member != AccessTools.PropertySetter(typeof(Camera), nameof(Camera.targetTexture)))
+            return true;
+
+        __result = true;
+
+        return false;
+    }
 }

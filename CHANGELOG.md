@@ -1,3 +1,15 @@
+# 1.3.9
+
+**Additions**:
+- Added the ability to toggle between VR and flatscreen, by pressing `F8` in the main menu
+- Added an additional search method for OpenXR runtimes (in case they haven't registered themselves in the Windows Registry)
+
+**Bug fixes**:
+- Fixed issue where "VR Settings" button would render on top of the rebinding panel
+
+**Removals**:
+- Removed the cave dweller from the main menu
+
 # 1.3.8
 
 **Bug fixes**:

@@ -55,7 +55,7 @@ internal static class AssetManager
         SettingsPanel = assetBundle.LoadAsset<GameObject>("Panel");
         KeybindDiscard = assetBundle.LoadAsset<GameObject>("KeybindDiscard");
         VolumeManager = assetBundle.LoadAsset<GameObject>("Volume Manager");
-        EnemyPrefab = assetBundle.LoadAsset<GameObject>("CaveDwellerEnemy");
+        EnemyPrefab = assetBundle.LoadAsset<GameObject>("InnKeeper");
         SpectatorLight = assetBundle.LoadAsset<GameObject>("Spectator Light");
         SpectatorGhost = assetBundle.LoadAsset<GameObject>("SpectatorGhost");
         SteeringWheelPoints = assetBundle.LoadAsset<GameObject>("SnapPointContainer");

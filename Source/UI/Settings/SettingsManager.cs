@@ -50,7 +50,9 @@ public class SettingsManager : MonoBehaviour
 #endif
 
         // Set up OpenXR settings section
-        if (OpenXR.GetRuntimes(out var runtimes))
+        if (OpenXR.GetRuntimes() is var runtimes && runtimes.Count == 0)
+            runtimesDropdown.AddOptions(["System Default"]);
+        else
         {
             var selectedIndex = 0;
 
@@ -65,8 +67,6 @@ public class SettingsManager : MonoBehaviour
             runtimesDropdown.AddOptions(["System Default", .. runtimes.Select(rt => rt.Name)]);
             runtimesDropdown.value = selectedIndex;
         }
-        else
-            runtimesDropdown.AddOptions(["System Default"]);
 
         // Dynamically add sections for other settings
 
@@ -227,7 +227,7 @@ public class SettingsManager : MonoBehaviour
         }
 
         var name = runtimesDropdown.options[index].text;
-        OpenXR.GetRuntimes(out var runtimes);
+        var runtimes = OpenXR.GetRuntimes();
 
         if (!runtimes.TryGetRuntime(name, out var runtime))
         {

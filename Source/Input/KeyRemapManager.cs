@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using HarmonyLib;
 using LCVR.Assets;
+using LCVR.Player;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -50,6 +51,7 @@ public class KeyRemapManager : MonoBehaviour
     private InputActionRebindingExtensions.RebindingOperation currentOperation;
     private SettingsOption currentOption;
     private List<(RemappableControl, SettingsOption)> controlsList = [];
+    private readonly List<GameObject> panelObjects = [];
 
     private float lastRebindTime;
 
@@ -67,7 +69,7 @@ public class KeyRemapManager : MonoBehaviour
         var sectionTextObj = Instantiate(panel.sectionTextPrefab, panel.keyRemapContainer);
         sectionTextObj.GetComponent<RectTransform>().anchoredPosition =
             new Vector2(-40, -panel.verticalOffset * vertOffset);
-        sectionText = sectionTextObj.GetComponentInChildren<TextMeshProUGUI>();
+        sectionText = sectionTextObj.GetComponent<TextMeshProUGUI>();
         sectionText.text = string.IsNullOrEmpty(playerInput.currentControlScheme)
             ? "PLEASE CONNECT BOTH CONTROLLERS"
             : $"VR CONTROLLERS ({playerInput.currentControlScheme})";
@@ -85,6 +87,7 @@ public class KeyRemapManager : MonoBehaviour
             var obj = Instantiate(panel.keyRemapSlotPrefab, panel.keyRemapContainer);
             var discard = Instantiate(AssetManager.KeybindDiscard, obj.transform);
             
+            panelObjects.Add(obj);
             panel.keySlots.Add(obj);
 
             obj.GetComponentInChildren<TextMeshProUGUI>().text = remappableKey.controlName;
@@ -248,8 +251,6 @@ public class KeyRemapManager : MonoBehaviour
         currentOperation.Dispose();
         playerInput.ActivateInput();
 
-        Logger.LogDebug(action.bindings[rebindIndex].effectivePath);
-
         var image = option.transform.Find("ControlImage").GetComponent<Image>();
         image.enabled = true;
         image.sprite = AssetManager.RemappableControls.icons[action.bindings[rebindIndex].effectivePath];
@@ -260,5 +261,11 @@ public class KeyRemapManager : MonoBehaviour
         lastRebindTime = Time.realtimeSinceStartup;
 
         Plugin.Config.ControllerBindingsOverride.Value = playerInput.actions.SaveBindingOverridesAsJson();
+    }
+
+    public void CancelRebind()
+    {
+        currentOperation?.Dispose();
+        playerInput.ActivateInput();
     }
 }

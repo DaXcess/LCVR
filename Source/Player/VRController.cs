@@ -5,7 +5,6 @@ using UnityEngine;
 using UnityEngine.XR;
 using LCVR.Input;
 using LCVR.Assets;
-using LCVR.UI;
 using System.Collections.Generic;
 
 namespace LCVR.Player;

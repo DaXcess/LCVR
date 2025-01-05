@@ -31,6 +31,9 @@ internal class CanvasTransformFollow : MonoBehaviour
     private void OnDestroy()
     {
         Actions.Instance["Reset Height"].performed -= OnResetHeight;
+        
+        if (enemyTransform != null)
+            Destroy(enemyTransform.gameObject);
     }
 
     private void Update()
@@ -44,12 +47,15 @@ internal class CanvasTransformFollow : MonoBehaviour
         var rotation = Quaternion.Euler(0, sourceTransform.eulerAngles.y, 0);
         var forward = rotation * Vector3.forward;
         var position = forward * CANVAS_DISTANCE;
+        var enemyPosition = -forward * (CANVAS_DISTANCE * 3);
 
-        targetPosition = new Vector3(position.x + sourceTransform.position.x, heightOffset, position.z + sourceTransform.position.z);
+        targetPosition = new Vector3(position.x + sourceTransform.position.x, heightOffset,
+            position.z + sourceTransform.position.z);
         targetRotation = Quaternion.Euler(0, sourceTransform.eulerAngles.y, 0);
 
-        enemyTransform.position = new Vector3(-position.x + sourceTransform.position.x, heightOffset - 2.5f, -position.z + sourceTransform.position.z);
-        enemyTransform.rotation = Quaternion.Euler(0, sourceTransform.eulerAngles.y, 0);
+        enemyTransform.position = new Vector3(enemyPosition.x + sourceTransform.position.x, heightOffset - 3.5f,
+            enemyPosition.z + sourceTransform.position.z);
+        enemyTransform.rotation = Quaternion.Euler(0, sourceTransform.eulerAngles.y + 180, 0);
 
         if (force)
         {

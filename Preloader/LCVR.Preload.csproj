@@ -4,11 +4,11 @@
         <TargetFramework>netstandard2.1</TargetFramework>
         <Description>LCVR Preloader</Description>
         <Authors>DaXcess</Authors>
-        <Version>1.3.8</Version>
+        <Version>1.3.9</Version>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <LangVersion>12.0</LangVersion>
         <Title>LCVR.Preload</Title>
-        <Copyright>Copyright (c) DaXcess 2024</Copyright>
+        <Copyright>Copyright (c) DaXcess 2024-2025</Copyright>
         <PackageProjectUrl>https://lcvr.daxcess.io</PackageProjectUrl>
         <RepositoryUrl>https://github.com/DaXcess/LCVR</RepositoryUrl>
         <ImplicitUsings>enable</ImplicitUsings>
