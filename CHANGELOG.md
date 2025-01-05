@@ -3,6 +3,8 @@
 **Additions**:
 - Added the ability to toggle between VR and flatscreen, by pressing `F8` in the main menu
 - Added an additional search method for OpenXR runtimes (in case they haven't registered themselves in the Windows Registry)
+- Added an error screen to the main menu if VR fails to start up, giving easy access to logs if needed
+- Added local support for V69 patch 1
 
 **Bug fixes**:
 - Fixed issue where "VR Settings" button would render on top of the rebinding panel

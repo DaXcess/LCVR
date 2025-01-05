@@ -95,6 +95,10 @@ Most mods should all work fine with LCVR, like interior mods, new moons, most it
 
 In general, most emote mods, mods adding UI elements and mods that require new bindings are not compatible with LCVR by default, and either require configuration changes, or dedicated VR support.
 
+# Hot switching
+
+You can swap between VR and flatscreen when using LCVR. For more info, check the [Hot Switching Wiki Page](https://thunderstore.io/c/lethal-company/p/DaXcess/LethalCompanyVR/wiki/2888-hot-switching/).
+
 # Configuring the mod
 
 You can change the mod configuration from within the game itself. Just launch the game with the VR mod installed, get to the main menu, and press the big VR button on the right side of the screen. This will open a big settings menu where you can configure the VR mod to your liking.
