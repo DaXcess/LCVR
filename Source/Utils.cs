@@ -12,6 +12,7 @@ using System;
 using System.Collections;
 using System.Linq;
 using GameNetcodeStuff;
+using Steamworks;
 
 namespace LCVR;
 
@@ -234,5 +235,25 @@ internal static class Utils
     public static IEnumerator NopRoutine()
     {
         yield break;
+    }
+
+    /// <summary>
+    /// Execute a function making sure the Steam API is initialized, and immediately shutdown the Steam API if it
+    /// wasn't already in use. This is required because this variant of Steamworks crashes on multiple Init calls,
+    /// instead of silently ignoring subsequent init calls.
+    /// </summary>
+    public static T ExecuteWithSteamAPI<T>(Func<T> func)
+    {
+        var isValid = SteamClient.IsValid;
+        
+        if (!isValid)
+            SteamClient.Init(1966720, false);
+
+        var result = func();
+        
+        if (!isValid)
+            SteamClient.Shutdown();
+
+        return result;
     }
 }

@@ -438,6 +438,10 @@ public class VRHUD : MonoBehaviour
         spectatorLight = Instantiate(AssetManager.SpectatorLight, transform);
         spectatorLight.SetActive(false);
         
+        // Remove leftover UI
+        ingamePlayerHud.Find("TopRightCorner").transform.GetChildren().Do(child => child.gameObject.SetActive(false));
+        ingamePlayerHud.Find("BottomLeftCorner").transform.GetChildren().Do(child => child.gameObject.SetActive(false));
+        
         // Prevents CullFactory from culling the light
         spectatorLight.hideFlags |= HideFlags.DontSave;
         

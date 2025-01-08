@@ -164,20 +164,26 @@ internal static class OpenXR
     /// </summary>
     private static IEnumerable<Runtime> LocateCommonRuntimes()
     {
-        Runtime rt;
-
         // 1. SteamVR
-        if (SteamClient.IsValid && SteamApps.IsAppInstalled(250820) && SteamApps.AppInstallDir(250820) is { } path)
+        var runtime = Utils.ExecuteWithSteamAPI<Runtime?>(() =>
         {
-            if (Runtime.ReadFromJson(Path.Combine(path, "steamxr_win64.json"), out rt))
-                yield return rt;
+            if (SteamApps.IsAppInstalled(250820) && SteamApps.AppInstallDir(250820) is { } path &&
+                Runtime.ReadFromJson(Path.Combine(path, "steamxr_win64.json"), out var runtime))
+                return runtime;
+
+            return null;
+        });
+
+        if (runtime != null)
+        {
+            yield return runtime.Value;
         }
 
         // 2. Virtual Desktop
-        path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
+        var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
             @"Virtual Desktop Streamer\OpenXR\virtualdesktop-openxr.json");
 
-        if (File.Exists(path) && Runtime.ReadFromJson(path, out rt))
+        if (File.Exists(path) && Runtime.ReadFromJson(path, out var rt))
             yield return rt;
 
         // 3. Oculus

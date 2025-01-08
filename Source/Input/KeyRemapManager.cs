@@ -44,6 +44,8 @@ public class KeyRemapManager : MonoBehaviour
 
     public static KeyRemapManager Instance { get; private set; }
 
+    public bool IsRebinding => currentOperation != null || Time.realtimeSinceStartup - lastRebindTime < 0.5f;
+
     private KepRemapPanel panel;
     private TextMeshProUGUI sectionText;
 
@@ -51,7 +53,6 @@ public class KeyRemapManager : MonoBehaviour
     private InputActionRebindingExtensions.RebindingOperation currentOperation;
     private SettingsOption currentOption;
     private List<(RemappableControl, SettingsOption)> controlsList = [];
-    private readonly List<GameObject> panelObjects = [];
 
     private float lastRebindTime;
 
@@ -87,7 +88,6 @@ public class KeyRemapManager : MonoBehaviour
             var obj = Instantiate(panel.keyRemapSlotPrefab, panel.keyRemapContainer);
             var discard = Instantiate(AssetManager.KeybindDiscard, obj.transform);
             
-            panelObjects.Add(obj);
             panel.keySlots.Add(obj);
 
             obj.GetComponentInChildren<TextMeshProUGUI>().text = remappableKey.controlName;
@@ -249,6 +249,8 @@ public class KeyRemapManager : MonoBehaviour
         var action = currentOperation.action;
 
         currentOperation.Dispose();
+        currentOperation = null;
+        
         playerInput.ActivateInput();
 
         var image = option.transform.Find("ControlImage").GetComponent<Image>();

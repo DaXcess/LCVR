@@ -4,6 +4,7 @@ namespace LCVR.Compatibility.MoreCompany;
 
 internal static class MoreCompanyCompatibility
 {
+    private static GameObject canvasUi;
     private static Transform previousParent;
     private static Vector3 previousPosition;
     private static Vector3 previousRotation;
@@ -18,7 +19,7 @@ internal static class MoreCompanyCompatibility
         if (overlay == null)
             return;
 
-        var canvasUi = overlay.Find("Canvas/GlobalScale");
+        canvasUi = overlay.Find("Canvas/GlobalScale");
 
         previousParent = canvasUi.transform.parent;
         previousPosition = canvasUi.transform.localPosition;
@@ -46,7 +47,6 @@ internal static class MoreCompanyCompatibility
         if (overlay == null)
             return;
 
-        var canvasUi = overlay.Find("Canvas/GlobalScale");
         canvasUi.transform.parent = previousParent;
         canvasUi.transform.localPosition = previousPosition;
         canvasUi.transform.localEulerAngles = previousRotation;

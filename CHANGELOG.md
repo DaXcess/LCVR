@@ -8,6 +8,8 @@
 
 **Bug fixes**:
 - Fixed issue where "VR Settings" button would render on top of the rebinding panel
+- Fixed issue where pressing the menu button wouldn't work while in the rebinding menu
+- Fixed issue where some unused UI elements were sometimes visible in the pause menu
 
 **Removals**:
 - Removed the cave dweller from the main menu
