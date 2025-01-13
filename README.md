@@ -28,9 +28,9 @@ Due to the amount of changes LCVR makes to the game and gameplay features, some 
 
 # Installing and using the mod
 
-It is recommended to use a mod launcher like r2modman to easily download and install the mod. You can download r2modman [here](https://thunderstore.io/package/ebkr/r2modman/). This mod can be found on thunderstore under the name [LethalCompanyVR](https://thunderstore.io/c/lethal-company/p/DaXcess/LethalCompanyVR). You can also install the mod by manually downloading it in combination with BepInEx.
+It is recommended to use a mod launcher like Gale to easily download and install the mod. You can download Gale [here](https://thunderstore.io/package/Kesomannen/GaleModManager/). This mod can be found on thunderstore under the name [LethalCompanyVR](https://thunderstore.io/c/lethal-company/p/DaXcess/LethalCompanyVR). You can also install the mod by manually downloading it in combination with BepInEx.
 
-Running the mod using r2modman can be done simply by clicking "Launch Modded", which will automagically launch the game with the installed mods.
+Running the mod using Gale can be done simply by clicking "Launch game", which will automagically launch the game with the installed mods.
 
 For more documentation on using the mod, check out the [LethalCompanyVR Thunderstore page](https://thunderstore.io/c/lethal-company/p/DaXcess/LethalCompanyVR)
 

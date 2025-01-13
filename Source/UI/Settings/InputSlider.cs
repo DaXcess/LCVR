@@ -1,4 +1,5 @@
-﻿using TMPro;
+﻿using System.Globalization;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -31,15 +32,17 @@ public class InputSlider : MonoBehaviour
 
         var newValue = Mathf.Clamp(floatValue, slider.minValue, slider.maxValue);
 
-        if (newValue != floatValue)
-            inputField.text = newValue.ToString();
+        if (!Mathf.Approximately(newValue, floatValue))
+            inputField.text = newValue.ToString(CultureInfo.InvariantCulture);
 
         slider.value = newValue;
     }
 
     private void OnSliderValueChanged(float value)
     {
-        string textValue = (value >= 1000 ? Mathf.Round(value) : Mathf.Round(value * 100) / 100).ToString();
+        var textValue =
+            (value >= 1000 ? Mathf.Round(value) : Mathf.Round(value * 100) / 100)
+            .ToString(CultureInfo.InvariantCulture);
 
         if (inputField.text != textValue)
             inputField.text = textValue;

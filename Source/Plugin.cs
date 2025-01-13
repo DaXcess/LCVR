@@ -61,7 +61,10 @@ public class Plugin : BaseUnityPlugin
 
         // Plugin startup logic
         LCVR.Logger.SetSource(Logger);
+        
         Config = new Config(Info.Location, base.Config);
+        Config.DeserializeFromES3();
+        Config.File.SettingChanged += (_, _) => Config.SerializeToES3(); 
 
         Logger.LogInfo($"Starting {PLUGIN_NAME} v{PLUGIN_VERSION} ({GetCommitHash()})");
 

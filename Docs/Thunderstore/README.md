@@ -27,6 +27,12 @@ The mod is powered by Unity's OpenXR plugin and is thereby compatible with a wid
 
 LCVR is compatible with multiplayer and works seamlessly with VR players and Non-VR players in the same lobby. Running this mod without having a VR headset will allow you to see the arm and head movements of any VR players in the same lobby, all while still being compatible with vanilla clients (even if the host is using no mods at all).
 
+### Installing and using the mod
+
+It is recommended to use a mod launcher like Gale to easily download and install the mod. You can download Gale [here](https://thunderstore.io/package/Kesomannen/GaleModManager/). In gale, just look for the mod named "LethalCompanyVR", and install it, which should automatically install all dependencies needed.
+
+Running the mod using Gale can be done simply by clicking "Launch game", which will automagically launch the game with the installed mods.
+
 ### Open Source
 
 The source code for this mod is available on GitHub! Check it out: [DaXcess/LCVR](https://github.com/DaXcess/LCVR).
@@ -138,7 +144,7 @@ The main menu is controlled by ray interactors. You can use any controller to po
 
 # The Terminal
 
-<img src="https://github.com/DaXcess/LCVR/blob/assets/terminal.webp?raw=true" height="300 alt="The terminal in VR" />
+<img src="https://github.com/DaXcess/LCVR/blob/assets/terminal.webp?raw=true" height="300" alt="The terminal in VR" />
 
 Since in VR you don't have access to a keyboard (under normal circumstances), the mod displays a virtual keyboard when you enter the terminal. You can use this keyboard to interact with the terminal like you would on PC.
 
@@ -212,6 +218,12 @@ This mod, in addition to adding VR and motion controls, also adds a few special 
   - When holding the spray paint item, you can physically shake it to shake the can in the game. You can also still use the secondary interact button to shake the can.
 - Shovel/Sign Swinging
   - If you are holding a shovel or a sign, you'll notice that you are holding it in two hands. If you hold your controllers over your shoulder and bring them down with enough force, the mod will swing the shovel for you, dealing damage to players/entities in front of you.
+- Knife slicing
+  - If you are holding a knife, you can physically swing the knife to inflict damage on the thing in front of you. You can also still use the interact button to use the knife.
+- Baby shaking
+  - If you are holding a maneater baby, you can physically (and gently!) shake it to calm it down, just like you would when pressing the interact button. Just make sure to gently shake the baby, otherwise bad things may happen. 
+- Belt bag shaking
+  - When the belt bag item is open, and held upside down, you can make it drop items on the floor by shaking it. Of course, you can also remove items and operate the belt bag the normal way by using the UI.
 
 # Free Roam Spectating
 
