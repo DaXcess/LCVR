@@ -63,34 +63,35 @@ You can join the [LCVR Discord Server](https://discord.gg/2DxNgpPZUF)!
 
 Here is a list of LCVR versions and which version(s) of Lethal Company it supports
 
-| LCVR              | Lethal Company    |
-|-------------------|-------------------|
-| v1.3.9 *(LATEST)* | V64 - V69.1       |
-| v1.3.8            | V64 - V69         |
-| v1.3.7            | V64 - V67         |
-| v1.3.6*           | V64 - V67         |
-| v1.3.5            | V64 - V66         |
-| v1.3.4            | V64 and V64.1     |
-| v1.3.3            | V64 and V64.1     |
-| v1.3.2            | V64               |
-| v1.3.1            | V62               |
-| v1.3.0            | V56               |
-| v1.2.5            | V50               |
-| v1.2.4            | V50               |
-| v1.2.3            | V50               |
-| v1.2.2            | V50               |
-| v1.2.1            | V50 (Older patch) |
-| v1.2.0            | V49               |
-| v1.1.9            | V45 and V49       |
-| v1.1.8            | V45 and V49       |
-| v1.1.6            | V45 and V49       |
-| v1.1.5            | V45 and V49       |
-| v1.1.4            | V45 and V49       |
-| v1.1.2            | V45 and V49       |
-| v1.1.1            | V45 and V49       |
-| v1.1.0            | V45 and V49       |
-| v1.0.1            | V45 and V49       |
-| v1.0.0            | V45 and V49       |
+| LCVR               | Lethal Company    |
+|--------------------|-------------------|
+| v1.3.10 *(LATEST)* | V64 - V69.1       |
+| v1.3.9             | V64 - V69.1       |
+| v1.3.8             | V64 - V69         |
+| v1.3.7             | V64 - V67         |
+| v1.3.6*            | V64 - V67         |
+| v1.3.5             | V64 - V66         |
+| v1.3.4             | V64 and V64.1     |
+| v1.3.3             | V64 and V64.1     |
+| v1.3.2             | V64               |
+| v1.3.1             | V62               |
+| v1.3.0             | V56               |
+| v1.2.5             | V50               |
+| v1.2.4             | V50               |
+| v1.2.3             | V50               |
+| v1.2.2             | V50               |
+| v1.2.1             | V50 (Older patch) |
+| v1.2.0             | V49               |
+| v1.1.9             | V45 and V49       |
+| v1.1.8             | V45 and V49       |
+| v1.1.6             | V45 and V49       |
+| v1.1.5             | V45 and V49       |
+| v1.1.4             | V45 and V49       |
+| v1.1.2             | V45 and V49       |
+| v1.1.1             | V45 and V49       |
+| v1.1.0             | V45 and V49       |
+| v1.0.1             | V45 and V49       |
+| v1.0.0             | V45 and V49       |
 
 > \* LCVR versions from 1.3.6 and above also check hashes remotely, meaning newer Lethal Company versions might be supported even though they aren't listed here.
 

@@ -104,10 +104,10 @@ public class Config(string assemblyPath, ConfigFile file)
     public ConfigEntry<bool> DisableArmHUD { get; } = file.Bind("UI", "DisableArmHUD", false,
         "Removes the HUD from the arms and displays them in front of the camera.");
 
-    public ConfigEntry<float> HUDOffsetX { get; } = file.Bind("UI", "OffsetX", 0f,
+    public ConfigEntry<float> HUDOffsetX { get; } = file.Bind("UI", "HUDOffsetX", 0f,
         "The x offset of the HUD that was placed on the camera instead of the arms. Requires the arm HUD to be disabled.");
 
-    public ConfigEntry<float> HUDOffsetY { get; } = file.Bind("UI", "OffsetY", 0f,
+    public ConfigEntry<float> HUDOffsetY { get; } = file.Bind("UI", "HUDOffsetY", 0f,
         "The y offset of the HUD that was placed on the camera instead of the arms. Requires the arm HUD to be disabled.");
 
     public ConfigEntry<bool> EnableInteractRay { get; } = file.Bind("UI", "EnableInteractRay", false,
@@ -304,7 +304,9 @@ public class Config(string assemblyPath, ConfigFile file)
                     prop.GetCustomAttribute<ES3NonSerializable>() != null)
                     continue;
 
-                File[section, key].BoxedValue = value;
+                var entry = File[section, key];
+
+                entry.BoxedValue = entry.SettingType.IsEnum ? Enum.ToObject(entry.SettingType, value) : Convert.ChangeType(value, entry.SettingType);
             }
         }
         catch (Exception ex)

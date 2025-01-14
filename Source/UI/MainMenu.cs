@@ -186,6 +186,9 @@ public class MainMenu : MonoBehaviour
         
         // Restore vanilla bindings
         InputPatches.RestoreOriginalBindings();
+
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
     }
 
     private void EnteredVR()
@@ -197,6 +200,9 @@ public class MainMenu : MonoBehaviour
         
         if (!Plugin.Config.IntroScreenSeen.Value && VRSession.InVR)
             infoScreen.Show();
+        
+        Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.None;
     }
 
     /// <summary>

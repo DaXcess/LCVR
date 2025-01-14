@@ -92,11 +92,8 @@ public class SettingsManager : MonoBehaviour
             var categoryObject = Instantiate(categoryTemplate, content);
             categoryObject.GetComponentInChildren<TextMeshProUGUI>().text = category;
 
-            foreach (var setting in settings)
+            foreach (var (definition, config) in settings)
             {
-                var name = setting.Key.Key;
-                var config = setting.Value;
-
                 if (config.SettingType.IsEnum)
                 {
                     var dropdownUI = Instantiate(dropdownTemplate, categoryObject.transform);
@@ -105,14 +102,14 @@ public class SettingsManager : MonoBehaviour
                     var entry = dropdownUI.GetComponentInChildren<ConfigEntry>();
                     var description = dropdownUI.GetComponent<ConfigDescription>();
 
-                    description.title = title.text = Utils.FormatPascalAndAcronym(name);
+                    description.title = title.text = Utils.FormatPascalAndAcronym(definition.Key);
                     description.description = config.Description.Description;
 
                     entry.category = category;
-                    entry.name = name;
+                    entry.name = definition.Key;
 
                     var names = Enum.GetNames(config.SettingType);
-                    var idx = Array.FindIndex(names, (name) => name == config.BoxedValue.ToString());
+                    var idx = Array.FindIndex(names, name => name == config.BoxedValue.ToString());
 
                     dropdown.ClearOptions();
                     dropdown.AddOptions([.. names]);
@@ -128,11 +125,11 @@ public class SettingsManager : MonoBehaviour
                     var entry = sliderOption.GetComponentInChildren<ConfigEntry>();
                     var description = sliderOption.GetComponent<ConfigDescription>();
 
-                    description.title = title.text = Utils.FormatPascalAndAcronym(name);
+                    description.title = title.text = Utils.FormatPascalAndAcronym(definition.Key);
                     description.description = config.Description.Description;
 
                     entry.category = category;
-                    entry.name = name;
+                    entry.name = definition.Key;
 
                     slider.maxValue = values.MaxValue;
                     slider.minValue = values.MinValue;
@@ -147,11 +144,11 @@ public class SettingsManager : MonoBehaviour
                     var entry = numberUI.GetComponentInChildren<ConfigEntry>();
                     var description = numberUI.GetComponent<ConfigDescription>();
 
-                    description.title = title.text = Utils.FormatPascalAndAcronym(name);
+                    description.title = title.text = Utils.FormatPascalAndAcronym(definition.Key);
                     description.description = config.Description.Description;
 
                     entry.category = category;
-                    entry.name = name;
+                    entry.name = definition.Key;
 
                     input.SetTextWithoutNotify(config.BoxedValue.ToString());
                 }
@@ -163,11 +160,11 @@ public class SettingsManager : MonoBehaviour
                     var entry = toggleUI.GetComponentInChildren<ConfigEntry>();
                     var description = toggleUI.GetComponent<ConfigDescription>();
 
-                    description.title = title.text = Utils.FormatPascalAndAcronym(name);
+                    description.title = title.text = Utils.FormatPascalAndAcronym(definition.Key);
                     description.description = config.Description.Description;
 
                     entry.category = category;
-                    entry.name = name;
+                    entry.name = definition.Key;
 
                     toggle.SetIsOnWithoutNotify((bool)config.BoxedValue);
                 }
@@ -179,11 +176,11 @@ public class SettingsManager : MonoBehaviour
                     var entry = textUI.GetComponentInChildren<ConfigEntry>();
                     var description = textUI.GetComponent<ConfigDescription>();
 
-                    description.title = title.text = Utils.FormatPascalAndAcronym(name);
+                    description.title = title.text = Utils.FormatPascalAndAcronym(definition.Key);
                     description.description = config.Description.Description;
 
                     entry.category = category;
-                    entry.name = name;
+                    entry.name = definition.Key;
 
                     input.SetTextWithoutNotify((string)config.BoxedValue);
                 }
@@ -198,22 +195,22 @@ public class SettingsManager : MonoBehaviour
         disabledCategories.Add(categoryName.ToLowerInvariant());
     }
     
-    public void PlayButtonPressSFX()
+    public void PlayButtonPressSfx()
     {
         menuManager?.PlayConfirmSFX();
     }
 
-    public void PlayCancelSFX()
+    public void PlayCancelSfx()
     {
         menuManager?.PlayCancelSFX();
     }
 
-    public void PlayHoverSFX()
+    public void PlayHoverSfx()
     {
         menuManager?.MenuAudio.PlayOneShot(GameNetworkManager.Instance.buttonSelectSFX);
     }
 
-    public void PlayChangeSFX()
+    public void PlayChangeSfx()
     {
         menuManager?.MenuAudio.PlayOneShot(GameNetworkManager.Instance.buttonTuneSFX);
     }
@@ -226,10 +223,10 @@ public class SettingsManager : MonoBehaviour
             return;
         }
 
-        var name = runtimesDropdown.options[index].text;
+        var runtimeName = runtimesDropdown.options[index].text;
         var runtimes = OpenXR.GetRuntimes();
 
-        if (!runtimes.TryGetRuntime(name, out var runtime))
+        if (!runtimes.TryGetRuntime(runtimeName, out var runtime))
         {
             menuManager.DisplayMenuNotification("Failed to update OpenXR runtime", "[ Close ]");
             return;
@@ -238,19 +235,24 @@ public class SettingsManager : MonoBehaviour
         Plugin.Config.OpenXRRuntimeFile.Value = runtime.Path;
     }
 
-    public void UpdateValue(string category, string name, object value)
+    public void UpdateValue(string section, string key, object value)
     {
         // Ignore updates when populating initial values
         if (isInitializing)
             return;
 
-        PlayChangeSFX();
+        PlayChangeSfx();
 
-        Logger.LogDebug($"Updating setting: [{category}] {name} = {value}");
+        Logger.LogDebug($"Updating setting: [{section}] {key} = {value}");
 
-        var entry = Plugin.Config.File[category, name];
+        var entry = Plugin.Config.File[section, key];
         if (entry is not null)
-            entry.BoxedValue = value;
+            entry.BoxedValue = value switch
+            {
+                string str when entry.SettingType == typeof(int) => int.Parse(str),
+                string str when entry.SettingType == typeof(float) => float.Parse(str),
+                _ => value
+            };
     }
 
     public void UpdateDescription(string title, string description)

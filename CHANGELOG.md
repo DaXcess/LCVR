@@ -1,3 +1,11 @@
+# 1.3.10
+
+**Additions**:
+- Added persistent configuration that saves your LCVR config between modpacks. Can be disabled in the settings.
+
+**Bug fixes**:
+- Fixed cursor not re-appearing when exiting VR through F8
+
 # 1.3.9
 
 **Additions**:

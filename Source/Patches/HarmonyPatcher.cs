@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using System;
+using System.Linq;
 using System.Reflection;
 using LCVR.Experiments;
 using UnityEngine;
@@ -78,6 +79,13 @@ internal enum LCVRPatchTarget
 [HarmonyPatch]
 internal static class HarmonyLibPatches
 {
+    private static readonly MethodInfo[] ForceUnpatchList =
+    [
+        AccessTools.PropertySetter(typeof(Camera), nameof(Camera.targetTexture)),
+        AccessTools.PropertySetter(typeof(Cursor), nameof(Cursor.visible)),
+        AccessTools.PropertySetter(typeof(Cursor), nameof(Cursor.lockState))
+    ];
+    
     /// <summary>
     /// Ironically, patching harmony like this fixes some issues with unpatching
     /// </summary>
@@ -85,7 +93,7 @@ internal static class HarmonyLibPatches
     [HarmonyPrefix]
     private static bool OnUnpatch(MethodBase member, ref bool __result)
     {
-        if (member != AccessTools.PropertySetter(typeof(Camera), nameof(Camera.targetTexture)))
+        if (!ForceUnpatchList.Contains(member))
             return true;
 
         __result = true;

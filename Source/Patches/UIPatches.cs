@@ -95,7 +95,7 @@ internal static class UniversalUIPatches
         button.onClick.m_PersistentCalls.Clear();
         button.onClick.AddListener(() =>
         {
-            settingsManager.PlayButtonPressSFX();
+            settingsManager.PlayButtonPressSfx();
             settingsPanel.SetActive(true);
         });
     }
