@@ -318,6 +318,9 @@ public class VRSession : MonoBehaviour
             for (var i = 1; i <= 5; i++)
                 VRController.DisableInteractTrigger($"BreakerSwitch{i}");
         }
+        
+        if (!Plugin.Config.DisableLightSwitchInteraction.Value)
+            VRController.DisableInteractTrigger("LightSwitch");
 
         // Doors
         if (!Plugin.Config.DisableDoorInteraction.Value)

@@ -2,6 +2,7 @@
 
 **Additions**:
 - Added persistent configuration that saves your LCVR config between modpacks. Can be disabled in the settings.
+- Added physical interactions for light switches
 
 **Bug fixes**:
 - Fixed cursor not re-appearing when exiting VR through F8

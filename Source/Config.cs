@@ -174,7 +174,10 @@ public class Config(string assemblyPath, ConfigFile file)
 
     public ConfigEntry<bool> DisableBreakerBoxInteraction { get; } = file.Bind("Interaction",
         "DisableBreakerBoxInteraction", false,
-        "Disabled needing to physically open the breaker box and flip the switches with your finger.");
+        "Disable needing to physically open the breaker box and flip the switches with your finger.");
+
+    public ConfigEntry<bool> DisableLightSwitchInteraction { get; } = file.Bind("Interaction",
+        nameof(DisableLightSwitchInteraction), false, "Disable needing to physically switch light switches");
 
     public ConfigEntry<bool> DisableDoorInteraction { get; } = file.Bind("Interaction", "DisableDoorInteraction", false,
         "Disable needing to physically open and close doors by interacting with the door handles. Will also disable the need to use keys and lockpickers physically on the door handle.");
@@ -306,7 +309,9 @@ public class Config(string assemblyPath, ConfigFile file)
 
                 var entry = File[section, key];
 
-                entry.BoxedValue = entry.SettingType.IsEnum ? Enum.ToObject(entry.SettingType, value) : Convert.ChangeType(value, entry.SettingType);
+                entry.BoxedValue = entry.SettingType.IsEnum
+                    ? Enum.ToObject(entry.SettingType, value)
+                    : Convert.ChangeType(value, entry.SettingType);
             }
         }
         catch (Exception ex)
