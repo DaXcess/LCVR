@@ -49,6 +49,18 @@ internal static class HUDManagerPatches
     }
 
     /// <summary>
+    /// Handle screen shake in VR
+    /// </summary>
+    [HarmonyPatch(typeof(HUDManager), nameof(HUDManager.ShakeCamera))]
+    [HarmonyPrefix]
+    private static bool ShakeCameraVR(ScreenShakeType shakeType)
+    {
+        VRSession.Instance.CameraShake.ShakeCamera(shakeType);
+        
+        return false;
+    }
+
+    /// <summary>
     /// Fix for the leave early button not working, by making the "PingScan" binding function as the leave early button
     /// </summary>
     [HarmonyPatch(typeof(HUDManager), nameof(HUDManager.Update))]

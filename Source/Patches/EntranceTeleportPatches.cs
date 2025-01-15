@@ -22,7 +22,7 @@ internal static class EntranceTeleportPatches
         var direction = (__instance.exitPoint.position - doorPosition).normalized;
         var angle = Vector3.SignedAngle(Vector3.forward, direction, Vector3.up) / 90;
         var roundedAngle = (Mathf.Sign(angle) > 0 ? Mathf.Ceil(angle) : Mathf.Floor(angle)) * 90;
-        var rotation = roundedAngle - VRSession.Instance.MainCamera.transform.localEulerAngles.y;
+        var rotation = roundedAngle - VRSession.Instance.MainCamera.transform.parent.localEulerAngles.y;
 
         VRSession.Instance.LocalPlayer.TurningProvider.SetOffset(rotation);
     }

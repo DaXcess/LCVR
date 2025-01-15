@@ -195,6 +195,8 @@ public class MainMenu : MonoBehaviour
     {
         // Force load bindings
         InputPatches.OnCreateSettings(IngamePlayerSettings.Instance);
+        IngamePlayerSettings.Instance.playerInput.actions.LoadBindingOverridesFromJson(Plugin.Config
+            .ControllerBindingsOverride.Value);
 
         InitializeMainMenu();
         

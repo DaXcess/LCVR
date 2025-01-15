@@ -7,6 +7,7 @@ using Microsoft.MixedReality.Toolkit.Experimental.UI;
 using System.Collections.Generic;
 using System.Linq;
 using LCVR.Physics.Interactions.Car;
+using LCVR.Rendering;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
@@ -43,7 +44,8 @@ public class VRSession : MonoBehaviour
     public Camera UICamera { get; private set; }
 
     public Rendering.VolumeManager VolumeManager { get; private set; }
-
+    public CameraShake CameraShake { get; private set; }
+    
     public InteractionManager InteractionManager { get; private set; }
     public CarManager CarManager { get; private set; }
     public MuffleManager MuffleManager { get; private set; }
@@ -132,12 +134,9 @@ public class VRSession : MonoBehaviour
         MainCamera.GetComponent<HDAdditionalCameraData>().xrRendering = true;
 
         MainCamera.depth = UICamera.depth + 1;
-
-        // Create HMD tracker
-        var cameraPoseDriver = MainCamera.gameObject.AddComponent<TrackedPoseDriver>();
-        cameraPoseDriver.positionAction = Actions.Instance.HeadPosition;
-        cameraPoseDriver.rotationAction = Actions.Instance.HeadRotation;
-        cameraPoseDriver.trackingStateInput = new InputActionProperty(Actions.Instance.HeadTrackingState);
+        
+        // Add camera shaking
+        CameraShake = MainCamera.gameObject.AddComponent<CameraShake>();
 
         // Setup Pause Menu Camera
         var uiCameraAnchor = new GameObject("UI Camera Anchor")

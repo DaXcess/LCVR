@@ -351,7 +351,7 @@ internal static class PlayerControllerPatches
         static Vector3 GetClampedCameraPosition(PlayerControllerB player)
         {
             var actualHeight = player.transform.InverseTransformPoint(player.gameplayCamera.transform.position).y;
-            
+
             return player.transform.position + Vector3.up * Mathf.Clamp(actualHeight, 0.5f, 2.35f);
         }
     }
@@ -369,6 +369,59 @@ internal static class PlayerControllerPatches
             .Advance(-1)
             .SetOpcodeAndAdvance(OpCodes.Nop)
             .RemoveInstructions(3)
+            .InstructionEnumeration();
+    }
+
+    /// <summary>
+    /// Prevent "CalculateSmoothLookingInput" from touching the camera rotation
+    /// </summary>
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.CalculateSmoothLookingInput))]
+    [HarmonyTranspiler]
+    private static IEnumerable<CodeInstruction> CalculateSmoothLookPatch(IEnumerable<CodeInstruction> instructions)
+    {
+        return new CodeMatcher(instructions)
+            .MatchForward(false,
+                new CodeMatch(OpCodes.Call,
+                    Method(typeof(Mathf), nameof(Mathf.LerpAngle), [typeof(float), typeof(float), typeof(float)])))
+            .Advance(7)
+            .RemoveInstructions(27)
+            .InstructionEnumeration();
+    }
+
+    /// <summary>
+    /// Prevent "CalculateNormalLookingInput" from touching the camera rotation
+    /// </summary>
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.CalculateNormalLookingInput))]
+    [HarmonyTranspiler]
+    private static IEnumerable<CodeInstruction> CalculateNormalLookPatch(IEnumerable<CodeInstruction> instructions)
+    {
+        return new CodeMatcher(instructions)
+            .MatchForward(false,
+                new CodeMatch(OpCodes.Ldfld,
+                    Field(typeof(PlayerControllerB), nameof(PlayerControllerB.gameplayCamera))))
+            .Advance(-1)
+            .RemoveInstructions(17)
+            .InstructionEnumeration();
+    }
+
+    /// <summary>
+    /// Prevent "Update" from touching the camera rotation
+    /// </summary>
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.Update))]
+    [HarmonyTranspiler]
+    private static IEnumerable<CodeInstruction> UpdateDontTouchCameraPatch(IEnumerable<CodeInstruction> instructions)
+    {
+        return new CodeMatcher(instructions)
+            .MatchForward(false,
+                new CodeMatch(OpCodes.Ldflda,
+                    Field(typeof(PlayerControllerB), nameof(PlayerControllerB.syncFullCameraRotation))))
+            .Advance(-12)
+            .SetOpcodeAndAdvance(OpCodes.Nop)
+            .RemoveInstructions(62)
+            .MatchForward(false,
+                new CodeMatch(OpCodes.Ldfld, Field(typeof(PlayerControllerB), nameof(PlayerControllerB.cameraUp))))
+            .Advance(7)
+            .RemoveInstructions(17)
             .InstructionEnumeration();
     }
 }

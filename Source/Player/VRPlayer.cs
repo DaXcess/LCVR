@@ -19,7 +19,7 @@ namespace LCVR.Player;
 public class VRPlayer : MonoBehaviour
 {
     public const float SCALE_FACTOR = 1.5f;
-    
+
     private const int CAMERA_CLIP_MASK = 1 << 8 | 1 << 26;
 
     private const float SQR_MOVE_THRESHOLD = 0.001f;
@@ -49,6 +49,7 @@ public class VRPlayer : MonoBehaviour
     private XRRayInteractor rightControllerRayInteractor;
 
     private Transform xrOrigin;
+    private Transform head;
 
     private Vector3 lastFrameHmdPosition = new(0, 0, 0);
     private Vector3 lastFrameHmdRotation = new(0, 0, 0);
@@ -116,10 +117,21 @@ public class VRPlayer : MonoBehaviour
         new GameObject("MainCamera").transform.parent = transform.Find("ScavengerModel/metarig/CameraContainer");
 
         // Un-parent camera container
-        mainCamera.transform.parent = xrOrigin;
+        head = new GameObject("HMD").transform;
+        head.parent = xrOrigin;
+        
+        mainCamera.transform.parent = head;
+        mainCamera.transform.localPosition = Vector3.zero;
+        mainCamera.transform.localRotation = Quaternion.identity;
+        
         xrOrigin.localPosition = Vector3.zero;
         xrOrigin.localRotation = Quaternion.Euler(0, 0, 0);
         xrOrigin.localScale = Vector3.one * SCALE_FACTOR;
+
+        var headPoseDriver = head.gameObject.AddComponent<TrackedPoseDriver>();
+        headPoseDriver.positionAction = Actions.Instance.HeadPosition;
+        headPoseDriver.rotationAction = Actions.Instance.HeadRotation;
+        headPoseDriver.trackingStateInput = new InputActionProperty(Actions.Instance.HeadTrackingState);
 
         // Create controller objects
         rightController = new GameObject("Right Controller");
@@ -146,7 +158,7 @@ public class VRPlayer : MonoBehaviour
         RightHandVRTarget = new GameObject("Right Hand VR Target").transform;
         LeftHandVRTarget = new GameObject("Left Hand VR Target").transform;
 
-        headVRTarget.transform.parent = mainCamera.transform;
+        headVRTarget.transform.parent = head;
         RightHandVRTarget.parent = rightController.transform;
         LeftHandVRTarget.parent = leftController.transform;
 
@@ -217,7 +229,7 @@ public class VRPlayer : MonoBehaviour
         Actions.Instance["Sprint"].performed += Sprint_performed;
 
         ResetHeight();
-        
+
         // Settings changes listener
         Plugin.Config.TurnProvider.SettingChanged += (_, _) => ReloadTurningProvider();
         Plugin.Config.SnapTurnSize.SettingChanged += (_, _) => ReloadTurningProvider();
@@ -247,7 +259,7 @@ public class VRPlayer : MonoBehaviour
         RigTrackerLocal ??= Bones.LocalMetarig.gameObject.AddComponent<RigTracker>();
 
         // Setting up the head
-        RigTrackerLocal.head = mainCamera.transform;
+        RigTrackerLocal.head = head;
 
         // Setting up the left arm
 
@@ -484,7 +496,7 @@ public class VRPlayer : MonoBehaviour
     private void Update()
     {
         UpdateIKWeights();
-        
+
         // Make sure the XR Origin has the same parent as the player
         if (xrOrigin.parent != transform.parent)
         {
@@ -492,7 +504,7 @@ public class VRPlayer : MonoBehaviour
             TurningProvider.SetOffset(xrOrigin.transform.localEulerAngles.y);
         }
 
-        var movement = mainCamera.transform.localPosition - lastFrameHmdPosition;
+        var movement = head.localPosition - lastFrameHmdPosition;
         movement.y = 0;
 
         // Make sure player is facing towards the interacted object and that they're not sprinting
@@ -502,14 +514,12 @@ public class VRPlayer : MonoBehaviour
         {
             var nodeRotation = Quaternion.Inverse(transform.parent.rotation) *
                                PlayerController.currentTriggerInAnimationWith.playerPositionNode.rotation;
-            var offset = nodeRotation.eulerAngles.y -
-                         mainCamera.transform.localEulerAngles.y;
+            var offset = nodeRotation.eulerAngles.y - head.localEulerAngles.y;
 
             TurningProvider.SetOffset(offset);
             specialAnimationPositionOffset = Quaternion.Euler(0, offset, 0) *
-                                             (new Vector3(mainCamera.transform.localPosition.x, 0,
-                                                 mainCamera.transform.localPosition.z) * -SCALE_FACTOR)
-                                             .Divide(transform.parent.localScale);
+                                             (new Vector3(head.localPosition.x, 0, head.localPosition.z) *
+                                              -SCALE_FACTOR).Divide(transform.parent.localScale);
 
             isSprinting = false;
         }
@@ -519,7 +529,7 @@ public class VRPlayer : MonoBehaviour
             var direction = PlayerController.inAnimationWithEnemy.transform.position - transform.position;
             var rotation = Quaternion.LookRotation(direction, Vector3.up);
 
-            TurningProvider.SetOffset(rotation.eulerAngles.y - mainCamera.transform.localEulerAngles.y);
+            TurningProvider.SetOffset(rotation.eulerAngles.y - head.localEulerAngles.y);
         }
 
         var rotationOffset = PlayerController.jetpackControls switch
@@ -530,9 +540,7 @@ public class VRPlayer : MonoBehaviour
         };
 
         var movementAccounted = rotationOffset * movement;
-        var cameraPosAccounted = rotationOffset *
-                                 new Vector3(mainCamera.transform.localPosition.x, 0,
-                                     mainCamera.transform.localPosition.z);
+        var cameraPosAccounted = rotationOffset * new Vector3(head.localPosition.x, 0, head.localPosition.z);
 
         wasInSpecialAnimation = PlayerController.inSpecialInteractAnimation;
         wasInEnemyAnimation = PlayerController.inAnimationWithEnemy is not null;
@@ -545,7 +553,7 @@ public class VRPlayer : MonoBehaviour
         var controllerMovement = Actions.Instance["Move"].ReadValue<Vector2>();
         var moved = controllerMovement.x > 0 || controllerMovement.y > 0;
         var hit = UnityEngine.Physics
-            .OverlapBox(mainCamera.transform.position, Vector3.one * 0.1f, Quaternion.identity, CAMERA_CLIP_MASK)
+            .OverlapBox(head.position, Vector3.one * 0.1f, Quaternion.identity, CAMERA_CLIP_MASK)
             .Any(c => !c.isTrigger && c.transform != mysteriousCube);
 
         // Move player if we're not in special interact animation
@@ -580,11 +588,11 @@ public class VRPlayer : MonoBehaviour
             xrOrigin.localPosition = transform.localPosition + specialAnimationPositionOffset;
 
         // Move player model
-        var point = transform.InverseTransformPoint(mainCamera.transform.position);
+        var point = transform.InverseTransformPoint(head.position);
         Bones.Model.localPosition = new Vector3(point.x, 0, point.z);
 
         // Check for roomscale crouching
-        var realCrouch = mainCamera.transform.localPosition.y / realHeight;
+        var realCrouch = head.localPosition.y / realHeight;
         var roomCrouch = realCrouch < 0.5f;
 
         if (roomCrouch != IsRoomCrouching && !PlayerController.inSpecialInteractAnimation)
@@ -614,7 +622,7 @@ public class VRPlayer : MonoBehaviour
             TurnBodyToCamera(TURN_WEIGHT_SHARP * Mathf.InverseLerp(TURN_ANGLE_THRESHOLD, 170f, angle));
 
         if (!PlayerController.inSpecialInteractAnimation)
-            lastFrameHmdPosition = mainCamera.transform.localPosition;
+            lastFrameHmdPosition = head.localPosition;
 
         // Set sprint
         if (Plugin.Config.ToggleSprint.Value)
@@ -650,7 +658,7 @@ public class VRPlayer : MonoBehaviour
                 rightHandEulers = rightController.transform.localEulerAngles,
                 rightHandFingers = RightFingerCurler.GetCurls(),
 
-                cameraEulers = mainCamera.transform.eulerAngles,
+                cameraEulers = head.eulerAngles,
                 cameraPosAccounted = cameraPosAccounted,
                 modelOffset = totalMovementSinceLastMove,
                 specialAnimationPositionOffset = specialAnimationPositionOffset,
@@ -673,8 +681,8 @@ public class VRPlayer : MonoBehaviour
             spectatorRigChannel.SendPacket(Serialization.Serialize(
                 new SpectatorRig
                 {
-                    headPosition = parent.InverseTransformPoint(mainCamera.transform.position),
-                    headRotation = mainCamera.transform.eulerAngles,
+                    headPosition = parent.InverseTransformPoint(head.position),
+                    headRotation = head.eulerAngles,
 
                     leftHandPosition = parent.InverseTransformPoint(leftController.transform.position),
                     leftHandRotation = leftController.transform.eulerAngles,
@@ -691,7 +699,7 @@ public class VRPlayer : MonoBehaviour
     {
         UpdateRigOffsets();
 
-        var angles = mainCamera.transform.eulerAngles;
+        var angles = head.eulerAngles;
         var deltaAngles = new Vector3(
             Mathf.DeltaAngle(lastFrameHmdRotation.x, angles.x),
             Mathf.DeltaAngle(lastFrameHmdRotation.y, angles.y),
@@ -710,7 +718,7 @@ public class VRPlayer : MonoBehaviour
             RightFingerCurler?.Update();
         }
 
-        var height = cameraFloorOffset + mainCamera.transform.localPosition.y;
+        var height = cameraFloorOffset + head.localPosition.y;
         if (height is > 3f or < 0f)
             ResetHeight();
     }
@@ -719,7 +727,7 @@ public class VRPlayer : MonoBehaviour
     {
         // Disable rig because burst crashes due to "invalid transform"
         GetComponentInChildren<RigBuilder>().enabled = false;
-        
+
         prefsChannel.Dispose();
 
         Actions.Instance["Sprint"].performed -= Sprint_performed;
@@ -768,21 +776,19 @@ public class VRPlayer : MonoBehaviour
 
         yield return new WaitForSeconds(0.2f);
 
-        realHeight = mainCamera.transform.localPosition.y * SCALE_FACTOR;
+        realHeight = head.localPosition.y * SCALE_FACTOR;
         cameraFloorOffset = targetHeight - realHeight;
 
         if (PlayerController.inSpecialInteractAnimation)
         {
             var nodeRotation = Quaternion.Inverse(transform.parent.rotation) *
                                PlayerController.currentTriggerInAnimationWith.playerPositionNode.rotation;
-            var offset = nodeRotation.eulerAngles.y -
-                         mainCamera.transform.localEulerAngles.y;
+            var offset = nodeRotation.eulerAngles.y - head.localEulerAngles.y;
 
             TurningProvider.SetOffset(offset);
             specialAnimationPositionOffset = Quaternion.Euler(0, offset, 0) *
-                                             (new Vector3(mainCamera.transform.localPosition.x, 0,
-                                                 mainCamera.transform.localPosition.z) * -SCALE_FACTOR)
-                                             .Divide(transform.parent.localScale);
+                                             (new Vector3(head.localPosition.x, 0, head.localPosition.z) *
+                                              -SCALE_FACTOR).Divide(transform.parent.localScale);
         }
 
         resetHeightCoroutine = null;
@@ -809,7 +815,7 @@ public class VRPlayer : MonoBehaviour
 
     private void TurnBodyToCamera(float turnWeight)
     {
-        var newRotation = Quaternion.Euler(transform.eulerAngles.x, mainCamera.transform.eulerAngles.y,
+        var newRotation = Quaternion.Euler(transform.eulerAngles.x, head.eulerAngles.y,
             transform.eulerAngles.z);
         transform.rotation = Quaternion.Lerp(transform.rotation, newRotation, Time.deltaTime * turnWeight);
     }
@@ -817,7 +823,7 @@ public class VRPlayer : MonoBehaviour
     private float GetBodyToCameraAngle()
     {
         return Quaternion.Angle(Quaternion.Euler(0, transform.eulerAngles.y, 0),
-            Quaternion.Euler(0, mainCamera.transform.eulerAngles.y, 0));
+            Quaternion.Euler(0, head.eulerAngles.y, 0));
     }
 }
 

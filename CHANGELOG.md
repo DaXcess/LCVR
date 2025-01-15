@@ -3,9 +3,11 @@
 **Additions**:
 - Added persistent configuration that saves your LCVR config between modpacks. Can be disabled in the settings.
 - Added physical interactions for light switches
+- Added screen shake support
 
 **Bug fixes**:
 - Fixed cursor not re-appearing when exiting VR through F8
+- Fixed custom bindings not being applied when entering VR through F8
 
 # 1.3.9
 

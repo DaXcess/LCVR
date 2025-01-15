@@ -115,6 +115,12 @@ public class Config(string assemblyPath, ConfigFile file)
 
     // Rendering configuration
 
+    public ConfigEntry<bool> DisableLensDistortion { get; } = file.Bind("Rendering", "DisableLensDistortion", false,
+        "Disables the warping effects that you experience when you are under water, use the TZP-inhalant and more.");
+
+    public ConfigEntry<bool> DisableCameraShake { get; } = file.Bind("Rendering", nameof(DisableCameraShake), false,
+        "Disables the camera shake that happens during explosions, rerouting, and other types of events.");
+
     public ConfigEntry<bool> EnableCustomCamera { get; } = file.Bind("Rendering", "EnableCustomCamera", false,
         "Adds a second camera mounted on top of the VR camera that will render seperately from the VR camera to the monitor. This requires quite a bit of extra GPU power!");
 
@@ -131,9 +137,6 @@ public class Config(string assemblyPath, ConfigFile file)
         new ConfigDescription(
             "The LOD bias is a multiplier that dictates when an LOD must reduce their quality. Higher values means that more detailed LODs will persist for longer.",
             new AcceptableValueRange<float>(1, 5)));
-
-    public ConfigEntry<bool> DisableLensDistortion { get; } = file.Bind("Rendering", "DisableLensDistortion", false,
-        "Disables the warping effects that you experience when you are under water, use the TZP-inhalant and more.");
 
     public ConfigEntry<bool> SpectatorLightRemovesVolumetrics { get; } = file.Bind("Rendering",
         "SpectatorLightRemovesVolumetrics", false,
@@ -306,7 +309,7 @@ public class Config(string assemblyPath, ConfigFile file)
                 if (AccessTools.Property(typeof(Config), key) is { } prop &&
                     prop.GetCustomAttribute<ES3NonSerializable>() != null)
                     continue;
-
+                
                 var entry = File[section, key];
 
                 entry.BoxedValue = entry.SettingType.IsEnum
