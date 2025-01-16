@@ -51,7 +51,7 @@ public class NetworkSystem : MonoBehaviour
     /// <summary>
     /// List of client IDs (from Dissonance Voice) which support LCVR networking
     /// </summary>
-    private static readonly HashSet<ushort> subscribers = [];
+    private readonly HashSet<ushort> subscribers = [];
 
     /// <summary>
     /// List of active channels we have, which can be used to communicate data over
@@ -156,7 +156,7 @@ public class NetworkSystem : MonoBehaviour
 
     #region PACKET SENDING
 
-    internal void SendPacket(MessageType type, byte[] payload, params ClientInfo<NfgoConn?>[] targets)
+    private void SendPacket(MessageType type, byte[] payload, params ClientInfo<NfgoConn?>[] targets)
     {
         if (LocalId is not { } sender)
             return;

@@ -309,7 +309,7 @@ public class Config(string assemblyPath, ConfigFile file)
                 if (AccessTools.Property(typeof(Config), key) is { } prop &&
                     prop.GetCustomAttribute<ES3NonSerializable>() != null)
                     continue;
-                
+
                 var entry = File[section, key];
 
                 entry.BoxedValue = entry.SettingType.IsEnum
