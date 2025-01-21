@@ -57,7 +57,7 @@ An item offset is structured as follows:
 }
 ```
 
-> Note that item names are case-sensitive, and translation mods will break these matches!
+> Note that item names are case-sensitive
 
 Both the `position` and `rotation` keys are **required** when creating an item offset. They are both represented by a `Vector3`, and allow both integers and floating point numbers.
 
@@ -84,7 +84,7 @@ Custom shovels are annotated by an array of item names.
 }
 ```
 
-> Item names are case-sensitive, and translation mods will break these matches!
+> Note that item names are case-sensitive
 
 ## Example config file
 

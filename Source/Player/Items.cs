@@ -16,33 +16,33 @@ internal static class Items
     public static readonly Dictionary<string, Type> items = new()
     {
         { "Shovel", typeof(VRShovelItem) },
-        { "Yield sign", typeof(VRShovelItem) },
-        { "Stop sign", typeof(VRShovelItem) },
-        { "Spray paint", typeof(VRSprayPaintItem) },
-        { "Kitchen knife", typeof(VRKnife) },
-        { "Maneater", typeof(VRManEaterBaby) },
-        { "Belt bag", typeof(VRBeltBagItem) }
+        { "YieldSign", typeof(VRShovelItem) },
+        { "StopSign", typeof(VRShovelItem) },
+        { "SprayPaint", typeof(VRSprayPaintItem) },
+        { "Knife", typeof(VRKnife) },
+        { "CaveDwellerBaby", typeof(VRManEaterBaby) },
+        { "BeltBag", typeof(VRBeltBagItem) }
     };
 
     public static readonly Dictionary<string, (Vector3, Vector3)> itemOffsets = new()
     {
-        { "Chemical jug", (new Vector3(-0.05f, 0.14f, -0.29f), new Vector3(0, 90, 120)) },
-        { "Toilet paper", (new Vector3(0, 0.13f, -0.4f), new Vector3(0, 90, 90)) },
+        { "ChemicalJug", (new Vector3(-0.05f, 0.14f, -0.29f), new Vector3(0, 90, 120)) },
+        { "ToiletPaperRools", (new Vector3(0, 0.13f, -0.4f), new Vector3(0, 90, 90)) },
         { "Boombox", (new Vector3(-0.02f, 0.1f, -0.29f), new Vector3(90, 285, 0)) },
-        { "Apparatus", (new Vector3(-0.04f, 0.12f, -0.21f), new Vector3(0, 270, 0)) },
-        { "Large axle", (new Vector3(-0.04f, 0.24f, -0.33f), new Vector3(0, 270, 100)) },
-        { "Cash register", (new Vector3(-0.09f, 0.13f, -0.46f), new Vector3(0, 75, 255)) },
-        { "V-type engine", (new Vector3(-0.04f, 0.33f, -0.3f), new Vector3(0, 270, 90)) },
-        { "Extension ladder", (new Vector3(-0.20f, 0.28f, -0.47f), new Vector3(90, 90, 0)) },
-        { "Painting", (new Vector3(0.05f, 0.75f, -0.06f), new Vector3(6, 270, 184)) },
-        { "Soccer ball", (new Vector3(-0.07f, 0.17f, -0.19f), Vector3.zero) },
-        { "Control pad", (new Vector3(0.06f, 0.09f, -0.23f), new Vector3(90, 90, 0)) },
-        { "Garbage lid", (new Vector3(-0.02f, 0.11f, -0.08f), new Vector3(0, 0, 90)) },
-        { "Hive", (new Vector3(0.04f, 0.32f, -0.38f), Vector3.zero) },
-        { "Plastic fish", (new Vector3(0, 0.12f, -0.06f), new Vector3(0, 80, 165)) },
-        { "Belt bag", (new Vector3(0.02f, 0.09f, -0.18f), new Vector3(0, 90, 0)) },
-        { "Maneater", (new Vector3(-0.07f, 0.02f, -0.11f), new Vector3(6, 218, 85)) },
-        { "Zed Dog", (new Vector3(-0.14f, 0.1f, -0.22f), new Vector3(0, 315, 270)) }
+        { "LungApparatus", (new Vector3(-0.04f, 0.12f, -0.21f), new Vector3(0, 270, 0)) },
+        { "Cog1", (new Vector3(-0.04f, 0.24f, -0.33f), new Vector3(0, 270, 100)) },
+        { "CashRegister", (new Vector3(-0.09f, 0.13f, -0.46f), new Vector3(0, 75, 255)) },
+        { "EnginePart1", (new Vector3(-0.04f, 0.33f, -0.3f), new Vector3(0, 270, 90)) },
+        { "ExtensionLadder", (new Vector3(-0.20f, 0.28f, -0.47f), new Vector3(90, 90, 0)) },
+        { "FancyPainting", (new Vector3(0.05f, 0.75f, -0.06f), new Vector3(6, 270, 184)) },
+        { "SoccerBall", (new Vector3(-0.07f, 0.17f, -0.19f), Vector3.zero) },
+        { "ControlPad", (new Vector3(0.06f, 0.09f, -0.23f), new Vector3(90, 90, 0)) },
+        { "GarbageLid", (new Vector3(-0.02f, 0.11f, -0.08f), new Vector3(0, 0, 90)) },
+        { "RedLocustHive", (new Vector3(0.04f, 0.32f, -0.38f), Vector3.zero) },
+        { "FishTestProp", (new Vector3(0, 0.12f, -0.06f), new Vector3(0, 80, 165)) },
+        { "BeltBag", (new Vector3(0.02f, 0.09f, -0.18f), new Vector3(0, 90, 0)) },
+        { "CaveDwellerBaby", (new Vector3(-0.07f, 0.02f, -0.11f), new Vector3(6, 218, 85)) },
+        { "Zeddog", (new Vector3(-0.14f, 0.1f, -0.22f), new Vector3(0, 315, 270)) }
     };
 
     public static void LoadConfig()

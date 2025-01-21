@@ -321,7 +321,7 @@ internal static class PlayerControllerPatches
             return;
 
         // Add or enable VR item script on item if there is one for this item
-        if (Player.Items.items.TryGetValue(item.itemProperties.itemName, out var type))
+        if (Player.Items.items.TryGetValue(item.itemProperties.name, out var type))
         {
             var component = (MonoBehaviour)item.GetComponent(type);
             if (component == null)
@@ -452,7 +452,7 @@ internal static class UniversalPlayerControllerPatches
             return;
 
         // Add or enable VR item script on item if there is one for this item
-        if (Player.Items.items.TryGetValue(item.itemProperties.itemName, out var type))
+        if (Player.Items.items.TryGetValue(item.itemProperties.name, out var type))
         {
             var component = (MonoBehaviour)item.GetComponent(type);
             if (component == null)
