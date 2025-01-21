@@ -1,12 +1,18 @@
 ﻿using LCVR.Items;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using BepInEx;
+using JetBrains.Annotations;
+using Newtonsoft.Json;
 using UnityEngine;
 
 namespace LCVR.Player;
 
 internal static class Items
 {
+    private const int CONFIGURATION_VERSION = 1;
+    
     public static readonly Dictionary<string, Type> items = new()
     {
         { "Shovel", typeof(VRShovelItem) },
@@ -38,4 +44,60 @@ internal static class Items
         { "Maneater", (new Vector3(-0.07f, 0.02f, -0.11f), new Vector3(6, 218, 85)) },
         { "Zed Dog", (new Vector3(-0.14f, 0.1f, -0.22f), new Vector3(0, 315, 270)) }
     };
+
+    public static void LoadConfig()
+    {
+        foreach (var file in Directory.GetFiles(Paths.PluginPath, "*.lcvr-cfg.json", SearchOption.AllDirectories))
+        {
+            try
+            {
+                var config = JsonConvert.DeserializeObject<OffsetConfig>(File.ReadAllText(file));
+
+                if (config.version != CONFIGURATION_VERSION)
+                {
+                    Logger.LogWarning($"{file} is using an unsupported configuration version ({config.version}), file will be ignored");
+                    continue;
+                }
+
+                if (config.itemOffsets != null)
+                    foreach (var (item, value) in config.itemOffsets)
+                    {
+                        if (itemOffsets.ContainsKey(item))
+                            Logger.LogWarning($"Detected duplicate item offset: {item}");
+                        
+                        itemOffsets[item] = (value.position, value.rotation);
+                    }
+
+                if (config.shovels != null)
+                    foreach (var shovel in config.shovels)
+                    {
+                        if (itemOffsets.ContainsKey(shovel))
+                            Logger.LogWarning($"Detected duplicate shovel item: {shovel}");
+
+                        items[shovel] = typeof(VRShovelItem);
+                    }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning($"Unable to read {file}, ignoring...");
+                Logger.LogWarning(ex.Message);
+            }
+        }
+    }
+}
+
+[Serializable]
+internal struct OffsetConfig
+{
+    public int version;
+    
+    [CanBeNull] public Dictionary<string, ItemOffset> itemOffsets;
+    [CanBeNull] public string[] shovels;
+
+    [Serializable]
+    public struct ItemOffset
+    {
+        public Vector3 position;
+        public Vector3 rotation;
+    }
 }

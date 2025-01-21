@@ -1,3 +1,15 @@
+# 1.3.11
+
+**Additions**:
+- Added custom configuration for item offsets and shovels
+
+**Changes**:
+- Moved persistent settings to `LCGeneralSaveFile`. This means your persistent settings will be reset when updating to this version, unless you still have these settings inside your BepInEx config.
+- Changed the persistent settings toggle to use ES3, instead of the BepInEx config file
+
+**Bug fixes**:
+- Fixed issue where models on modded shovels would not move with the player
+
 # 1.3.10
 
 **Additions**:

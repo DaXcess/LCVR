@@ -32,7 +32,7 @@ public class Config(string assemblyPath, ConfigFile file)
         "Enables verbose debug logging during OpenXR initialization");
 
     [ES3NonSerializable]
-    public ConfigEntry<bool> DisablePersistentSettings { get; } =
+    private ConfigEntry<bool> DisablePersistentSettings { get; } =
         file.Bind("General", "DisablePersistentSettings", false,
             "Persistent settings makes sure that all of your LCVR settings are the same across different modpacks. Disabling this will mean that your LCVR settings will be reset every time you create a new modpack.");
 
@@ -238,6 +238,8 @@ public class Config(string assemblyPath, ConfigFile file)
 
     public void SerializeToES3()
     {
+        ES3.Save($"{PERSISTENT_KEY}.disabled", DisablePersistentSettings.Value, "LCGeneralSaveFile");
+        
         if (isSerializing || DisablePersistentSettings.Value)
             return;
 
@@ -266,7 +268,7 @@ public class Config(string assemblyPath, ConfigFile file)
 
             var json = JsonConvert.SerializeObject(structured, Formatting.None);
 
-            ES3.Save(PERSISTENT_KEY, json);
+            ES3.Save(PERSISTENT_KEY, json, "LCGeneralSaveData");
         }
         catch (Exception ex)
         {
@@ -280,6 +282,8 @@ public class Config(string assemblyPath, ConfigFile file)
 
     public void DeserializeFromES3()
     {
+        DisablePersistentSettings.Value = ES3.Load($"{PERSISTENT_KEY}.disabled", "LCGeneralSaveData", false);
+        
         if (isSerializing || DisablePersistentSettings.Value)
             return;
 
@@ -287,10 +291,10 @@ public class Config(string assemblyPath, ConfigFile file)
 
         try
         {
-            if (!ES3.KeyExists(PERSISTENT_KEY))
+            if (!ES3.KeyExists(PERSISTENT_KEY, "LCGeneralSaveData"))
                 return;
 
-            var json = ES3.Load<string>(PERSISTENT_KEY);
+            var json = ES3.Load<string>(PERSISTENT_KEY, "LCGeneralSaveData");
             var structured = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, object>>>(json);
 
             foreach (var (section, settings) in structured)

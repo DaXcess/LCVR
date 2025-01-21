@@ -69,12 +69,9 @@ internal static class Utils
                  (isPrevLower && isPresentUpper && isNextUpper)))
             {
                 builder.Append(' ');
-                builder.Append(input[index]);
             }
-            else
-            {
-                builder.Append(input[index]);
-            }
+
+            builder.Append(input[index]);
         }
 
         return builder.ToString();
@@ -109,14 +106,6 @@ internal static class Utils
             children.Add(transform.GetChild(i));
 
         return children.ToArray();
-    }
-
-    public static void ApplyOffsetTransform(this Transform transform, Transform parent, Vector3 positionOffset,
-        Vector3 rotationOffset)
-    {
-        transform.rotation = parent.rotation;
-        transform.Rotate(rotationOffset);
-        transform.position = parent.position + parent.rotation * positionOffset;
     }
 
     public static XRRayInteractor CreateInteractorController(this GameObject @object, Hand hand, bool rayVisible = true,

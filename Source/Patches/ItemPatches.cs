@@ -69,7 +69,7 @@ internal static class UniversalItemPatches
             return true;
 
         // Prevent shovels from updating item offset as we're using our own implementation
-        if (item.GetType() == typeof(Shovel))
+        if (item.GetType() == typeof(Shovel) && Player.Items.items.ContainsKey(item.itemProperties.itemName))
             return false;
         
         // Don't set custom offset if item does not have a custom offset

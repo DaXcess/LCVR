@@ -25,7 +25,7 @@ public class Plugin : BaseUnityPlugin
 {
     public const string PLUGIN_GUID = "io.daxcess.lcvr";
     public const string PLUGIN_NAME = "LCVR";
-    public const string PLUGIN_VERSION = "1.3.10";
+    public const string PLUGIN_VERSION = "1.3.11";
 
 #if DEBUG
     private const string SKIP_CHECKSUM_VAR = $"--lcvr-skip-checksum={PLUGIN_VERSION}-dev";
@@ -122,17 +122,22 @@ public class Plugin : BaseUnityPlugin
             }
         }
 
+        // Load required dependencies
         if (!PreloadRuntimeDependencies())
         {
             Logger.LogError("Disabling mod because required runtime dependencies could not be loaded!");
             return;
         }
 
+        // Load VR asset bundle
         if (!AssetManager.LoadAssets())
         {
             Logger.LogError("Disabling mod because assets could not be loaded!");
             return;
         }
+        
+        // Load custom item configuration
+        Player.Items.LoadConfig();
 
         if (!disableVr && InitializeVR())
         {
