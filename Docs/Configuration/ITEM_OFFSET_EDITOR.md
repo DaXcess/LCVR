@@ -10,4 +10,8 @@ The offset editor is nothing more than an invisible object added to the scene, f
 
 Once you are in a lobby, open up Unity Explorer, and look for an object called `VR Item Offset Editor` (it should be in the root of the scene). Modifying the position or rotation of this object will alter how items are held in your hand.
 
+![Screenshot 2025-01-21 114626](https://github.com/user-attachments/assets/02d991ff-5855-4d76-9b6f-d712d0f57c6a)
+
 Once you have found a desired position and rotation offset for your item, make note of the X, Y and Z coordinates of both the position and rotation. You may now use these values in the `itemOffsets` configuration, which is documented [here](README.md#item-offsets).
+
+![image](https://github.com/user-attachments/assets/1270bada-4e90-4c1a-ad56-9e1aff7d2776)
