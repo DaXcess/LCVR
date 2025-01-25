@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using MoreCompany.Cosmetics;
+using UnityEngine;
 
 namespace LCVR.Compatibility.MoreCompany;
 
@@ -10,9 +11,14 @@ internal static class MoreCompanyCompatibility
     private static Vector3 previousRotation;
     private static Vector3 previousScale;
     private static Vector3 previousButtonPosition;
+
+    private static bool NoCosmetics => CosmeticRegistry.cosmeticInstances.Count == 0;
     
     public static void SetupMoreCompanyUIMainMenu()
     {
+        if (NoCosmetics)
+            return;
+        
         var overlay = GameObject.Find("TestOverlay(Clone)");
         var menuContainer = GameObject.Find("MenuContainer");
 
@@ -43,6 +49,9 @@ internal static class MoreCompanyCompatibility
 
     public static void RevertMoreCompanyUIMainMenu()
     {
+        if (NoCosmetics)
+            return;
+        
         var overlay = GameObject.Find("TestOverlay(Clone)");
         if (overlay == null)
             return;
@@ -60,6 +69,9 @@ internal static class MoreCompanyCompatibility
 
     public static void SetupMoreCompanyUIInGame()
     {
+        if (NoCosmetics)
+            return;
+        
         var canvasUi = GameObject.Find("Systems/UI/Canvas/GlobalScale");
 
         canvasUi.transform.localPosition = new Vector3(0, 0, -90);
