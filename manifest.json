@@ -4,7 +4,7 @@
   "version_number": "0.0.0",
   "dependencies": [
     "BepInEx-BepInExPack-5.4.2100",
-    "Evaisa-FixPluginTypesSerialization-1.1.1"
+    "Evaisa-FixPluginTypesSerialization-1.1.2"
   ],
   "website_url": "https://github.com/DaXcess/LCVR"
 }
