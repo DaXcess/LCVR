@@ -23,6 +23,7 @@ internal static class AssetManager
     public static Material DefaultRayMat;
 
     public static Shader TMPAlwaysOnTop;
+    public static Shader VignettePostProcess;
     
     public static InputActionAsset VRActions;
     public static InputActionAsset DefaultXRActions;
@@ -65,6 +66,7 @@ internal static class AssetManager
         NullActions = assetBundle.LoadAsset<InputActionAsset>("NullPlayerActions");
 
         TMPAlwaysOnTop = assetBundle.LoadAsset<Shader>("TextMeshPro Always On Top");
+        VignettePostProcess = assetBundle.LoadAsset<Shader>("VignettePostProcess");
         
         RemappableControls =
             assetBundle.LoadAsset<GameObject>("Remappable Controls").GetComponent<RemappableControls>();

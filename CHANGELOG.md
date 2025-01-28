@@ -6,9 +6,11 @@
 **Changes**:
 - Moved persistent settings to `LCGeneralSaveFile`. This means your persistent settings will be reset when updating to this version, unless you still have these settings inside your BepInEx config.
 - Changed the persistent settings toggle to use ES3, instead of the BepInEx config file
+- Replaced HDRP vignette shader with custom vignette shader that works better in VR
 
 **Bug fixes**:
 - Fixed issue where models on modded shovels would not move with the player
+- Fixed issue with MoreCompany if no cosmetics were loaded
 
 # 1.3.10
 

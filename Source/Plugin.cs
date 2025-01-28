@@ -15,6 +15,8 @@ using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.SceneManagement;
 
 using DependencyFlags = BepInEx.BepInDependency.DependencyFlags;
+using Vignette = LCVR.Rendering.Vignette;
+using VolumeManager = LCVR.Rendering.VolumeManager;
 
 namespace LCVR;
 
@@ -306,6 +308,8 @@ public class Plugin : BaseUnityPlugin
             ScalableSettingSchemaId.With3Levels);
 
         asset.currentPlatformRenderPipelineSettings = settings;
+
+        VolumeManager.RegisterCustomPostProcessShaders();
 
         // Input settings
         InputSystem.settings.defaultButtonPressPoint = Config.ButtonPressPoint.Value;

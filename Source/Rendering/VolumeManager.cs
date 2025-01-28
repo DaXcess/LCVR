@@ -63,7 +63,7 @@ public class VolumeManager : MonoBehaviour
             return;
 
         vignetteColor = Color.black;
-        vignetteIntensity = Mathf.Lerp(0, 0.75f, Mathf.Max((counter - 5) / 15, 0));
+        vignetteIntensity = Mathf.Lerp(0, 0.65f, Mathf.Max((counter - 5) / 15, 0));
     }
 
     public void Death()
@@ -99,6 +99,8 @@ public class VolumeManager : MonoBehaviour
 
     private IEnumerator deathAnimation()
     {
+        yield return null;
+        
         vignetteColor = Color.black;
         vignetteIntensity = 1f;
         vignetteLerpMul = 700;
@@ -110,5 +112,19 @@ public class VolumeManager : MonoBehaviour
 
         vignetteLerpMul = 0.5f;
         vignetteIntensity = 0.25f;
+    }
+
+    public static void RegisterCustomPostProcessShaders()
+    {
+        RegisterCustomPostProcess<Vignette>();
+    }
+    
+    private static void RegisterCustomPostProcess<T>()
+        where T : CustomPostProcessVolumeComponent
+    {
+        var pipeline = (HDRenderPipelineAsset)QualitySettings.renderPipeline;
+
+        if (!pipeline.globalSettings.IsCustomPostProcessRegistered(typeof(T)))
+            pipeline.globalSettings.afterPostProcessCustomPostProcesses.Add(typeof(T).AssemblyQualifiedName);
     }
 }
