@@ -1,4 +1,4 @@
-﻿using LCVR.Assets;
+using LCVR.Assets;
 using LCVR.Networking;
 using LCVR.Player;
 using System.Collections;
@@ -34,7 +34,7 @@ internal class ShipLeverInteractable : MonoBehaviour, VRInteractable
 
         interactor.FingerCurler.ForceFist(true);
 
-        lever.StartInteracting(interactor.transform, ShipLever.Actor.Self);
+        lever.StartInteracting(interactor.transform, ShipLever.Actor.Self, interactor);
 
         return true;
     }
@@ -60,6 +60,8 @@ public class ShipLever : MonoBehaviour
     private TriggerDirection shouldTrigger = TriggerDirection.None;
     private Actor currentActor;
     private Channel channel;
+    VRInteractor CurrentInteractor;
+    float LastVibrateRotation;
 
     public bool CanInteract => lever.triggerScript.interactable && currentActor != Actor.Other;
 
@@ -98,15 +100,25 @@ public class ShipLever : MonoBehaviour
             shouldTrigger = eulerAngles.x > 290 ? TriggerDirection.DepartShip : TriggerDirection.None;
         }
 
+        eulerAngles.x = Mathf.Clamp(eulerAngles.x, 270, 310); //Fixes the lever from clipping if you rotate it too much
+
+        if (CurrentInteractor != null && Mathf.Abs(LastVibrateRotation - eulerAngles.x) >= 10) //Vibrate the controller if the lever has been rotated too much
+        {
+            CurrentInteractor.Vibrate(0.1f, 0.3f);
+            LastVibrateRotation = eulerAngles.x;
+        }
+
         transform.eulerAngles = eulerAngles;
     }
 
-    public void StartInteracting(Transform target, Actor actor)
+    public void StartInteracting(Transform target, Actor actor, VRInteractor interactor = null)
     {
         currentActor = actor;
         animator.enabled = false;
         rotateTo = target;
-        
+        CurrentInteractor = interactor;
+
+
         if (actor == Actor.Self)
             channel.SendPacket([1]);
     }
@@ -137,6 +149,8 @@ public class ShipLever : MonoBehaviour
 
     private IEnumerator PerformLeverAction(bool isLocal)
     {
+        if(CurrentInteractor != null)
+            CurrentInteractor.Vibrate(.3f, 0.5f);
         if (isLocal) lever.LeverAnimation();
 
         yield return new WaitForSeconds(1.67f);
