@@ -32,9 +32,9 @@ public class Config(string assemblyPath, ConfigFile file)
         "Enables verbose debug logging during OpenXR initialization");
 
     [ES3NonSerializable]
-    private ConfigEntry<bool> DisablePersistentSettings { get; } =
-        file.Bind("General", "DisablePersistentSettings", false,
-            "Persistent settings makes sure that all of your LCVR settings are the same across different modpacks. Disabling this will mean that your LCVR settings will be reset every time you create a new modpack.");
+    private ConfigEntry<bool> EnablePersistentSettings { get; } =
+        file.Bind("General", "EnablePersistentSettings", false,
+            "Persistent settings makes sure that all of your LCVR settings are the same across different modpacks. Enabling this will mean that your LCVR settings will be kept even when you reset your configuration (e.g. by installing a new modpack).");
 
     // Performance configuration
 
@@ -238,9 +238,9 @@ public class Config(string assemblyPath, ConfigFile file)
 
     public void SerializeToES3()
     {
-        ES3.Save($"{PERSISTENT_KEY}.disabled", DisablePersistentSettings.Value, "LCGeneralSaveFile");
+        ES3.Save($"{PERSISTENT_KEY}.enabled", EnablePersistentSettings.Value, "LCGeneralSaveFile");
         
-        if (isSerializing || DisablePersistentSettings.Value)
+        if (isSerializing || !EnablePersistentSettings.Value)
             return;
 
         isSerializing = true;
@@ -282,9 +282,9 @@ public class Config(string assemblyPath, ConfigFile file)
 
     public void DeserializeFromES3()
     {
-        DisablePersistentSettings.Value = ES3.Load($"{PERSISTENT_KEY}.disabled", "LCGeneralSaveData", false);
+        EnablePersistentSettings.Value = ES3.Load($"{PERSISTENT_KEY}.enabled", "LCGeneralSaveData", false);
         
-        if (isSerializing || DisablePersistentSettings.Value)
+        if (isSerializing || !EnablePersistentSettings.Value)
             return;
 
         isSerializing = true;

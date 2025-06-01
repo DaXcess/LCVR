@@ -19,6 +19,8 @@ public static class FlashlightItemPatches
         if (__instance.IsOwner)
             return;
 
+        // todo: fix problem
+        // what problem?
         if (!NetworkSystem.Instance.IsInVR((ushort)__instance.playerHeldBy.playerClientId))
             return;
 

@@ -1,7 +1,14 @@
-# 1.3.11
+# 1.4.0
 
 **Additions**:
+- Added support for V70
 - Added custom configuration for item offsets and shovels
+- Added custom interactions for new doors
+- Added a skybox to the main menu
+- Added a skybox to the pause menu
+- Added a new Online/LAN selection menu, replacing that of the vanilla game
+- Added a custom keybindings menu
+- Added a new header tab for VR, containing the VR settings and keybind settings
 
 **Changes**:
 - Moved persistent settings to `LCGeneralSaveFile`. This means your persistent settings will be reset when updating to this version, unless you still have these settings inside your BepInEx config.
@@ -11,6 +18,12 @@
 **Bug fixes**:
 - Fixed issue where models on modded shovels would not move with the player
 - Fixed issue with MoreCompany if no cosmetics were loaded
+- Fixed an issue where screen shake could cause the camera to become tilted
+
+**Removals**:
+- Removed support for all versions below V70
+- Removed Ik from the main menu
+- Removed F8 hot switching
 
 # 1.3.10
 

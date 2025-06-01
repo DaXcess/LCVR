@@ -225,7 +225,7 @@ internal static class SpectatorPlayerPatches
     /// Make sure we have infinite sprint and not being hindered by injuries if we're dead
     /// </summary>
     [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.Update))]
-    [HarmonyPostfix]
+    // [HarmonyPostfix]
     private static void OnPlayerUpdate(PlayerControllerB __instance)
     {
         if (!__instance.IsOwner || !__instance.isPlayerControlled || !__instance.isPlayerDead)

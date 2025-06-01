@@ -8,7 +8,6 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.UI;
-using UnityEngine.XR.Interaction.Toolkit.UI;
 
 // ReSharper disable MemberCanBePrivate.Global
 
@@ -51,11 +50,6 @@ public class VRHUD : MonoBehaviour
     public Canvas WorldInteractionCanvas { get; private set; }
     
     /// <summary>
-    /// The pause menu screen, which is strategically placed very far below the map as to not interfere with anything.
-    /// </summary>
-    public Canvas PauseMenuCanvas { get; private set; }
-    
-    /// <summary>
     /// The canvas used for displaying UI elements on or near the left hand
     /// </summary>
     public Canvas LeftHandCanvas { get; private set; }
@@ -64,11 +58,6 @@ public class VRHUD : MonoBehaviour
     /// The canvas used for displaying UI elements on or near the right hand
     /// </summary>
     public Canvas RightHandCanvas { get; private set; }
-
-    /// <summary>
-    /// The keyboard that is used within the pause menu
-    /// </summary>
-    public NonNativeKeyboard MenuKeyboard { get; private set; }
     
     /// <summary>
     /// The keyboard that is used within the Terminal
@@ -141,13 +130,6 @@ public class VRHUD : MonoBehaviour
             RightHandCanvas.transform.localPosition = new Vector3(0, 0, 0);
             RightHandCanvas.transform.localRotation = Quaternion.Euler(0, 0, 0);
         }
-        
-        // Flat Canvas: Add tracked graphic raycaster
-        GameObject.Find("Systems").Find("UI/Canvas").AddComponent<TrackedDeviceGraphicRaycaster>();
-
-        // Pause menu: Move a little forward
-        var quickMenu = GameObject.Find("Systems").Find("UI/Canvas/QuickMenu").transform;
-        quickMenu.localPosition = new Vector3(0, 0, -50);
 
         // Object scanner: Custom handler
         var objectScanner = GameObject.Find("ObjectScanner");
@@ -312,10 +294,17 @@ public class VRHUD : MonoBehaviour
         // Special HUD: In front of eyes
         var specialHud = GameObject.Find("SpecialHUDGraphics");
 
+        // First kill all existing NetworkObjects
+        for (var i = HUDManager.Instance.advertItemParent.transform.childCount - 1; i >= 0; i--)
+            DestroyImmediate(HUDManager.Instance.advertItemParent.transform.GetChild(i).gameObject);
+        
         specialHud.transform.SetParent(PitchLockedCanvas.transform, false);
         specialHud.transform.localPosition = Vector3.zero;
         specialHud.transform.localRotation = Quaternion.identity;
         specialHud.transform.localScale = Vector3.one;
+        
+        // Advertisement HUD fixes
+        specialHud.transform.Find("Advertisement/AdContainer").localPosition = new Vector3(110, 0, 110);
 
         var hintPanel = GameObject.Find("HintPanelContainer");
 
@@ -420,19 +409,6 @@ public class VRHUD : MonoBehaviour
         systemsOnline.localPosition = new Vector3(-280, -100, 0);
         systemsOnline.localEulerAngles = Vector3.zero;
         systemsOnline.localScale = Vector3.one * 1.65f;
-
-        // Pause menu screen (Render texture): World space
-        PauseMenuCanvas = GameObject.Find("Systems/UI/Canvas").GetComponent<Canvas>();
-        PauseMenuCanvas.worldCamera = GameObject.Find("UICamera").GetComponent<Camera>();
-        PauseMenuCanvas.renderMode = RenderMode.WorldSpace;
-        PauseMenuCanvas.transform.position = new Vector3(0, -999, 0);
-        PauseMenuCanvas.transform.localScale = Vector3.one * 0.01f;
-        
-        var follow = PauseMenuCanvas.gameObject.AddComponent<CanvasTransformFollow>();
-        follow.sourceTransform = VRSession.Instance.UICamera.transform;
-        follow.heightOffset = -999;
-            
-        InitializeKeyboard();
 
         // Set up a global light for spectators to be able to toggle
         spectatorLight = Instantiate(AssetManager.SpectatorLight, transform);
@@ -575,26 +551,5 @@ public class VRHUD : MonoBehaviour
         }
         
         light.SetActive(active ?? !light.activeSelf);
-    }
-
-    /// <summary>
-    /// Add a keyboard to the pause menu
-    /// </summary>
-    private void InitializeKeyboard()
-    {
-        var canvas = GameObject.Find("Systems/UI/Canvas").GetComponent<Canvas>();
-        MenuKeyboard = Instantiate(AssetManager.Keyboard, canvas.transform).GetComponent<NonNativeKeyboard>();
-
-        MenuKeyboard.transform.localPosition = new Vector3(0, -470, -40);
-        MenuKeyboard.transform.localEulerAngles = new Vector3(13, 0, 0);
-        MenuKeyboard.transform.localScale = Vector3.one * 0.8f;
-
-        MenuKeyboard.gameObject.Find("keyboard_Alpha/Deny_Button").SetActive(false);
-        MenuKeyboard.gameObject.Find("keyboard_Alpha/Confirm_Button").SetActive(false);
-        
-        MenuKeyboard.SubmitOnEnter = true;
-
-        var component = canvas.gameObject.AddComponent<Keyboard>();
-        component.keyboard = MenuKeyboard;
     }
 }

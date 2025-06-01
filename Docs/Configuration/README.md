@@ -35,7 +35,7 @@ An item offset is structured as follows:
 ```json
 {
   "itemOffsets": {
-    "Item Name (CaSe SeNSiTiVe!)": {
+    "ItemName (CaSe SeNSiTiVe!)": {
       "position": {
         "x": 0,
         "y": 0,
@@ -47,10 +47,10 @@ An item offset is structured as follows:
         "z": 0
       }
     },
-    "Another Item": {
+    "AnotherItem": {
       ...
     },
-    "A Third Item": {
+    "AThirdItem": {
       ...
     }
   }
@@ -76,9 +76,9 @@ Custom shovels are annotated by an array of item names.
 ```json
 {
   "shovels": [
-    "My Custom Shovel",
+    "MyCustomShovel",
     "Broom",
-    "A Very Large Stick",
+    "AVeryLargeStick",
     ...
   ]
 }
@@ -94,7 +94,7 @@ Custom shovels are annotated by an array of item names.
 {
   "version": 1,
   "itemOffsets": {
-    "Chemical jug": {
+    "ChemicalJug": {
       "position": {
         "x": -0.05,
         "y": 0.14,
@@ -106,7 +106,7 @@ Custom shovels are annotated by an array of item names.
         "z": 120
       }
     },
-    "Toilet paper": {
+    "ToiletPaperRools": {
       "position": {
         "x": 0,
         "y": 0.13,
@@ -130,7 +130,7 @@ Custom shovels are annotated by an array of item names.
         "z": 0
       }
     },
-    "Apparatus": {
+    "LungApparatus": {
       "position": {
         "x": -0.04,
         "y": 0.12,
@@ -142,7 +142,7 @@ Custom shovels are annotated by an array of item names.
         "z": 0
       }
     },
-    "Large axle": {
+    "Cog1": {
       "position": {
         "x": -0.04,
         "y": 0.24,
@@ -154,7 +154,7 @@ Custom shovels are annotated by an array of item names.
         "z": 100
       }
     },
-    "Cash register": {
+    "CashRegister": {
       "position": {
         "x": -0.09,
         "y": 0.13,
@@ -166,7 +166,7 @@ Custom shovels are annotated by an array of item names.
         "z": 255
       }
     },
-    "V-type engine": {
+    "EnginePart1": {
       "position": {
         "x": -0.04,
         "y": 0.33,
@@ -178,7 +178,7 @@ Custom shovels are annotated by an array of item names.
         "z": 90
       }
     },
-    "Extension ladder": {
+    "ExtensionLadder": {
       "position": {
         "x": -0.2,
         "y": 0.28,
@@ -190,7 +190,7 @@ Custom shovels are annotated by an array of item names.
         "z": 0
       }
     },
-    "Painting": {
+    "FancyPainting": {
       "position": {
         "x": 0.05,
         "y": 0.75,
@@ -202,7 +202,7 @@ Custom shovels are annotated by an array of item names.
         "z": 184
       }
     },
-    "Soccer ball": {
+    "SoccerBall": {
       "position": {
         "x": -0.07,
         "y": 0.17,
@@ -214,7 +214,7 @@ Custom shovels are annotated by an array of item names.
         "z": 0
       }
     },
-    "Control pad": {
+    "ControlPad": {
       "position": {
         "x": 0.06,
         "y": 0.09,
@@ -226,7 +226,7 @@ Custom shovels are annotated by an array of item names.
         "z": 0
       }
     },
-    "Garbage lid": {
+    "GarbageLid": {
       "position": {
         "x": -0.02,
         "y": 0.11,
@@ -238,7 +238,7 @@ Custom shovels are annotated by an array of item names.
         "z": 90
       }
     },
-    "Hive": {
+    "RedLocustHive": {
       "position": {
         "x": 0.04,
         "y": 0.32,
@@ -250,7 +250,7 @@ Custom shovels are annotated by an array of item names.
         "z": 0
       }
     },
-    "Plastic fish": {
+    "FishTestProp": {
       "position": {
         "x": 0,
         "y": 0.12,
@@ -262,7 +262,7 @@ Custom shovels are annotated by an array of item names.
         "z": 165
       }
     },
-    "Belt bag": {
+    "BeltBag": {
       "position": {
         "x": 0.02,
         "y": 0.09,
@@ -274,7 +274,7 @@ Custom shovels are annotated by an array of item names.
         "z": 0
       }
     },
-    "Maneater": {
+    "CaveDwellerBaby": {
       "position": {
         "x": -0.07,
         "y": 0.02,
@@ -286,7 +286,7 @@ Custom shovels are annotated by an array of item names.
         "z": 85
       }
     },
-    "Zed Dog": {
+    "Zeddog": {
       "position": {
         "x": -0.14,
         "y": 0.1,
@@ -301,8 +301,8 @@ Custom shovels are annotated by an array of item names.
   },
   "shovels": [
     "Shovel",
-    "Yield sign",
-    "Stop sign"
+    "YieldSign",
+    "StopSign"
   ]
 }
 ```

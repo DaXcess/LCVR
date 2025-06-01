@@ -71,6 +71,9 @@ public class VRController : MonoBehaviour
     {
         IsHovering = false;
 
+        if (!PlayerController)
+            return;
+        
         PlayerController.cursorIcon.enabled = false;
         CursorTip = "";
         if (PlayerController.hoveringOverTrigger != null)

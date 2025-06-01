@@ -51,7 +51,7 @@ internal static class Items
         {
             try
             {
-                var config = JsonConvert.DeserializeObject<OffsetConfig>(File.ReadAllText(file));
+                var config = JsonConvert.DeserializeObject<ModConfig>(File.ReadAllText(file));
 
                 if (config.version != CONFIGURATION_VERSION)
                 {
@@ -87,7 +87,7 @@ internal static class Items
 }
 
 [Serializable]
-internal struct OffsetConfig
+internal struct ModConfig
 {
     public int version;
     

@@ -5,10 +5,8 @@ using GameNetcodeStuff;
 using LCVR.Assets;
 using LCVR.Input;
 using LCVR.Player;
-using TMPro;
 using UnityEngine;
 using UnityEngine.Animations.Rigging;
-using CrouchState = LCVR.Networking.Rig.CrouchState;
 
 namespace LCVR.Networking;
 
@@ -17,12 +15,9 @@ namespace LCVR.Networking;
 /// </summary>
 public class VRNetPlayer : MonoBehaviour
 {
-    private GameObject playerGhost;
-    private Transform usernameBillboard;
-    private CanvasGroup usernameAlpha;
-    private TextMeshProUGUI usernameText;
-
-    private Transform lastSyncedPhysicsParent;
+    private record struct HandTargetOverride(Transform Transform, Vector3 PositionOffset, Vector3 RotationOffset);
+    
+    private SpectatorGhost playerGhost;
 
     private Transform xrOrigin;
     private Transform leftController;
@@ -41,7 +36,7 @@ public class VRNetPlayer : MonoBehaviour
     private Transform camera;
 
     private float cameraFloorOffset;
-    private Vector3 rotationOffset;
+    private Vector3 originRotation;
 
     private Vector3 cameraEulers;
     private Vector3 cameraPosAccounted;
@@ -131,29 +126,10 @@ public class VRNetPlayer : MonoBehaviour
         BuildVRRig();
 
         // Create spectating player
-        playerGhost = Instantiate(AssetManager.SpectatorGhost, VRSession.Instance.transform);
-        playerGhost.name = $"Spectating Player: {PlayerController.playerUsername}";
-
-        usernameBillboard = playerGhost.GetComponentInChildren<Canvas>().transform;
-        usernameText = playerGhost.GetComponentInChildren<TextMeshProUGUI>();
-        usernameAlpha = playerGhost.GetComponentInChildren<CanvasGroup>();
-
-        playerGhost.GetComponentInChildren<SpectatorGhost>().player = this;
-
-        // Disable rendering ghost until player dies
-        foreach (var renderer in playerGhost.GetComponentsInChildren<MeshRenderer>())
-        {
-            renderer.enabled = false;
-        }
-
-        // Set username text
-        if (PlayerController.playerSteamId is 76561198438308784 or 76561199575858981)
-        {
-            usernameText.color = new Color(0, 1, 1, 1);
-            usernameText.fontStyle = FontStyles.Bold;
-        }
-
-        usernameText.text = $"<noparse>{PlayerController.playerUsername}</noparse>";
+        playerGhost = Instantiate(AssetManager.SpectatorGhost, VRSession.Instance.transform)
+            .GetComponent<SpectatorGhost>();
+        playerGhost.gameObject.name = $"Spectating Player: {PlayerController.playerUsername}";
+        playerGhost.player = this;
 
         var networkSystem = NetworkSystem.Instance;
         
@@ -297,13 +273,11 @@ public class VRNetPlayer : MonoBehaviour
                                       cameraFloorOffset + crouchOffset - PlayerController.sinkingValue * 2.5f +
                                       carOffset, 0) *
                                   transform.localScale.y;
-        xrOrigin.localEulerAngles = rotationOffset;
+        xrOrigin.localEulerAngles = originRotation;
 
         // Arms need to be moved forward when crouched
         if (crouchState != CrouchState.None)
             xrOrigin.localPosition += transform.forward * 0.2f;
-        
-        usernameAlpha.alpha -= Time.deltaTime;
         
         // Set camera (head) rotation
         camera.transform.eulerAngles = cameraEulers;
@@ -320,7 +294,7 @@ public class VRNetPlayer : MonoBehaviour
         // Apply controller transforms
         if (leftHandTargetOverride is {} leftOverride)
         {
-            if (leftOverride.transform == null)
+            if (leftOverride.Transform == null)
             {
                 Logger.LogWarning("Left hand override target transform despawned");
                 leftHandTargetOverride = null;
@@ -329,16 +303,16 @@ public class VRNetPlayer : MonoBehaviour
             }
 
             // Break snap if distance is too great
-            if (Vector3.Distance(leftOverride.transform.position, leftHandVRTarget.position) > 2)
+            if (Vector3.Distance(leftOverride.Transform.position, leftHandVRTarget.position) > 2)
             {
                 leftHandTargetOverride = null;
 
                 return;
             }
             
-            leftArmRigTarget.position = leftOverride.transform.TransformPoint(leftOverride.positionOffset);
+            leftArmRigTarget.position = leftOverride.Transform.TransformPoint(leftOverride.PositionOffset);
             leftArmRigTarget.rotation =
-                leftOverride.transform.rotation * Quaternion.Euler(leftOverride.rotationOffset);
+                leftOverride.Transform.rotation * Quaternion.Euler(leftOverride.RotationOffset);
         }
         else
         {
@@ -348,7 +322,7 @@ public class VRNetPlayer : MonoBehaviour
 
         if (rightHandTargetOverride is {} rightOverride)
         {
-            if (rightOverride.transform == null)
+            if (rightOverride.Transform == null)
             {
                 Logger.LogWarning("Right hand override target transform despawned");
                 rightHandTargetOverride = null;
@@ -357,16 +331,16 @@ public class VRNetPlayer : MonoBehaviour
             }
 
             // Break snap if distance is too great
-            if (Vector3.Distance(rightOverride.transform.position, rightHandVRTarget.position) > 2)
+            if (Vector3.Distance(rightOverride.Transform.position, rightHandVRTarget.position) > 2)
             {
                 rightHandTargetOverride = null;
 
                 return;
             }
             
-            rightArmRigTarget.position = rightOverride.transform.TransformPoint(rightOverride.positionOffset);
+            rightArmRigTarget.position = rightOverride.Transform.TransformPoint(rightOverride.PositionOffset);
             rightArmRigTarget.rotation =
-                rightOverride.transform.rotation * Quaternion.Euler(rightOverride.rotationOffset);
+                rightOverride.Transform.rotation * Quaternion.Euler(rightOverride.RotationOffset);
         }
         else
         {
@@ -379,10 +353,6 @@ public class VRNetPlayer : MonoBehaviour
 
         if (!PlayerController.isHoldingObject)
             RightFingerCurler?.Update();
-
-        // Rotate spectator username billboard
-        if (StartOfRound.Instance.localPlayerController.localVisorTargetPoint is not null)
-            usernameBillboard.LookAt(StartOfRound.Instance.localPlayerController.localVisorTargetPoint);
     }
     
     private void UpdateIKWeights()
@@ -418,29 +388,15 @@ public class VRNetPlayer : MonoBehaviour
         if (!playerGhost)
             return;
         
-        foreach (var renderer in playerGhost.GetComponentsInChildren<MeshRenderer>())
-            renderer.enabled = false;
-
-        usernameAlpha.alpha = 0f;
-    }
-
-    /// <summary>
-    /// Show the username of the player (if they are dead)
-    /// </summary>
-    public void ShowSpectatorNameBillboard()
-    {
-        if (!PlayerController.isPlayerDead)
-            return;
-
-        usernameAlpha.alpha = 1f;
+        playerGhost.SetVisible(false);
     }
     
     /// <summary>
     /// Override the target transform that the left hand of this player should go towards
     /// </summary>
-    public void SnapLeftHandTo(Transform transform, Vector3? positionOffset = null, Vector3? rotationOffset = null)
+    public void SnapLeftHandTo(Transform target, Vector3? positionOffset = null, Vector3? rotationOffset = null)
     {
-        if (transform == null)
+        if (!target)
         {
             leftHandTargetOverride = null;
             return;
@@ -448,18 +404,18 @@ public class VRNetPlayer : MonoBehaviour
 
         leftHandTargetOverride = new HandTargetOverride
         {
-            transform = transform,
-            positionOffset = positionOffset ?? Vector3.zero,
-            rotationOffset = rotationOffset ?? Vector3.zero
+            Transform = target,
+            PositionOffset = positionOffset ?? Vector3.zero,
+            RotationOffset = rotationOffset ?? Vector3.zero
         };
     }
     
     /// <summary>
     /// Override the target transform that the right hand of this player should go towards
     /// </summary>
-    public void SnapRightHandTo(Transform transform, Vector3? positionOffset = null, Vector3? rotationOffset = null)
+    public void SnapRightHandTo(Transform target, Vector3? positionOffset = null, Vector3? rotationOffset = null)
     {
-        if (transform == null)
+        if (!target)
         {
             rightHandTargetOverride = null;
             return;
@@ -467,9 +423,9 @@ public class VRNetPlayer : MonoBehaviour
 
         rightHandTargetOverride = new HandTargetOverride
         {
-            transform = transform,
-            positionOffset = positionOffset ?? Vector3.zero,
-            rotationOffset = rotationOffset ?? Vector3.zero
+            Transform = target,
+            PositionOffset = positionOffset ?? Vector3.zero,
+            RotationOffset = rotationOffset ?? Vector3.zero
         };
     }
 
@@ -512,61 +468,29 @@ public class VRNetPlayer : MonoBehaviour
     {
         var rig = Serialization.Deserialize<Rig>(reader);
         
-        leftController.localPosition = rig.leftHandPosition;
-        leftController.localEulerAngles = rig.leftHandEulers;
-        LeftFingerCurler?.SetCurls(rig.leftHandFingers);
+        leftController.localPosition = rig.LeftHandPosition;
+        leftController.localEulerAngles = rig.LeftHandEulers;
+        LeftFingerCurler?.SetCurls(rig.LeftHandFingers);
 
-        rightController.localPosition = rig.rightHandPosition;
-        rightController.localEulerAngles = rig.rightHandEulers;
-        RightFingerCurler?.SetCurls(rig.rightHandFingers);
+        rightController.localPosition = rig.RightHandPosition;
+        rightController.localEulerAngles = rig.RightHandEulers;
+        RightFingerCurler?.SetCurls(rig.RightHandFingers);
 
-        cameraEulers = rig.cameraEulers;
-        cameraPosAccounted = rig.cameraPosAccounted;
-        modelOffset = rig.modelOffset;
-        specialAnimationPositionOffset = rig.specialAnimationPositionOffset;
+        cameraEulers = rig.CameraEulers;
+        cameraPosAccounted = rig.CameraPosAccounted;
+        modelOffset = rig.ModelOffset;
+        specialAnimationPositionOffset = rig.SpecialAnimationPositionOffset;
 
-        crouchState = rig.crouchState;
-        rotationOffset = rig.rotationOffset;
-        cameraFloorOffset = rig.cameraFloorOffset;
+        crouchState = rig.CrouchState;
+        originRotation = rig.RotationOffset;
+        cameraFloorOffset = rig.CameraFloorOffset;
     }
 
     private void OnSpectatorRigDataReceived(ushort _, BinaryReader reader)
     {
         var rig = Serialization.Deserialize<SpectatorRig>(reader);
-        
-        var head = playerGhost.transform.Find("Head");
-        var leftHand = playerGhost.transform.Find("Hand.L");
-        var rightHand = playerGhost.transform.Find("Hand.R");
 
-        var parent = PlayerController.physicsParent ?? (rig.parentedToShip
-            ? StartOfRound.Instance.elevatorTransform
-            : StartOfRound.Instance.playersContainer);
-        
-        if (parent != lastSyncedPhysicsParent)
-        {
-            lastSyncedPhysicsParent = parent;
-            
-            playerGhost.transform.SetParent(parent, true);
-            playerGhost.transform.localPosition = Vector3.zero;
-            playerGhost.transform.localRotation = Quaternion.identity;
-            playerGhost.transform.localScale = Vector3.one;
-        }
-
-        head.localPosition = rig.headPosition;
-        head.eulerAngles = rig.headRotation;
-
-        leftHand.localPosition = rig.leftHandPosition;
-        leftHand.eulerAngles = rig.leftHandRotation;
-
-        rightHand.localPosition = rig.rightHandPosition;
-        rightHand.eulerAngles = rig.rightHandRotation;
-    }
-
-    private struct HandTargetOverride
-    {
-        public Transform transform;
-        public Vector3 positionOffset;
-        public Vector3 rotationOffset;
+        playerGhost.UpdateRig(rig);
     }
 
     public class PlayerData
@@ -603,52 +527,52 @@ public class VRNetPlayer : MonoBehaviour
 [Serialize]
 public struct Rig
 {
-    public Vector3 rightHandPosition;
-    public Vector3 rightHandEulers;
-    public Fingers rightHandFingers;
+    public Vector3 RightHandPosition;
+    public Vector3 RightHandEulers;
+    public Fingers RightHandFingers;
 
-    public Vector3 leftHandPosition;
-    public Vector3 leftHandEulers;
-    public Fingers leftHandFingers;
+    public Vector3 LeftHandPosition;
+    public Vector3 LeftHandEulers;
+    public Fingers LeftHandFingers;
 
-    public Vector3 cameraEulers;
-    public Vector3 cameraPosAccounted;
-    public Vector3 modelOffset;
-    public Vector3 specialAnimationPositionOffset;
+    public Vector3 CameraEulers;
+    public Vector3 CameraPosAccounted;
+    public Vector3 ModelOffset;
+    public Vector3 SpecialAnimationPositionOffset;
         
-    public CrouchState crouchState;
-    public Vector3 rotationOffset;
-    public float cameraFloorOffset;
-
-    public enum CrouchState : byte
-    {
-        None,
-        Roomscale,
-        Button
-    }
+    public CrouchState CrouchState;
+    public Vector3 RotationOffset;
+    public float CameraFloorOffset;
 }
 
 [Serialize]
 public struct SpectatorRig
 {
-    public Vector3 headPosition;
-    public Vector3 headRotation;
+    public Vector3 HeadPosition;
+    public Vector3 HeadRotation;
 
-    public Vector3 leftHandPosition;
-    public Vector3 leftHandRotation;
+    public Vector3 LeftHandPosition;
+    public Vector3 LeftHandRotation;
 
-    public Vector3 rightHandPosition;
-    public Vector3 rightHandRotation;
+    public Vector3 RightHandPosition;
+    public Vector3 RightHandRotation;
 
-    public bool parentedToShip;
+    public bool ParentedToShip;
 }
     
 [Serialize]
 public struct Fingers
 {
-    public byte thumb;
-    public byte index;
-    public byte middle;
-    public byte ring;
-    public byte pinky;
+    public byte Thumb;
+    public byte Index;
+    public byte Middle;
+    public byte Ring;
+    public byte Pinky;
+}
+
+public enum CrouchState : byte
+{
+    None,
+    Roomscale,
+    Button
 }

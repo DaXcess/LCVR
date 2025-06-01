@@ -88,21 +88,21 @@ public class FingerCurler
     {
         return new Fingers()
         {
-            thumb = (byte)(thumbFinger.curl * 255f),
-            index = (byte)(indexFinger.curl * 255f),
-            middle = (byte)(middleFinger.curl * 255f),
-            ring = (byte)(ringFinger.curl * 255f),
-            pinky = (byte)(pinkyFinger.curl * 255f),
+            Thumb = (byte)(thumbFinger.curl * 255f),
+            Index = (byte)(indexFinger.curl * 255f),
+            Middle = (byte)(middleFinger.curl * 255f),
+            Ring = (byte)(ringFinger.curl * 255f),
+            Pinky = (byte)(pinkyFinger.curl * 255f),
         };
     }
 
     internal void SetCurls(Fingers fingers)
     {
-        thumbFinger.curl = fingers.thumb / 255f;
-        indexFinger.curl = fingers.index / 255f;
-        middleFinger.curl = fingers.middle / 255f;
-        ringFinger.curl = fingers.ring / 255f;
-        pinkyFinger.curl = fingers.pinky / 255f;
+        thumbFinger.curl = fingers.Thumb / 255f;
+        indexFinger.curl = fingers.Index / 255f;
+        middleFinger.curl = fingers.Middle / 255f;
+        ringFinger.curl = fingers.Ring / 255f;
+        pinkyFinger.curl = fingers.Pinky / 255f;
     }
 
     public virtual void Update()

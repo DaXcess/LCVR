@@ -7,17 +7,19 @@ namespace LCVR.Assets;
 
 internal static class AssetManager
 {
-    private static AssetBundle assetBundle;
+    private static AssetBundle assetsBundle;
+    private static AssetBundle scenesBundle;
 
     public static GameObject Interactable;
     public static GameObject Keyboard;
-    public static GameObject SettingsPanel;
-    public static GameObject KeybindDiscard;
     public static GameObject VolumeManager;
     public static GameObject SpectatorLight;
     public static GameObject SpectatorGhost;
-    public static GameObject EnemyPrefab;
     public static GameObject SteeringWheelPoints;
+    
+    public static GameObject InitMenuEnvironment;
+    public static GameObject MainMenuEnvironment;
+    public static GameObject PauseMenuEnvironment;
 
     public static Material SplashMaterial;
     public static Material DefaultRayMat;
@@ -41,46 +43,49 @@ internal static class AssetManager
 
     public static bool LoadAssets()
     {
-        assetBundle =
+        assetsBundle =
             AssetBundle.LoadFromFile(Path.Combine(Path.GetDirectoryName(Plugin.Config.AssemblyPath)!,
                 "lethalcompanyvr"));
+        scenesBundle = AssetBundle.LoadFromFile(Path.Combine(Path.GetDirectoryName(Plugin.Config.AssemblyPath)!,
+            "lethalcompanyvr-levels"));
 
-        if (assetBundle == null)
+        if (assetsBundle == null || scenesBundle == null)
         {
             Logger.LogError("Failed to load asset bundle!");
             return false;
         }
         
-        Interactable = assetBundle.LoadAsset<GameObject>("VRInteractable");
-        Keyboard = assetBundle.LoadAsset<GameObject>("NonNativeKeyboard");
-        SettingsPanel = assetBundle.LoadAsset<GameObject>("Panel");
-        KeybindDiscard = assetBundle.LoadAsset<GameObject>("KeybindDiscard");
-        VolumeManager = assetBundle.LoadAsset<GameObject>("Volume Manager");
-        EnemyPrefab = assetBundle.LoadAsset<GameObject>("InnKeeper");
-        SpectatorLight = assetBundle.LoadAsset<GameObject>("Spectator Light");
-        SpectatorGhost = assetBundle.LoadAsset<GameObject>("SpectatorGhost");
-        SteeringWheelPoints = assetBundle.LoadAsset<GameObject>("SnapPointContainer");
+        Interactable = assetsBundle.LoadAsset<GameObject>("VRInteractable");
+        Keyboard = assetsBundle.LoadAsset<GameObject>("NonNativeKeyboard");
+        VolumeManager = assetsBundle.LoadAsset<GameObject>("Volume Manager");
+        SpectatorLight = assetsBundle.LoadAsset<GameObject>("Spectator Light");
+        SpectatorGhost = assetsBundle.LoadAsset<GameObject>("Spectator Ghost");
+        SteeringWheelPoints = assetsBundle.LoadAsset<GameObject>("SnapPointContainer");
+        
+        InitMenuEnvironment = assetsBundle.LoadAsset<GameObject>("Init Menu Environment");
+        MainMenuEnvironment = assetsBundle.LoadAsset<GameObject>("Main Menu Environment");
+        PauseMenuEnvironment = assetsBundle.LoadAsset<GameObject>("Pause Menu Environment");
+        
+        VRActions = assetsBundle.LoadAsset<InputActionAsset>("VRActions");
+        DefaultXRActions = assetsBundle.LoadAsset<InputActionAsset>("DefaultXRActions");
+        NullActions = assetsBundle.LoadAsset<InputActionAsset>("NullPlayerActions");
 
-        VRActions = assetBundle.LoadAsset<InputActionAsset>("VRActions");
-        DefaultXRActions = assetBundle.LoadAsset<InputActionAsset>("DefaultXRActions");
-        NullActions = assetBundle.LoadAsset<InputActionAsset>("NullPlayerActions");
-
-        TMPAlwaysOnTop = assetBundle.LoadAsset<Shader>("TextMeshPro Always On Top");
-        VignettePostProcess = assetBundle.LoadAsset<Shader>("VignettePostProcess");
+        TMPAlwaysOnTop = assetsBundle.LoadAsset<Shader>("TextMeshPro Always On Top");
+        VignettePostProcess = assetsBundle.LoadAsset<Shader>("Vignette");
         
         RemappableControls =
-            assetBundle.LoadAsset<GameObject>("Remappable Controls").GetComponent<RemappableControls>();
+            assetsBundle.LoadAsset<GameObject>("Remappable Controls").GetComponent<RemappableControls>();
 
-        SplashMaterial = assetBundle.LoadAsset<Material>("Splash");
-        DefaultRayMat = assetBundle.LoadAsset<Material>("Default Ray");
+        SplashMaterial = assetsBundle.LoadAsset<Material>("Splash");
+        DefaultRayMat = assetsBundle.LoadAsset<Material>("Default Ray");
 
-        GithubImage = assetBundle.LoadAsset<Sprite>("Github");
-        KofiImage = assetBundle.LoadAsset<Sprite>("Ko-Fi");
-        DiscordImage = assetBundle.LoadAsset<Sprite>("Discord");
-        WarningImage = assetBundle.LoadAsset<Sprite>("Warning");
-        SprintImage = assetBundle.LoadAsset<Sprite>("Aguy");
+        GithubImage = assetsBundle.LoadAsset<Sprite>("Github");
+        KofiImage = assetsBundle.LoadAsset<Sprite>("Ko-Fi");
+        DiscordImage = assetsBundle.LoadAsset<Sprite>("Discord");
+        WarningImage = assetsBundle.LoadAsset<Sprite>("Warning");
+        SprintImage = assetsBundle.LoadAsset<Sprite>("Aguy");
 
-        DoorLocked = assetBundle.LoadAsset<AudioClip>("doorlocked");
+        DoorLocked = assetsBundle.LoadAsset<AudioClip>("doorlocked");
 
         if (RemappableControls == null || RemappableControls.controls == null)
         {

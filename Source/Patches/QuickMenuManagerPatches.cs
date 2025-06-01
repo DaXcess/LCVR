@@ -1,5 +1,4 @@
 ﻿using HarmonyLib;
-using LCVR.Input;
 using LCVR.Player;
 
 namespace LCVR.Patches;
@@ -39,6 +38,8 @@ internal static class QuickMenuManagerPatches
     private static bool BeforeClosePauseMenu()
     {
         // Disallow during rebinding operation
-        return KeyRemapManager.Instance == null || !KeyRemapManager.Instance.IsRebinding;
+        // TODO: Check if this is needed with the new system
+        // return KeyRemapManager.Instance == null || !KeyRemapManager.Instance.IsRebinding;
+        return true;
     }
 }

@@ -14,7 +14,7 @@ internal static class Experiments
 {
     public static void RunExperiments()
     {
-        // ShowMeTheMoney(10000);
+        ShowMeTheMoney(10000);
         // SpawnShotgun();
         // SpawnBuyableItem<JetpackItem>("Jetpack");
         // SpawnBuyableItem<SprayPaintItem>("Spray paint");

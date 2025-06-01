@@ -18,6 +18,20 @@ public class RemappableControl
     public string controlName;
     public InputActionReference currentInput;
     public int bindingIndex = -1;
+
+    [SerializeField] private bool hasModifier = false;
+    [SerializeField] private int modifierValue;
+
+    public int? controlModifier
+    {
+        get => hasModifier ? modifierValue : null;
+        set
+        {
+            hasModifier = value.HasValue;
+            if (value.HasValue)
+                modifierValue = value.Value;
+        }
+    }
 }
 
 [Serializable]
@@ -59,7 +73,7 @@ public struct ControllerIcons
             var hand = path.Split('/')[0].TrimStart('{').TrimEnd('}');
             controlPath = Regex.Replace(string.Join("/", path.Split('/').Skip(1)), @"{(.*)}", "$1");
             
-            Logger.LogDebug(controlPath);
+            // Logger.LogDebug(controlPath);
             
             return (hand, controlPath) switch
             {

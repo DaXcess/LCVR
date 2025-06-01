@@ -1,6 +1,5 @@
 ﻿using HarmonyLib;
 using LCVR.Assets;
-using LCVR.Input;
 using LCVR.Physics.Interactions;
 using LCVR.UI;
 using Microsoft.MixedReality.Toolkit.Experimental.UI;
@@ -8,8 +7,8 @@ using System.Collections.Generic;
 using System.Linq;
 using LCVR.Physics.Interactions.Car;
 using LCVR.Rendering;
+using LCVR.UI.Environment;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.InputSystem.XR;
 using UnityEngine.Rendering;
@@ -41,8 +40,7 @@ public class VRSession : MonoBehaviour
     public VRHUD HUD { get; private set; }
 
     public Camera MainCamera { get; private set; }
-    public Camera UICamera { get; private set; }
-
+    
     public Rendering.VolumeManager VolumeManager { get; private set; }
     public CameraShake CameraShake { get; private set; }
     
@@ -54,12 +52,13 @@ public class VRSession : MonoBehaviour
 
     #endregion
 
+    private PauseMenuEnvironment pauseMenuEnvironment;
+
     private void Awake()
     {
         Instance = this;
 
         MainCamera = StartOfRound.Instance.activeCamera;
-        UICamera = GameObject.Find("UICamera").GetComponent<Camera>();
 
         if (InVR)
             InitializeVRSession();
@@ -126,37 +125,12 @@ public class VRSession : MonoBehaviour
 
         // Disable UI camera and promote FPV camera
         MainCamera.targetTexture = null;
-        UICamera.GetComponent<HDAdditionalCameraData>().xrRendering = false;
-        UICamera.stereoTargetEye = StereoTargetEyeMask.None;
-        UICamera.enabled = false;
-
         MainCamera.stereoTargetEye = StereoTargetEyeMask.Both;
         MainCamera.GetComponent<HDAdditionalCameraData>().xrRendering = true;
-
-        MainCamera.depth = UICamera.depth + 1;
         
         // Add camera shaking
         CameraShake = MainCamera.gameObject.AddComponent<CameraShake>();
-
-        // Setup Pause Menu Camera
-        var uiCameraAnchor = new GameObject("UI Camera Anchor")
-        {
-            transform =
-            {
-                position = new Vector3(0, -1000, 0)
-            }
-        };
-
-        UICamera.transform.SetParent(uiCameraAnchor.transform, false);
-        UICamera.cullingMask = -1;
-
-        uiCameraAnchor.AddComponent<VRPauseMenu>();
-
-        var uiCameraPoseDriver = UICamera.gameObject.AddComponent<TrackedPoseDriver>();
-        uiCameraPoseDriver.positionAction = Actions.Instance.HeadPosition;
-        uiCameraPoseDriver.rotationAction = Actions.Instance.HeadRotation;
-        uiCameraPoseDriver.trackingStateInput = new InputActionProperty(Actions.Instance.HeadTrackingState);
-
+        
         // Apply optimization configuration
         var hdCamera = MainCamera.GetComponent<HDAdditionalCameraData>();
 
@@ -257,6 +231,10 @@ public class VRSession : MonoBehaviour
         HUD = new GameObject("VR HUD").AddComponent<VRHUD>();
         HUD.TerminalKeyboard = terminalKeyboard;
 
+        // Setup Pause Menu Environment
+        pauseMenuEnvironment = Instantiate(AssetManager.PauseMenuEnvironment).GetComponent<PauseMenuEnvironment>();
+        pauseMenuEnvironment.transform.localPosition = Vector3.down * 1000;
+        
         // Initialize VR-Only interactions
         
         // Creates interactors for both monitor buttons, and also moves the buttons into a more accessible position
@@ -429,9 +407,7 @@ public class VRSession : MonoBehaviour
 
     public void OnPauseMenuOpened()
     {
-        // Make sure keyboard is closed when pause menu opens
-        HUD.MenuKeyboard.Close();
-        SwitchToUICamera();
+        SwitchToMenuCamera();
 
         if (customCameraEnabled)
             customCamera.enabled = false;
@@ -443,7 +419,6 @@ public class VRSession : MonoBehaviour
 
     public void OnPauseMenuClosed()
     {
-        HUD.MenuKeyboard.Close();
         SwitchToGameCamera();
 
         if (customCameraEnabled)
@@ -454,42 +429,20 @@ public class VRSession : MonoBehaviour
         LocalPlayer.RightHandInteractor.enabled = !LocalPlayer.PlayerController.isPlayerDead;
     }
 
-    private void SwitchToUICamera()
+    private void SwitchToMenuCamera()
     {
-        var hdUICamera = UICamera.GetComponent<HDAdditionalCameraData>();
-        var hdMainCamera = MainCamera.GetComponent<HDAdditionalCameraData>();
-
-        hdMainCamera.xrRendering = false;
-        MainCamera.stereoTargetEye = StereoTargetEyeMask.None;
-        MainCamera.depth = UICamera.depth - 1;
-        MainCamera.enabled = false;
-
-        hdUICamera.xrRendering = true;
-        UICamera.stereoTargetEye = StereoTargetEyeMask.Both;
-        UICamera.nearClipPlane = 0.01f;
-        UICamera.farClipPlane = 150f;
-        UICamera.enabled = true;
-        
         XRSettings.eyeTextureResolutionScale = 1.2f;
 
-        FindObjectsOfType<CanvasTransformFollow>().Do(follow => follow.ResetPosition(true));
+        MainCamera.enabled = false;
+        pauseMenuEnvironment.EnterEnvironment();
     }
 
     private void SwitchToGameCamera()
     {
-        var hdUICamera = UICamera.GetComponent<HDAdditionalCameraData>();
-        var hdMainCamera = MainCamera.GetComponent<HDAdditionalCameraData>();
-
-        hdUICamera.xrRendering = false;
-        UICamera.stereoTargetEye = StereoTargetEyeMask.None;
-        UICamera.enabled = false;
-
-        hdMainCamera.xrRendering = true;
-        MainCamera.stereoTargetEye = StereoTargetEyeMask.Both;
-        MainCamera.depth = UICamera.depth + 1;
-        MainCamera.enabled = true;
-
         XRSettings.eyeTextureResolutionScale = Plugin.Config.CameraResolution.Value;
+
+        MainCamera.enabled = true;
+        pauseMenuEnvironment.ExitEnvironment();
     }
 
     public static void VibrateController(XRNode hand, float duration, float amplitude)

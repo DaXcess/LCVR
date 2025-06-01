@@ -13,6 +13,8 @@ public class CameraShake : MonoBehaviour
 
     private void Update()
     {
+        transform.localRotation = Quaternion.identity;
+        
         if (shakeDuration == 0)
             return;
 
@@ -24,8 +26,10 @@ public class CameraShake : MonoBehaviour
 
         shakeDuration -= Time.deltaTime;
 
-        if (shakeDuration <= 0)
+        if (shakeDuration <= 0) {
             shakeDuration = 0;
+            transform.localPosition = Vector3.zero;
+        }
     }
 
     private void StartShake(float duration, float intensity)

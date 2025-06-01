@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Reflection.Emit;
 using BepInEx.Configuration;
 using LCVR.Assets;
-using LCVR.Input;
-using UnityEngine;
 using UnityEngine.InputSystem;
 using static HarmonyLib.AccessTools;
 
@@ -47,45 +45,23 @@ public class InputPatches
     }
     
     /// <summary>
-    /// Use custom rebind logic when we're trying to rebind a key
+    /// Disable vanilla rebinding as we're rolling our own logic
     /// </summary>
     [HarmonyPatch(typeof(IngamePlayerSettings), nameof(IngamePlayerSettings.RebindKey))]
     [HarmonyPrefix]
     private static bool OnRebindKey(InputActionReference rebindableAction, SettingsOption optionUI, int rebindIndex)
     {
-        KeyRemapManager.Instance.StartRebind(rebindableAction, optionUI, rebindIndex);
         return false;
     }
 
     /// <summary>
-    /// Use custom rebinding reset logic when the reset binding button is pressed
+    /// Prevent resetting vanilla keybinds from VR (why would you even want to do that in the first place?)
     /// </summary>
     [HarmonyPatch(typeof(IngamePlayerSettings), nameof(IngamePlayerSettings.ResetAllKeybinds))]
     [HarmonyPrefix]
     private static bool OnResetBindings()
     {
-        KeyRemapManager.Instance.ResetBindings();
         return false;
-    }
-
-    /// <summary>
-    /// Inject VR remap manager
-    /// </summary>
-    [HarmonyPatch(typeof(KepRemapPanel), nameof(KepRemapPanel.LoadKeybindsUI))]
-    [HarmonyPostfix]
-    private static void OnLoadKeybinds(KepRemapPanel __instance)
-    {
-        __instance.gameObject.AddComponent<KeyRemapManager>();
-    }
-
-    /// <summary>
-    /// Unload VR remap manager
-    /// </summary>
-    [HarmonyPatch(typeof(KepRemapPanel), nameof(KepRemapPanel.UnloadKeybindsUI))]
-    [HarmonyPostfix]
-    private static void OnUnloadKeybinds(KepRemapPanel __instance)
-    {
-        Object.Destroy(KeyRemapManager.Instance);
     }
 
     /// <summary>
