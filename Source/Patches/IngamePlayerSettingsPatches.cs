@@ -18,7 +18,8 @@ internal static class IngamePlayerSettingsPatches
         return new CodeMatcher(instructions)
             .MatchForward(false, new CodeMatch(OpCodes.Stloc_3))
             .Advance(-1)
-            .RemoveInstructions(16)
+            .SetOpcodeAndAdvance(OpCodes.Nop)
+            .RemoveInstructions(15)
             .InstructionEnumeration();
     }
 }
