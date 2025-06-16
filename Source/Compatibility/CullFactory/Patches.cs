@@ -6,8 +6,8 @@ using CullFactory.Data;
 using CullFactory.Extenders;
 using GameNetcodeStuff;
 using HarmonyLib;
+using LCVR.Managers;
 using LCVR.Patches;
-using LCVR.Player;
 using UnityEngine;
 using static HarmonyLib.AccessTools;
 

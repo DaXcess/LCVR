@@ -5,6 +5,7 @@ using LCVR.Patches;
 using LCVR.Player;
 using System.Collections;
 using System.Collections.Generic;
+using LCVR.Managers;
 using UnityEngine;
 
 namespace LCVR.Physics.Interactions;

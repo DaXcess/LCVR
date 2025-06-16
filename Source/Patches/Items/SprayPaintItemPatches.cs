@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection.Emit;
 using HarmonyLib;
+using LCVR.Managers;
 using LCVR.Player;
 using UnityEngine;
 using static HarmonyLib.AccessTools;

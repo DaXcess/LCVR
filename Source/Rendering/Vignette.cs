@@ -31,7 +31,7 @@ namespace LCVR.Rendering
 
         public override void Render(CommandBuffer cmd, HDCamera camera, RTHandle source, RTHandle destination)
         {
-            if (m_Material == null)
+            if (!m_Material)
                 return;
             
             m_Material.SetFloat(VignetteIntensity, intensity.value);

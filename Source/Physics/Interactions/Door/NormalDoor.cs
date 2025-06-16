@@ -1,5 +1,6 @@
 using HarmonyLib;
 using LCVR.Assets;
+using LCVR.Managers;
 using LCVR.Patches;
 using LCVR.Player;
 using Unity.Netcode;

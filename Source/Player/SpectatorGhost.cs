@@ -17,6 +17,10 @@ public class SpectatorGhost : MonoBehaviour
     [SerializeField] private CanvasGroup usernameAlpha;
 
     private Transform lastSyncedPhysicsParent;
+    
+    public bool ParentedToShip { get; private set; }
+    public bool InHangarShipRoom { get; private set; }
+    public bool InInterior { get; private set; }
 
     private void Start()
     {
@@ -59,7 +63,11 @@ public class SpectatorGhost : MonoBehaviour
 
     public void UpdateRig(SpectatorRig rig)
     {
-        var parent = player.PlayerController.physicsParent ?? (rig.ParentedToShip
+        ParentedToShip = rig.ParentedToShip;
+        InHangarShipRoom = rig.InHangarShipRoom;
+        InInterior = rig.InInterior;
+
+        var parent = player.PlayerController.physicsParent ?? (ParentedToShip
             ? StartOfRound.Instance.elevatorTransform
             : StartOfRound.Instance.playersContainer);
         

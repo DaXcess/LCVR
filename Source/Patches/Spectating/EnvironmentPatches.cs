@@ -68,6 +68,19 @@ internal static class SpectatorEnvironmentPatches
     }
 
     /// <summary>
+    /// Prevent dead players from collapsing the small bridge on Adamance
+    /// </summary>
+    [HarmonyPatch(typeof(BridgeTriggerType2), nameof(BridgeTriggerType2.OnTriggerEnter))]
+    [HarmonyPrefix]
+    private static bool TinyBridgeOnCollide()
+    {
+        if (!StartOfRound.Instance || !StartOfRound.Instance.localPlayerController)
+            return true;
+        
+        return !StartOfRound.Instance.localPlayerController.isPlayerDead;
+    }
+
+    /// <summary>
     /// Prevent interact triggers from kicking the local player off a ladder when dead
     /// </summary>
     [HarmonyPatch(typeof(InteractTrigger), nameof(InteractTrigger.Update))]

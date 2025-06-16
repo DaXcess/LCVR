@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection.Emit;
 using GameNetcodeStuff;
 using HarmonyLib;
@@ -40,7 +42,8 @@ internal static class SpectatorEnemyPatches
     {
         var networkManager = __instance.NetworkManager;
 
-        if ((int)__instance.__rpc_exec_stage != 1 && (networkManager.IsClient || networkManager.IsHost) && StartOfRound.Instance.localPlayerController.isPlayerDead)
+        if ((int)__instance.__rpc_exec_stage != 1 && (networkManager.IsClient || networkManager.IsHost) &&
+            StartOfRound.Instance.localPlayerController.isPlayerDead)
         {
             __instance.triggeredFall = false;
             return false;
@@ -54,18 +57,22 @@ internal static class SpectatorEnemyPatches
     /// </summary>
     [HarmonyPatch(typeof(DressGirlAI), nameof(DressGirlAI.Update))]
     [HarmonyTranspiler]
-    private static IEnumerable<CodeInstruction> DressGirlTargetDeadPlayerFix(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+    private static IEnumerable<CodeInstruction> DressGirlTargetDeadPlayerFix(IEnumerable<CodeInstruction> instructions,
+        ILGenerator generator)
     {
         return new CodeMatcher(instructions, generator)
-            .MatchForward(false, new CodeMatch(OpCodes.Call, PropertyGetter(typeof(NetworkBehaviour), nameof(NetworkBehaviour.IsServer))))
+            .MatchForward(false,
+                new CodeMatch(OpCodes.Call,
+                    PropertyGetter(typeof(NetworkBehaviour), nameof(NetworkBehaviour.IsServer))))
             .Advance(6)
             .CreateLabel(out var label)
             .Advance(-1)
-            .SetInstructionAndAdvance(new(OpCodes.Brfalse, label))
+            .SetInstructionAndAdvance(new CodeInstruction(OpCodes.Brfalse, label))
             .InsertAndAdvance([
-                new(OpCodes.Ldarg_0),
-                new(OpCodes.Ldfld, Field(typeof(DressGirlAI), nameof(DressGirlAI.hauntingPlayer))),
-                new(OpCodes.Ldfld, Field(typeof(PlayerControllerB), nameof(PlayerControllerB.isPlayerDead))),
+                new CodeInstruction(OpCodes.Ldarg_0),
+                new CodeInstruction(OpCodes.Ldfld, Field(typeof(DressGirlAI), nameof(DressGirlAI.hauntingPlayer))),
+                new CodeInstruction(OpCodes.Ldfld,
+                    Field(typeof(PlayerControllerB), nameof(PlayerControllerB.isPlayerDead))),
             ])
             .InsertBranch(OpCodes.Brfalse, 21)
             .InstructionEnumeration();
@@ -101,7 +108,7 @@ internal static class SpectatorEnemyPatches
     }
 
     private static readonly int AlphaCutoff = Shader.PropertyToID("_AlphaCutoff");
-    
+
     /// <summary>
     /// Make the clay surgeon always visible if we're dead
     /// </summary>
@@ -111,5 +118,35 @@ internal static class SpectatorEnemyPatches
     {
         if (StartOfRound.Instance.localPlayerController.isPlayerDead)
             __instance.thisMaterial.SetFloat(AlphaCutoff, 0);
+    }
+
+    /// <summary>
+    /// Make the locust bees ignore dead players
+    /// </summary>
+    [HarmonyPatch(typeof(DocileLocustBeesAI), nameof(DocileLocustBeesAI.DoAIInterval))]
+    [HarmonyDebug]
+    [HarmonyTranspiler]
+    private static IEnumerable<CodeInstruction> LocustBeesIgnoreDeadPlayers(IEnumerable<CodeInstruction> instructions)
+    {
+        return new CodeMatcher(instructions)
+            .MatchForward(false,
+                new CodeMatch(OpCodes.Call,
+                    Method(typeof(UnityEngine.Physics), nameof(UnityEngine.Physics.CheckSphere),
+                        [typeof(Vector3), typeof(float), typeof(int), typeof(QueryTriggerInteraction)])))
+            .SetOperandAndAdvance(((Func<Vector3, float, int, QueryTriggerInteraction, bool>)CheckCollision).Method)
+            .InstructionEnumeration();
+
+        static bool CheckCollision(Vector3 position, float radius, int layerMask,
+            QueryTriggerInteraction queryTriggerInteraction)
+        {
+            var colliders = new Collider[8];
+            var size = UnityEngine.Physics.OverlapSphereNonAlloc(position, radius, colliders, layerMask,
+                queryTriggerInteraction);
+
+            var everyoneDead =
+                colliders[..size].All(collider => collider.GetComponent<PlayerControllerB>().isPlayerDead);
+
+            return !everyoneDead;
+        }
     }
 }

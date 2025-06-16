@@ -5,8 +5,10 @@ using System.Text.RegularExpressions;
 using HarmonyLib;
 using JetBrains.Annotations;
 using LCVR.Assets;
+using LCVR.Managers;
 using LCVR.Patches;
 using LCVR.Player;
+using LCVR.UI;
 using Unity.Netcode;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -22,6 +24,8 @@ public class GenericDoor : MonoBehaviour, VRInteractable
         ["FancyDoorMapModel"] = (new Vector3(-0.29f, 0.2836f, -0.055f), Vector3.zero, new Vector3(1, 0.09f, 0.155f)),
         ["FancyDoorMapModelDarkWoodFrame"] =
             (new Vector3(-0.29f, 0.2836f, -0.055f), Vector3.zero, new Vector3(1, 0.09f, 0.155f)),
+        ["FancyDoorMapModelGlass"] =
+            (new Vector3(-0.27f, 0.248f, -0.0279f), Vector3.zero, new Vector3(0.9f, 0.15f, 0.03f)),
         ["YellowMineDoor"] = (new Vector3(-0.04f, 0.22f, -0.05f), Vector3.zero, new Vector3(1, 0.1273f, 0.13f))
     };
 
@@ -29,7 +33,7 @@ public class GenericDoor : MonoBehaviour, VRInteractable
     private float lastInteraction;
 
     internal bool wasOpened;
-    
+
     public InteractableFlags Flags => InteractableFlags.BothHands;
 
     /// <summary>
@@ -75,7 +79,20 @@ public class GenericDoor : MonoBehaviour, VRInteractable
                 lockpicker.PlaceOnDoor(door, lockpicker.placeOnLockPicker1);
             }
             else
+            {
+                var cam = VRSession.Instance.MainCamera.transform;
+                var fwd = cam.position - transform.position;
+                var normalized = new Vector3(fwd.x, 0, fwd.z).normalized;
+                var position = new Vector3(transform.position.x, cam.position.y, transform.position.z) +
+                               normalized * 0.1f;
+
+                var popup = PopupText.Create(transform,
+                    normalized * 0.1f + (cam.position.y - transform.position.y) * Vector3.up,
+                    "<color=#FF1A00>DOOR LOCKED!");
+                popup.transform.rotation = Quaternion.LookRotation((position - cam.position).normalized);
+
                 door.doorLockSFX.PlayOneShot(AssetManager.DoorLocked);
+            }
 
             return true;
         }
@@ -92,7 +109,7 @@ public class GenericDoor : MonoBehaviour, VRInteractable
     private IEnumerator delayedToggleDoor(float wait = 0f)
     {
         yield return new WaitForSeconds(wait);
-        
+
         ToggleDoor();
     }
 
@@ -101,9 +118,17 @@ public class GenericDoor : MonoBehaviour, VRInteractable
         door.OpenOrCloseDoor(VRSession.Instance.LocalPlayer.PlayerController);
     }
 
-    public void OnButtonRelease(VRInteractor _) { }
-    public void OnColliderEnter(VRInteractor _) { }
-    public void OnColliderExit(VRInteractor _) { }
+    public void OnButtonRelease(VRInteractor _)
+    {
+    }
+
+    public void OnColliderEnter(VRInteractor _)
+    {
+    }
+
+    public void OnColliderExit(VRInteractor _)
+    {
+    }
 
     /// <summary>
     /// Registers a new VR interactable door
@@ -113,7 +138,8 @@ public class GenericDoor : MonoBehaviour, VRInteractable
     /// <param name="rotation">The rotation offset for the door handle</param>
     /// <param name="scale">The scale for the door handle</param>
     [PublicAPI]
-    public static void RegisterDoor(NetworkObject networkObject, Vector3? position = null, Vector3? rotation = null, Vector3? scale = null)
+    public static void RegisterDoor(NetworkObject networkObject, Vector3? position = null, Vector3? rotation = null,
+        Vector3? scale = null)
     {
         if (networkObject == null)
             throw new ArgumentNullException(nameof(networkObject));
@@ -133,7 +159,8 @@ public class GenericDoor : MonoBehaviour, VRInteractable
     /// <param name="rotation">The rotation offset for the door handle</param>
     /// <param name="scale">The scale for the door handle</param>
     [PublicAPI]
-    public static void RegisterDoor(string networkObjectName, Vector3? position = null, Vector3? rotation = null, Vector3? scale = null)
+    public static void RegisterDoor(string networkObjectName, Vector3? position = null, Vector3? rotation = null,
+        Vector3? scale = null)
     {
         if (string.IsNullOrEmpty(networkObjectName))
             throw new ArgumentNullException(nameof(networkObjectName));
@@ -154,6 +181,7 @@ public class GenericDoor : MonoBehaviour, VRInteractable
 internal class LockPickerInteractable : MonoBehaviour, VRInteractable
 {
     private LockPicker lockPicker;
+    private PopupText timerText;
 
     public InteractableFlags Flags => InteractableFlags.RightHand;
 
@@ -162,9 +190,39 @@ internal class LockPickerInteractable : MonoBehaviour, VRInteractable
         lockPicker = GetComponentInParent<LockPicker>();
     }
 
+    private void Update()
+    {
+        if (!lockPicker.isPickingLock || !lockPicker.currentlyPickingDoor)
+            return;
+
+        var text = $"{Mathf.RoundToInt(lockPicker.currentlyPickingDoor.lockPickTimeLeft)}";
+
+        if (!timerText)
+        {
+            timerText = PopupText.Create(lockPicker.transform, Vector3.up * 0.5f, text);
+            timerText.transform.localScale *= 2;
+            timerText.transform.rotation = lockPicker.currentlyPickingDoor.lockPickerPosition.rotation *
+                                           Quaternion.Euler(0, lockPicker.placeOnLockPicker1 ? -90 : 90, 180);
+        }
+
+        timerText.UpdateText(text);
+    }
+
+    internal void OnFinishPickingLock()
+    {
+        if (!timerText)
+            return;
+
+        timerText.UpdateText(!lockPicker.currentlyPickingDoor || lockPicker.currentlyPickingDoor.isLocked
+            ? "<color=#FF1A00>LOCKPICK\nCANCELLED!"
+            : "LOCKPICK\nCOMPLETE!");
+        timerText = null!;
+    }
+
     public bool OnButtonPress(VRInteractor interactor)
     {
-        if (!lockPicker.isOnDoor || lockPicker.currentlyPickingDoor.maxTimeLeft - lockPicker.currentlyPickingDoor.lockPickTimeLeft < 1f)
+        if (!lockPicker.isOnDoor ||
+            lockPicker.currentlyPickingDoor.maxTimeLeft - lockPicker.currentlyPickingDoor.lockPickTimeLeft < 1f)
             return true;
 
         VRSession.Instance.LocalPlayer.PrimaryController.GrabItem(lockPicker);
@@ -172,9 +230,17 @@ internal class LockPickerInteractable : MonoBehaviour, VRInteractable
         return true;
     }
 
-    public void OnButtonRelease(VRInteractor _) { }
-    public void OnColliderEnter(VRInteractor _) { }
-    public void OnColliderExit(VRInteractor _) { }
+    public void OnButtonRelease(VRInteractor _)
+    {
+    }
+
+    public void OnColliderEnter(VRInteractor _)
+    {
+    }
+
+    public void OnColliderExit(VRInteractor _)
+    {
+    }
 }
 
 [LCVRPatch]
@@ -192,7 +258,7 @@ internal static class DoorPatches
         {
             var rx = new Regex("\\(.+\\)");
             var name = rx.Replace(__instance.NetworkObject.name, "").TrimEnd();
-            
+
             if (!GenericDoor.RegisteredDoorHandles.TryGetValue(name, out offsets))
                 return;
         }
@@ -247,10 +313,15 @@ internal static class LockerPickerPatches
     /// Change object name so that VRController allows picking up the item when removed from a door
     /// </summary>
     [HarmonyPatch(typeof(LockPicker), nameof(LockPicker.RetractClaws))]
-    [HarmonyPostfix]
+    [HarmonyPrefix]
     private static void OnRemovedFromDoor(LockPicker __instance)
     {
         __instance.gameObject.name = "LockPicker";
+
+        if (__instance.GetComponentInChildren<LockPickerInteractable>() is not { } picker)
+            return;
+
+        picker.OnFinishPickingLock();
     }
 
     /// <summary>
@@ -261,7 +332,8 @@ internal static class LockerPickerPatches
     private static bool OnUseItem()
     {
         // Use `IsHovering` to make sure modded doors without interaction support still allow lock picker placement
-        return Plugin.Config.DisableDoorInteraction.Value || VRSession.Instance.LocalPlayer.PrimaryController.IsHovering;
+        return Plugin.Config.DisableDoorInteraction.Value ||
+               VRSession.Instance.LocalPlayer.PrimaryController.IsHovering;
     }
 }
 
@@ -277,6 +349,7 @@ internal static class KeyPatches
     private static bool OnUseItem()
     {
         // Use `IsHovering` to make sure modded doors without interaction support still allow key usage
-        return Plugin.Config.DisableDoorInteraction.Value || VRSession.Instance.LocalPlayer.PrimaryController.IsHovering;
+        return Plugin.Config.DisableDoorInteraction.Value ||
+               VRSession.Instance.LocalPlayer.PrimaryController.IsHovering;
     }
 }

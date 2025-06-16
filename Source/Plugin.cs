@@ -39,7 +39,7 @@ public class Plugin : BaseUnityPlugin
 
     private readonly string[] GAME_ASSEMBLY_HASHES =
     [
-        "67C2829F17866026C327CE578EFD50ED46B34D38DDB86290BE33D88A7E91D419", // V70
+        "486013AE3C5092F424A36690D4E5590D0ABD392C602D3E659788B47C64B5C2FA", // V72
     ];
 
     public new static Config Config { get; private set; }
@@ -118,7 +118,7 @@ public class Plugin : BaseUnityPlugin
             {
                 Logger.LogError("Error: Unsupported game version, or corrupted game detected!");
                 Logger.LogError("This usually happens if Lethal Company got updated recently.");
-                Logger.LogWarning(
+                Logger.LogDebug(
                     $"To bypass this check, add the following flag to your launch options in Steam: {SKIP_CHECKSUM_VAR}");
 
                 return;
@@ -307,8 +307,6 @@ public class Plugin : BaseUnityPlugin
 
         settings.lodBias = new FloatScalableSetting([Config.LODBias.Value, Config.LODBias.Value, Config.LODBias.Value],
             ScalableSettingSchemaId.With3Levels);
-
-        settings.colorBufferFormat = RenderPipelineSettings.ColorBufferFormat.R16G16B16A16;
 
         asset.currentPlatformRenderPipelineSettings = settings;
 

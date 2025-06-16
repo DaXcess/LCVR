@@ -138,10 +138,6 @@ public class Config(string assemblyPath, ConfigFile file)
             "The LOD bias is a multiplier that dictates when an LOD must reduce their quality. Higher values means that more detailed LODs will persist for longer.",
             new AcceptableValueRange<float>(1, 5)));
 
-    public ConfigEntry<bool> SpectatorLightRemovesVolumetrics { get; } = file.Bind("Rendering",
-        "SpectatorLightRemovesVolumetrics", false,
-        "When spectating, also disable all volumetrics (fog) while the fullbright lighting is enabled for more visibility.");
-
     public ConfigEntry<float> MirrorXOffset { get; } = file.Bind("Rendering", "MirrorXOffset", 0f,
         new ConfigDescription(
             "The X offset that is added to the XR Mirror View shader. Do not touch if you don't know what this means.",
@@ -185,6 +181,9 @@ public class Config(string assemblyPath, ConfigFile file)
     public ConfigEntry<bool> DisableDoorInteraction { get; } = file.Bind("Interaction", "DisableDoorInteraction", false,
         "Disable needing to physically open and close doors by interacting with the door handles. Will also disable the need to use keys and lockpickers physically on the door handle.");
 
+    public ConfigEntry<bool> DisableDrawerInteraction { get; } = file.Bind("Interaction", "DisableDrawerInteraction",
+        false, "Disable needing to physically open and close drawers and cabinets by interacting with their handles.");
+    
     public ConfigEntry<bool> DisableHangarLeverInteraction { get; } = file.Bind("Interaction",
         "DisableHangarLeverInteraction", false,
         "Disable needing to physically pull the lever for the big doors on Artiface");
@@ -234,7 +233,7 @@ public class Config(string assemblyPath, ConfigFile file)
         file.Bind("Internal", "OpenXRRuntimeFile", "", "FOR INTERNAL USE ONLY, DO NOT EDIT");
 
     public ConfigEntry<bool> DisableSettingsButton { get; } = file.Bind("Internal", "DisableSettingsButton", false,
-        "Disables the settings button on the main menu screen");
+        "Disables the settings button on the main menu screen on flatscreen");
 
     public void SerializeToES3()
     {

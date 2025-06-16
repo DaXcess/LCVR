@@ -16,11 +16,15 @@ internal static class AssetManager
     public static GameObject SpectatorLight;
     public static GameObject SpectatorGhost;
     public static GameObject SteeringWheelPoints;
+    public static GameObject PopupText;
+    public static GameObject SpectatingMenu;
     
     public static GameObject InitMenuEnvironment;
     public static GameObject MainMenuEnvironment;
     public static GameObject PauseMenuEnvironment;
 
+    public static GameObject SettingsPanel;
+    
     public static Material SplashMaterial;
     public static Material DefaultRayMat;
 
@@ -61,10 +65,14 @@ internal static class AssetManager
         SpectatorLight = assetsBundle.LoadAsset<GameObject>("Spectator Light");
         SpectatorGhost = assetsBundle.LoadAsset<GameObject>("Spectator Ghost");
         SteeringWheelPoints = assetsBundle.LoadAsset<GameObject>("SnapPointContainer");
+        PopupText = assetsBundle.LoadAsset<GameObject>("Popup Text");
+        SpectatingMenu = assetsBundle.LoadAsset<GameObject>("Spectating Menu");
         
         InitMenuEnvironment = assetsBundle.LoadAsset<GameObject>("Init Menu Environment");
         MainMenuEnvironment = assetsBundle.LoadAsset<GameObject>("Main Menu Environment");
         PauseMenuEnvironment = assetsBundle.LoadAsset<GameObject>("Pause Menu Environment");
+
+        SettingsPanel = assetsBundle.LoadAsset<GameObject>("SettingsPanel");
         
         VRActions = assetsBundle.LoadAsset<InputActionAsset>("VRActions");
         DefaultXRActions = assetsBundle.LoadAsset<InputActionAsset>("DefaultXRActions");

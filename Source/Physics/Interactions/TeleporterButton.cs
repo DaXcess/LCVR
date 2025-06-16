@@ -3,6 +3,7 @@ using LCVR.Assets;
 using LCVR.Patches;
 using LCVR.Player;
 using System.Collections;
+using LCVR.Managers;
 using TMPro;
 using UnityEngine;
 

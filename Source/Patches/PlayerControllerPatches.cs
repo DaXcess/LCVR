@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
+using LCVR.Managers;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.XR;

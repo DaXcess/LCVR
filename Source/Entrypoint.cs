@@ -1,8 +1,8 @@
 ﻿using HarmonyLib;
 using UnityEngine;
 using System.Collections;
+using LCVR.Managers;
 using LCVR.Patches;
-using LCVR.Player;
 
 namespace LCVR;
 

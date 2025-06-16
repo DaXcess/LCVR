@@ -29,8 +29,6 @@ public class BaseMenuEnvironment : MonoBehaviour
                 break;
 
             case MenuScene.PauseMenu:
-                // TODO: very very very todo
-                // Comment from a few months later: why was this very todo?
                 HijackCanvas(GameObject.Find("Systems/UI/Canvas").GetComponent<Canvas>(),
                     GameObject.Find("Systems/UI/UICamera").GetComponent<Camera>());
                 break;

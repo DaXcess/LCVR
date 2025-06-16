@@ -1,7 +1,5 @@
 ﻿using HarmonyLib;
-using LCVR.Player;
-using System.Collections.Generic;
-using System.Reflection.Emit;
+using LCVR.UI;
 using UnityEngine;
 
 namespace LCVR.Patches.Items;
@@ -20,27 +18,27 @@ internal static class ShotgunItemPatches
         if (!heldByPlayer)
             return true;
 
-        var rayOrigin = VRSession.Instance.LocalPlayer.PrimaryController.InteractOrigin;
-        __instance.ShootGun(rayOrigin.position, rayOrigin.forward);
+        var position = __instance.shotgunRayPoint.TransformPoint(0, -0.0807f, 3.0816f);
+        var forward = __instance.shotgunRayPoint.forward;
+        
+        __instance.ShootGun(position, forward);
         __instance.localClientSendingShootGunRPC = true;
-        __instance.ShootGunServerRpc(rayOrigin.position, rayOrigin.forward);
+        __instance.ShootGunServerRpc(position, forward);
 
         return false;
     }
 
     /// <summary>
-    /// Allows the player to shoot themselves in VR
+    /// Display a popup informing the player whether safety is on or not
     /// </summary>
-    [HarmonyPatch(typeof(ShotgunItem), nameof(ShotgunItem.ShootGun))]
-    [HarmonyTranspiler]
-    private static IEnumerable<CodeInstruction> KurtCobainTranspiler(IEnumerable<CodeInstruction> instructions)
+    [HarmonyPatch(typeof(ShotgunItem), nameof(ShotgunItem.SetSafetyControlTip))]
+    [HarmonyPostfix]
+    private static void DisplaySafetyPatch(ShotgunItem __instance)
     {
-        return new CodeMatcher(instructions)
-            .MatchForward(false,
-                new CodeMatch(OpCodes.Callvirt,
-                    AccessTools.Method(typeof(Animator), nameof(Animator.SetTrigger), [typeof(string)])))
-            .Advance(1)
-            .SetOpcodeAndAdvance(OpCodes.Ldc_I4_0)
-            .InstructionEnumeration();
+        if (!__instance.IsOwner)
+            return;
+
+        PopupText.Create(__instance.transform, Vector3.up * 0.25f, $"SAFETY: {(__instance.safetyOn ? "ON" : "OFF")}",
+            1.5f);
     }
 }

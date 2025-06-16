@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using LCVR.Assets;
+using LCVR.Managers;
 using LCVR.Patches;
-using LCVR.Player;
 using Microsoft.MixedReality.Toolkit.Experimental.UI;
 using TMPro;
 using UnityEngine;

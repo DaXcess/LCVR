@@ -3,6 +3,7 @@ using LCVR.Networking;
 using LCVR.Player;
 using System.Collections;
 using System.IO;
+using LCVR.Managers;
 using UnityEngine;
 
 namespace LCVR.Physics.Interactions;

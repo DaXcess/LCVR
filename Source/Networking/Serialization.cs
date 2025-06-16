@@ -15,7 +15,7 @@ namespace LCVR.Networking;
 /// It supports most basic primitive types (numbers, bools, strings), Vector3's, Quaternions, and any other class
 /// annotated with the [Serialize] attribute.
 ///
-/// Arrays of any supported type are also supported (max num of items is 2^31)
+/// Arrays of any supported type are also automatically supported (max num of items is 4096)
 /// </summary>
 public static class Serialization
 {

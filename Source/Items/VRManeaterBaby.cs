@@ -1,6 +1,6 @@
 using System.Collections;
 using LCVR.Input;
-using LCVR.Player;
+using LCVR.Managers;
 using UnityEngine;
 
 namespace LCVR.Items;

@@ -6,6 +6,7 @@ using Microsoft.MixedReality.Toolkit.Experimental.UI;
 using System.Collections.Generic;
 using System.Linq;
 using LCVR.Physics.Interactions.Car;
+using LCVR.Player;
 using LCVR.Rendering;
 using LCVR.UI.Environment;
 using UnityEngine;
@@ -15,7 +16,7 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.XR;
 
-namespace LCVR.Player;
+namespace LCVR.Managers;
 
 public class VRSession : MonoBehaviour
 {
@@ -49,7 +50,8 @@ public class VRSession : MonoBehaviour
     public MuffleManager MuffleManager { get; private set; }
     public Muffler LocalMuffler { get; private set; }
     public Face Face { get; private set; }
-
+    public SpectatingManager SpectateManager { get; private set; }
+    
     #endregion
 
     private PauseMenuEnvironment pauseMenuEnvironment;
@@ -305,6 +307,10 @@ public class VRSession : MonoBehaviour
             VRController.DisableInteractTrigger("DoorInteractable");
             VRController.DisableInteractTrigger("LockPickerInteractable");
         }
+        
+        // Closets, drawers, cabinets, lockers
+        if (!Plugin.Config.DisableDrawerInteraction.Value)
+            VRController.DisableInteractTrigger("DrawerInteractable");
 
         // Hangar Lever
         if (!Plugin.Config.DisableHangarLeverInteraction.Value)
@@ -346,6 +352,9 @@ public class VRSession : MonoBehaviour
 #if DEBUG
         Experiments.Experiments.RunExperiments();
 #endif
+        
+        // Spectating
+        SpectateManager = gameObject.AddComponent<SpectatingManager>();
 
         // Misc
         VolumeManager = Instantiate(AssetManager.VolumeManager, transform).GetComponent<Rendering.VolumeManager>();
@@ -392,7 +401,7 @@ public class VRSession : MonoBehaviour
     {
         HUD.TerminalKeyboard.PresentKeyboard();
 
-        LocalPlayer.EnableInteractorVisuals();
+        LocalPlayer.EnableUIInteractors();
         LocalPlayer.PrimaryController.ShowDebugInteractorVisual(false);
     }
 
@@ -401,7 +410,7 @@ public class VRSession : MonoBehaviour
         if (HUD.TerminalKeyboard.isActiveAndEnabled)
             HUD.TerminalKeyboard.Close();
 
-        LocalPlayer.EnableInteractorVisuals(false);
+        LocalPlayer.EnableUIInteractors(false);
         LocalPlayer.PrimaryController.ShowDebugInteractorVisual();
     }
 

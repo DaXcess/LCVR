@@ -9,6 +9,7 @@ using GameNetcodeStuff;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.Animations.Rigging;
 using System.Linq;
+using LCVR.Managers;
 using Unity.XR.CoreUtils;
 using Rig = LCVR.Networking.Rig;
 
@@ -118,12 +119,12 @@ public class VRPlayer : MonoBehaviour
         // Un-parent camera container
         head = new GameObject("HMD").transform;
         head.parent = xrOrigin;
-        
+
         mainCamera.transform.parent = head;
         mainCamera.transform.localPosition = Vector3.zero;
         mainCamera.transform.localRotation = Quaternion.identity;
         mainCamera.gameObject.tag = "MainCamera";
-        
+
         xrOrigin.localPosition = Vector3.zero;
         xrOrigin.localRotation = Quaternion.Euler(0, 0, 0);
         xrOrigin.localScale = Vector3.one * SCALE_FACTOR;
@@ -178,9 +179,11 @@ public class VRPlayer : MonoBehaviour
 
         // Add ray interactors for VR keyboard
         leftControllerRayInteractor =
-            new GameObject("Left Ray Interactor").CreateInteractorController(Utils.Hand.Left, false, false);
+            new GameObject("Left Ray Interactor").CreateInteractorController(Utils.Hand.Left, false, false,
+                rayEnabled: false);
         rightControllerRayInteractor =
-            new GameObject("Right Ray Interactor").CreateInteractorController(Utils.Hand.Right, false, false);
+            new GameObject("Right Ray Interactor").CreateInteractorController(Utils.Hand.Right, false, false,
+                rayEnabled: false);
 
         leftControllerRayInteractor.transform.SetParent(leftController.transform, false);
         rightControllerRayInteractor.transform.SetParent(rightController.transform, false);
@@ -356,7 +359,17 @@ public class VRPlayer : MonoBehaviour
             positionOffset = Vector3.zero,
             rotationOffset = Vector3.zero
         };
+        
+        // Set up XR Poke Interactor on the right hand finger
 
+        var fingerEnd = Bones.LocalRightHand.Find("finger2.R/finger2.R.001/finger2.R.001_end");
+        var fingerTip = new GameObject("finger2.R.001_tip")
+            { transform = { parent = fingerEnd, localPosition = new Vector3(0.00381f, 0.0179f, 0) } };
+
+        var poke = fingerTip.AddComponent<XRPokeInteractor>();
+        poke.attachTransform = fingerTip.transform;
+        poke.enableUIInteraction = true;
+        
         // This one is pretty hit or miss, sometimes y needs to be -0.2f, other times it needs to be -2.25f
         RigTrackerLocal.headBodyPositionOffset = new Vector3(0, -.2f, 0);
 
@@ -604,13 +617,17 @@ public class VRPlayer : MonoBehaviour
         // Apply crouch offset (don't offset if roomscale)
         crouchOffset = Mathf.Lerp(crouchOffset, !IsRoomCrouching && PlayerController.isCrouching ? -1 : 0, 0.2f);
 
-        // Apply car animation offset
+        // Apply car/chair animation offset
         var carOffset = PlayerController.inVehicleAnimation ? -0.5f : 0f;
+        var sofaOffset = PlayerController.currentTriggerInAnimationWith?.animationString == "SA_SitOnCouch" ? -1.1f : 0;
+        var electricChairOffset =
+            PlayerController.currentTriggerInAnimationWith?.animationString == "SA_SitOnElectricChair" ? -0.8f : 0;
+        var animationHeightOffset = carOffset + sofaOffset + electricChairOffset;
 
         // Apply height and rotation offsets
         xrOrigin.localPosition += new Vector3(0,
                                       cameraFloorOffset + crouchOffset - PlayerController.sinkingValue * 2.5f +
-                                      carOffset, 0) *
+                                      animationHeightOffset, 0) *
                                   transform.localScale.y;
         xrOrigin.localRotation = rotationOffset;
 
@@ -690,6 +707,8 @@ public class VRPlayer : MonoBehaviour
                     RightHandRotation = rightController.transform.eulerAngles,
 
                     ParentedToShip = PlayerController.isInElevator,
+                    InHangarShipRoom = PlayerController.isInHangarShipRoom,
+                    InInterior = PlayerController.isInsideFactory,
                 }));
         }
     }
@@ -755,10 +774,12 @@ public class VRPlayer : MonoBehaviour
         rightArmVRRig.weight = 1;
     }
 
-    public void EnableInteractorVisuals(bool visible = true)
+    public void EnableUIInteractors(bool enable = true)
     {
-        leftControllerRayInteractor.GetComponent<XRInteractorLineVisual>().enabled = visible;
-        rightControllerRayInteractor.GetComponent<XRInteractorLineVisual>().enabled = visible;
+        leftControllerRayInteractor.GetComponent<XRInteractorLineVisual>().enabled = enable;
+        leftControllerRayInteractor.GetComponent<XRRayInteractor>().enabled = enable;
+        rightControllerRayInteractor.GetComponent<XRInteractorLineVisual>().enabled = enable;
+        rightControllerRayInteractor.GetComponent<XRRayInteractor>().enabled = enable;
     }
 
     public void ResetHeight()

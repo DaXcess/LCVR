@@ -1,7 +1,7 @@
 ﻿using HarmonyLib;
 using LCVR.Input;
-using LCVR.Player;
 using System;
+using LCVR.Managers;
 using UnityEngine.InputSystem;
 
 namespace LCVR.Patches;

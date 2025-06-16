@@ -8,8 +8,8 @@ using Dissonance.Integrations.Unity_NFGO;
 using Dissonance.Networking;
 using GameNetcodeStuff;
 using HarmonyLib;
+using LCVR.Managers;
 using LCVR.Patches;
-using LCVR.Player;
 using UnityEngine;
 
 namespace LCVR.Networking;

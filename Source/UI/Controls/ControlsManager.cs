@@ -53,6 +53,8 @@ public class ControlsManager : MonoBehaviour
 
     private float lastRebindTime;
     
+    public bool IsRebinding => currentOperation != null || Time.realtimeSinceStartup - lastRebindTime < 0.5f;
+    
     private void Awake()
     {
         playerInput = IngamePlayerSettings.Instance.playerInput;

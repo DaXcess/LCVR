@@ -9,6 +9,9 @@ public class PauseMenuEnvironment : MainMenuEnvironment
         base.Awake();
 
         menuCanvas = GetComponentInChildren<MenuCanvas>();
+        
+        settingsManager.DisableCategory("interaction");
+        settingsManager.DisableCategory("car");
     }
     
     public void EnterEnvironment()

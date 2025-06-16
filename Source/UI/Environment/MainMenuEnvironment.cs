@@ -1,5 +1,6 @@
 using System.Collections;
 using HarmonyLib;
+using LCVR.UI.Settings;
 using Microsoft.MixedReality.Toolkit.Experimental.UI;
 using TMPro;
 using UnityEngine;
@@ -17,6 +18,8 @@ public class MainMenuEnvironment : BaseMenuEnvironment
     [SerializeField] protected TextMeshProUGUI versionLabel;
     [SerializeField] protected GameObject settingsPanel;
     [SerializeField] protected GameObject controlsPanel;
+
+    protected SettingsManager settingsManager;
     
     protected new void Awake()
     {
@@ -31,6 +34,8 @@ public class MainMenuEnvironment : BaseMenuEnvironment
 #if DEBUG
         versionLabel.text += " (DEVELOPMENT)";
 #endif
+
+        settingsManager = settingsPanel.GetComponent<SettingsManager>();
     }
 
     public void OpenSettingsMenu()

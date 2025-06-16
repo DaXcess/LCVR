@@ -4,6 +4,7 @@ using System.Linq;
 using GameNetcodeStuff;
 using LCVR.Assets;
 using LCVR.Input;
+using LCVR.Managers;
 using LCVR.Player;
 using UnityEngine;
 using UnityEngine.Animations.Rigging;
@@ -390,6 +391,8 @@ public class VRNetPlayer : MonoBehaviour
         
         playerGhost.SetVisible(false);
     }
+
+    public SpectatorGhost GetSpectatorGhost() => playerGhost;
     
     /// <summary>
     /// Override the target transform that the left hand of this player should go towards
@@ -558,6 +561,8 @@ public struct SpectatorRig
     public Vector3 RightHandRotation;
 
     public bool ParentedToShip;
+    public bool InHangarShipRoom;
+    public bool InInterior;
 }
     
 [Serialize]

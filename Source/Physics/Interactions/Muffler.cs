@@ -6,6 +6,7 @@ using LCVR.Player;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using LCVR.Managers;
 using UnityEngine;
 
 namespace LCVR.Physics.Interactions;
