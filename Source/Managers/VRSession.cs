@@ -350,7 +350,7 @@ public class VRSession : MonoBehaviour
         }
         
 #if DEBUG
-        Experiments.Experiments.RunExperiments();
+        Experiments.RunExperiments();
 #endif
         
         // Spectating

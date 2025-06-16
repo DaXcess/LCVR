@@ -2,7 +2,6 @@
 using System;
 using System.Linq;
 using System.Reflection;
-using LCVR.Experiments;
 using UnityEngine;
 
 namespace LCVR.Patches;

@@ -1,20 +1,20 @@
-﻿using HarmonyLib;
-using LCVR.Patches;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
+using HarmonyLib;
 using LCVR.Assets;
+using LCVR.Patches;
 using Unity.Netcode;
 using UnityEngine;
 using static HarmonyLib.AccessTools;
 
-namespace LCVR.Experiments;
+namespace LCVR;
 
 internal static class Experiments
 {
     public static void RunExperiments()
     {
-        ShowMeTheMoney(10000);
+        // ShowMeTheMoney(10000);
         // SpawnShotgun();
         // SpawnBuyableItem<JetpackItem>("Jetpack");
         // SpawnBuyableItem<SprayPaintItem>("Spray paint");

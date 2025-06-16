@@ -36,6 +36,9 @@ public class MainMenuEnvironment : BaseMenuEnvironment
 #endif
 
         settingsManager = settingsPanel.GetComponent<SettingsManager>();
+        
+        if (Compat.IsLoaded(Compat.MoreCompany))
+            Compatibility.MoreCompany.MoreCompanyCompatibility.SetupMoreCompanyUIMainMenu();
     }
 
     public void OpenSettingsMenu()
