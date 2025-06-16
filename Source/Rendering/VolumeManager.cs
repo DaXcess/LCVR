@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.HighDefinition;
@@ -118,13 +119,37 @@ public class VolumeManager : MonoBehaviour
     {
         RegisterCustomPostProcess<Vignette>();
     }
-    
-    private static void RegisterCustomPostProcess<T>()
-        where T : CustomPostProcessVolumeComponent
+
+    private static void RegisterCustomPostProcess<T>(
+        CustomPostProcessInjectionPoint injectionPoint = CustomPostProcessInjectionPoint.AfterPostProcess
+    ) where T : CustomPostProcessVolumeComponent
     {
         var pipeline = (HDRenderPipelineAsset)QualitySettings.renderPipeline;
 
-        if (!pipeline.globalSettings.IsCustomPostProcessRegistered(typeof(T)))
-            pipeline.globalSettings.afterPostProcessCustomPostProcesses.Add(typeof(T).AssemblyQualifiedName);
+        if (pipeline.globalSettings.IsCustomPostProcessRegistered(typeof(T)))
+            return;
+
+        switch (injectionPoint)
+        {
+            case CustomPostProcessInjectionPoint.AfterPostProcess:
+                pipeline.globalSettings.afterPostProcessCustomPostProcesses.Add(typeof(T).AssemblyQualifiedName);
+                break;
+
+            case CustomPostProcessInjectionPoint.AfterPostProcessBlurs:
+                pipeline.globalSettings.afterPostProcessBlursCustomPostProcesses.Add(typeof(T).AssemblyQualifiedName);
+                break;
+
+            case CustomPostProcessInjectionPoint.BeforePostProcess:
+                pipeline.globalSettings.beforePostProcessCustomPostProcesses.Add(typeof(T).AssemblyQualifiedName);
+                break;
+
+            case CustomPostProcessInjectionPoint.BeforeTAA:
+                pipeline.globalSettings.beforeTAACustomPostProcesses.Add(typeof(T).AssemblyQualifiedName);
+                break;
+
+            case CustomPostProcessInjectionPoint.AfterOpaqueAndSky:
+            default:
+                throw new ArgumentOutOfRangeException(nameof(injectionPoint), injectionPoint, null);
+        }
     }
 }

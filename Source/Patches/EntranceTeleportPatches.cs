@@ -1,6 +1,6 @@
 using System.Linq;
 using HarmonyLib;
-using LCVR.Player;
+using LCVR.Managers;
 using UnityEngine;
 
 namespace LCVR.Patches;

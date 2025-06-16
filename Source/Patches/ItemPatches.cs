@@ -1,6 +1,6 @@
 ﻿using HarmonyLib;
+using LCVR.Managers;
 using LCVR.Networking;
-using LCVR.Player;
 using UnityEngine;
 
 namespace LCVR.Patches;

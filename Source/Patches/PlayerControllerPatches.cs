@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
+using LCVR.Managers;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.XR;
@@ -49,37 +50,6 @@ public static class PlayerControllerB_Update_Patch
 }
 
 [LCVRPatch]
-[HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.Update))]
-public static class PlayerControllerB_Sprint_Patch
-{
-    public static float sprint = 0;
-
-    private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
-    {
-        var codes = new List<CodeInstruction>(instructions);
-
-        // Override sprint
-        int index = codes.FindLastIndex(x => x.operand == (object)"Move") + 5;
-
-        codes[index++] = new(OpCodes.Ldsfld, Field(typeof(PlayerControllerB_Sprint_Patch), nameof(sprint)));
-        codes[index] = new(OpCodes.Stloc_0);
-
-        index = codes.FindLastIndex(x => x.operand == (object)"Sprint");
-
-        int startIndex = index - 1;
-        int endIndex = index + 4;
-
-        for (int i = startIndex; i <= endIndex; i++)
-        {
-            codes[i].opcode = OpCodes.Nop;
-            codes[i].operand = null;
-        }
-
-        return codes.AsEnumerable();
-    }
-}
-
-[LCVRPatch]
 [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.LateUpdate))]
 internal static class PlayerControllerB_LateUpdate_Patches
 {
@@ -105,6 +75,24 @@ internal static class PlayerControllerB_LateUpdate_Patches
 [HarmonyPatch]
 internal static class PlayerControllerPatches
 {
+    /// <summary>
+    /// Override the game's sprint input with our VR player's sprint value
+    /// </summary>
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.Update))]
+    [HarmonyTranspiler]
+    private static IEnumerable<CodeInstruction> SprintPatch(IEnumerable<CodeInstruction> instructions)
+    {
+        return new CodeMatcher(instructions)
+            .MatchForward(false, new CodeMatch(OpCodes.Ldstr, "Sprint"))
+            .Advance(-3)
+            .SetAndAdvance(OpCodes.Call, ((Func<float>)GetSprintValue).Method)
+            .RemoveInstructions(6)
+            .InstructionEnumeration();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static float GetSprintValue() => VRSession.Instance?.LocalPlayer.sprintValue ?? 0;
+    }
+
     /// <summary>
     /// Apply walking force based on camera rotation instead of player rotation
     /// </summary>
@@ -235,7 +223,7 @@ internal static class PlayerControllerPatches
             if (!hit.collider.TryGetComponent<SpectatorGhost>(out var spectator))
                 return;
 
-            spectator.player.ShowSpectatorNameBillboard();
+            spectator.ShowNameBillboard();
         }
     }
 

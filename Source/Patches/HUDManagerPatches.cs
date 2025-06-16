@@ -1,12 +1,12 @@
 ﻿using System;
 using HarmonyLib;
-using LCVR.Player;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 using LCVR.Assets;
+using LCVR.Managers;
 using LCVR.UI;
 using TMPro;
 using UnityEngine;

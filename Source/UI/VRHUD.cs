@@ -1,14 +1,13 @@
 ﻿using System.Collections.Generic;
 using HarmonyLib;
 using LCVR.Assets;
-using LCVR.Player;
+using LCVR.Managers;
+using LCVR.UI.Spectating;
 using Microsoft.MixedReality.Toolkit.Experimental.UI;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Rendering;
-using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.UI;
-using UnityEngine.XR.Interaction.Toolkit.UI;
 
 // ReSharper disable MemberCanBePrivate.Global
 
@@ -29,10 +28,7 @@ public class VRHUD : MonoBehaviour
     private GameObject clock;
     private GameObject battery;
     private GameObject inventory;
-    private GameObject deathScreen;
 
-    private GameObject spectatorLight;
-    
     /// <summary>
     /// The "Face" canvas is a canvas that simulates a screen-space canvas by always being stuck in front of the camera,
     /// regardless of camera rotation
@@ -51,11 +47,6 @@ public class VRHUD : MonoBehaviour
     public Canvas WorldInteractionCanvas { get; private set; }
     
     /// <summary>
-    /// The pause menu screen, which is strategically placed very far below the map as to not interfere with anything.
-    /// </summary>
-    public Canvas PauseMenuCanvas { get; private set; }
-    
-    /// <summary>
     /// The canvas used for displaying UI elements on or near the left hand
     /// </summary>
     public Canvas LeftHandCanvas { get; private set; }
@@ -64,11 +55,6 @@ public class VRHUD : MonoBehaviour
     /// The canvas used for displaying UI elements on or near the right hand
     /// </summary>
     public Canvas RightHandCanvas { get; private set; }
-
-    /// <summary>
-    /// The keyboard that is used within the pause menu
-    /// </summary>
-    public NonNativeKeyboard MenuKeyboard { get; private set; }
     
     /// <summary>
     /// The keyboard that is used within the Terminal
@@ -79,6 +65,10 @@ public class VRHUD : MonoBehaviour
     /// The sprint icon used for toggle sprint
     /// </summary>
     public Image SprintIcon { get; private set; }
+    
+    public SpectatingMenu SpectatingMenu { get; private set; }
+
+    public bool isHandUiDisabled;
     
     private void Awake()
     {
@@ -121,33 +111,26 @@ public class VRHUD : MonoBehaviour
         var xOffset = Plugin.Config.HUDOffsetX.Value;
         var yOffset = Plugin.Config.HUDOffsetY.Value;
 
-        if (!Plugin.Config.DisableArmHUD.Value)
-        {
-            LeftHandCanvas = new GameObject("Left Hand Canvas").AddComponent<Canvas>();
-            LeftHandCanvas.worldCamera = VRSession.Instance.MainCamera;
-            LeftHandCanvas.renderMode = RenderMode.WorldSpace;
-            LeftHandCanvas.transform.localScale = Vector3.one * 0.001f;
-            LeftHandCanvas.gameObject.layer = LayerMask.NameToLayer("UI");
-            LeftHandCanvas.transform.SetParent(VRSession.Instance.LocalPlayer.Bones.LocalLeftHand, false);
-            LeftHandCanvas.transform.localPosition = new Vector3(0, 0, 0);
-            LeftHandCanvas.transform.localRotation = Quaternion.Euler(0, 0, 0);
+        // Store in the HUD manager because this value can be changed during a session
+        isHandUiDisabled = Plugin.Config.DisableArmHUD.Value;
 
-            RightHandCanvas = new GameObject("Right Hand Canvas").AddComponent<Canvas>();
-            RightHandCanvas.worldCamera = VRSession.Instance.MainCamera;
-            RightHandCanvas.renderMode = RenderMode.WorldSpace;
-            RightHandCanvas.transform.localScale = Vector3.one * 0.001f;
-            RightHandCanvas.gameObject.layer = LayerMask.NameToLayer("UI");
-            RightHandCanvas.transform.SetParent(VRSession.Instance.LocalPlayer.Bones.LocalRightHand, false);
-            RightHandCanvas.transform.localPosition = new Vector3(0, 0, 0);
-            RightHandCanvas.transform.localRotation = Quaternion.Euler(0, 0, 0);
-        }
-        
-        // Flat Canvas: Add tracked graphic raycaster
-        GameObject.Find("Systems").Find("UI/Canvas").AddComponent<TrackedDeviceGraphicRaycaster>();
+        LeftHandCanvas = new GameObject("Left Hand Canvas").AddComponent<Canvas>();
+        LeftHandCanvas.worldCamera = VRSession.Instance.MainCamera;
+        LeftHandCanvas.renderMode = RenderMode.WorldSpace;
+        LeftHandCanvas.transform.localScale = Vector3.one * 0.001f;
+        LeftHandCanvas.gameObject.layer = LayerMask.NameToLayer("UI");
+        LeftHandCanvas.transform.SetParent(VRSession.Instance.LocalPlayer.Bones.LocalLeftHand, false);
+        LeftHandCanvas.transform.localPosition = new Vector3(0, 0, 0);
+        LeftHandCanvas.transform.localRotation = Quaternion.Euler(0, 0, 0);
 
-        // Pause menu: Move a little forward
-        var quickMenu = GameObject.Find("Systems").Find("UI/Canvas/QuickMenu").transform;
-        quickMenu.localPosition = new Vector3(0, 0, -50);
+        RightHandCanvas = new GameObject("Right Hand Canvas").AddComponent<Canvas>();
+        RightHandCanvas.worldCamera = VRSession.Instance.MainCamera;
+        RightHandCanvas.renderMode = RenderMode.WorldSpace;
+        RightHandCanvas.transform.localScale = Vector3.one * 0.001f;
+        RightHandCanvas.gameObject.layer = LayerMask.NameToLayer("UI");
+        RightHandCanvas.transform.SetParent(VRSession.Instance.LocalPlayer.Bones.LocalRightHand, false);
+        RightHandCanvas.transform.localPosition = new Vector3(0, 0, 0);
+        RightHandCanvas.transform.localRotation = Quaternion.Euler(0, 0, 0);
 
         // Object scanner: Custom handler
         var objectScanner = GameObject.Find("ObjectScanner");
@@ -183,7 +166,7 @@ public class VRHUD : MonoBehaviour
 
         SprintIcon = sprintIcon.GetComponent<Image>();
         
-        if (Plugin.Config.DisableArmHUD.Value)
+        if (isHandUiDisabled)
         {
             selfRed.transform.SetParent(FaceCanvas.transform, false);
             self.transform.SetParent(FaceCanvas.transform, false);
@@ -246,7 +229,7 @@ public class VRHUD : MonoBehaviour
         // Clock: Attach to left hand
         clock = GameObject.Find("ProfitQuota");
 
-        if (Plugin.Config.DisableArmHUD.Value)
+        if (isHandUiDisabled)
         {
             clock.transform.SetParent(FaceCanvas.transform, false);
             clock.transform.localPosition = new Vector3(xOffset, yOffset, 0);
@@ -264,7 +247,7 @@ public class VRHUD : MonoBehaviour
         // Battery: Attach to right hand (next to knuckles)
         battery = GameObject.Find("Batteries");
 
-        if (Plugin.Config.DisableArmHUD.Value)
+        if (isHandUiDisabled)
         {
             battery.transform.SetParent(FaceCanvas.transform, false);
             battery.transform.localPosition = new Vector3(-324 + xOffset, 164 + yOffset, 0);
@@ -295,7 +278,7 @@ public class VRHUD : MonoBehaviour
         // Inventory: Attach to right hand (below knuckles)
         inventory = GameObject.Find("Inventory");
 
-        if (Plugin.Config.DisableArmHUD.Value)
+        if (isHandUiDisabled)
         {
             inventory.transform.SetParent(FaceCanvas.transform, false);
             inventory.transform.localPosition = new Vector3(91 + xOffset, -185 + yOffset, 0);
@@ -308,14 +291,38 @@ public class VRHUD : MonoBehaviour
             inventory.transform.localRotation = Quaternion.Euler(0, 195, 0);
             inventory.transform.localScale = Vector3.one * 0.8f;
         }
+        
+        // Compass: Attach to right hand (below inventory)
+        var compassUi = GameObject.Find("Systems/UI/Canvas/IngamePlayerHUD/CompassImage (1)").transform;
+
+        if (isHandUiDisabled)
+        {
+            compassUi.SetParent(FaceCanvas.transform, false);
+            compassUi.transform.localPosition = new Vector3(42 + xOffset, -340 + yOffset, 0);
+            compassUi.transform.localRotation = Quaternion.identity;
+        }
+        else
+        {
+            compassUi.SetParent(RightHandCanvas.transform, false);
+            compassUi.localPosition = new Vector3(0, 45, 36);
+            compassUi.localRotation = Quaternion.Euler(0, 195, 0);
+            compassUi.localScale = Vector3.one * 0.8f;
+        }
 
         // Special HUD: In front of eyes
         var specialHud = GameObject.Find("SpecialHUDGraphics");
 
+        // First kill all existing NetworkObjects
+        for (var i = HUDManager.Instance.advertItemParent.transform.childCount - 1; i >= 0; i--)
+            DestroyImmediate(HUDManager.Instance.advertItemParent.transform.GetChild(i).gameObject);
+        
         specialHud.transform.SetParent(PitchLockedCanvas.transform, false);
         specialHud.transform.localPosition = Vector3.zero;
         specialHud.transform.localRotation = Quaternion.identity;
         specialHud.transform.localScale = Vector3.one;
+        
+        // Advertisement HUD fixes
+        specialHud.transform.Find("Advertisement/AdContainer").localPosition = new Vector3(110, 0, 110);
 
         var hintPanel = GameObject.Find("HintPanelContainer");
 
@@ -404,13 +411,21 @@ public class VRHUD : MonoBehaviour
         firedScreen.transform.Find("DarkenScreen (2)").localScale = Vector3.one * 5;
 
         // Death/spectator screen: In front of eyes
-        deathScreen = GameObject.Find("Systems/UI/Canvas/DeathScreen");
+        var deathScreen = GameObject.Find("Systems/UI/Canvas/DeathScreen");
 
         deathScreen.transform.SetParent(PitchLockedCanvas.transform, false);
         deathScreen.transform.localPosition =
             Plugin.Config.EnablePitchLockedCanvas.Value ? Vector3.up * 50 : Vector3.zero;
         deathScreen.transform.localEulerAngles = Vector3.zero;
         deathScreen.transform.localScale = Vector3.one * 1.1f;
+        
+        // Disable spectator UI
+        deathScreen.Find("SpectateUI").SetActive(false);
+        
+        // Spectating menu
+        SpectatingMenu = Instantiate(AssetManager.SpectatingMenu, LeftHandCanvas.transform.parent).GetComponent<SpectatingMenu>();
+        SpectatingMenu.transform.localPosition = new Vector3(0, 0.1f, 0.2f);
+        SpectatingMenu.transform.localEulerAngles = new Vector3(0, 90, 90);
         
         // Systems online: In front of eyes
         var ingamePlayerHud = GameObject.Find("IngamePlayerHUD");
@@ -420,30 +435,10 @@ public class VRHUD : MonoBehaviour
         systemsOnline.localPosition = new Vector3(-280, -100, 0);
         systemsOnline.localEulerAngles = Vector3.zero;
         systemsOnline.localScale = Vector3.one * 1.65f;
-
-        // Pause menu screen (Render texture): World space
-        PauseMenuCanvas = GameObject.Find("Systems/UI/Canvas").GetComponent<Canvas>();
-        PauseMenuCanvas.worldCamera = GameObject.Find("UICamera").GetComponent<Camera>();
-        PauseMenuCanvas.renderMode = RenderMode.WorldSpace;
-        PauseMenuCanvas.transform.position = new Vector3(0, -999, 0);
-        PauseMenuCanvas.transform.localScale = Vector3.one * 0.01f;
-        
-        var follow = PauseMenuCanvas.gameObject.AddComponent<CanvasTransformFollow>();
-        follow.sourceTransform = VRSession.Instance.UICamera.transform;
-        follow.heightOffset = -999;
-            
-        InitializeKeyboard();
-
-        // Set up a global light for spectators to be able to toggle
-        spectatorLight = Instantiate(AssetManager.SpectatorLight, transform);
-        spectatorLight.SetActive(false);
         
         // Remove leftover UI
         ingamePlayerHud.Find("TopRightCorner").transform.GetChildren().Do(child => child.gameObject.SetActive(false));
         ingamePlayerHud.Find("BottomLeftCorner").transform.GetChildren().Do(child => child.gameObject.SetActive(false));
-        
-        // Prevents CullFactory from culling the light
-        spectatorLight.hideFlags |= HideFlags.DontSave;
         
         MoveToFront(FaceCanvas);
         MoveToFront(PitchLockedCanvas);
@@ -462,7 +457,7 @@ public class VRHUD : MonoBehaviour
     {
         foreach (var element in component.GetComponentsInChildren<Image>(true))
         {
-            if (element.materialForRendering == null)
+            if (!element.materialForRendering)
                 continue;
 
             if (!materialMappings.TryGetValue(element.materialForRendering, out var materialCopy))
@@ -537,64 +532,5 @@ public class VRHUD : MonoBehaviour
         
         battery.SetActive(!hide);
         inventory.SetActive(!hide);
-    }
-
-    public void ToggleDeathScreen(bool? visible = null)
-    {
-        if (!deathScreen)
-            return;
-
-        if (visible != null)
-        {
-            deathScreen.transform.localScale = Vector3.one * (visible == true ? 1.1f : 0f);
-            return;
-        }
-
-        if (deathScreen.transform.localScale == Vector3.one * 1.1f)
-            deathScreen.transform.localScale = Vector3.zero;
-        else
-            deathScreen.transform.localScale = Vector3.one * 1.1f;
-    }
-
-    public void ToggleSpectatorLight(bool? active = null)
-    {
-        if (spectatorLight is not { } light)
-            return;
-        
-        var hdCamera = VRSession.Instance.MainCamera.GetComponent<HDAdditionalCameraData>();
-
-        // Don't disable volumetrics if it's already disabled, or if the user disabled the feature
-        if (!Plugin.Config.DisableVolumetrics.Value && Plugin.Config.SpectatorLightRemovesVolumetrics.Value)
-        {
-            var enable = active ?? !light.activeSelf;
-
-            if (enable)
-                hdCamera.DisableQualitySetting(FrameSettingsField.Volumetrics);
-            else
-                hdCamera.EnableQualitySetting(FrameSettingsField.Volumetrics);
-        }
-        
-        light.SetActive(active ?? !light.activeSelf);
-    }
-
-    /// <summary>
-    /// Add a keyboard to the pause menu
-    /// </summary>
-    private void InitializeKeyboard()
-    {
-        var canvas = GameObject.Find("Systems/UI/Canvas").GetComponent<Canvas>();
-        MenuKeyboard = Instantiate(AssetManager.Keyboard, canvas.transform).GetComponent<NonNativeKeyboard>();
-
-        MenuKeyboard.transform.localPosition = new Vector3(0, -470, -40);
-        MenuKeyboard.transform.localEulerAngles = new Vector3(13, 0, 0);
-        MenuKeyboard.transform.localScale = Vector3.one * 0.8f;
-
-        MenuKeyboard.gameObject.Find("keyboard_Alpha/Deny_Button").SetActive(false);
-        MenuKeyboard.gameObject.Find("keyboard_Alpha/Confirm_Button").SetActive(false);
-        
-        MenuKeyboard.SubmitOnEnter = true;
-
-        var component = canvas.gameObject.AddComponent<Keyboard>();
-        component.keyboard = MenuKeyboard;
     }
 }

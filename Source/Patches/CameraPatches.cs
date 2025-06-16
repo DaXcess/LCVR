@@ -16,7 +16,7 @@ internal static class CameraPatches
     private static bool UpdateCameraTargetTexture(Camera __instance, ref RenderTexture value)
     {
         if (SceneManager.GetActiveScene().name is "ColdOpen1" or "ColdOpen2" ||
-            StartOfRound.Instance.activeCamera == __instance)
+            StartOfRound.Instance?.activeCamera == __instance)
             value = null;
 
         return true;

@@ -25,7 +25,7 @@ You can use the `VRSession.InVR` property to check whether LCVR is currently in 
 > This used to be done via `LCVR.Plugin.Flags.HasFlag(Flags.VR)`, however an easier approach using `VRSession` has been added since v1.2.0.
 
 ```cs
-using LCVR.Player;
+using LCVR.Managers;
 
 if (VRSession.InVR)
 {
@@ -132,12 +132,12 @@ VRController.EnableInteractTrigger("NameOfGameObject");
 
 If your mod makes use of custom doors, but still use the vanilla `DoorLock` component, some additional registering needs to be done to make them work properly for VR interactions.
 
-You can register your custom door with LCVR by calling the `Door.RegisterDoor` method. You will need to provide the network object of your door, and optionally a modified position, rotation, and scale for the VR interactable, so you can make sure the interactable is only on the door handle, and not the entire door.
+You can register your custom door with LCVR by calling the `GenericDoor.RegisterDoor` method. You will need to provide the network object of your door, and optionally a modified position, rotation, and scale for the VR interactable, so you can make sure the interactable is only on the door handle, and not the entire door.
 
 ```cs
 var doorHandlePosition = new Vector3(...);
 var doorHandleRotation = new Vector3(...);
 var doorHandleScale = new Vector3(...);
 
-Door.RegisterDoor(myCustomDoorNetworkObject, doorHandlePosition, doorHandleRotation, doorHandleScale);
+GenericDoor.RegisterDoor(myCustomDoorNetworkObject, doorHandlePosition, doorHandleRotation, doorHandleScale);
 ```

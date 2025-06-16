@@ -1,8 +1,7 @@
 using System.Diagnostics;
 using LCVR.Assets;
-using LCVR.Input;
+using LCVR.Managers;
 using LCVR.Patches;
-using LCVR.Player;
 using Microsoft.MixedReality.Toolkit.Experimental.UI;
 using TMPro;
 using UnityEngine;
@@ -16,7 +15,7 @@ using UnityEngine.XR.Interaction.Toolkit.UI;
 
 namespace LCVR.UI;
 
-public class MainMenu : MonoBehaviour
+public class ZMainMenu : MonoBehaviour
 {
     private static readonly InputAction ToggleKeyBind = new(binding: "<Keyboard>/F8");
     
@@ -142,9 +141,9 @@ public class MainMenu : MonoBehaviour
         var inVR = VRSession.InVR;
 
         // Cancel all rebind operations
-        IngamePlayerSettings.Instance.CancelRebind();
-        if (inVR && KeyRemapManager.Instance != null)
-            KeyRemapManager.Instance.CancelRebind();
+        // IngamePlayerSettings.Instance.CancelRebind();
+        // if (inVR && KeyRemapManager.Instance != null)
+        //     KeyRemapManager.Instance.CancelRebind();
         
         IngamePlayerSettings.Instance.DiscardChangedSettings();
         
@@ -181,8 +180,8 @@ public class MainMenu : MonoBehaviour
     {
         DeinitializeMenu();
 
-        if (KeyRemapManager.Instance != null)
-            Destroy(KeyRemapManager.Instance);
+        // if (KeyRemapManager.Instance != null)
+        //     Destroy(KeyRemapManager.Instance);
         
         // Restore vanilla bindings
         InputPatches.RestoreOriginalBindings();
@@ -244,9 +243,9 @@ public class MainMenu : MonoBehaviour
         canvas.renderMode = RenderMode.WorldSpace;
         canvas.worldCamera = mainCamera;
 
-        var canvasFollow = canvas.gameObject.AddComponent<CanvasTransformFollow>();
-        canvasFollow.sourceTransform = mainCamera.transform;
-        canvasFollow.heightOffset = 1;
+        // var canvasFollow = canvas.gameObject.AddComponent<CanvasTransformFollow>();
+        // canvasFollow.sourceTransform = mainCamera.transform;
+        // canvasFollow.heightOffset = 1;
 
         // Allow canvas interactions using XR raycaster
 
@@ -299,7 +298,7 @@ public class MainMenu : MonoBehaviour
         
         // Revert canvas
         Destroy(primaryCanvas.GetComponent<TrackedDeviceGraphicRaycaster>());
-        DestroyImmediate(primaryCanvas.GetComponent<CanvasTransformFollow>());
+        // DestroyImmediate(primaryCanvas.GetComponent<CanvasTransformFollow>());
         primaryCanvas.gameObject.AddComponent<GraphicRaycaster>();
         primaryCanvas.transform.localScale = Vector3.one * 0.1822f;
         primaryCanvas.renderMode = RenderMode.ScreenSpaceCamera;
@@ -328,9 +327,8 @@ public class MainMenu : MonoBehaviour
             screen.transform.localPosition = new Vector3(-4.8199f, -1.78f, 1.4412f);
             screen.transform.localEulerAngles = Vector3.zero;
             screen.transform.localScale = Vector3.one;
-
-            var backdrop = screen.Find("Image");
-            backdrop.transform.localScale = new Vector3(10, 10, 1);
+            screen.GetComponent<Image>().color = Color.clear;
+            screen.Find("Image").SetActive(false);
 
             var title = screen.Find("Panel/NotificationText").GetComponent<TextMeshProUGUI>();
             var description = screen.Find("Panel/DemoText").GetComponent<TextMeshProUGUI>();
@@ -397,7 +395,7 @@ public class MainMenu : MonoBehaviour
                 Plugin.Config.IntroScreenSeen.Value = true;
 
 #if DEBUG
-                FindObjectOfType<MainMenu>().debugScreen.Show();
+                FindObjectOfType<ZMainMenu>().debugScreen.Show();
 #endif
             });
 
@@ -418,13 +416,13 @@ public class MainMenu : MonoBehaviour
     private class ErrorScreen : MonoBehaviour
     {
         private GameObject screen;
-        private MainMenu mainMenu;
+        private ZMainMenu mainMenu;
 
         public bool Active => screen.activeSelf;
 
         private void Awake()
         {
-            mainMenu = FindObjectOfType<MainMenu>();
+            mainMenu = FindObjectOfType<ZMainMenu>();
             
             var menuContainer = GameObject.Find("MenuContainer");
             screen = Instantiate(menuContainer.Find("NewsPanel"), menuContainer.transform);
@@ -432,9 +430,8 @@ public class MainMenu : MonoBehaviour
             screen.transform.localPosition = new Vector3(-4.8199f, -1.78f, 1.4412f);
             screen.transform.localEulerAngles = Vector3.zero;
             screen.transform.localScale = Vector3.one;
-
-            var backdrop = screen.Find("Image");
-            backdrop.transform.localScale = new Vector3(10, 10, 1);
+            screen.GetComponent<Image>().color = Color.clear;
+            screen.Find("Image").SetActive(false);
 
             var title = screen.Find("Panel/NotificationText").GetComponent<TextMeshProUGUI>();
             var description = screen.Find("Panel/DemoText").GetComponent<TextMeshProUGUI>();
@@ -516,9 +513,8 @@ public class MainMenu : MonoBehaviour
             screen.transform.localPosition = new Vector3(-4.8199f, -1.78f, 1.4412f);
             screen.transform.localEulerAngles = Vector3.zero;
             screen.transform.localScale = Vector3.one;
-
-            var backdrop = screen.Find("Image");
-            backdrop.transform.localScale = new Vector3(10, 10, 1);
+            screen.GetComponent<Image>().color = Color.clear;
+            screen.Find("Image").SetActive(false);
 
             var title = screen.Find("Panel/NotificationText").GetComponent<TextMeshProUGUI>();
             var description = screen.Find("Panel/DemoText").GetComponent<TextMeshProUGUI>();

@@ -1,5 +1,5 @@
 ﻿using LCVR.Input;
-using LCVR.Player;
+using LCVR.Managers;
 
 namespace LCVR.Items;
 

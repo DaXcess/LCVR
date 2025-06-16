@@ -5,7 +5,9 @@ using LCVR.Player;
 using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
+using LCVR.Managers;
 using UnityEngine;
+
 using static HarmonyLib.AccessTools;
 
 namespace LCVR.Patches;

@@ -12,7 +12,9 @@ using System;
 using System.Collections;
 using System.Linq;
 using GameNetcodeStuff;
+using HarmonyLib;
 using Steamworks;
+using UnityEngine.UI;
 
 namespace LCVR;
 
@@ -109,7 +111,7 @@ internal static class Utils
     }
 
     public static XRRayInteractor CreateInteractorController(this GameObject @object, Hand hand, bool rayVisible = true,
-        bool trackingEnabled = true, bool actionsEnabled = true)
+        bool trackingEnabled = true, bool actionsEnabled = true, bool rayEnabled = true)
     {
         var controller = @object.AddComponent<ActionBasedController>();
         var interactor = @object.AddComponent<XRRayInteractor>();
@@ -132,6 +134,7 @@ internal static class Utils
             ]
         };
         visual.enabled = rayVisible;
+        interactor.enabled = rayEnabled;
 
         renderer.material = AssetManager.DefaultRayMat;
 
@@ -244,5 +247,21 @@ internal static class Utils
             SteamClient.Shutdown();
 
         return result;
+    }
+
+    public static IEnumerator FixYuckyScrollThing(Animator animator)
+    {
+        var rects = animator.GetComponentsInChildren<ScrollRect>();
+        var maxTime = animator.GetCurrentAnimatorStateInfo(0).length;
+        var time = 0f;
+
+        while (time < maxTime)
+        {
+            time += Time.deltaTime;
+            
+            rects.Do(rect => rect.verticalNormalizedPosition = 1);
+
+            yield return null;
+        }
     }
 }

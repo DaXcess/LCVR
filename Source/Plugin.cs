@@ -13,9 +13,9 @@ using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.SceneManagement;
-
+using UnityEngine.XR.Interaction.Toolkit.Inputs.Composites;
+using UnityEngine.XR.Interaction.Toolkit.Inputs.Interactions;
 using DependencyFlags = BepInEx.BepInDependency.DependencyFlags;
-using Vignette = LCVR.Rendering.Vignette;
 using VolumeManager = LCVR.Rendering.VolumeManager;
 
 namespace LCVR;
@@ -27,7 +27,7 @@ public class Plugin : BaseUnityPlugin
 {
     public const string PLUGIN_GUID = "io.daxcess.lcvr";
     public const string PLUGIN_NAME = "LCVR";
-    public const string PLUGIN_VERSION = "1.3.11";
+    public const string PLUGIN_VERSION = "1.4.0";
 
 #if DEBUG
     private const string SKIP_CHECKSUM_VAR = $"--lcvr-skip-checksum={PLUGIN_VERSION}-dev";
@@ -39,13 +39,7 @@ public class Plugin : BaseUnityPlugin
 
     private readonly string[] GAME_ASSEMBLY_HASHES =
     [
-        "BFF45683C267F402429049EF7D8095C078D5CD534E5300E56317ACB6056D70FB", // V64
-        "A6BDE2EB39028B36CB1667DCFB4ED10F688FB3FF72E71491AC25C5CB47A7EF6C", // V64.1
-        "B0BC7D3392FDAD3BB6515C0769363A51FF3599E67325FAE153948E0B82EB7596", // V66
-        "B644AD19F3CE1E82071AC5F45D1E96D76B9FC06C11763381E1979BCDC5889607", // V67
-        "6F822FD5F804B519FA95D91DC2B2AE13A646C51D7BF1DE87A0A3D270A889A2DF", // V68
-        "BA9028C8F8DBDEF4CD179FF2A2AD57549C8D7135911B1AD48B53F638ABD3D595", // V69
-        "2AF191104F9E57F0E3CF2C24153C5AAFC64D8E6DA56CD49E9BE580B19B3A1833", // V69.1
+        "486013AE3C5092F424A36690D4E5590D0ABD392C602D3E659788B47C64B5C2FA", // V72
     ];
 
     public new static Config Config { get; private set; }
@@ -60,7 +54,14 @@ public class Plugin : BaseUnityPlugin
         // Reload Unity's Input System plugins since BepInEx in some
         // configurations runs after the Input System has already been initialized
         InputSystem.PerformDefaultPluginInitialization();
-
+        
+        // Register XR Toolkit (these normally load during RuntimeInitializeOnLoad -> BeforeSceneLoad)
+        ButtonFallbackComposite.Initialize();
+        IntegerFallbackComposite.Initialize();
+        QuaternionFallbackComposite.Initialize();
+        Vector3FallbackComposite.Initialize();
+        SectorInteraction.Initialize();
+        
         // Plugin startup logic
         LCVR.Logger.SetSource(Logger);
         
@@ -117,7 +118,7 @@ public class Plugin : BaseUnityPlugin
             {
                 Logger.LogError("Error: Unsupported game version, or corrupted game detected!");
                 Logger.LogError("This usually happens if Lethal Company got updated recently.");
-                Logger.LogWarning(
+                Logger.LogDebug(
                     $"To bypass this check, add the following flag to your launch options in Steam: {SKIP_CHECKSUM_VAR}");
 
                 return;

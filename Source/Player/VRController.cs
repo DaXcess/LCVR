@@ -6,6 +6,7 @@ using UnityEngine.XR;
 using LCVR.Input;
 using LCVR.Assets;
 using System.Collections.Generic;
+using LCVR.Managers;
 
 namespace LCVR.Player;
 
@@ -71,6 +72,9 @@ public class VRController : MonoBehaviour
     {
         IsHovering = false;
 
+        if (!PlayerController)
+            return;
+        
         PlayerController.cursorIcon.enabled = false;
         CursorTip = "";
         if (PlayerController.hoveringOverTrigger != null)
@@ -216,7 +220,7 @@ public class VRController : MonoBehaviour
         var origin = InteractOrigin.position + InteractOrigin.forward * 0.1f;
         var end = InteractOrigin.position + InteractOrigin.forward * PlayerController.grabDistance;
 
-        debugLineRenderer.SetPositions(new[] { origin, end });
+        debugLineRenderer.SetPositions([origin, end]);
 
         var shouldReset = true;
 
@@ -232,8 +236,14 @@ public class VRController : MonoBehaviour
                 return;
 
             // Place interaction hud on object
-            var position = hit.transform.position;
-
+            var position = hit.collider switch
+            {
+                BoxCollider box => hit.transform.TransformPoint(box.center),
+                CapsuleCollider capsule => hit.transform.TransformPoint(capsule.center),
+                SphereCollider sphere => hit.transform.TransformPoint(sphere.center),
+                _ => hit.transform.position
+            };
+                
             if (hit.collider.gameObject.CompareTag("InteractTrigger"))
             {
                 var component = hit.transform.gameObject.GetComponent<InteractTrigger>();

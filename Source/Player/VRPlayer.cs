@@ -7,11 +7,10 @@ using System.Collections;
 using LCVR.Networking;
 using GameNetcodeStuff;
 using UnityEngine.XR.Interaction.Toolkit;
-using LCVR.Patches;
 using UnityEngine.Animations.Rigging;
 using System.Linq;
+using LCVR.Managers;
 using Unity.XR.CoreUtils;
-using CrouchState = LCVR.Networking.Rig.CrouchState;
 using Rig = LCVR.Networking.Rig;
 
 namespace LCVR.Player;
@@ -33,6 +32,7 @@ public class VRPlayer : MonoBehaviour
     private float crouchOffset;
     private float realHeight = 2.3f;
 
+    public float sprintValue;
     private bool isSprinting;
 
     private bool wasInSpecialAnimation;
@@ -119,11 +119,12 @@ public class VRPlayer : MonoBehaviour
         // Un-parent camera container
         head = new GameObject("HMD").transform;
         head.parent = xrOrigin;
-        
+
         mainCamera.transform.parent = head;
         mainCamera.transform.localPosition = Vector3.zero;
         mainCamera.transform.localRotation = Quaternion.identity;
-        
+        mainCamera.gameObject.tag = "MainCamera";
+
         xrOrigin.localPosition = Vector3.zero;
         xrOrigin.localRotation = Quaternion.Euler(0, 0, 0);
         xrOrigin.localScale = Vector3.one * SCALE_FACTOR;
@@ -178,9 +179,11 @@ public class VRPlayer : MonoBehaviour
 
         // Add ray interactors for VR keyboard
         leftControllerRayInteractor =
-            new GameObject("Left Ray Interactor").CreateInteractorController(Utils.Hand.Left, false, false);
+            new GameObject("Left Ray Interactor").CreateInteractorController(Utils.Hand.Left, false, false,
+                rayEnabled: false);
         rightControllerRayInteractor =
-            new GameObject("Right Ray Interactor").CreateInteractorController(Utils.Hand.Right, false, false);
+            new GameObject("Right Ray Interactor").CreateInteractorController(Utils.Hand.Right, false, false,
+                rayEnabled: false);
 
         leftControllerRayInteractor.transform.SetParent(leftController.transform, false);
         rightControllerRayInteractor.transform.SetParent(rightController.transform, false);
@@ -356,7 +359,17 @@ public class VRPlayer : MonoBehaviour
             positionOffset = Vector3.zero,
             rotationOffset = Vector3.zero
         };
+        
+        // Set up XR Poke Interactor on the right hand finger
 
+        var fingerEnd = Bones.LocalRightHand.Find("finger2.R/finger2.R.001/finger2.R.001_end");
+        var fingerTip = new GameObject("finger2.R.001_tip")
+            { transform = { parent = fingerEnd, localPosition = new Vector3(0.00381f, 0.0179f, 0) } };
+
+        var poke = fingerTip.AddComponent<XRPokeInteractor>();
+        poke.attachTransform = fingerTip.transform;
+        poke.enableUIInteraction = true;
+        
         // This one is pretty hit or miss, sometimes y needs to be -0.2f, other times it needs to be -2.25f
         RigTrackerLocal.headBodyPositionOffset = new Vector3(0, -.2f, 0);
 
@@ -604,13 +617,17 @@ public class VRPlayer : MonoBehaviour
         // Apply crouch offset (don't offset if roomscale)
         crouchOffset = Mathf.Lerp(crouchOffset, !IsRoomCrouching && PlayerController.isCrouching ? -1 : 0, 0.2f);
 
-        // Apply car animation offset
+        // Apply car/chair animation offset
         var carOffset = PlayerController.inVehicleAnimation ? -0.5f : 0f;
+        var sofaOffset = PlayerController.currentTriggerInAnimationWith?.animationString == "SA_SitOnCouch" ? -1.1f : 0;
+        var electricChairOffset =
+            PlayerController.currentTriggerInAnimationWith?.animationString == "SA_SitOnElectricChair" ? -0.8f : 0;
+        var animationHeightOffset = carOffset + sofaOffset + electricChairOffset;
 
         // Apply height and rotation offsets
         xrOrigin.localPosition += new Vector3(0,
                                       cameraFloorOffset + crouchOffset - PlayerController.sinkingValue * 2.5f +
-                                      carOffset, 0) *
+                                      animationHeightOffset, 0) *
                                   transform.localScale.y;
         xrOrigin.localRotation = rotationOffset;
 
@@ -639,38 +656,37 @@ public class VRPlayer : MonoBehaviour
                 stopSprintingCoroutine = null;
             }
 
-            PlayerControllerB_Sprint_Patch.sprint =
-                !IsRoomCrouching && !PlayerController.isCrouching && isSprinting ? 1 : 0;
+            sprintValue = !IsRoomCrouching && !PlayerController.isCrouching && isSprinting ? 1 : 0;
             VRSession.Instance.HUD.SprintIcon.enabled =
                 !IsRoomCrouching && !PlayerController.isCrouching && isSprinting;
         }
         else
-            PlayerControllerB_Sprint_Patch.sprint = !IsRoomCrouching && Actions.Instance["Sprint"].IsPressed() ? 1 : 0;
+            sprintValue = !IsRoomCrouching && Actions.Instance["Sprint"].IsPressed() ? 1 : 0;
 
         if (!PlayerController.isPlayerDead)
             rigChannel.SendPacket(Serialization.Serialize(new Rig()
             {
-                leftHandPosition = leftController.transform.localPosition,
-                leftHandEulers = leftController.transform.localEulerAngles,
-                leftHandFingers = LeftFingerCurler.GetCurls(),
+                LeftHandPosition = leftController.transform.localPosition,
+                LeftHandEulers = leftController.transform.localEulerAngles,
+                LeftHandFingers = LeftFingerCurler.GetCurls(),
 
-                rightHandPosition = rightController.transform.localPosition,
-                rightHandEulers = rightController.transform.localEulerAngles,
-                rightHandFingers = RightFingerCurler.GetCurls(),
+                RightHandPosition = rightController.transform.localPosition,
+                RightHandEulers = rightController.transform.localEulerAngles,
+                RightHandFingers = RightFingerCurler.GetCurls(),
 
-                cameraEulers = head.eulerAngles,
-                cameraPosAccounted = cameraPosAccounted,
-                modelOffset = totalMovementSinceLastMove,
-                specialAnimationPositionOffset = specialAnimationPositionOffset,
+                CameraEulers = head.eulerAngles,
+                CameraPosAccounted = cameraPosAccounted,
+                ModelOffset = totalMovementSinceLastMove,
+                SpecialAnimationPositionOffset = specialAnimationPositionOffset,
 
-                crouchState = (PlayerController.isCrouching, IsRoomCrouching) switch
+                CrouchState = (PlayerController.isCrouching, IsRoomCrouching) switch
                 {
                     (true, true) => CrouchState.Roomscale,
                     (true, false) => CrouchState.Button,
                     (false, _) => CrouchState.None
                 },
-                rotationOffset = rotationOffset.eulerAngles,
-                cameraFloorOffset = cameraFloorOffset,
+                RotationOffset = rotationOffset.eulerAngles,
+                CameraFloorOffset = cameraFloorOffset,
             }));
         else
         {
@@ -681,16 +697,18 @@ public class VRPlayer : MonoBehaviour
             spectatorRigChannel.SendPacket(Serialization.Serialize(
                 new SpectatorRig
                 {
-                    headPosition = parent.InverseTransformPoint(head.position),
-                    headRotation = head.eulerAngles,
+                    HeadPosition = parent.InverseTransformPoint(head.position),
+                    HeadRotation = head.eulerAngles,
 
-                    leftHandPosition = parent.InverseTransformPoint(leftController.transform.position),
-                    leftHandRotation = leftController.transform.eulerAngles,
+                    LeftHandPosition = parent.InverseTransformPoint(leftController.transform.position),
+                    LeftHandRotation = leftController.transform.eulerAngles,
 
-                    rightHandPosition = parent.InverseTransformPoint(rightController.transform.position),
-                    rightHandRotation = rightController.transform.eulerAngles,
+                    RightHandPosition = parent.InverseTransformPoint(rightController.transform.position),
+                    RightHandRotation = rightController.transform.eulerAngles,
 
-                    parentedToShip = PlayerController.isInElevator,
+                    ParentedToShip = PlayerController.isInElevator,
+                    InHangarShipRoom = PlayerController.isInHangarShipRoom,
+                    InInterior = PlayerController.isInsideFactory,
                 }));
         }
     }
@@ -756,10 +774,12 @@ public class VRPlayer : MonoBehaviour
         rightArmVRRig.weight = 1;
     }
 
-    public void EnableInteractorVisuals(bool visible = true)
+    public void EnableUIInteractors(bool enable = true)
     {
-        leftControllerRayInteractor.GetComponent<XRInteractorLineVisual>().enabled = visible;
-        rightControllerRayInteractor.GetComponent<XRInteractorLineVisual>().enabled = visible;
+        leftControllerRayInteractor.GetComponent<XRInteractorLineVisual>().enabled = enable;
+        leftControllerRayInteractor.GetComponent<XRRayInteractor>().enabled = enable;
+        rightControllerRayInteractor.GetComponent<XRInteractorLineVisual>().enabled = enable;
+        rightControllerRayInteractor.GetComponent<XRRayInteractor>().enabled = enable;
     }
 
     public void ResetHeight()
@@ -779,7 +799,7 @@ public class VRPlayer : MonoBehaviour
         realHeight = head.localPosition.y * SCALE_FACTOR;
         cameraFloorOffset = targetHeight - realHeight;
 
-        if (PlayerController.inSpecialInteractAnimation)
+        if (PlayerController.inSpecialInteractAnimation && PlayerController.currentTriggerInAnimationWith)
         {
             var nodeRotation = Quaternion.Inverse(transform.parent.rotation) *
                                PlayerController.currentTriggerInAnimationWith.playerPositionNode.rotation;

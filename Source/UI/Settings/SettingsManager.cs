@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using LCVR.Player;
+using LCVR.Managers;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -14,8 +14,6 @@ namespace LCVR.UI.Settings;
 
 public class SettingsManager : MonoBehaviour
 {
-    private MenuManager menuManager;
-
     [SerializeField] private GameObject categoryTemplate;
     [SerializeField] private GameObject dropdownTemplate;
     [SerializeField] private GameObject textTemplate;
@@ -32,11 +30,6 @@ public class SettingsManager : MonoBehaviour
 
     private readonly List<string> disabledCategories = ["internal"];
     private bool isInitializing = true;
-
-    private void Awake()
-    {
-        menuManager = FindObjectOfType<MenuManager>();
-    }
 
     private void Start()
     {
@@ -194,26 +187,6 @@ public class SettingsManager : MonoBehaviour
     {
         disabledCategories.Add(categoryName.ToLowerInvariant());
     }
-    
-    public void PlayButtonPressSfx()
-    {
-        menuManager?.PlayConfirmSFX();
-    }
-
-    public void PlayCancelSfx()
-    {
-        menuManager?.PlayCancelSFX();
-    }
-
-    public void PlayHoverSfx()
-    {
-        menuManager?.MenuAudio.PlayOneShot(GameNetworkManager.Instance.buttonSelectSFX);
-    }
-
-    public void PlayChangeSfx()
-    {
-        menuManager?.MenuAudio.PlayOneShot(GameNetworkManager.Instance.buttonTuneSFX);
-    }
 
     public void SetOpenXRRuntime(int index)
     {
@@ -228,7 +201,7 @@ public class SettingsManager : MonoBehaviour
 
         if (!runtimes.TryGetRuntime(runtimeName, out var runtime))
         {
-            menuManager.DisplayMenuNotification("Failed to update OpenXR runtime", "[ Close ]");
+            // menuManager.DisplayMenuNotification("Failed to update OpenXR runtime", "[ Close ]");
             return;
         }
 
@@ -241,7 +214,7 @@ public class SettingsManager : MonoBehaviour
         if (isInitializing)
             return;
 
-        PlayChangeSfx();
+        // PlayChangeSfx();
 
         Logger.LogDebug($"Updating setting: [{section}] {key} = {value}");
 
@@ -251,6 +224,7 @@ public class SettingsManager : MonoBehaviour
             {
                 string str when entry.SettingType == typeof(int) => int.Parse(str),
                 string str when entry.SettingType == typeof(float) => float.Parse(str),
+                int num when entry.SettingType.IsEnum => Enum.ToObject(entry.SettingType, num),
                 _ => value
             };
     }

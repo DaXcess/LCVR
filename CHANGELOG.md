@@ -1,16 +1,36 @@
-# 1.3.11
+# 1.4.0
 
 **Additions**:
+- Added support for V72
 - Added custom configuration for item offsets and shovels
+- Added custom interactions for new doors
+- Added custom interactions for drawers and cabinets (including lockers)
+- Added a skybox to the main menu
+- Added a skybox to the pause menu
+- Added a new Online/LAN selection menu, replacing that of the vanilla game
+- Added a custom keybindings menu
+- Added a new header tab for VR, containing the VR settings and keybind settings
+- Added text popups to certain actions within the game
+- Added a new spectating system, which can be used by looking at your left arm
 
 **Changes**:
 - Moved persistent settings to `LCGeneralSaveFile`. This means your persistent settings will be reset when updating to this version, unless you still have these settings inside your BepInEx config.
 - Changed the persistent settings toggle to use ES3, instead of the BepInEx config file
-- Replaced HDRP vignette shader with custom vignette shader that works better in VR
+- Replaced HDRP vignette shader with a custom vignette shader that works better in VR
 
 **Bug fixes**:
-- Fixed issue where models on modded shovels would not move with the player
-- Fixed issue with MoreCompany if no cosmetics were loaded
+- Fixed an issue where models on modded shovels would not move with the player
+- Fixed an issue with MoreCompany if no cosmetics were loaded
+- Fixed an issue where screen shake could cause the camera to become tilted
+- Fixed an issue where spectators could destroy the broken bridge on Adamance
+- Fixed an issue where spectators could disperse docile locust bees
+- Fixed a bug where you accidentally shoot yourself with the shotgun. This also means you can no longer *intentionally* kill yourself with the shotgun.
+- Potentially fixed an issue where translation mods could break certain VR interactions
+
+**Removals**:
+- Removed support for all versions below V72
+- Removed Ik from the main menu
+- Removed F8 hot switching
 
 # 1.3.10
 

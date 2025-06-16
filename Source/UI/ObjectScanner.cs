@@ -1,4 +1,4 @@
-﻿using LCVR.Player;
+﻿using LCVR.Managers;
 using UnityEngine;
 
 namespace LCVR.UI;

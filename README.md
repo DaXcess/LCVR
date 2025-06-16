@@ -38,36 +38,36 @@ For more documentation on using the mod, check out the [LethalCompanyVR Thunders
 
 Here is a list of LCVR versions and which version(s) of Lethal Company it supports
 
-| LCVR               | Lethal Company    |
-|--------------------|-------------------|
-| v1.3.11 *(LATEST)* | V64 - V69.1       |
-| v1.3.10            | V64 - V69.1       |
-| v1.3.9             | V64 - V69.1       |
-| v1.3.8             | V64 - V69         |
-| v1.3.7             | V64 - V67         |
-| v1.3.6*            | V64 - V67         |
-| v1.3.5             | V64 - V66         |
-| v1.3.4             | V64 and V64.1     |
-| v1.3.3             | V64 and V64.1     |
-| v1.3.2             | V64               |
-| v1.3.1             | V62               |
-| v1.3.0             | V56               |
-| v1.2.5             | V50               |
-| v1.2.4             | V50               |
-| v1.2.3             | V50               |
-| v1.2.2             | V50               |
-| v1.2.1             | V50 (Older patch) |
-| v1.2.0             | V49               |
-| v1.1.9             | V45 and V49       |
-| v1.1.8             | V45 and V49       |
-| v1.1.6             | V45 and V49       |
-| v1.1.5             | V45 and V49       |
-| v1.1.4             | V45 and V49       |
-| v1.1.2             | V45 and V49       |
-| v1.1.1             | V45 and V49       |
-| v1.1.0             | V45 and V49       |
-| v1.0.1             | V45 and V49       |
-| v1.0.0             | V45 and V49       |
+| LCVR              | Lethal Company    | [Configuration version](Docs/Configuration/README.md) |
+|-------------------|-------------------|-------------------------------------------------------|
+| v1.4.0 *(LATEST)* | V72               | 1                                                     |
+| v1.3.10           | V64 - V69.1       | *N/A*                                                 |
+| v1.3.9            | V64 - V69.1       | *N/A*                                                 |
+| v1.3.8            | V64 - V69         | *N/A*                                                 |
+| v1.3.7            | V64 - V67         | *N/A*                                                 |
+| v1.3.6*           | V64 - V67         | *N/A*                                                 |
+| v1.3.5            | V64 - V66         | *N/A*                                                 |
+| v1.3.4            | V64 and V64.1     | *N/A*                                                 |
+| v1.3.3            | V64 and V64.1     | *N/A*                                                 |
+| v1.3.2            | V64               | *N/A*                                                 |
+| v1.3.1            | V62               | *N/A*                                                 |
+| v1.3.0            | V56               | *N/A*                                                 |
+| v1.2.5            | V50               | *N/A*                                                 |
+| v1.2.4            | V50               | *N/A*                                                 |
+| v1.2.3            | V50               | *N/A*                                                 |
+| v1.2.2            | V50               | *N/A*                                                 |
+| v1.2.1            | V50 (Older patch) | *N/A*                                                 |
+| v1.2.0            | V49               | *N/A*                                                 |
+| v1.1.9            | V45 and V49       | *N/A*                                                 |
+| v1.1.8            | V45 and V49       | *N/A*                                                 |
+| v1.1.6            | V45 and V49       | *N/A*                                                 |
+| v1.1.5            | V45 and V49       | *N/A*                                                 |
+| v1.1.4            | V45 and V49       | *N/A*                                                 |
+| v1.1.2            | V45 and V49       | *N/A*                                                 |
+| v1.1.1            | V45 and V49       | *N/A*                                                 |
+| v1.1.0            | V45 and V49       | *N/A*                                                 |
+| v1.0.1            | V45 and V49       | *N/A*                                                 |
+| v1.0.0            | V45 and V49       | *N/A*                                                 |
 
 > \* LCVR versions from 1.3.6 and above also check hashes remotely, meaning newer Lethal Company versions might be supported even though they aren't listed here.
 
@@ -83,7 +83,7 @@ Also make sure you know how to use BepInEx Dependencies and assembly referencing
 
 To install the mod from the source code, you will first have to compile the mod. Instructions for this are available in [COMPILING.md](COMPILING.md).
 
-Next up you'll need to grab a copy of some **Runtime Dependencies** and the [**Asset Bundle**](https://github.com/DaXcess/LCVR/blob/thunderstore/lethalcompanyvr). You can grab both of these from [the thunderstore branch](https://github.com/DaXcess/LCVR/tree/thunderstore). You can also manually retrieve the **Runtime Dependencies** from a manually compiled Unity project.
+Next up you'll need to grab a copy of some **Runtime Dependencies** and the **Asset Bundles**. You can grab both of these from [the thunderstore branch](https://github.com/DaXcess/LCVR/tree/thunderstore). You can also manually retrieve the **Runtime Dependencies** from a manually compiled Unity project.
 
 ## Retrieving Runtime Dependencies from a Unity Project
 
@@ -126,7 +126,7 @@ After this has been completed, create a new directory called `RuntimeDeps` (has 
 
 These files should have been retrieved either during the [Retrieving Runtime Dependencies](#retrieving-runtime-dependencies-from-a-unity-project) step, or from grabbing them from the latest release.
 
-Next up, grab the **Asset Bundle** from one of the releases, and place them into the same folder as the `LCVR.dll` file. This asset bundle file needs to be called `lethalcompanyvr`.
+Next up, grab the **Asset Bundles** from one of the releases, and place them into the same folder as the `LCVR.dll` file. These asset bundle files needs to be called `lethalcompanyvr` and `lethalcompanyvr-levels` (also make sure not to mix these, since the content of these files are different).
 
 Finally, in the `BepInEx/patchers` folder, also create a new folder called `LCVR` (again, doesn't have to be exact). Inside this folder, place the `LCVR.Preload.dll` file that was also generated during the [COMPILING.md](COMPILING.md) steps.
 
@@ -134,9 +134,5 @@ In this folder, also create a new directory called `RuntimeDeps` (again, has to 
 
 - openxr_loader.dll
 - UnityOpenXR.dll
-
-Your directory structure (excluding BepInEx internals) should now look like this:
-
-![image](https://github.com/user-attachments/assets/6cfc3384-6f0c-4d93-9a62-11bb5a009b69)
 
 You can now run the game with LCVR installed.

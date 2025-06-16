@@ -64,6 +64,7 @@ jobs:
 
           # Move assets
           mv ./package/lethalcompanyvr ./package/BepInEx/plugins/LCVR/lethalcompanyvr
+          mv ./package/lethalcompanyvr-levels ./package/BepInEx/plugins/LCVR/lethalcompanyvr-levels
 
           # Copy docs and license
           cp CHANGELOG.md ./package/CHANGELOG.md
