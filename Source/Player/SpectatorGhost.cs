@@ -18,6 +18,7 @@ public class SpectatorGhost : MonoBehaviour
 
     private Transform lastSyncedPhysicsParent;
     
+    public Vector3 PlayerPosition { get; private set; }
     public bool ParentedToShip { get; private set; }
     public bool InHangarShipRoom { get; private set; }
     public bool InInterior { get; private set; }
@@ -63,6 +64,7 @@ public class SpectatorGhost : MonoBehaviour
 
     public void UpdateRig(SpectatorRig rig)
     {
+        PlayerPosition = rig.PlayerPosition;
         ParentedToShip = rig.ParentedToShip;
         InHangarShipRoom = rig.InHangarShipRoom;
         InInterior = rig.InInterior;

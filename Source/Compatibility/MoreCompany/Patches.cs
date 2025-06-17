@@ -16,6 +16,6 @@ internal static class MoreCompanyUIPatches
     private static void AfterUpdateCosmetics()
     {
         CosmeticRegistry.displayGuyCosmeticApplication.spawnedCosmetics.Do(cosmetic =>
-            cosmetic.transform.localScale *= CosmeticRegistry.menuIsInGame ? 2.15f : 0.5f);
+            cosmetic.transform.localScale *= CosmeticRegistry.menuIsInGame ? 1.75f : 0.45f);
     }
 }

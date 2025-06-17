@@ -54,20 +54,20 @@ public class Plugin : BaseUnityPlugin
         // Reload Unity's Input System plugins since BepInEx in some
         // configurations runs after the Input System has already been initialized
         InputSystem.PerformDefaultPluginInitialization();
-        
+
         // Register XR Toolkit (these normally load during RuntimeInitializeOnLoad -> BeforeSceneLoad)
         ButtonFallbackComposite.Initialize();
         IntegerFallbackComposite.Initialize();
         QuaternionFallbackComposite.Initialize();
         Vector3FallbackComposite.Initialize();
         SectorInteraction.Initialize();
-        
+
         // Plugin startup logic
         LCVR.Logger.SetSource(Logger);
-        
+
         Config = new Config(Info.Location, base.Config);
         Config.DeserializeFromES3();
-        Config.File.SettingChanged += (_, _) => Config.SerializeToES3(); 
+        Config.File.SettingChanged += (_, _) => Config.SerializeToES3();
 
         Logger.LogInfo($"Starting {PLUGIN_NAME} v{PLUGIN_VERSION} ({GetCommitHash()})");
 
@@ -104,6 +104,9 @@ public class Plugin : BaseUnityPlugin
         if (args.Contains("--lcvr-item-offset-editor"))
             Flags |= Flags.ItemOffsetEditor;
 
+        if (args.Contains("--lcvr-enable-experiments"))
+            Flags |= Flags.ExperimentsEnabled;
+
         // Verify game assembly to detect compatible version
         var allowUnverified = Environment.GetCommandLineArgs().Contains(SKIP_CHECKSUM_VAR);
 
@@ -138,7 +141,7 @@ public class Plugin : BaseUnityPlugin
             Logger.LogError("Disabling mod because assets could not be loaded!");
             return;
         }
-        
+
         // Load custom item configuration
         Player.Items.LoadConfig();
 
@@ -152,6 +155,13 @@ public class Plugin : BaseUnityPlugin
         HarmonyPatcher.PatchUniversal();
 
         Logger.LogDebug("Inserted universal patches using Harmony");
+
+#if DEBUG
+        if (Flags.HasFlag(Flags.ExperimentsEnabled))
+        {
+            HarmonyPatcher.PatchClass(typeof(ExperimentalPatches));
+        }
+#endif
 
         // Bring game window to front
         Native.BringGameWindowToFront();
@@ -248,25 +258,6 @@ public class Plugin : BaseUnityPlugin
         return true;
     }
 
-    public static void ToggleVR()
-    {
-        if (Flags.HasFlag(Flags.VR))
-        {
-            OpenXR.Loader.DeinitializeXR();
-            HarmonyPatcher.UnpatchVR();
-
-            Flags &= ~Flags.VR;
-        }
-        else
-        {
-            if (!InitializeVR())
-                return;
-
-            Flags |= Flags.VR;
-            Flags &= ~Flags.StartupFailed;
-        }
-    }
-
     private static bool InitializeVR()
     {
         LCVR.Logger.LogInfo("Loading VR...");
@@ -352,4 +343,5 @@ public enum Flags
     InteractableDebug = 1 << 2,
     ItemOffsetEditor = 1 << 3,
     StartupFailed = 1 << 4,
+    ExperimentsEnabled = 1 << 5,
 }

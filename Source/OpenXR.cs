@@ -378,12 +378,6 @@ internal static class OpenXR
             return false;
         }
 
-        public static void DeinitializeXR()
-        {
-            xrManagerSettings.DeinitializeLoader();
-            xrGeneralSettings.StopXRSDK();
-        }
-
         private static bool InitializeXR(Runtime? runtime)
         {
             if (runtime is { } rt)

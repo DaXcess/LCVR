@@ -542,7 +542,7 @@ public struct Rig
     public Vector3 CameraPosAccounted;
     public Vector3 ModelOffset;
     public Vector3 SpecialAnimationPositionOffset;
-        
+    
     public CrouchState CrouchState;
     public Vector3 RotationOffset;
     public float CameraFloorOffset;
@@ -551,6 +551,8 @@ public struct Rig
 [Serialize]
 public struct SpectatorRig
 {
+    public Vector3 PlayerPosition;
+    
     public Vector3 HeadPosition;
     public Vector3 HeadRotation;
 

@@ -25,6 +25,7 @@
 - Fixed an issue where spectators could destroy the broken bridge on Adamance
 - Fixed an issue where spectators could disperse docile locust bees
 - Fixed a bug where you accidentally shoot yourself with the shotgun. This also means you can no longer *intentionally* kill yourself with the shotgun.
+- Fixed custom camera not rotating properly
 - Potentially fixed an issue where translation mods could break certain VR interactions
 
 **Removals**:

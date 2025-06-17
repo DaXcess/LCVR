@@ -9,6 +9,7 @@ using GameNetcodeStuff;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.Animations.Rigging;
 using System.Linq;
+using LCVR.Assets;
 using LCVR.Managers;
 using Unity.XR.CoreUtils;
 using Rig = LCVR.Networking.Rig;
@@ -47,6 +48,7 @@ public class VRPlayer : MonoBehaviour
 
     private XRRayInteractor leftControllerRayInteractor;
     private XRRayInteractor rightControllerRayInteractor;
+    private XRRayInteractor rightControllerSpectatorInteractor;
 
     private Transform xrOrigin;
     private Transform head;
@@ -194,6 +196,20 @@ public class VRPlayer : MonoBehaviour
         rightControllerRayInteractor.transform.localPosition = new Vector3(-0.01f, 0, 0);
         rightControllerRayInteractor.transform.localRotation = Quaternion.Euler(80, 0, 0);
 
+        rightControllerSpectatorInteractor =
+            new GameObject("Spectator Ray Interactor").CreateInteractorController(Utils.Hand.Right, false, false,
+                rayEnabled: false);
+        
+        rightControllerSpectatorInteractor.transform.SetParent(rightController.transform, false);
+        rightControllerSpectatorInteractor.transform.localPosition = new Vector3(-0.00338f, -0.124f, 0.0887f);
+        rightControllerSpectatorInteractor.transform.localRotation = Quaternion.Euler(80, 0, 0);
+
+        var rightControllerSpectatorVisual = rightControllerSpectatorInteractor.GetComponent<XRInteractorLineVisual>();
+
+        rightControllerSpectatorVisual.reticle = AssetManager.Reticle;
+        rightControllerSpectatorVisual.invalidColorGradient = rightControllerSpectatorVisual.validColorGradient =
+            new Gradient { alphaKeys = [new GradientAlphaKey(0, 0), new GradientAlphaKey(0, 1)] };
+        
         // Set up item holders
         var leftHolder = new GameObject("Left Hand Item Holder");
         var rightHolder = new GameObject("Right Hand Item Holder");
@@ -697,6 +713,8 @@ public class VRPlayer : MonoBehaviour
             spectatorRigChannel.SendPacket(Serialization.Serialize(
                 new SpectatorRig
                 {
+                    PlayerPosition = parent.InverseTransformPoint(transform.position),
+                    
                     HeadPosition = parent.InverseTransformPoint(head.position),
                     HeadRotation = head.eulerAngles,
 
@@ -780,6 +798,12 @@ public class VRPlayer : MonoBehaviour
         leftControllerRayInteractor.GetComponent<XRRayInteractor>().enabled = enable;
         rightControllerRayInteractor.GetComponent<XRInteractorLineVisual>().enabled = enable;
         rightControllerRayInteractor.GetComponent<XRRayInteractor>().enabled = enable;
+    }
+
+    public void EnableSpectatorInteractor(bool enable = true)
+    {
+        rightControllerSpectatorInteractor.GetComponent<XRInteractorLineVisual>().enabled = enable;
+        rightControllerSpectatorInteractor.GetComponent<XRRayInteractor>().enabled = enable;
     }
 
     public void ResetHeight()

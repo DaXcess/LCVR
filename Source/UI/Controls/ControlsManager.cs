@@ -75,6 +75,17 @@ public class ControlsManager : MonoBehaviour
 
             options.Add(option);
         }
+        
+        // TODO: Load modded bindings
+        // foreach (var asset in moddedBindingAssets)
+        // {
+        //     var categoryTransform = CreateCategoryUI(asset.name);
+        //     foreach (var control in asset.controls) {
+        //         var option = Instantiate(control.controlModifier.HasValue ? controlWithModifierTemplate : controlTemplate, categoryTransform).GetComponent<ControlOption>();
+        //         option.Setup(this, control);
+        //         options.Add(option);
+        //     }
+        // }
 
         playerInput.onControlsChanged += OnControlsChanged;
         

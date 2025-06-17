@@ -124,7 +124,6 @@ internal static class SpectatorEnemyPatches
     /// Make the locust bees ignore dead players
     /// </summary>
     [HarmonyPatch(typeof(DocileLocustBeesAI), nameof(DocileLocustBeesAI.DoAIInterval))]
-    [HarmonyDebug]
     [HarmonyTranspiler]
     private static IEnumerable<CodeInstruction> LocustBeesIgnoreDeadPlayers(IEnumerable<CodeInstruction> instructions)
     {
@@ -144,7 +143,7 @@ internal static class SpectatorEnemyPatches
                 queryTriggerInteraction);
 
             var everyoneDead =
-                colliders[..size].All(collider => collider.GetComponent<PlayerControllerB>().isPlayerDead);
+                colliders[..size].All(collider => collider.GetComponent<PlayerControllerB>()?.isPlayerDead ?? false);
 
             return !everyoneDead;
         }

@@ -127,4 +127,18 @@ internal static class SpectatorPlayerPatches
             audioSource.GetComponent<AudioLowPassFilter>().enabled = !isGlobal;
         }
     }
+
+    /// <summary>
+    /// Prevent log spam when teleporting spectated players around
+    /// </summary>
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.TeleportPlayer))]
+    [HarmonyTranspiler]
+    private static IEnumerable<CodeInstruction> ShutUpDebug(IEnumerable<CodeInstruction> instructions)
+    {
+        return new CodeMatcher(instructions)
+            .MatchForward(false,
+                new CodeMatch(OpCodes.Call, Method(typeof(Debug), nameof(Debug.Log), [typeof(object)])))
+            .Repeat(matcher => matcher.SetOpcodeAndAdvance(OpCodes.Nop).Insert(new CodeInstruction(OpCodes.Pop)))
+            .InstructionEnumeration();
+    }
 }

@@ -119,10 +119,9 @@ internal static class SpectatorEnvironmentPatches
     private static bool PreventTeleportDeadPlayer(ShipTeleporter __instance, ref IEnumerator __result)
     {
         var target = StartOfRound.Instance.mapScreen.targetedPlayer;
-        if (target != StartOfRound.Instance.localPlayerController || !target.isPlayerDead ||
-            target.deadBody is not null)
+        if (target != StartOfRound.Instance.localPlayerController || !target.isPlayerDead || target.deadBody != null)
             return true;
-        
+
         __instance.shipTeleporterAudio.PlayOneShot(__instance.teleporterSpinSFX);
         __result = Utils.NopRoutine();
         return false;

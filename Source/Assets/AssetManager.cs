@@ -18,6 +18,7 @@ internal static class AssetManager
     public static GameObject SteeringWheelPoints;
     public static GameObject PopupText;
     public static GameObject SpectatingMenu;
+    public static GameObject Reticle;
     
     public static GameObject InitMenuEnvironment;
     public static GameObject MainMenuEnvironment;
@@ -67,6 +68,7 @@ internal static class AssetManager
         SteeringWheelPoints = assetsBundle.LoadAsset<GameObject>("SnapPointContainer");
         PopupText = assetsBundle.LoadAsset<GameObject>("Popup Text");
         SpectatingMenu = assetsBundle.LoadAsset<GameObject>("Spectating Menu");
+        Reticle = assetsBundle.LoadAsset<GameObject>("Reticle");
         
         InitMenuEnvironment = assetsBundle.LoadAsset<GameObject>("Init Menu Environment");
         MainMenuEnvironment = assetsBundle.LoadAsset<GameObject>("Main Menu Environment");

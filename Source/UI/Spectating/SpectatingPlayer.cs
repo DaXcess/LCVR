@@ -15,12 +15,17 @@ public class SpectatingPlayer : MonoBehaviour
     public Image speakingIcon;
 
     public GameObject teleportButtonObject;
+    
     public GameObject spectateButtonObject;
+    public Image spectateImage;
+    public Image stopSpectateImage;
     
     private PlayerControllerB playerController;
 
     private float speakingTimer;
     private bool speaking;
+
+    public bool Alive => !playerController.isPlayerDead;
 
     private void Update()
     {
@@ -83,6 +88,8 @@ public class SpectatingPlayer : MonoBehaviour
             teleportButtonObject.SetActive(true);
         
         spectateButtonObject.SetActive(!playerController.isPlayerDead);
+        spectateImage.enabled = VRSession.Instance.SpectateManager.SpectatedPlayer != playerController;
+        stopSpectateImage.enabled = !spectateImage.enabled;
     }
 
     public bool IsPlayer(PlayerControllerB player) => playerController == player;
@@ -97,5 +104,7 @@ public class SpectatingPlayer : MonoBehaviour
     public void Spectate()
     {
         VRSession.Instance.SpectateManager.SpectatePlayer(playerController);
+        
+        UpdateState();
     }
 }

@@ -19,7 +19,7 @@ public class RemappableControl
     public InputActionReference currentInput;
     public int bindingIndex = -1;
 
-    [SerializeField] private bool hasModifier = false;
+    [SerializeField] private bool hasModifier;
     [SerializeField] private int modifierValue;
 
     public int? controlModifier

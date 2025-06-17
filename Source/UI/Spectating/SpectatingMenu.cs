@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using LCVR.Managers;
 using TMPro;
 using UnityEngine;
@@ -45,6 +46,8 @@ public class SpectatingMenu : MonoBehaviour
     // Voting
     private bool isVoting;
     private float voteProgress;
+
+    public bool IsOpen => gazeTimer > 0;
 
     private void Awake()
     {
@@ -148,11 +151,33 @@ public class SpectatingMenu : MonoBehaviour
             
             Destroy(go);
         }
+        
+        // Sort dead players first
+        var parent = playerBoxes[0].transform.parent;
+        var sortIndex = 0;
 
+        for (var i = 1; i < parent.childCount; i++)
+        {
+            var box = parent.GetChild(i).GetComponent<SpectatingPlayer>();
+            if (box != null && !box.Alive)
+                sortIndex = i + 1;
+        }
+        
+        foreach (var box in playerBoxes.Where(box => !box.Alive))
+        {
+            var currentIndex = box.transform.GetSiblingIndex();
+            if (currentIndex <= sortIndex)
+                continue;
+
+            box.transform.SetSiblingIndex(sortIndex);
+            sortIndex++;
+        }
+
+        // Update all boxes
         foreach (var box in playerBoxes)
             box.UpdateState();
     }
-    
+
     private void HandleGaze()
     {
         if (UnityEngine.Physics.Raycast(new Ray(raySource.position - raySource.forward * 0.5f, raySource.forward),
@@ -160,7 +185,12 @@ public class SpectatingMenu : MonoBehaviour
             gazeTimer = 0.25f;
 
         if (!animator.GetBool(Visible) && gazeTimer > 0)
+        {
             StartCoroutine(Utils.FixYuckyScrollThing(animator));
+            VRSession.Instance.LocalPlayer.EnableSpectatorInteractor();
+        }
+        else if (animator.GetBool(Visible) && gazeTimer == 0)
+            VRSession.Instance.LocalPlayer.EnableSpectatorInteractor(false);
 
         animator.SetBool(Visible, gazeTimer > 0);
         gazeTimer = Mathf.Max(gazeTimer - Time.deltaTime, 0);

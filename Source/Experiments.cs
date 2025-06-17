@@ -10,11 +10,12 @@ using static HarmonyLib.AccessTools;
 
 namespace LCVR;
 
+#if DEBUG
 internal static class Experiments
 {
     public static void RunExperiments()
     {
-        // ShowMeTheMoney(10000);
+        ShowMeTheMoney(10000);
         // SpawnShotgun();
         // SpawnBuyableItem<JetpackItem>("Jetpack");
         // SpawnBuyableItem<SprayPaintItem>("Spray paint");
@@ -89,49 +90,9 @@ internal static class Experiments
         return component;
     }
 }
-
-internal static class DebugLinePool
-{
-    private static Dictionary<string, LineRenderer> lines = [];
-
-    public static LineRenderer GetLine(string key)
-    {
-        if (lines.TryGetValue(key, out var line))
-        {
-            if (line != null)
-                return line;
-        }
-
-        line = CreateRenderer();
-        lines[key] = line;
-
-        return line;
-    }
-    
-    private static LineRenderer CreateRenderer()
-    {
-        var gameObject = new GameObject("DebugLinePool Line Renderer");
-        
-        var lineRenderer = gameObject.AddComponent<LineRenderer>();
-        lineRenderer.widthCurve.keys = [new Keyframe(0, 1)];
-        lineRenderer.widthMultiplier = 0.005f;
-        lineRenderer.positionCount = 2;
-        lineRenderer.SetPositions(new[] { Vector3.zero, Vector3.zero });
-        lineRenderer.numCornerVertices = 4;
-        lineRenderer.numCapVertices = 4;
-        lineRenderer.alignment = LineAlignment.View;
-        lineRenderer.shadowBias = 0.5f;
-        lineRenderer.useWorldSpace = true;
-        lineRenderer.maskInteraction = SpriteMaskInteraction.None;
-        lineRenderer.SetMaterials([AssetManager.DefaultRayMat]);
-        lineRenderer.enabled = true;
-
-        return lineRenderer;
-    }
-}
+#endif
 
 #if DEBUG
-[LCVRPatch(LCVRPatchTarget.Universal)]
 [HarmonyPatch]
 internal static class ExperimentalPatches;
 
@@ -281,5 +242,45 @@ internal static class ItemOffsetEditorPatches
         }
 
         return false;
+    }
+}
+
+internal static class DebugLinePool
+{
+    private static Dictionary<string, LineRenderer> lines = [];
+
+    public static LineRenderer GetLine(string key)
+    {
+        if (lines.TryGetValue(key, out var line))
+        {
+            if (line != null)
+                return line;
+        }
+
+        line = CreateRenderer();
+        lines[key] = line;
+
+        return line;
+    }
+    
+    private static LineRenderer CreateRenderer()
+    {
+        var gameObject = new GameObject("DebugLinePool Line Renderer");
+        
+        var lineRenderer = gameObject.AddComponent<LineRenderer>();
+        lineRenderer.widthCurve.keys = [new Keyframe(0, 1)];
+        lineRenderer.widthMultiplier = 0.005f;
+        lineRenderer.positionCount = 2;
+        lineRenderer.SetPositions(new[] { Vector3.zero, Vector3.zero });
+        lineRenderer.numCornerVertices = 4;
+        lineRenderer.numCapVertices = 4;
+        lineRenderer.alignment = LineAlignment.View;
+        lineRenderer.shadowBias = 0.5f;
+        lineRenderer.useWorldSpace = true;
+        lineRenderer.maskInteraction = SpriteMaskInteraction.None;
+        lineRenderer.SetMaterials([AssetManager.DefaultRayMat]);
+        lineRenderer.enabled = true;
+
+        return lineRenderer;
     }
 }

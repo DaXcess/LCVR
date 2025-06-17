@@ -350,7 +350,8 @@ public class VRSession : MonoBehaviour
         }
         
 #if DEBUG
-        Experiments.RunExperiments();
+        if (Plugin.Flags.HasFlag(Flags.ExperimentsEnabled))
+            Experiments.RunExperiments();
 #endif
         
         // Spectating
@@ -382,8 +383,9 @@ public class VRSession : MonoBehaviour
         customCamera.stereoTargetEye = StereoTargetEyeMask.None;
         customCamera.targetDisplay = 0;
 
-        // Prevent cloned camera from tracking HMD movement
+        // Prevent cloned camera from tracking getting manipulated
         Destroy(customCamera.GetComponent<TrackedPoseDriver>());
+        Destroy(customCamera.GetComponent<CameraShake>());
 
         var hdDesktopCamera = customCamera.GetComponent<HDAdditionalCameraData>();
         hdDesktopCamera.xrRendering = false;

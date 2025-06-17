@@ -26,10 +26,10 @@ internal static class HarmonyPatcher
         Logger.LogWarning("Item offset editor is enabled!");
         VRPatcher.CreateClassProcessor(typeof(ItemOffsetEditorPatches)).Patch();
     }
-
-    public static void UnpatchVR()
+    
+    public static void PatchClass(Type type)
     {
-        VRPatcher.UnpatchSelf();
+        UniversalPatcher.CreateClassProcessor(type, true).Patch();
     }
 
     private static void Patch(Harmony patcher, LCVRPatchTarget target)
