@@ -23,6 +23,8 @@ internal static class LockerPatches
         if (networkObject.name != "StorageShelfContainer(Clone)")
             return;
 
+        __instance.gameObject.name = "DrawerInteractable";
+
         var interactableObject = Object.Instantiate(AssetManager.Interactable, __instance.transform);
         interactableObject.transform.localPosition = new Vector3(0.38f, 0.4014f, 0.0217f);
         interactableObject.transform.localEulerAngles = Vector3.zero;
