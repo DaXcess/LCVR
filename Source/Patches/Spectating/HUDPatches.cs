@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Reflection.Emit;
 using HarmonyLib;
 using LCVR.Managers;
+using UnityEngine;
 using UnityEngine.InputSystem;
 
 using static HarmonyLib.AccessTools;
@@ -50,5 +51,26 @@ internal static class HUDPatches
     private static void OnUpdateSpectateUI()
     {
         VRSession.Instance.HUD.SpectatingMenu.UpdateBoxes();
+    }
+
+    /// <summary>
+    /// Disable the base spectator vote tip, as we are going to display a tip to open the new spectator UI
+    /// </summary>
+    [HarmonyPatch(typeof(HUDManager), nameof(HUDManager.DisplaySpectatorVoteTip))]
+    [HarmonyPrefix]
+    private static bool DisableSpectatorVoteTip(HUDManager __instance)
+    {
+        if (__instance.displayedSpectatorAFKTip)
+        {
+            __instance.noLivingPlayersAtKeyboardTimer = 0;
+            return false;
+        }
+        
+        __instance.noLivingPlayersAtKeyboardTimer += Time.deltaTime;
+
+        if (__instance.noLivingPlayersAtKeyboardTimer > 12)
+            __instance.DisplaySpectatorTip("TIP!: Look at your left wrist (like a watch) to open up the spectator menu.");
+        
+        return false;
     }
 }

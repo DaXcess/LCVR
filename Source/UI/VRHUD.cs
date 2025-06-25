@@ -420,7 +420,9 @@ public class VRHUD : MonoBehaviour
         deathScreen.transform.localScale = Vector3.one * 1.1f;
         
         // Disable spectator UI
-        deathScreen.Find("SpectateUI").SetActive(false);
+        deathScreen.Find("SpectateUI/Spectating").SetActive(false);
+        deathScreen.Find("SpectateUI/PlayerIcons").SetActive(false);
+        deathScreen.Find("SpectateUI/EndGameEarly").SetActive(false);
         
         // Spectating menu
         SpectatingMenu = Instantiate(AssetManager.SpectatingMenu, LeftHandCanvas.transform.parent).GetComponent<SpectatingMenu>();
