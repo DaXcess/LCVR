@@ -220,7 +220,15 @@ internal static class Utils
     {
         return GameNetworkManager.Instance.localPlayerController == player;
     }
-    
+
+    // Holy scuffed
+    public static bool IsCrouching(this PlayerControllerB player)
+    {
+        return (player.IsLocalPlayer() && player.isCrouching) || (!player.IsLocalPlayer() &&
+                                                                  player.gameplayCamera.transform.parent.localPosition
+                                                                      .y < -0.1f);
+    }
+
     /// <summary>
     /// A coroutine that does nothing
     /// </summary>

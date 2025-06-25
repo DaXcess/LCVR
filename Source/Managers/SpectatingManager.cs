@@ -82,7 +82,7 @@ public class SpectatingManager : MonoBehaviour
         }
 
         localPlayer.health = SpectatedPlayer.health;
-        localPlayer.isCrouching = SpectatedPlayer.isCrouching;
+        localPlayer.isCrouching = SpectatedPlayer.IsCrouching();
 
         if (localPlayer.transform.parent != SpectatedPlayer.transform.parent)
             localPlayer.transform.SetParent(SpectatedPlayer.transform.parent, true);
@@ -200,7 +200,7 @@ public class SpectatingManager : MonoBehaviour
         SpectatedPlayer.DisablePlayerModel(SpectatedPlayer.gameObject);
         SpectatedPlayer.playerBetaBadgeMesh.enabled = false;
         SpectatedPlayer.playerBadgeMesh.GetComponent<MeshRenderer>().enabled = false;
-        localPlayer.isCrouching = SpectatedPlayer.isCrouching;
+        localPlayer.isCrouching = SpectatedPlayer.IsCrouching();
         
         if (Compat.IsLoaded(Compat.MoreCompany))
             MoreCompanyCompatibility.EnablePlayerCosmetics(SpectatedPlayer, false);
