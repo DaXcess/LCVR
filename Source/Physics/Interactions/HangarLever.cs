@@ -12,7 +12,7 @@ public class HangarLever : MonoBehaviour, VRInteractable
 {
     private InteractTrigger trigger;
     private AnimatedObjectTrigger animTrigger;
-    
+
     private bool interacting;
     private Transform lookAtTransform;
 
@@ -20,7 +20,7 @@ public class HangarLever : MonoBehaviour, VRInteractable
     private float lockedRotationTime;
 
     internal bool inverse;
-    
+
     public InteractableFlags Flags => InteractableFlags.BothHands;
 
     private void Awake()
@@ -30,7 +30,7 @@ public class HangarLever : MonoBehaviour, VRInteractable
 
         transform.parent.GetComponentInParent<BoxCollider>().enabled = false;
     }
-    
+
     public void OnColliderEnter(VRInteractor interactor)
     {
     }
@@ -45,10 +45,10 @@ public class HangarLever : MonoBehaviour, VRInteractable
             return false;
 
         interacting = true;
-        lookAtTransform = interactor.transform;
-        
+        lookAtTransform = interactor.TrackedController;
+
         interactor.FingerCurler.ForceFist(true);
-        
+
         return true;
     }
 
@@ -68,13 +68,13 @@ public class HangarLever : MonoBehaviour, VRInteractable
                 trigger.Interact(VRSession.Instance.LocalPlayer.transform);
                 lockedRotation = 180;
                 lockedRotationTime = Time.realtimeSinceStartup + 0.5f;
-                
+
                 break;
             case false when rot < 20:
                 trigger.Interact(VRSession.Instance.LocalPlayer.transform);
                 lockedRotation = 0;
                 lockedRotationTime = Time.realtimeSinceStartup + 0.5f;
-                
+
                 break;
         }
     }
@@ -86,7 +86,7 @@ public class HangarLever : MonoBehaviour, VRInteractable
             transform.parent.localEulerAngles = new Vector3(0, lockedRotation, 0);
             return;
         }
-        
+
         if (!interacting)
             return;
 
@@ -97,17 +97,17 @@ public class HangarLever : MonoBehaviour, VRInteractable
     {
         // I know, I'm supposed to calculate this myself but idk how and internet is not helping
         var tf = transform.parent;
-        
+
         var rotation = tf.rotation;
         tf.LookAt(lookAtTransform.position);
-        
+
         var lookRotation = tf.localEulerAngles.y;
         tf.rotation = rotation;
 
         // Prevent specific issue with the lever jumping down
         if (lookRotation > 270)
             return 0;
-        
+
         return Mathf.Clamp(lookRotation, 0, 180);
     }
 }

@@ -506,6 +506,10 @@ public class VRPlayer : MonoBehaviour
         Bones.LocalRightArmRigHint.localPosition = new Vector3(12.5f, -2f, -1f);
         Bones.LeftArmRigHint.localPosition = new Vector3(-10f, -2f, -1f);
         Bones.RightArmRigHint.localPosition = new Vector3(12.5f, -2f, -1f);
+        
+        // TODO: MAKE THE ARMS LONGER (Likely a v1.4.1 feature)
+        // Bones.LocalLeftLowerArm.transform.localPosition += Vector3.up * 0.15f;
+        // Bones.LocalRightLowerArm.transform.localPosition += Vector3.up * 0.15f;
     }
 
     private void Sprint_performed(InputAction.CallbackContext obj)

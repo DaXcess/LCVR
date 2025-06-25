@@ -43,6 +43,7 @@ public class VRInteractor : MonoBehaviour
 
     public bool IsRightHand { get; private set; }
     public VRFingerCurler FingerCurler { get; private set; }
+    public Transform TrackedController { get; private set; }
 
     private void Start()
     {
@@ -55,6 +56,7 @@ public class VRInteractor : MonoBehaviour
 
                 IsRightHand = true;
                 FingerCurler = VRSession.Instance.LocalPlayer.RightFingerCurler;
+                TrackedController = VRSession.Instance.LocalPlayer.RightHandVRTarget;
                 break;
             case "hand.L":
                 defaultOffset = LeftHandDefaultOffset;
@@ -63,6 +65,7 @@ public class VRInteractor : MonoBehaviour
 
                 IsRightHand = false;
                 FingerCurler = VRSession.Instance.LocalPlayer.LeftFingerCurler;
+                TrackedController = VRSession.Instance.LocalPlayer.LeftHandVRTarget;
                 break;
             default:
                 throw new System.Exception($"Attached to unknown object: {gameObject.name}");
