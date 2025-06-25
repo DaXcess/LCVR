@@ -375,10 +375,10 @@ public class VRNetPlayer : MonoBehaviour
     /// </summary>
     public void ShowSpectatorGhost()
     {
-        foreach (var renderer in playerGhost.GetComponentsInChildren<MeshRenderer>())
-        {
-            renderer.enabled = true;
-        }
+        if (!playerGhost)
+            return;
+        
+        playerGhost.SetVisible(true);
     }
 
     /// <summary>
