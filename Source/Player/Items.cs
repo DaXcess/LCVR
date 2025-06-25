@@ -27,7 +27,7 @@ internal static class Items
     public static readonly Dictionary<string, (Vector3, Vector3)> itemOffsets = new()
     {
         { "ChemicalJug", (new Vector3(-0.05f, 0.14f, -0.29f), new Vector3(0, 90, 120)) },
-        { "ToiletPaperRools", (new Vector3(0, 0.13f, -0.4f), new Vector3(0, 90, 90)) },
+        { "ToiletPaperRolls", (new Vector3(0, 0.13f, -0.4f), new Vector3(0, 90, 90)) },
         { "Boombox", (new Vector3(-0.02f, 0.1f, -0.29f), new Vector3(90, 285, 0)) },
         { "LungApparatus", (new Vector3(-0.04f, 0.12f, -0.21f), new Vector3(0, 270, 0)) },
         { "Cog1", (new Vector3(-0.04f, 0.24f, -0.33f), new Vector3(0, 270, 100)) },

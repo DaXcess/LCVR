@@ -81,13 +81,13 @@ public class SpectatingPlayer : MonoBehaviour
     {
         playerAlive.text = playerController.isPlayerDead ? "(Dead)" : "<color=#3AFF34>(Alive)";
         
-        if (playerController == GameNetworkManager.Instance.localPlayerController ||
+        if (playerController.IsLocalPlayer() ||
             (playerController.isPlayerDead && !NetworkSystem.Instance.IsInVR((ushort)playerController.playerClientId)))
             teleportButtonObject.SetActive(false);
         else
             teleportButtonObject.SetActive(true);
         
-        spectateButtonObject.SetActive(!playerController.isPlayerDead);
+        spectateButtonObject.SetActive(!playerController.isPlayerDead && !playerController.IsLocalPlayer());
         spectateImage.enabled = VRSession.Instance.SpectateManager.SpectatedPlayer != playerController;
         stopSpectateImage.enabled = !spectateImage.enabled;
     }

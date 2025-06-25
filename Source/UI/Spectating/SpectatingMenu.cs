@@ -151,27 +151,6 @@ public class SpectatingMenu : MonoBehaviour
             
             Destroy(go);
         }
-        
-        // Sort dead players first
-        var parent = playerBoxes[0].transform.parent;
-        var sortIndex = 0;
-
-        for (var i = 1; i < parent.childCount; i++)
-        {
-            var box = parent.GetChild(i).GetComponent<SpectatingPlayer>();
-            if (box != null && !box.Alive)
-                sortIndex = i + 1;
-        }
-        
-        foreach (var box in playerBoxes.Where(box => !box.Alive))
-        {
-            var currentIndex = box.transform.GetSiblingIndex();
-            if (currentIndex <= sortIndex)
-                continue;
-
-            box.transform.SetSiblingIndex(sortIndex);
-            sortIndex++;
-        }
 
         // Update all boxes
         foreach (var box in playerBoxes)

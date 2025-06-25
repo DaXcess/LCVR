@@ -29,7 +29,8 @@ internal class VRSprayPaintItem : VRItem<SprayPaintItem>
         if (player.currentlyHeldObjectServer != item)
             return;
 
-        if (player.isGrabbingObjectAnimation || player.inTerminalMenu || player.inSpecialInteractAnimation)
+        if (player.isGrabbingObjectAnimation || player.inTerminalMenu || player.inSpecialInteractAnimation ||
+            player.timeSinceSwitchingSlots < 0.2f)
             return;
 
         player.timeSinceSwitchingSlots = 0f;

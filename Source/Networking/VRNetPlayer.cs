@@ -437,6 +437,9 @@ public class VRNetPlayer : MonoBehaviour
     /// </summary>
     private void OnDestroy()
     {
+        HideSpectatorGhost();
+        Destroy(playerGhost);
+        
         Bones.ResetToPrefabPositions();
 
         // Make sure to destroy immediately, otherwise the rig rebuilding will still use the constraints and cause errors
@@ -448,8 +451,6 @@ public class VRNetPlayer : MonoBehaviour
 
         // Rebuild rig now that we changed up the constraints
         GetComponentInChildren<RigBuilder>().Build();
-        
-        Destroy(playerGhost);
         
         foreach (var el in cleanupPool)
             Destroy(el);

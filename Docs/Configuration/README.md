@@ -106,7 +106,7 @@ Custom shovels are annotated by an array of item names.
         "z": 120
       }
     },
-    "ToiletPaperRools": {
+    "ToiletPaperRolls": {
       "position": {
         "x": 0,
         "y": 0.13,
