@@ -25,7 +25,7 @@ internal static class OpenXR
 
     [DllImport("UnityOpenXR", EntryPoint = "DiagnosticReport_ReleaseReport")]
     private static extern void Internal_ReleaseReport(IntPtr report);
-    
+
     [DllImport("UnityOpenXR", EntryPoint = "NativeConfig_GetRuntimeName")]
     private static extern bool Internal_GetRuntimeName(out IntPtr runtimeNamePtr);
 
@@ -46,7 +46,7 @@ internal static class OpenXR
 
         return result;
     }
-    
+
     /// <summary>
     /// Attempt to enumerate installed OpenXR runtimes as described by the <a href="https://registry.khronos.org/OpenXR/specs/1.1/loader.html#runtime-discovery">OpenXR standard</a>.
     /// </summary>
@@ -158,7 +158,7 @@ internal static class OpenXR
 
         return true;
     }
-    
+
     /// <summary>
     /// Locate common paths for runtimes
     /// </summary>
@@ -266,7 +266,7 @@ internal static class OpenXR
         public string Name { get; set; }
         public string Path { get; set; }
         public bool Default { get; set; }
-        
+
         public static bool ReadFromJson(string path, out Runtime runtime)
         {
             runtime = new Runtime();
@@ -288,7 +288,7 @@ internal static class OpenXR
                 return false;
             }
         }
-        
+
         public bool Equals(Runtime other)
         {
             return Path == other.Path;
@@ -321,6 +321,29 @@ internal static class OpenXR
         public static bool InitializeXR()
         {
             InitializeScripts();
+
+            // Check if Unity's OpenXR subsystem is available
+            var subsystems = new List<ISubsystemDescriptor>();
+            SubsystemManager.GetAllSubsystemDescriptors(subsystems);
+
+            if (!(subsystems.Any(subsystem => subsystem.id == "OpenXR Input") &&
+                  subsystems.Any(subsystem => subsystem.id == "OpenXR Display")))
+            {
+                Logger.LogError(
+                    "No Unity OpenXR subsystem found, this installation of LCVR was not installed correctly.");
+
+                if (subsystems.Count == 0)
+                    return false;
+
+                Logger.LogDebug("Subsystems installed:");
+
+                foreach (var subsystem in subsystems)
+                {
+                    Logger.LogDebug($"- {subsystem.id}");
+                }
+
+                return false;
+            }
 
             if (Native.IsElevated())
             {
@@ -367,8 +390,8 @@ internal static class OpenXR
                     return true;
             }
 
-            foreach (var runtime in runtimes.Where(
-                         rt => rt.Path != Plugin.Config.OpenXRRuntimeFile.Value && !rt.Default))
+            foreach (var runtime in runtimes.Where(rt =>
+                         rt.Path != Plugin.Config.OpenXRRuntimeFile.Value && !rt.Default))
             {
                 if (InitializeXR(runtime))
                     return true;

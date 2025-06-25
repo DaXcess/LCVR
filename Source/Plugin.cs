@@ -123,6 +123,11 @@ public class Plugin : BaseUnityPlugin
                 Logger.LogError("This usually happens if Lethal Company got updated recently.");
                 Logger.LogDebug(
                     $"To bypass this check, add the following flag to your launch options in Steam: {SKIP_CHECKSUM_VAR}");
+                
+                if (Config.AskOnStartup.Value && !disableVr)
+                    Native.ShellMessageBox(IntPtr.Zero, IntPtr.Zero,
+                        "Could not start Lethal Company in VR due to an unsupported or corrupt game version!\nThis usually happens if Lethal Company got updated recently.",
+                        "VR Startup Failed", 0x10);
 
                 return;
             }
