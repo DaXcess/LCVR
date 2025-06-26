@@ -15,7 +15,7 @@
 - Added an "emergency" leave button (escape key on your keyboard), which you can use to either open the pause menu (press once), or leave the game (hold for 5 seconds)
 
 **Changes**:
-- Moved persistent settings to `LCGeneralSaveFile`. This means your persistent settings will be reset when updating to this version, unless you still have these settings inside your BepInEx config.
+- Moved persistent settings to `LCGeneralSaveData`. This means your persistent settings will be reset when updating to this version, unless you still have these settings inside your BepInEx config.
 - Changed the persistent settings toggle to use ES3, instead of the BepInEx config file
 - Replaced HDRP vignette shader with a custom vignette shader that works better in VR
 
