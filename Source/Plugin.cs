@@ -211,8 +211,28 @@ public class Plugin : BaseUnityPlugin
         {
             var contents = new WebClient().DownloadString(HASHES_OVERRIDE_URL);
             var hashes = Utils.ParseConfig(contents);
+
+            var found = false;
             
-            if (!hashes.Contains(hash))
+            foreach (var versionedHash in hashes)
+            {
+                try
+                {
+                    var (versions, remoteHash) = versionedHash.Split(':') switch { var x => (x[0].Split(','), x[1]) };
+
+                    if (remoteHash != hash || !versions.Contains(PLUGIN_VERSION))
+                        continue;
+
+                    found = true;
+                    break;
+                }
+                catch
+                {
+                    // Broken line, ignore
+                }
+            }
+
+            if (!found)
                 return false;
 
             Logger.LogInfo("Game version verified using remote hashes");
