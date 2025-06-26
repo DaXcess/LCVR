@@ -12,6 +12,7 @@
 - Added a new header tab for VR, containing the VR settings and keybind settings
 - Added text popups to certain actions within the game
 - Added a new spectating system, which can be used by looking at your left arm
+- Added an "emergency" leave button (escape key on your keyboard), which you can use to either open the pause menu (press once), or leave the game (hold for 5 seconds)
 
 **Changes**:
 - Moved persistent settings to `LCGeneralSaveFile`. This means your persistent settings will be reset when updating to this version, unless you still have these settings inside your BepInEx config.

@@ -58,6 +58,8 @@ An item offset is structured as follows:
 ```
 
 > Note that item names are case-sensitive
+> 
+> Item names are compared to `itemProperties.name`, **not** to `itemProperties.itemName`!
 
 Both the `position` and `rotation` keys are **required** when creating an item offset. They are both represented by a `Vector3`, and allow both integers and floating point numbers.
 

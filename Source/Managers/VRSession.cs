@@ -1,15 +1,19 @@
-﻿using HarmonyLib;
+﻿using System;
+using System.Collections;
+using HarmonyLib;
 using LCVR.Assets;
 using LCVR.Physics.Interactions;
 using LCVR.UI;
 using Microsoft.MixedReality.Toolkit.Experimental.UI;
 using System.Collections.Generic;
 using System.Linq;
+using GameNetcodeStuff;
 using LCVR.Physics.Interactions.Car;
 using LCVR.Player;
 using LCVR.Rendering;
 using LCVR.UI.Environment;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.InputSystem.XR;
 using UnityEngine.Rendering;
@@ -74,6 +78,29 @@ public class VRSession : MonoBehaviour
 
         if (Plugin.Flags.HasFlag(Flags.InteractableDebug))
             MainCamera.cullingMask |= 1 << 11;
+    }
+
+    private void OnEnable()
+    {
+        if (!InVR)
+            return;
+        
+        escapeAction = new InputAction(binding: "<Keyboard>/Escape");
+        escapeAction.Enable();
+        
+        escapeAction.performed += OnEscapeKeyAction;
+        escapeAction.canceled += OnEscapeKeyAction;
+    }
+
+    private void OnDisable()
+    {
+        if (!InVR)
+            return;
+        
+        escapeAction.Disable();
+        
+        escapeAction.performed -= OnEscapeKeyAction;
+        escapeAction.canceled -= OnEscapeKeyAction;
     }
 
     private void LateUpdate()
@@ -468,4 +495,34 @@ public class VRSession : MonoBehaviour
     }
 
     #endregion
+
+    private InputAction escapeAction;
+    private Coroutine escapeHoldRoutine;
+
+    private void OnEscapeKeyAction(InputAction.CallbackContext ctx)
+    {
+        if (!ctx.performed)
+        {
+            if (escapeHoldRoutine != null)
+                StopCoroutine(escapeHoldRoutine);
+
+            escapeHoldRoutine = null;
+            return;
+        }
+        
+        escapeHoldRoutine = StartCoroutine(EmergencyEscape());
+        
+        var player = GameNetworkManager.Instance.localPlayerController;
+        if (player.quickMenuManager.isMenuOpen)
+            return;
+        
+        player.quickMenuManager.OpenQuickMenu();
+    }
+
+    private static IEnumerator EmergencyEscape()
+    {
+        yield return new WaitForSecondsRealtime(5);
+        
+        GameNetworkManager.Instance.localPlayerController.quickMenuManager.LeaveGameConfirm();
+    }
 }
