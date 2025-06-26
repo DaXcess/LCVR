@@ -237,7 +237,7 @@ public class Config(string assemblyPath, ConfigFile file)
 
     public void SerializeToES3()
     {
-        ES3.Save($"{PERSISTENT_KEY}.enabled", EnablePersistentSettings.Value, "LCGeneralSaveFile");
+        ES3.Save($"{PERSISTENT_KEY}.enabled", EnablePersistentSettings.Value, "LCGeneralSaveData");
         
         if (isSerializing || !EnablePersistentSettings.Value)
             return;

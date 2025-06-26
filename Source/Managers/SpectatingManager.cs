@@ -202,6 +202,8 @@ public class SpectatingManager : MonoBehaviour
         SpectatedPlayer.playerBadgeMesh.GetComponent<MeshRenderer>().enabled = false;
         localPlayer.isCrouching = SpectatedPlayer.IsCrouching();
         
+        HUDManager.Instance.SetSpectatingTextToPlayer(SpectatedPlayer);
+        
         if (Compat.IsLoaded(Compat.MoreCompany))
             MoreCompanyCompatibility.EnablePlayerCosmetics(SpectatedPlayer, false);
     }
@@ -217,6 +219,8 @@ public class SpectatingManager : MonoBehaviour
         SpectatedPlayer.playerBadgeMesh.GetComponent<MeshRenderer>().enabled = true;
         localPlayer.thisController.enabled = true;
         localPlayer.enabled = true;
+
+        HUDManager.Instance.SetSpectatingTextToPlayer(null);
 
         if (Compat.IsLoaded(Compat.MoreCompany))
             MoreCompanyCompatibility.EnablePlayerCosmetics(SpectatedPlayer, true);
