@@ -39,7 +39,6 @@
     <PackageReference Include="Diversity" Version="2.0.3" />
     <PackageReference Include="Facepunch.Steamworks" Version="2.3.3" />
     <PackageReference Include="LethalCompany" Version="1.70.0" />
-    <PackageReference Include="Mimics" Version="2.4.1" />
     <PackageReference Include="MoreCompany" Version="1.10.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
     <PackageReference Include="Unity.Animation.Rigging" Version="1.2.1" />
