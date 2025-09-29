@@ -27,7 +27,7 @@ public class SpectatingManager : MonoBehaviour
 
     private GameObject spectatorLight;
 
-    public bool Voted { get; private set; }
+    public bool Voted => TimeOfDay.Instance.votedShipToLeaveEarlyThisRound;
     public bool GlobalAudio { get; private set; }
     public bool LightEnabled { get; private set; }
     public bool FogDisabled { get; private set; }
@@ -177,18 +177,13 @@ public class SpectatingManager : MonoBehaviour
         VRSession.Instance.HUD.SpectatingMenu.enabled = false;
     }
 
-    internal void CastVote()
-    {
-        Voted = true;
-
-        TimeOfDay.Instance.VoteShipToLeaveEarly();
-    }
+    internal void CastVote() => TimeOfDay.Instance.VoteShipToLeaveEarly();
 
     internal void SpectatePlayer(PlayerControllerB targetPlayer)
     {
         if (targetPlayer.isPlayerDead || !targetPlayer.isPlayerControlled)
             return;
-        
+
         StopSpectatingPlayer();
 
         if (targetPlayer == SpectatedPlayer)
@@ -201,9 +196,9 @@ public class SpectatingManager : MonoBehaviour
         SpectatedPlayer.playerBetaBadgeMesh.enabled = false;
         SpectatedPlayer.playerBadgeMesh.GetComponent<MeshRenderer>().enabled = false;
         localPlayer.isCrouching = SpectatedPlayer.IsCrouching();
-        
+
         HUDManager.Instance.SetSpectatingTextToPlayer(SpectatedPlayer);
-        
+
         if (Compat.IsLoaded(Compat.MoreCompany))
             MoreCompanyCompatibility.EnablePlayerCosmetics(SpectatedPlayer, false);
     }
@@ -226,7 +221,7 @@ public class SpectatingManager : MonoBehaviour
             MoreCompanyCompatibility.EnablePlayerCosmetics(SpectatedPlayer, true);
 
         SpectatedPlayer = null;
-        
+
         VRSession.Instance.HUD.SpectatingMenu.UpdateBoxes();
     }
 
@@ -429,23 +424,23 @@ public class SpectatingManager : MonoBehaviour
     {
         if (!ctx.performed || !localPlayer.isPlayerDead || VRSession.Instance.HUD.SpectatingMenu.IsOpen)
             return;
-        
+
         for (var i = 0; i < StartOfRound.Instance.allPlayerScripts.Length; i++)
         {
             var nextIndex = (lastSpectatedPlayer + i + 1) % StartOfRound.Instance.allPlayerScripts.Length;
             var player = StartOfRound.Instance.allPlayerScripts[nextIndex];
-            
+
             if (player == localPlayer || player.isPlayerDead || !player.isPlayerControlled)
                 continue;
 
             lastSpectatedPlayer = nextIndex;
-            
+
             if (SpectatedPlayer)
             {
                 // If we are already spectating this player, just break, no others players left to spectate
                 if (SpectatedPlayer == player)
                     return;
-                
+
                 SpectatePlayer(player);
             }
             else
@@ -476,7 +471,7 @@ public class SpectatingManager : MonoBehaviour
                 // If we are already spectating this player, just break, no others players left to spectate
                 if (SpectatedPlayer == player)
                     return;
-                
+
                 SpectatePlayer(player);
             }
             else

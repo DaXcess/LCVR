@@ -1,3 +1,8 @@
+# 1.4.1
+
+**Fixes**:
+- Fixed voting only being available once before having to restart the game
+
 # 1.4.0
 
 **Additions**:
