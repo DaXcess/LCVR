@@ -5,6 +5,7 @@
 
 **Fixes**:
 - Fixed voting only being available once before having to restart the game
+- Fixed late join players not showing up in the spectating menu
 - Unity's Input System crashing when trying to resolve missing soft dependencies
 
 # 1.4.0

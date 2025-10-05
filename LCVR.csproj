@@ -43,8 +43,8 @@
     <PackageReference Include="Unity.Animation.Rigging" Version="1.2.1" />
     <PackageReference Include="Unity.InputSystem" Version="1.14.0" />
     <PackageReference Include="Unity.Netcode.Runtime" Version="1.6.0" />
-    <PackageReference Include="Unity.RenderPipelines.Core" Version="14.0.8" />
-    <PackageReference Include="Unity.RenderPipelines.HighDefinition" Version="14.0.8" />
+    <PackageReference Include="Unity.RenderPipelines.Core" Version="14.0.12" />
+    <PackageReference Include="Unity.RenderPipelines.HighDefinition" Version="14.0.12" />
     <PackageReference Include="Unity.TextMeshPro" Version="3.0.6" />
     <PackageReference Include="Unity.XR.CoreUtils" Version="2.2.3" />
     <PackageReference Include="Unity.XR.Interaction.Toolkit" Version="2.5.3" />

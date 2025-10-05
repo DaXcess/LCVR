@@ -152,9 +152,35 @@ public class SpectatingMenu : MonoBehaviour
             Destroy(go);
         }
 
+        // Check for players that joined (late join)
+        foreach (var player in StartOfRound.Instance.allPlayerScripts)
+        {
+            var playerExists = player.isPlayerDead || player.isPlayerControlled;
+            var idx = playerBoxes.FindIndex(box => box.IsPlayer(player));
+
+            if (!playerExists || idx != -1)
+                continue;
+
+            var box = Instantiate(spectatingPlayerPrefab, playersContainer).GetComponent<SpectatingPlayer>();
+            box.Setup(player);
+
+            playerBoxes.Add(box);
+        }
+
         // Update all boxes
         foreach (var box in playerBoxes)
             box.UpdateState();
+    }
+
+    public void PlayerRevived()
+    {
+        voteProgress = 0;
+        voteProgressBar.localScale = new Vector3(0, 1, 1);
+
+        voteButton.GetComponentInChildren<TextMeshProUGUI>().text = "VOTE TO LEAVE";
+        voteButton.interactable = true;
+
+        enabled = false;
     }
 
     private void HandleGaze()
@@ -183,7 +209,7 @@ public class SpectatingMenu : MonoBehaviour
         if (StartOfRound.Instance.shipIsLeaving || !StartOfRound.Instance.currentLevel.planetHasTime)
             return;
 
-        voteProgress += Time.deltaTime * (isVoting ? 0.2f : -0.4f);
+        voteProgress += Time.deltaTime * (isVoting ? 0.3f : -0.5f);
         voteProgress = Mathf.Clamp01(voteProgress);
 
         voteProgressBar.localScale = new Vector3(Mathf.SmoothStep(0, 1, voteProgress), 1, 1);

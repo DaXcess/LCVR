@@ -174,7 +174,7 @@ public class SpectatingManager : MonoBehaviour
         ToggleLights(false);
         StopSpectatingPlayer();
 
-        VRSession.Instance.HUD.SpectatingMenu.enabled = false;
+        VRSession.Instance.HUD.SpectatingMenu.PlayerRevived();
     }
 
     internal void CastVote() => TimeOfDay.Instance.VoteShipToLeaveEarly();
