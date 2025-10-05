@@ -1,7 +1,11 @@
 # 1.4.1
 
+**Changes**:
+- LCVR now targets V73, older versions are no longer supported
+
 **Fixes**:
 - Fixed voting only being available once before having to restart the game
+- Unity's Input System crashing when trying to resolve missing soft dependencies
 
 # 1.4.0
 

@@ -41,7 +41,7 @@
     <PackageReference Include="MoreCompany" Version="1.10.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
     <PackageReference Include="Unity.Animation.Rigging" Version="1.2.1" />
-    <PackageReference Include="Unity.InputSystem" Version="1.7.0" />
+    <PackageReference Include="Unity.InputSystem" Version="1.14.0" />
     <PackageReference Include="Unity.Netcode.Runtime" Version="1.6.0" />
     <PackageReference Include="Unity.RenderPipelines.Core" Version="14.0.8" />
     <PackageReference Include="Unity.RenderPipelines.HighDefinition" Version="14.0.8" />
