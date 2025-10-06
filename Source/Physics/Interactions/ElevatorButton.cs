@@ -39,7 +39,7 @@ internal class ElevatorButton : MonoBehaviour, VRInteractable
 
 [LCVRPatch]
 [HarmonyPatch]
-internal static class MonitorButtonPatches
+internal static class ElevatorButtonPatches
 {
     [HarmonyPatch(typeof(MineshaftElevatorController), nameof(MineshaftElevatorController.OnEnable))]
     [HarmonyPostfix]
