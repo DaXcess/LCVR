@@ -16,11 +16,9 @@ public static class FlashlightItemPatches
     private static void SwitchFlashlightPatch(FlashlightItem __instance, bool on)
     {
         // If it's our flashlight, ignore
-        if (__instance.IsOwner)
+        if (__instance.IsOwner || !__instance.playerHeldBy)
             return;
 
-        // todo: fix problem
-        // what problem?
         if (!NetworkSystem.Instance.IsInVR((ushort)__instance.playerHeldBy.playerClientId))
             return;
 
