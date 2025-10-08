@@ -21,8 +21,7 @@ public static class StaticAssets
 
         foreach (var go in Resources.FindObjectsOfTypeAll<GameObject>())
             if (go.transform.parent == null && !go.scene.IsValid())
-                if (!RootObjects.TryAdd(go.name, go))
-                    Logger.LogWarning($"Duplicate root object name found: {go.name}, skipping");
+                RootObjects.TryAdd(go.name, go);
     }
 
     public static bool TryGetObject(string name, out GameObject go)
