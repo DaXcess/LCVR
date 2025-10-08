@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 
 namespace LCVR.Assets;
 
-internal static class AssetManager
+public static class AssetManager
 {
     private static AssetBundle assetsBundle;
     private static AssetBundle scenesBundle;
@@ -46,7 +46,7 @@ internal static class AssetManager
 
     public static AudioClip DoorLocked;
 
-    public static bool LoadAssets()
+    internal static bool LoadAssets()
     {
         assetsBundle =
             AssetBundle.LoadFromFile(Path.Combine(Path.GetDirectoryName(Plugin.Config.AssemblyPath)!,
