@@ -2,13 +2,12 @@
 using BepInEx;
 using BepInEx.Logging;
 using Mono.Cecil;
-using Mono.Cecil.Cil;
 
 namespace LCVR.Preload;
 
 public static class Preload
 {
-    public static IEnumerable<string> TargetDLLs { get; } = ["Unity.InputSystem.dll"];
+    public static IEnumerable<string> TargetDLLs { get; } = [];
 
     private const string VR_MANIFEST = """
                                        {
@@ -96,27 +95,6 @@ public static class Preload
 
     public static void Patch(AssemblyDefinition assembly)
     {
-        var module = assembly.MainModule;
-
-        var type = module.Types.First(t => t.FullName == "UnityEngine.InputSystem.InputManager");
-        var method = type.Methods.First(m => m.Name == "RegisterCustomTypes" && !m.HasParameters);
-
-        var body = method.Body;
-        var handler = body.ExceptionHandlers.FirstOrDefault(h =>
-            h.CatchType?.FullName == "System.Reflection.ReflectionTypeLoadException");
-
-        if (handler == null)
-            throw new Exception("Could not locate ReflectionTypeLoadException handler");
-
-        var newHandler = new ExceptionHandler(ExceptionHandlerType.Catch)
-        {
-            CatchType = module.ImportReference(typeof(TypeLoadException)),
-            TryStart = handler.TryStart,
-            TryEnd = handler.TryEnd,
-            HandlerStart = handler.HandlerStart,
-            HandlerEnd = handler.HandlerEnd
-        };
-
-        body.ExceptionHandlers.Add(newHandler);
+        // No-op
     }
 }
