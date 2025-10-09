@@ -5,7 +5,7 @@
   "dependencies": [
     "BepInEx-BepInExPack-5.4.2100",
     "Evaisa-FixPluginTypesSerialization-1.1.4",
-    "Hamunii-TypeLoadExceptionFixer-1.0.0"
+    "Hamunii-TypeLoadExceptionFixer-1.0.3"
   ],
   "website_url": "https://github.com/DaXcess/LCVR"
 }
