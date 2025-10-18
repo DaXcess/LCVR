@@ -403,14 +403,26 @@ internal static class PlayerControllerPatches
             .MatchForward(false,
                 new CodeMatch(OpCodes.Ldflda,
                     Field(typeof(PlayerControllerB), nameof(PlayerControllerB.syncFullCameraRotation))))
-            .Advance(-12)
-            .SetOpcodeAndAdvance(OpCodes.Nop)
-            .RemoveInstructions(62)
+            .Advance(-11)
+            .Set(OpCodes.Call, ((Func<PlayerControllerB, bool>)InVehicleAnimationAndNotLocal).Method)
             .MatchForward(false,
-                new CodeMatch(OpCodes.Ldfld, Field(typeof(PlayerControllerB), nameof(PlayerControllerB.cameraUp))))
-            .Advance(7)
-            .RemoveInstructions(17)
+                new CodeMatch(OpCodes.Stfld, Field(typeof(PlayerControllerB), nameof(PlayerControllerB.cameraUp))))
+            .Advance(2)
+            .RemoveInstructions(2)
+            .MatchForward(false, new CodeMatch(OpCodes.Callvirt, PropertySetter(typeof(Transform), nameof(Transform.localEulerAngles))))
+            .Set(OpCodes.Call, ((Action<PlayerControllerB, Vector3>)SetAnglesIfNotOwner).Method)
             .InstructionEnumeration();
+
+        static bool InVehicleAnimationAndNotLocal(PlayerControllerB player) =>
+            player.inVehicleAnimation && !player.IsOwner;
+
+        static void SetAnglesIfNotOwner(PlayerControllerB player, Vector3 angles)
+        {
+            if (player.IsOwner)
+                return;
+
+            player.gameplayCamera.transform.localEulerAngles = angles;
+        }
     }
 }
 

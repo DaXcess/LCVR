@@ -4,6 +4,7 @@ using HarmonyLib;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.InputSystem.XR;
+using UnityEngine.Rendering.HighDefinition;
 using static HarmonyLib.AccessTools;
 
 namespace LCVR.Patches;
@@ -56,5 +57,19 @@ internal static class XRPatches
     {
         srcRect += new Vector4(0, 0, 1, 0) * Plugin.Config.MirrorXOffset.Value +
                    new Vector4(0, 0, 0, 1) * Plugin.Config.MirrorYOffset.Value;
+    }
+
+    /// <summary>
+    /// "XR provider doesn't support rendering Terrain with multipass" even though it does
+    /// </summary>
+    [HarmonyPatch(typeof(HDRenderPipeline), nameof(HDRenderPipeline.PrepareAndCullCamera))]
+    [HarmonyTranspiler]
+    private static IEnumerable<CodeInstruction> UnityStopLyingToMePatch(IEnumerable<CodeInstruction> instructions)
+    {
+        return new CodeMatcher(instructions)
+            .MatchForward(false, new CodeMatch(OpCodes.Call, Method(typeof(Debug), nameof(Debug.LogWarning), [typeof(object)])))
+            .Advance(-8)
+            .Set(OpCodes.Ldc_I4_0, null) // Always false
+            .InstructionEnumeration();
     }
 }

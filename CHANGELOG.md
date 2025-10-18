@@ -1,3 +1,9 @@
+# 1.4.2
+
+**Fixes**:
+- Fixed a Unity lie (Terrain rendering not supported in VR, but it actually is)
+- Fixed non-VR players not having vertical head movement when in VR locally
+
 # 1.4.1
 
 **Changes**:
