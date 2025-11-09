@@ -24,14 +24,17 @@ public class InputPatches
         var playerInput = __instance.playerInput;
 
         originalInputActions = playerInput.actions;
-        
+
+        // We have to set these two values to make sure the `actions` assignment doesn't make a copy which breaks rebinding
+        playerInput.enabled = false;
+        playerInput.m_Actions = null;
+
         playerInput.actions = AssetManager.VRActions;
         playerInput.defaultActionMap = "Movement";
         playerInput.neverAutoSwitchControlSchemes = false;
         playerInput.notificationBehavior = PlayerNotifications.InvokeCSharpEvents;
-        
+
         // Re-enable player input because otherwise it's stuck at no devices in some cases
-        playerInput.enabled = false;
         playerInput.enabled = true;
     }
 

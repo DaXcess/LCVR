@@ -1,3 +1,8 @@
+# 1.4.3
+
+**Fixes**:
+- Fixed V73 input system behaving differently breaking the binding system
+
 # 1.4.2
 
 **Fixes**:
