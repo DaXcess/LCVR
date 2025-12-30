@@ -24,7 +24,7 @@ You can join the [LCVR Discord Server](https://discord.gg/2DxNgpPZUF)!
 
 # Compatibility
 
-Due to the amount of changes LCVR makes to the game and gameplay features, some mods might not be compatible with LCVR. For a list of compatible mods, you can refer to the compatibility sheet [here](https://docs.google.com/spreadsheets/d/1mSulrvMkQFtjF_BWDeSfGz9rm3UWKMywmUP1yhcgCGo/edit?usp=sharing). A small handful of mods have been made fully compatible with LCVR, either by custom code inside LCVR, or (preferably) changes within those mods to work properly with the VR mod.
+Due to the amount of changes LCVR makes to the game and gameplay features, some mods might not be compatible with LCVR. A small handful of mods have been made fully compatible with LCVR, either by custom code inside LCVR, or (preferably) changes within those mods to work properly with the VR mod.
 
 # Installing and using the mod
 
