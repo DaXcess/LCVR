@@ -65,7 +65,8 @@ Here is a list of LCVR versions and which version(s) of Lethal Company it suppor
 
 | LCVR              | Lethal Company    |
 |-------------------|-------------------|
-| v1.4.3 *(LATEST)* | V73               |
+| v1.4.4 *(LATEST)* | V73               |
+| v1.4.3            | V73               |
 | v1.4.2            | V73               |
 | v1.4.1            | V73               |
 | v1.4.0            | V72               |

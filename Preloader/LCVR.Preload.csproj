@@ -3,7 +3,7 @@
     <PropertyGroup>
         <Description>LCVR Preloader</Description>
         <Authors>DaXcess</Authors>
-        <Version>1.4.3</Version>
+        <Version>1.4.4</Version>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <LangVersion>12.0</LangVersion>
         <Title>LCVR.Preload</Title>

@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using System.Collections;
+using HarmonyLib;
 using LCVR.Assets;
 using LCVR.Managers;
 using TMPro;
@@ -20,9 +21,17 @@ internal static class UIPatches
     [HarmonyPostfix]
     private static void OnPreInitMenuShown(PreInitSceneScript __instance)
     {
-        SceneManager.LoadScene("LCVR Init Scene");
+        __instance.StartCoroutine(LoadSceneDelayed());
+        return;
+
+        // Delay loading of init scene to allow mods that use PreInitSceneScript.Start as an entrypoint to load
+        static IEnumerator LoadSceneDelayed()
+        {
+            yield return null;
+            SceneManager.LoadSceneAsync("LCVR Init Scene");
+        }
     }
-    
+
     /// <summary>
     /// This function runs when the main menu is shown
     /// </summary>

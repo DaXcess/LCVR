@@ -1,3 +1,8 @@
+# 1.4.4
+
+**Fixes**:
+- Temporary fix for this Mirage issue: https://github.com/qwbarch/mirage/issues/183
+
 # 1.4.3
 
 **Fixes**:
