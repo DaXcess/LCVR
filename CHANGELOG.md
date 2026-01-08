@@ -1,3 +1,8 @@
+# 1.4.5
+
+**Fixes**:
+- First it's Mirage, now it's LLL, this time we go nuclear (additive scene load on init scene)
+
 # 1.4.4
 
 **Fixes**:

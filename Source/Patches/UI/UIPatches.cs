@@ -1,9 +1,9 @@
-﻿using System.Collections;
-using HarmonyLib;
+﻿using HarmonyLib;
 using LCVR.Assets;
 using LCVR.Managers;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using UnityEngine.XR.Interaction.Toolkit.UI;
@@ -21,15 +21,9 @@ internal static class UIPatches
     [HarmonyPostfix]
     private static void OnPreInitMenuShown(PreInitSceneScript __instance)
     {
-        __instance.StartCoroutine(LoadSceneDelayed());
-        return;
-
-        // Delay loading of init scene to allow mods that use PreInitSceneScript.Start as an entrypoint to load
-        static IEnumerator LoadSceneDelayed()
-        {
-            yield return null;
-            SceneManager.LoadSceneAsync("LCVR Init Scene");
-        }
+        Object.FindObjectOfType<EventSystem>().gameObject.SetActive(false);
+        
+        SceneManager.LoadSceneAsync("LCVR Init Scene", LoadSceneMode.Additive);
     }
 
     /// <summary>

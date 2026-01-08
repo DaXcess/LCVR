@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using HarmonyLib;
 using LCVR.Assets;
 using LCVR.Physics.Interactions;
@@ -7,7 +6,6 @@ using LCVR.UI;
 using Microsoft.MixedReality.Toolkit.Experimental.UI;
 using System.Collections.Generic;
 using System.Linq;
-using GameNetcodeStuff;
 using LCVR.Physics.Interactions.Car;
 using LCVR.Player;
 using LCVR.Rendering;
