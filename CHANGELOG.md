@@ -1,3 +1,8 @@
+# 1.4.6
+
+**Additions**:
+- Added a manual ladder climb interaction (by [@misterbubb](https://github.com/misterbubb)) which can be enabled in the settings
+
 # 1.4.5
 
 **Fixes**:

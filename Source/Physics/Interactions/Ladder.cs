@@ -1,3 +1,4 @@
+using System.Collections;
 using HarmonyLib;
 using LCVR.Assets;
 using LCVR.Managers;
@@ -100,10 +101,10 @@ public class VRLadder : MonoBehaviour, VRInteractable
             exitPosition = ladderTrigger.topOfLadderPosition.position;
         }
 
-        ExitLadder(player, exitPosition);
+        StartCoroutine(ExitLadder(player, exitPosition));
     }
 
-    private void ExitLadder(GameNetcodeStuff.PlayerControllerB player, Vector3 exitPosition)
+    private IEnumerator ExitLadder(GameNetcodeStuff.PlayerControllerB player, Vector3 exitPosition)
     {
         leftHandGripPoint = null;
         rightHandGripPoint = null;
@@ -133,7 +134,19 @@ public class VRLadder : MonoBehaviour, VRInteractable
         player.fallValue = 0f;
         player.fallValueUncapped = 0f;
 
-        // TODO: Coroutine that smoothly places player at exit position
+        var waitTime = ladderTrigger.animationWaitTime * 0.5f;
+        var timer = 0f;
+        while (timer <= waitTime)
+        {
+            yield return null;
+            timer += Time.deltaTime;
+
+            player.thisPlayerBody.position = Vector3.Lerp(player.thisPlayerBody.position, exitPosition,
+                Mathf.SmoothStep(0f, 1f, timer / waitTime));
+            player.thisPlayerBody.rotation = Quaternion.Lerp(player.thisPlayerBody.rotation,
+                ladderTrigger.ladderPlayerPositionNode.rotation, Mathf.SmoothStep(0f, 1f, timer / waitTime));
+        }
+
         player.TeleportPlayer(exitPosition);
 
         ladderTrigger.usingLadder = false;

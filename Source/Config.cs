@@ -199,7 +199,7 @@ public class Config(string assemblyPath, ConfigFile file)
         "DisableElevatorButtonInteraction", false, "Disables needing to physically press the elevator buttons");
 
     public ConfigEntry<bool> DisableLadderClimbingInteraction { get; } = file.Bind("Interaction",
-        "DisableLadderClimbingInteraction", false, "Disables needing to physically climb ladders by gripping and pulling");
+        "DisableLadderClimbingInteraction", true, "Disables needing to physically climb ladders by gripping and pulling");
 
     // Car interaction configuration
 
