@@ -26,6 +26,12 @@ jobs:
           version=$(grep -oP '<Version>\K[^<]+' LCVR.csproj)
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            echo "build_tag=pr-${{ github.event.pull_request.number }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "build_tag=dev" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Setup Dotnet
         uses: actions/setup-dotnet@v4
@@ -39,6 +45,7 @@ jobs:
         run: dotnet build
 
       - name: Configure GPG Key
+        if: github.event_name == 'push' # Pull requests do not have access to the PGP signature
         run: |
           echo -n "$GPG_SIGNING_KEY" | base64 --decode | gpg --import
         env:
@@ -53,8 +60,12 @@ jobs:
           # Copy and sign debug binaries
           cp bin/Debug/netstandard2.1/LCVR.dll ./package/BepInEx/plugins/LCVR/
           cp bin/Debug/netstandard2.1/LCVR.Preload.dll ./package/BepInEx/patchers/LCVR/
-          gpg --output ./package/BepInEx/plugins/LCVR/LCVR.dll.sig --detach-sig ./package/BepInEx/plugins/LCVR/LCVR.dll
-          gpg --output ./package/BepInEx/patchers/LCVR/LCVR.Preload.dll.sig --detach-sig ./package/BepInEx/patchers/LCVR/LCVR.Preload.dll
+          
+          # Only sign if this build is triggered by a push
+          if [ "${{ github.event_name }}" = "push" ]; then
+            gpg --output ./package/BepInEx/plugins/LCVR/LCVR.dll.sig --detach-sig ./package/BepInEx/plugins/LCVR/LCVR.dll
+            gpg --output ./package/BepInEx/patchers/LCVR/LCVR.Preload.dll.sig --detach-sig ./package/BepInEx/patchers/LCVR/LCVR.Preload.dll
+          fi
 
           # Move assets
           mv ./package/lethalcompanyvr ./package/BepInEx/plugins/LCVR/lethalcompanyvr
@@ -73,5 +84,5 @@ jobs:
         if: github.event_name == 'push'
         uses: actions/upload-artifact@v4
         with:
-          name: LCVR-${{ steps.vars.outputs.version }}-dev-${{ steps.vars.outputs.sha_short }}
+          name: LCVR-${{ steps.vars.outputs.version }}-${{ steps.vars.outputs.build_tag }}-${{ steps.vars.outputs.sha_short }}
           path: ./package
