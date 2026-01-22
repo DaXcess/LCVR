@@ -81,7 +81,6 @@ jobs:
           mv ./package/manifest_new.json ./package/manifest.json
 
       - name: Upload build artifacts
-        if: github.event_name == 'push'
         uses: actions/upload-artifact@v4
         with:
           name: LCVR-${{ steps.vars.outputs.version }}-${{ steps.vars.outputs.build_tag }}-${{ steps.vars.outputs.sha_short }}
