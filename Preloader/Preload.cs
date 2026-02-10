@@ -103,13 +103,12 @@ public static class Preload
 #pragma warning restore CS8618
 
     /// <summary>
-    /// Hook Assembly.GetTypes() so it won't crash if it encounters references to missing assemblies
+    /// Hook multiple methods that deal with types so they won't crash if it encounters references to missing assemblies
     /// </summary>
     private static void PatchTypeMethods()
     {
-        // TODO: Remove if it's determined that this is not needed
-        // _getTypesHook = new Hook(typeof(Assembly).GetMethod("GetTypes", BindingFlags.Instance | BindingFlags.Public),
-        //     typeof(Preload).GetMethod(nameof(GetTypesHook)));
+        _getTypesHook = new Hook(AccessTools.Method(typeof(Assembly), nameof(Assembly.GetTypes)),
+            AccessTools.Method(typeof(Preload), nameof(GetTypesHook)));
 
         _isAssignableFromHook =
             new Hook(
