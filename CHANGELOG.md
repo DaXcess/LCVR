@@ -1,3 +1,8 @@
+# 1.4.7
+
+**Changes**:
+- Removed `TypeLoadExceptionFixer` dependency, fixing some issues with UnityExplorer
+
 # 1.4.6
 
 **Additions**:

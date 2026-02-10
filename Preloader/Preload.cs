@@ -1,7 +1,9 @@
 ﻿using System.Reflection;
 using BepInEx;
 using BepInEx.Logging;
+using HarmonyLib;
 using Mono.Cecil;
+using MonoMod.RuntimeDetour;
 
 namespace LCVR.Preload;
 
@@ -26,18 +28,19 @@ public static class Preload
                                          ]
                                        }
                                        """;
-    
+
     private static readonly ManualLogSource Logger = BepInEx.Logging.Logger.CreateLogSource("LCVR.Preload");
-    
+
     public static void Initialize()
     {
         Logger.LogInfo("Setting up VR runtime assets");
-        
+
         SetupRuntimeAssets();
-        
+        PatchTypeMethods();
+
         Logger.LogInfo("We're done here. Goodbye!");
     }
-    
+
     /// <summary>
     /// Place required runtime libraries and configuration in the game files to allow VR to be started
     /// </summary>
@@ -70,7 +73,7 @@ public static class Preload
         if (!CopyResourceFile(oxrLoader, oxrLoaderTarget))
             Logger.LogWarning("Could not find plugin openxr_loader.dll, VR might not work!");
     }
-    
+
     /// <summary>
     /// Helper function for SetupRuntimeAssets() to copy resource files and return false if the source does not exist
     /// </summary>
@@ -91,6 +94,51 @@ public static class Preload
         File.Copy(sourceFile, destinationFile, true);
 
         return true;
+    }
+
+#pragma warning disable CS8618
+    // Keep in scope just to be sure the hook stays attached
+    private static Hook _getTypesHook;
+    private static Hook _isAssignableFromHook;
+#pragma warning restore CS8618
+
+    /// <summary>
+    /// Hook Assembly.GetTypes() so it won't crash if it encounters references to missing assemblies
+    /// </summary>
+    private static void PatchTypeMethods()
+    {
+        // TODO: Remove if it's determined that this is not needed
+        // _getTypesHook = new Hook(typeof(Assembly).GetMethod("GetTypes", BindingFlags.Instance | BindingFlags.Public),
+        //     typeof(Preload).GetMethod(nameof(GetTypesHook)));
+
+        _isAssignableFromHook =
+            new Hook(
+                AccessTools.Method(AccessTools.TypeByName("System.RuntimeType"), "IsAssignableFrom", [typeof(Type)]),
+                AccessTools.Method(typeof(Preload), nameof(IsAssignableFromHook)));
+    }
+
+    private static Type[] GetTypesHook(Func<Assembly, Type[]> orig, Assembly self)
+    {
+        try
+        {
+            return orig(self).Where(t => t != null).ToArray();
+        }
+        catch (ReflectionTypeLoadException e)
+        {
+            return e.Types.Where(t => t != null).ToArray();
+        }
+    }
+
+    private static bool IsAssignableFromHook(Func<Type, Type, bool> orig, Type self, Type c)
+    {
+        try
+        {
+            return orig(self, c);
+        }
+        catch (TypeLoadException)
+        {
+            return false;
+        }
     }
 
     public static void Patch(AssemblyDefinition assembly)

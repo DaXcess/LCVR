@@ -65,7 +65,8 @@ Here is a list of LCVR versions and which version(s) of Lethal Company it suppor
 
 | LCVR              | Lethal Company    |
 |-------------------|-------------------|
-| v1.4.6 *(LATEST)* | V73               |
+| v1.4.7 *(LATEST)* | V73               |
+| v1.4.6            | V73               |
 | v1.4.5            | V73               |
 | v1.4.4            | V73               |
 | v1.4.3            | V73               |
@@ -109,10 +110,6 @@ Most mods should all work fine with LCVR, like interior mods, new moons, most it
 ## Known incompatibilities
 
 In general, most emote mods, mods adding UI elements and mods that require new bindings are not compatible with LCVR by default, and either require configuration changes, or dedicated VR support.
-
-# Hot switching
-
-You can swap between VR and flatscreen when using LCVR. For more info, check the [Hot Switching Wiki Page](https://thunderstore.io/c/lethal-company/p/DaXcess/LethalCompanyVR/wiki/2888-hot-switching/).
 
 # Configuring the mod
 
