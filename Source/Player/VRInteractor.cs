@@ -1,4 +1,4 @@
-﻿using LCVR.Assets;
+using LCVR.Assets;
 using LCVR.Input;
 using LCVR.Physics;
 using System.Collections.Generic;
@@ -176,88 +176,110 @@ public class VRInteractor : MonoBehaviour
     }
 }
 
+/// <summary>
+/// Manages VR interactions between interactors (hands) and interactables (objects).
+/// Supports multiple interactors per interactable, allowing both hands to interact with the same object simultaneously.
+/// </summary>
 public class InteractionManager
 {
-    private readonly Dictionary<VRInteractable, InteractableState> interactableState = [];
+    private readonly Dictionary<VRInteractable, Dictionary<VRInteractor, InteractableState>> interactableStates = [];
 
     public void ReportInteractables(VRInteractor interactor, VRInteractable[] interactables)
     {
         foreach (var interactable in interactables)
         {
-            if (!interactableState.ContainsKey(interactable))
+            // Initialize state dictionary for this interactable if needed
+            if (!interactableStates.ContainsKey(interactable))
+                interactableStates[interactable] = [];
+
+            var states = interactableStates[interactable];
+
+            // Check if this hand is allowed to interact
+            if (interactor.IsRightHand && !interactable.Flags.HasFlag(InteractableFlags.RightHand))
+                continue;
+
+            if (!interactor.IsRightHand && !interactable.Flags.HasFlag(InteractableFlags.LeftHand))
+                continue;
+
+            if (interactor.isHeld && interactable.Flags.HasFlag(InteractableFlags.NotWhileHeld))
+                continue;
+
+            // Add this interactor if not already tracking
+            if (!states.ContainsKey(interactor))
             {
-                // Check if this hand is allowed to interact with this object
-                if (interactor.IsRightHand && !interactable.Flags.HasFlag(InteractableFlags.RightHand))
-                    continue;
-
-                if (!interactor.IsRightHand && !interactable.Flags.HasFlag(InteractableFlags.LeftHand))
-                    continue;
-
-                if (interactor.isHeld && interactable.Flags.HasFlag(InteractableFlags.NotWhileHeld))
-                    continue;
-
-                interactableState.Add(interactable, new InteractableState(interactor, false));
+                states[interactor] = new InteractableState(false);
                 interactable.OnColliderEnter(interactor);
             }
 
-            // Ignore events from hand if other hand is already interacting
-            if (interactableState[interactable].interactor != interactor)
-                continue;
+            var state = states[interactor];
 
-            if (!interactableState[interactable].isHeld && !interactor.isHeld && interactor.IsPressed())
+            // Handle button press
+            if (!state.isHeld && !interactor.isHeld && interactor.IsPressed())
             {
                 var acknowledged = interactable.OnButtonPress(interactor);
-                interactableState[interactable].isHeld = interactor.isHeld = acknowledged;
+                state.isHeld = interactor.isHeld = acknowledged;
             }
-            else if (interactableState[interactable].isHeld && !interactor.IsPressed())
+            // Handle button release
+            else if (state.isHeld && !interactor.IsPressed())
             {
                 interactable.OnButtonRelease(interactor);
-                interactableState[interactable].isHeld = interactor.isHeld = false;
+                state.isHeld = interactor.isHeld = false;
             }
         }
 
-        foreach (var interactable in interactableState.Keys)
+        // Clean up interactors that left the collision zone
+        var interactablesToRemove = new List<VRInteractable>();
+        
+        foreach (var (interactable, states) in interactableStates)
         {
-            // Ignore if this state is being managed by another hand
-            if (interactableState[interactable].interactor != interactor)
+            if (!states.ContainsKey(interactor))
                 continue;
 
             if (interactables.Contains(interactable))
                 continue;
 
-            // Ignore if button is still being held down
-            if (interactableState[interactable].isHeld)
+            var state = states[interactor];
+
+            // Release if still held
+            if (state.isHeld)
+            {
                 if (interactor.IsPressed())
                     continue;
-                else {
-                    interactable.OnButtonRelease(interactor);
-                    interactor.isHeld = false;
-                }
+                
+                interactable.OnButtonRelease(interactor);
+                interactor.isHeld = false;
+            }
 
-            interactableState.Remove(interactable);
             interactable.OnColliderExit(interactor);
+            states.Remove(interactor);
 
-            // Break to not make C# shit itself, if more need to be removed it'll happen next frame
-            break;
+            // Clean up empty state dictionaries
+            if (states.Count == 0)
+                interactablesToRemove.Add(interactable);
         }
+
+        foreach (var interactable in interactablesToRemove)
+            interactableStates.Remove(interactable);
     }
 
     public void ResetState()
     {
-        foreach (var interactable in interactableState.Keys)
+        foreach (var (interactable, states) in interactableStates)
         {
-            var state = interactableState[interactable];
-            
-            if (state.isHeld)
-                interactable.OnButtonRelease(state.interactor);
-            
-            interactable.OnColliderExit(state.interactor);
+            foreach (var (interactor, state) in states)
+            {
+                if (state.isHeld)
+                    interactable.OnButtonRelease(interactor);
+                
+                interactable.OnColliderExit(interactor);
+            }
         }
+        
+        interactableStates.Clear();
     }
 
-    private class InteractableState(VRInteractor interactor, bool isHeld)
+    private class InteractableState(bool isHeld)
     {
-        public VRInteractor interactor = interactor;
         public bool isHeld = isHeld;
     }
 }
