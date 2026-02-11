@@ -227,8 +227,6 @@ public class VRLadder : MonoBehaviour, VRInteractable
     public void OnColliderExit(VRInteractor interactor) { }
 }
 
-// Lightweight wrapper no longer needed with multi-hand InteractionManager support
-
 [LCVRPatch]
 [HarmonyPatch]
 internal static class LadderPatches
