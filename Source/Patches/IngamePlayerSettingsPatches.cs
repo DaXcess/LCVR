@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Reflection.Emit;
 using HarmonyLib;
+using UnityEngine.Rendering.HighDefinition;
 
 namespace LCVR.Patches;
 
@@ -21,5 +22,16 @@ internal static class IngamePlayerSettingsPatches
             .SetOpcodeAndAdvance(OpCodes.Nop)
             .RemoveInstructions(15)
             .InstructionEnumeration();
+    }
+
+    /// <summary>
+    /// Disable motion blur
+    /// </summary>
+    [HarmonyPatch(typeof(IngamePlayerSettings), nameof(IngamePlayerSettings.SetMotionBlur))]
+    [HarmonyPostfix]
+    private static void DisableMotionBlur(IngamePlayerSettings __instance)
+    {
+        if (__instance.universalVolume.sharedProfile.TryGet<MotionBlur>(out var motionBlur))
+            motionBlur.active = false;
     }
 }

@@ -38,6 +38,17 @@ public class InputPatches
         playerInput.enabled = true;
     }
 
+    /// <summary>
+    /// Force lethal to use the PlayerInput component for actions (for automatic controller detection)
+    /// </summary>
+    [HarmonyPatch(typeof(InputSystem), nameof(InputSystem.actions), MethodType.Getter)]
+    [HarmonyPrefix]
+    private static bool ReplaceActions(ref InputActionAsset __result)
+    {
+        __result = IngamePlayerSettings.Instance.playerInput.actions;
+        return false;
+    }
+
     internal static void RestoreOriginalBindings()
     {
         var playerInput = IngamePlayerSettings.Instance.playerInput;
@@ -82,7 +93,7 @@ public class InputPatches
                     Field(typeof(IngamePlayerSettings.Settings), nameof(IngamePlayerSettings.Settings.keyBindings)))
             ])
             .Advance(-2)
-            .RemoveInstructions(18)
+            .RemoveInstructions(14)
             .InstructionEnumeration();
     }
 

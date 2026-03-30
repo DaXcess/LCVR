@@ -28,6 +28,7 @@ public class VRHUD : MonoBehaviour
     private GameObject clock;
     private GameObject battery;
     private GameObject inventory;
+    private GameObject utilitySlot;
 
     /// <summary>
     /// The "Face" canvas is a canvas that simulates a screen-space canvas by always being stuck in front of the camera,
@@ -275,14 +276,22 @@ public class VRHUD : MonoBehaviour
         batteryMeter.localRotation = Quaternion.identity;
         batteryMeter.localScale = Vector3.one;
 
-        // Inventory: Attach to right hand (below knuckles)
+        // Inventory & Utility Slot: Attach to right hand (below knuckles)
         inventory = GameObject.Find("Inventory");
+        utilitySlot = GameObject.Find("Systems/UI/Canvas/IngamePlayerHUD/TopLeftCorner/UtilitySlot");
+
+        utilitySlot.transform.SetParent(inventory.transform);
+        utilitySlot.Find("Slot4Items/ItemOnlySlotTipText").SetActive(false);
 
         if (isHandUiDisabled)
         {
             inventory.transform.SetParent(FaceCanvas.transform, false);
             inventory.transform.localPosition = new Vector3(91 + xOffset, -185 + yOffset, 0);
             inventory.transform.localRotation = Quaternion.identity;
+
+            // TODO: These must change
+            utilitySlot.transform.localPosition = new Vector3(91 + xOffset, -185 + yOffset, 0);
+            utilitySlot.transform.localRotation = Quaternion.identity;
         }
         else
         {
@@ -290,6 +299,10 @@ public class VRHUD : MonoBehaviour
             inventory.transform.localPosition = new Vector3(-28, 120, 40);
             inventory.transform.localRotation = Quaternion.Euler(0, 195, 0);
             inventory.transform.localScale = Vector3.one * 0.8f;
+
+            utilitySlot.transform.localPosition = new Vector3(-59, 0, 15);
+            utilitySlot.transform.localRotation = Quaternion.Euler(0, 0, 0);
+            utilitySlot.transform.localScale = Vector3.one * 1.3f;
         }
         
         // Compass: Attach to right hand (below inventory)

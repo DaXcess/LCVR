@@ -84,9 +84,9 @@ internal static class PlayerControllerPatches
     {
         return new CodeMatcher(instructions)
             .MatchForward(false, new CodeMatch(OpCodes.Ldstr, "Sprint"))
-            .Advance(-3)
+            .Advance(-1)
             .SetAndAdvance(OpCodes.Call, ((Func<float>)GetSprintValue).Method)
-            .RemoveInstructions(6)
+            .RemoveInstructions(4)
             .InstructionEnumeration();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -423,6 +423,35 @@ internal static class PlayerControllerPatches
 
             player.gameplayCamera.transform.localEulerAngles = angles;
         }
+    }
+
+    /// <summary>
+    /// Make just scrolling between slots also scroll through the utility slot in VR
+    /// </summary>
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.NextItemSlot))]
+    [HarmonyPrefix]
+    private static bool ScrollToUtilitySlot(PlayerControllerB __instance, bool forward, ref int __result)
+    {
+        // Scrolling away is already handled by the game
+        if (__instance.currentItemSlot == 0x32)
+            return true;
+
+        // If we scroll backwards on the first slot, go to utility
+        if (__instance.currentItemSlot == 0 && !forward)
+        {
+            __result = 0x32;
+            return false;
+        }
+
+        // If we scroll forwards on the last slot, go to utility
+        if (__instance.currentItemSlot + 1 == __instance.ItemSlots.Length && forward)
+        {
+            __result = 0x32;
+            return false;
+        }
+
+        // Otherwise fall back to vanilla behavior
+        return true;
     }
 }
 

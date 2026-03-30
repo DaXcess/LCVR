@@ -5,6 +5,7 @@ using HarmonyLib;
 using LCVR.Managers;
 using LCVR.Player;
 using UnityEngine;
+
 using static HarmonyLib.AccessTools;
 
 namespace LCVR.Patches.Items;
@@ -53,7 +54,7 @@ internal static class SprayPaintItemPatches
     private static IEnumerable<CodeInstruction> WeedKillerSprayFromHand(IEnumerable<CodeInstruction> instructions)
     {
         return new CodeMatcher(instructions)
-            .Advance(1)
+            .Advance(3)
             .RemoveInstructions(13)
             .InsertAndAdvance(
                 new CodeInstruction(OpCodes.Call, ((Func<Vector3>)GetSprayPosition).Method)

@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
-using System.Reflection;
+using System.Linq;
 using System.Reflection.Emit;
+using System.Runtime.CompilerServices;
 using GameNetcodeStuff;
 using HarmonyLib;
 using UnityEngine;
@@ -49,25 +51,14 @@ internal static class SpectatorAIPatches
     {
         return new CodeMatcher(instructions, generator)
             .MatchForward(false,
-                new CodeMatch(i => i.opcode == OpCodes.Ldfld && (FieldInfo)i.operand ==
-                    Field(typeof(StartOfRound), nameof(StartOfRound.allPlayerScripts))))
-            .Advance(-1)
-            .Insert(new CodeInstruction(OpCodes.Call,
-                PropertyGetter(typeof(StartOfRound), nameof(StartOfRound.Instance))))
-            .CreateLabel(out var label)
-            .Advance(1)
-            .InsertAndAdvance(new CodeInstruction(OpCodes.Ldfld,
-                Field(typeof(StartOfRound), nameof(StartOfRound.allPlayerScripts))))
-            .InsertAndAdvance(new CodeInstruction(OpCodes.Ldloc_1))
-            .InsertAndAdvance(new CodeInstruction(OpCodes.Ldelem_Ref))
-            .InsertAndAdvance(new CodeInstruction(OpCodes.Ldfld,
-                Field(typeof(PlayerControllerB), nameof(PlayerControllerB.isPlayerDead))))
-            .InsertBranchAndAdvance(OpCodes.Brtrue, 78)
-            .MatchForward(false, new CodeMatch(OpCodes.Blt))
-            .Advance(1)
-            .MatchForward(false, new CodeMatch(OpCodes.Blt))
-            .SetOperandAndAdvance(label)
+                new CodeMatch(OpCodes.Ldfld, Field(typeof(StartOfRound), nameof(StartOfRound.allPlayerScripts))))
+            .Repeat(matcher =>
+                matcher.Set(OpCodes.Call, ((Func<StartOfRound, PlayerControllerB[]>)GetAlivePlayers).Method))
             .InstructionEnumeration();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static PlayerControllerB[] GetAlivePlayers(StartOfRound round) =>
+            round.allPlayerScripts.Where(p => !p.isPlayerDead).ToArray();
     }
 
     /// <summary>
@@ -80,25 +71,14 @@ internal static class SpectatorAIPatches
     {
         return new CodeMatcher(instructions, generator)
             .MatchForward(false,
-                new CodeMatch(i => i.opcode == OpCodes.Ldfld && (FieldInfo)i.operand ==
-                    Field(typeof(StartOfRound), nameof(StartOfRound.allPlayerScripts))))
-            .Advance(-1)
-            .Insert(new CodeInstruction(OpCodes.Call,
-                PropertyGetter(typeof(StartOfRound), nameof(StartOfRound.Instance))))
-            .CreateLabel(out var label)
-            .Advance(1)
-            .InsertAndAdvance(new CodeInstruction(OpCodes.Ldfld,
-                Field(typeof(StartOfRound), nameof(StartOfRound.allPlayerScripts))))
-            .InsertAndAdvance(new CodeInstruction(OpCodes.Ldloc_S, 4))
-            .InsertAndAdvance(new CodeInstruction(OpCodes.Ldelem_Ref))
-            .InsertAndAdvance(new CodeInstruction(OpCodes.Ldfld,
-                Field(typeof(PlayerControllerB), nameof(PlayerControllerB.isPlayerDead))))
-            .InsertBranchAndAdvance(OpCodes.Brtrue, 79)
-            .MatchForward(false, new CodeMatch(OpCodes.Blt))
-            .Advance(1)
-            .MatchForward(false, new CodeMatch(OpCodes.Blt))
-            .SetOperandAndAdvance(label)
+                new CodeMatch(OpCodes.Ldfld, Field(typeof(StartOfRound), nameof(StartOfRound.allPlayerScripts))))
+            .Repeat(matcher =>
+                matcher.Set(OpCodes.Call, ((Func<StartOfRound, PlayerControllerB[]>)GetAlivePlayers).Method))
             .InstructionEnumeration();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static PlayerControllerB[] GetAlivePlayers(StartOfRound round) =>
+            round.allPlayerScripts.Where(p => !p.isPlayerDead).ToArray();
     }
 
     /// <summary>

@@ -1,7 +1,15 @@
-# 1.4.7
+# 1.5.0
+
+**V80's terrain rendering is not supported by LCVR! Game may crash upon loading a moon!**
+
+**Additions**:
+- Added support for the new utility slot, which is accessible like a normal inventory slot
 
 **Changes**:
+- Entrance teleports now behave the same as vanilla when determining your looking direction
+- Motion blur has been disabled and cannot be enabled while in VR
 - Removed `TypeLoadExceptionFixer` dependency, fixing some issues with UnityExplorer
+- Removed toggle sprint option as this is now a vanilla setting
 
 # 1.4.6
 

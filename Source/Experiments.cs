@@ -118,71 +118,6 @@ internal static class DebugMenuPatches
     {
         return PatchIsEditor(instructions);
     }
-
-    [HarmonyPatch(typeof(QuickMenuManager), nameof(QuickMenuManager.Debug_KillLocalPlayer))]
-    [HarmonyTranspiler]
-    private static IEnumerable<CodeInstruction> Debug_KillLocalPlayer(IEnumerable<CodeInstruction> instructions)
-    {
-        return PatchIsEditor(instructions);
-    }
-
-    [HarmonyPatch(typeof(QuickMenuManager), nameof(QuickMenuManager.Debug_SpawnEnemy))]
-    [HarmonyTranspiler]
-    private static IEnumerable<CodeInstruction> Debug_SpawnEnemy(IEnumerable<CodeInstruction> instructions)
-    {
-        return PatchIsEditor(instructions);
-    }
-
-    [HarmonyPatch(typeof(QuickMenuManager), nameof(QuickMenuManager.Debug_SpawnItem))]
-    [HarmonyTranspiler]
-    private static IEnumerable<CodeInstruction> Debug_SpawnItem(IEnumerable<CodeInstruction> instructions)
-    {
-        return PatchIsEditor(instructions);
-    }
-
-    [HarmonyPatch(typeof(QuickMenuManager), nameof(QuickMenuManager.Debug_SpawnTruck))]
-    [HarmonyTranspiler]
-    private static IEnumerable<CodeInstruction> Debug_SpawnTruck(IEnumerable<CodeInstruction> instructions)
-    {
-        return PatchIsEditor(instructions);
-    }
-
-    [HarmonyPatch(typeof(QuickMenuManager), nameof(QuickMenuManager.Debug_ToggleAllowDeath))]
-    [HarmonyTranspiler]
-    private static IEnumerable<CodeInstruction> Debug_ToggleAllowDeath(IEnumerable<CodeInstruction> instructions)
-    {
-        return PatchIsEditor(instructions);
-    }
-
-    [HarmonyPatch(typeof(QuickMenuManager), nameof(QuickMenuManager.Debug_ToggleTestRoom))]
-    [HarmonyTranspiler]
-    private static IEnumerable<CodeInstruction> Debug_ToggleTestRoom(IEnumerable<CodeInstruction> instructions)
-    {
-        return PatchIsEditor(instructions);
-    }
-
-    [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.Debug_EnableTestRoomServerRpc))]
-    [HarmonyTranspiler]
-    private static IEnumerable<CodeInstruction> Debug_EnableTestRoomServerRpc(IEnumerable<CodeInstruction> instructions)
-    {
-        return PatchIsEditor(instructions);
-    }
-
-    [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.Debug_ReviveAllPlayersServerRpc))]
-    [HarmonyTranspiler]
-    private static IEnumerable<CodeInstruction> Debug_ReviveAllPlayersServerRpc(
-        IEnumerable<CodeInstruction> instructions)
-    {
-        return PatchIsEditor(instructions);
-    }
-
-    [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.Debug_ToggleAllowDeathServerRpc))]
-    [HarmonyTranspiler]
-    private static IEnumerable<CodeInstruction> Debug_ToggleAllowDeathServerRpc(
-        IEnumerable<CodeInstruction> instructions)
-    {
-        return PatchIsEditor(instructions);
-    }
 }
 #endif
 
@@ -271,7 +206,7 @@ internal static class DebugLinePool
         lineRenderer.widthCurve.keys = [new Keyframe(0, 1)];
         lineRenderer.widthMultiplier = 0.005f;
         lineRenderer.positionCount = 2;
-        lineRenderer.SetPositions(new[] { Vector3.zero, Vector3.zero });
+        lineRenderer.SetPositions([Vector3.zero, Vector3.zero]);
         lineRenderer.numCornerVertices = 4;
         lineRenderer.numCapVertices = 4;
         lineRenderer.alignment = LineAlignment.View;

@@ -1,4 +1,5 @@
 using HarmonyLib;
+using TMPro;
 
 namespace LCVR.Patches;
 
@@ -15,5 +16,21 @@ internal static class SettingsOptionPatches
     private static bool IgnoreBindingTextReload()
     {
         return false;
+    }
+
+    /// <summary>
+    /// Disable the Motion Blur option in the settings menu
+    /// </summary>
+    [HarmonyPatch(typeof(SettingsOption), nameof(SettingsOption.OnEnable))]
+    [HarmonyPostfix]
+    private static void DisableMotionBlurOption(SettingsOption __instance)
+    {
+        if (__instance.optionType != SettingsOptionType.MotionBlur)
+            return;
+
+        var dropdown = __instance.GetComponent<TMP_Dropdown>();
+        dropdown.interactable = false;
+        dropdown.enabled = false;
+        dropdown.captionText.text = "Absolutely not";
     }
 }

@@ -82,9 +82,6 @@ public class Config(string assemblyPath, ConfigFile file)
             "The amount of rotation that is applied when performing a snap turn. Requires turn provider to be set to snap.",
             new AcceptableValueRange<float>(10, 180)));
 
-    public ConfigEntry<bool> ToggleSprint { get; } = file.Bind("Input", "ToggleSprint", false,
-        "Whether the sprint button should toggle sprint instead of having to hold it down.");
-
     public ConfigEntry<float> MovementSprintToggleCooldown { get; } = file.Bind("Input", "MovementSprintToggleCooldown",
         1f,
         new ConfigDescription(

@@ -658,7 +658,7 @@ public class VRPlayer : MonoBehaviour
             lastFrameHmdPosition = head.localPosition;
 
         // Set sprint
-        if (Plugin.Config.ToggleSprint.Value)
+        if (IngamePlayerSettings.Instance.settings.toggleSprint)
         {
             if (PlayerController.isExhausted)
                 isSprinting = false;
