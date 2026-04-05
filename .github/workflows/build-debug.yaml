@@ -56,6 +56,9 @@ jobs:
           # Set up template
           mkdir package
           git --work-tree=./package checkout origin/thunderstore ./
+          
+          # Create patchers directory
+          mkdir -p ./package/BepInEx/patchers/LCVR/
 
           # Copy and sign debug binaries
           cp bin/Debug/netstandard2.1/LCVR.dll ./package/BepInEx/plugins/LCVR/
