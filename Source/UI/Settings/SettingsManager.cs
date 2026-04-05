@@ -262,7 +262,7 @@ public class SettingsManager : MonoBehaviour
         settings.supportMotionVectors = true;
 
         settings.xrSettings.occlusionMesh = Plugin.Config.EnableOcclusionMesh.Value;
-        settings.xrSettings.singlePass = false;
+        settings.xrSettings.singlePass = true;
 
         settings.lodBias =
             new FloatScalableSetting(

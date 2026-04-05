@@ -3,26 +3,15 @@ using System.Reflection.Emit;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
-using UnityEngine.InputSystem.XR;
-
+using UnityEngine.XR.Management;
 using static HarmonyLib.AccessTools;
 
 namespace LCVR.Patches;
 
-[LCVRPatch]
+[LCVRPatch(LCVRPatchTarget.Universal)]
 [HarmonyPatch]
 internal static class XRPatches
 {
-    /// <summary>
-    /// Funny Non-NVIDIA BepInEx Entrypoint quick fix
-    /// </summary>
-    [HarmonyPatch(typeof(XRSupport), nameof(XRSupport.Initialize))]
-    [HarmonyPrefix]
-    private static bool OnBeforeInitialize()
-    {
-        return false;
-    }
-
     /// <summary>
     /// Make the occlusion mesh color black
     /// </summary>
@@ -31,6 +20,16 @@ internal static class XRPatches
     private static void OnXRSystemInitialize()
     {
         XRSystem.s_OcclusionMeshMaterial?.SetVector("_ClearColor", Vector4.zero);
+    }
+
+    /// <summary>
+    /// Make sure the game doesn't override our OpenXR features
+    /// </summary>
+    [HarmonyPatch(typeof(XRGeneralSettings), nameof(XRGeneralSettings.AttemptStartXRSDKOnBeforeSplashScreen))]
+    [HarmonyPrefix]
+    private static void OnBeforeOpenXRInitialize()
+    {
+        OpenXR.Loader.UpdateFeatures();
     }
 
     /// <summary>

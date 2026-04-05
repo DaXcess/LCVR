@@ -15,6 +15,7 @@ using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.SceneManagement;
 using UnityEngine.XR.Interaction.Toolkit.Inputs.Composites;
 using UnityEngine.XR.Interaction.Toolkit.Inputs.Interactions;
+using UnityEngine.XR.OpenXR;
 using DependencyFlags = BepInEx.BepInDependency.DependencyFlags;
 using VolumeManager = LCVR.Rendering.VolumeManager;
 
@@ -39,7 +40,7 @@ public class Plugin : BaseUnityPlugin
 
     private readonly string[] GAME_ASSEMBLY_HASHES =
     [
-        "8A8B86FF5BB655BB8B81CE05586D24F6D530E6632C272D9FB59D2243F42E088E", // V73
+        "5CDBE2C86347F5183A6AEA2A20C34AB2B5D09EBC7D5FE959C043F7EB600E0823", // V81
     ];
 
     public new static Config Config { get; private set; }
@@ -50,10 +51,6 @@ public class Plugin : BaseUnityPlugin
         // Fix XR not working with non-english PC languages
         // Why isn't this the default in LC??
         CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
-
-        // Reload Unity's Input System plugins since BepInEx in some
-        // configurations runs after the Input System has already been initialized
-        InputSystem.PerformDefaultPluginInitialization();
 
         // Register XR Toolkit (these normally load during RuntimeInitializeOnLoad -> BeforeSceneLoad)
         ButtonFallbackComposite.Initialize();
@@ -257,10 +254,6 @@ public class Plugin : BaseUnityPlugin
             {
                 var filename = Path.GetFileName(file);
 
-                // Ignore known unmanaged libraries
-                if (filename is "UnityOpenXR.dll" or "openxr_loader.dll")
-                    continue;
-
                 Logger.LogDebug($"Preloading '{filename}'...");
 
                 try
@@ -319,7 +312,7 @@ public class Plugin : BaseUnityPlugin
         settings.supportMotionVectors = true;
 
         settings.xrSettings.occlusionMesh = Config.EnableOcclusionMesh.Value;
-        settings.xrSettings.singlePass = false;
+        settings.xrSettings.singlePass = true;
 
         settings.lodBias = new FloatScalableSetting([Config.LODBias.Value, Config.LODBias.Value, Config.LODBias.Value],
             ScalableSettingSchemaId.With3Levels);

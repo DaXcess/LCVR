@@ -14,6 +14,7 @@ using UnityEngine;
 using UnityEngine.XR;
 using UnityEngine.XR.Management;
 using UnityEngine.XR.OpenXR;
+using UnityEngine.XR.OpenXR.Features;
 using UnityEngine.XR.OpenXR.Features.Interactions;
 
 namespace LCVR;
@@ -435,6 +436,8 @@ internal static class OpenXR
             return displays.Count > 0;
         }
 
+        private static OpenXRFeature[] s_Features = [];
+
         private static void InitializeScripts()
         {
             xrGeneralSettings ??= ScriptableObject.CreateInstance<XRGeneralSettings>();
@@ -446,10 +449,10 @@ internal static class OpenXR
             ((List<XRLoader>)xrManagerSettings.activeLoaders).Clear();
             ((List<XRLoader>)xrManagerSettings.activeLoaders).Add(xrLoader);
 
-            OpenXRSettings.Instance.renderMode = OpenXRSettings.RenderMode.MultiPass;
+            OpenXRSettings.Instance.renderMode = OpenXRSettings.RenderMode.SinglePassInstanced;
             OpenXRSettings.Instance.depthSubmissionMode = OpenXRSettings.DepthSubmissionMode.None;
 
-            if (OpenXRSettings.Instance.features.Length != 0)
+            if (s_Features.Length > 0)
                 return;
 
             var valveIndex = ScriptableObject.CreateInstance<ValveIndexControllerProfile>();
@@ -468,7 +471,7 @@ internal static class OpenXR
             metaQuestTouch.enabled = true;
             oculusTouch.enabled = true;
 
-            OpenXRSettings.Instance.features =
+            s_Features =
             [
                 valveIndex,
                 hpReverb,
@@ -478,6 +481,13 @@ internal static class OpenXR
                 metaQuestTouch,
                 oculusTouch
             ];
+            OpenXRSettings.Instance.features = s_Features;
+        }
+
+        // The vanilla game now tries to overwrite these features, so restore them at a certain suitable point during loading
+        internal static void UpdateFeatures()
+        {
+            OpenXRSettings.Instance.features = s_Features;
         }
     }
 }

@@ -11,7 +11,7 @@ public class VolumeManager : MonoBehaviour
     private Coroutine takeDamageCoroutine;
 
     private Volume volume;
-    private Vignette vignette;
+    private UnityEngine.Rendering.HighDefinition.Vignette vignette;
     private ColorAdjustments colorAdjustments;
 
     private Color vignetteColor = Color.black;
