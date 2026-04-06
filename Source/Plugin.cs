@@ -167,7 +167,7 @@ public class Plugin : BaseUnityPlugin
         Native.BringGameWindowToFront();
     }
 
-    private static string GetCommitHash()
+    internal static string GetCommitHash()
     {
         try
         {

@@ -32,7 +32,7 @@ public class MainMenuEnvironment : BaseMenuEnvironment
         versionLabel.text = $"v{Plugin.PLUGIN_VERSION}";
         
 #if DEBUG
-        versionLabel.text += " (DEVELOPMENT)";
+        versionLabel.text += $" (DEVELOPMENT - {Plugin.GetCommitHash()})";
 #endif
 
         settingsManager = settingsPanel.GetComponent<SettingsManager>();
