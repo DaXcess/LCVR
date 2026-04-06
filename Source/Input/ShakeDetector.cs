@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace LCVR.Input;
 
-public class ShakeDetector(Transform source, float threshold, bool useLocalPosition = false)
+public class ShakeDetector(Transform source, float threshold, bool useLocalPosition = false, float delay = 0.0f)
 {
     private const float AccelerometerUpdateInterval = 1.0f / 60.0f;
     private const float LowPassKernelWidthInSeconds = 1.0f;
@@ -17,14 +17,20 @@ public class ShakeDetector(Transform source, float threshold, bool useLocalPosit
     
     private Vector3 Position => useLocalPosition ? source.localPosition : source.position;
 
+    private float lastTrigger;
+
     public void Update()
     {
         var acceleration = Position - previousPosition;
         lowPassValue = Vector3.Lerp(lowPassValue, acceleration, lowPassFilterFactor);
         var deltaAcceleration = acceleration - lowPassValue;
 
-        if (deltaAcceleration.sqrMagnitude >= shakeDetectionThreshold)
+        if (deltaAcceleration.sqrMagnitude >= shakeDetectionThreshold &&
+            Time.realtimeSinceStartup - lastTrigger > delay)
+        {
             onShake?.Invoke();
+            lastTrigger = Time.realtimeSinceStartup;
+        }
 
         previousPosition = Position;
     }

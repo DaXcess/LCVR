@@ -25,6 +25,8 @@ public class VRController : MonoBehaviour
 
     private LineRenderer debugLineRenderer;
 
+    private ShakeDetector jiggleDetector;
+
     private static string CursorTip
     {
         set
@@ -36,6 +38,7 @@ public class VRController : MonoBehaviour
 
     public Transform InteractOrigin { get; private set; }
     public bool IsHovering { get; private set; }
+
 
     private void Awake()
     {
@@ -65,11 +68,19 @@ public class VRController : MonoBehaviour
 
         // Re-enable local player controller to make sure our "Interact" runs first
         Actions.Instance["Interact"].performed += OnInteractPerformed;
+
+        jiggleDetector = new ShakeDetector(transform, 0.03f, true, 0.25f);
+    }
+
+    private void OnEnable()
+    {
+        jiggleDetector.onShake += OnJiggleDetected;
     }
 
     private void OnDisable()
     {
         IsHovering = false;
+        jiggleDetector.onShake -= OnJiggleDetected;
 
         if (!PlayerController)
             return;
@@ -203,6 +214,8 @@ public class VRController : MonoBehaviour
 
     private void Update()
     {
+        jiggleDetector.Update();
+
         if (PlayerController.IsOwner && PlayerController.isPlayerControlled)
             ClickHoldInteraction();
     }
@@ -430,5 +443,13 @@ public class VRController : MonoBehaviour
 
             PlayerController.grabObjectCoroutine = PlayerController.StartCoroutine(PlayerController.GrabObject());
         }
+    }
+
+    private void OnJiggleDetected()
+    {
+        if (PlayerController.currentlyHeldObjectServer is not {} item || item.isPocketed)
+            return;
+
+        item.JiggleItemEffect(Actions.Instance.RightHandVelocity.ReadValue<Vector3>().magnitude);
     }
 }
