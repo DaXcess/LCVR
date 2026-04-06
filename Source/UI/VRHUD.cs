@@ -373,6 +373,19 @@ public class VRHUD : MonoBehaviour
         cinematicGraphics.transform.localRotation = Quaternion.Euler(0, -9.3337f, 0);
         cinematicGraphics.transform.localScale = Vector3.one;
 
+        // Status effects
+        var statusEffects = GameObject.Find("StatusEffects").transform;
+        var statusEffectsText = statusEffects.Find("StatusEffectText").GetComponent<TextMeshProUGUI>();
+
+        statusEffects.SetParent(FaceCanvas.transform, false);
+        statusEffects.localPosition = new Vector3(0, -300, 0);
+        statusEffects.localRotation = Quaternion.identity;
+        statusEffects.localScale = Vector3.one;
+
+        statusEffectsText.transform.localPosition = Vector3.zero;
+        statusEffectsText.transform.localRotation = Quaternion.identity;
+        statusEffectsText.alignment = TextAlignmentOptions.Center;
+
         // Dialogue Box: In front of eyes
         var dialogueBox = GameObject.Find("DialogueBox").transform;
 

@@ -3,6 +3,7 @@ using LCVR.Networking;
 using LCVR.Player;
 using System.Collections;
 using System.IO;
+using LCVR.Input;
 using LCVR.Managers;
 using UnityEngine;
 
@@ -49,12 +50,28 @@ internal class ShipLeverInteractable : MonoBehaviour, VRInteractable
         lever.StopInteracting();
     }
 
-    public void OnColliderEnter(VRInteractor _) { }
+    public void OnColliderEnter(VRInteractor interactor)
+    {
+        if (lever.InOrbit || !lever.CanInteract)
+            return;
+
+        var velocity = interactor.IsRightHand
+            ? Actions.Instance.RightHandVelocity.ReadValue<Vector3>()
+            : Actions.Instance.LeftHandVelocity.ReadValue<Vector3>();
+
+        if (velocity.sqrMagnitude < 1f)
+            return;
+
+        lever.ShoveLever();
+    }
+
     public void OnColliderExit(VRInteractor _) { }
 }
 
 public class ShipLever : MonoBehaviour
 {
+    private static readonly int shoveLever = Animator.StringToHash("shoveLever");
+    
     private Animator animator;
     private StartMatchLever lever;
     private Transform rotateTo;
@@ -63,6 +80,7 @@ public class ShipLever : MonoBehaviour
     private Channel channel;
 
     public bool CanInteract => lever.triggerScript.interactable && currentActor != Actor.Other;
+    public bool InOrbit => lever.playersManager.inShipPhase;
 
     private void Awake()
     {
@@ -102,6 +120,13 @@ public class ShipLever : MonoBehaviour
         transform.eulerAngles = eulerAngles;
     }
 
+    public void ShoveLever(bool isLocal = true)
+    {
+        StartCoroutine(PerformLeverAction(isLocal, true));
+
+        channel.SendPacket([2]);
+    }
+
     public void StartInteracting(Transform target, Actor actor)
     {
         currentActor = actor;
@@ -136,30 +161,42 @@ public class ShipLever : MonoBehaviour
         }
     }
 
-    private IEnumerator PerformLeverAction(bool isLocal)
+    private IEnumerator PerformLeverAction(bool isLocal, bool isShove = false)
     {
-        if (isLocal) lever.LeverAnimation();
+        if (isShove)
+            lever.leverAnimatorObject.SetBool(shoveLever, true);
+
+        if (isLocal)
+            lever.LeverAnimation();
 
         yield return new WaitForSeconds(1.67f);
 
         animator.enabled = true;
-        if (isLocal) lever.PullLever();
+
+        if (isLocal)
+            lever.PullLever();
+
+        lever.leverAnimatorObject.SetBool(shoveLever, false);
     }
 
     private void OnOtherInteractWithLever(ushort other, BinaryReader reader)
     {
-        var interacting = reader.ReadBoolean();
+        var interaction = reader.ReadByte();
 
         if (!NetworkSystem.Instance.TryGetPlayer(other, out var player))
             return;
 
-        switch (interacting)
+        switch (interaction)
         {
-            case true when currentActor == Actor.None:
+            case 0 when currentActor == Actor.None:
                 StartInteracting(player.Bones.RightHand, Actor.Other);
                 break;
-            case false when currentActor == Actor.Other:
+            case 1 when currentActor == Actor.Other:
                 StopInteracting();
+                break;
+            case 2:
+                StopInteracting();
+                ShoveLever(false);
                 break;
         }
     }
@@ -168,6 +205,8 @@ public class ShipLever : MonoBehaviour
     {
         var startMatch = FindObjectOfType<StartMatchLever>();
         startMatch.leverAnimatorObject.gameObject.AddComponent<ShipLever>();
+        startMatch.leverAnimatorObject.runtimeAnimatorController = AssetManager.IntroLeverAnimator;
+        startMatch.leverAnimatorObject.GetComponent<PlayAudioAnimationEvent>().audioClip3 = AssetManager.LeverShove;
 
         if (!VRSession.InVR)
             return;

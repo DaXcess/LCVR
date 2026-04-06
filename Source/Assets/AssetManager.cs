@@ -46,6 +46,9 @@ public static class AssetManager
     public static Sprite SprintImage;
 
     public static AudioClip DoorLocked;
+    public static AudioClip LeverShove;
+
+    public static RuntimeAnimatorController IntroLeverAnimator;
 
     internal static bool LoadAssets()
     {
@@ -98,6 +101,9 @@ public static class AssetManager
         SprintImage = assetsBundle.LoadAsset<Sprite>("Aguy");
 
         DoorLocked = assetsBundle.LoadAsset<AudioClip>("doorlocked");
+        LeverShove = assetsBundle.LoadAsset<AudioClip>("EndGameShoveLever");
+
+        IntroLeverAnimator = assetsBundle.LoadAsset<RuntimeAnimatorController>("HangarDoorLeverAlt");
 
         if (RemappableControls == null || RemappableControls.controls == null)
         {
