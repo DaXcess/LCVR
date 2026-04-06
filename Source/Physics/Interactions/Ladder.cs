@@ -34,8 +34,10 @@ public class VRLadder : MonoBehaviour, VRInteractable
 
     private void Update()
     {
-        if (VRSession.Instance is not { LocalPlayer.PlayerController: var player })
+        if (VRSession.Instance is not { } instance)
             return;
+
+        var player = instance.LocalPlayer.PlayerController;
 
         if (!player.isClimbingLadder || !isActiveLadder)
             return;
@@ -66,9 +68,8 @@ public class VRLadder : MonoBehaviour, VRInteractable
         totalMovement.z = 0;
 
         var maxMovementThisFrame = MAX_CLIMB_SPEED * Time.deltaTime;
-        totalMovement.y = Mathf.Abs(totalMovement.y) > maxMovementThisFrame 
-            ? Mathf.Sign(totalMovement.y) * maxMovementThisFrame 
-            : totalMovement.y;
+        if (Mathf.Abs(totalMovement.y) > maxMovementThisFrame)
+            totalMovement.y = Mathf.Sign(totalMovement.y) * maxMovementThisFrame;
 
         if (Mathf.Abs(totalMovement.y) > 0.001f)
             player.thisPlayerBody.position += totalMovement;
@@ -82,23 +83,25 @@ public class VRLadder : MonoBehaviour, VRInteractable
         if (playerHeadY < topY - 0.3f)
             return;
 
-        var exitPosition = ladderTrigger.useRaycastToGetTopPosition
-            ? GetRaycastExitPosition(player)
-            : ladderTrigger.topOfLadderPosition.position;
+        Vector3 exitPosition;
+
+        if (ladderTrigger.useRaycastToGetTopPosition)
+        {
+            var rayStart = player.transform.position + Vector3.up * 0.5f;
+            var rayEnd = ladderTrigger.topOfLadderPosition.position + Vector3.up * 0.5f;
+
+            exitPosition = UnityEngine.Physics.Linecast(rayStart, rayEnd, out var hit,
+                StartOfRound.Instance.collidersAndRoomMaskAndDefault,
+                QueryTriggerInteraction.Ignore)
+                ? hit.point
+                : ladderTrigger.topOfLadderPosition.position;
+        }
+        else
+        {
+            exitPosition = ladderTrigger.topOfLadderPosition.position;
+        }
 
         StartCoroutine(ExitLadder(player, exitPosition));
-    }
-
-    private Vector3 GetRaycastExitPosition(GameNetcodeStuff.PlayerControllerB player)
-    {
-        var rayStart = player.transform.position + Vector3.up * 0.5f;
-        var rayEnd = ladderTrigger.topOfLadderPosition.position + Vector3.up * 0.5f;
-
-        return UnityEngine.Physics.Linecast(rayStart, rayEnd, out var hit,
-            StartOfRound.Instance.collidersAndRoomMaskAndDefault,
-            QueryTriggerInteraction.Ignore)
-            ? hit.point
-            : ladderTrigger.topOfLadderPosition.position;
     }
 
     private IEnumerator ExitLadder(GameNetcodeStuff.PlayerControllerB player, Vector3 exitPosition)
@@ -153,36 +156,41 @@ public class VRLadder : MonoBehaviour, VRInteractable
 
     public bool OnButtonPress(VRInteractor interactor)
     {
-        if (VRSession.Instance is not { LocalPlayer.PlayerController: var player })
-            return false;
+        var player = VRSession.Instance.LocalPlayer.PlayerController;
 
         // Store grip point in ladder's local space
         if (interactor.IsRightHand)
         {
-            rightHandGripPoint = transform.InverseTransformPoint(VRSession.Instance.LocalPlayer.RightHandVRTarget.position);
+            rightHandGripPoint =
+                transform.InverseTransformPoint(VRSession.Instance.LocalPlayer.RightHandVRTarget.position);
             rightHandInteractor = interactor;
         }
         else
         {
-            leftHandGripPoint = transform.InverseTransformPoint(VRSession.Instance.LocalPlayer.LeftHandVRTarget.position);
+            leftHandGripPoint =
+                transform.InverseTransformPoint(VRSession.Instance.LocalPlayer.LeftHandVRTarget.position);
             leftHandInteractor = interactor;
         }
 
         if (!player.isClimbingLadder)
         {
-            if (ladderTrigger == null || !ladderTrigger.interactable)
+            if (ladderTrigger != null && ladderTrigger.interactable)
+            {
+                isActiveLadder = true;
+                climbStartTime = Time.time;
+                player.isClimbingLadder = true;
+                player.thisController.enabled = false;
+
+                player.takingFallDamage = false;
+                player.fallValue = 0f;
+                player.fallValueUncapped = 0f;
+            }
+            else
+            {
                 return false;
-
-            isActiveLadder = true;
-            climbStartTime = Time.time;
-            player.isClimbingLadder = true;
-            player.thisController.enabled = false;
-
-            player.takingFallDamage = false;
-            player.fallValue = 0f;
-            player.fallValueUncapped = 0f;
+            }
         }
-        else if (!isActiveLadder)
+        else if (player.isClimbingLadder && !isActiveLadder)
         {
             return false;
         }
@@ -209,8 +217,7 @@ public class VRLadder : MonoBehaviour, VRInteractable
         if (leftHandGripPoint.HasValue || rightHandGripPoint.HasValue || !isActiveLadder)
             return;
 
-        if (VRSession.Instance is not { LocalPlayer.PlayerController: var player })
-            return;
+        var player = VRSession.Instance.LocalPlayer.PlayerController;
 
         isActiveLadder = false;
         player.isClimbingLadder = false;
@@ -227,6 +234,19 @@ public class VRLadder : MonoBehaviour, VRInteractable
     public void OnColliderExit(VRInteractor interactor) { }
 }
 
+// Lightweight wrapper that forwards to the shared ladder component
+internal class VRLadderInteractable : MonoBehaviour, VRInteractable
+{
+    public VRLadder ladder;
+
+    public InteractableFlags Flags => InteractableFlags.BothHands;
+
+    public bool OnButtonPress(VRInteractor interactor) => ladder.OnButtonPress(interactor);
+    public void OnButtonRelease(VRInteractor interactor) => ladder.OnButtonRelease(interactor);
+    public void OnColliderEnter(VRInteractor interactor) { }
+    public void OnColliderExit(VRInteractor interactor) { }
+}
+
 [LCVRPatch]
 [HarmonyPatch]
 internal static class LadderPatches
@@ -235,11 +255,18 @@ internal static class LadderPatches
     [HarmonyPostfix]
     private static void OnLadderStart(InteractTrigger __instance)
     {
-        if (!__instance.isLadder || Plugin.Config.DisableLadderClimbingInteraction.Value)
+        if (!__instance.isLadder)
             return;
 
-        // Create single collider - InteractionManager now supports multiple hands per interactable
-        var collider = Object.Instantiate(AssetManager.Interactable, __instance.transform);
+        if (Plugin.Config.DisableLadderClimbingInteraction.Value)
+            return;
+
+        var ladderComponent = __instance.gameObject.AddComponent<VRLadder>();
+
+        // Create two separate colliders offset to left and right
+        // This allows both hands to interact simultaneously
+        var leftHandCollider = Object.Instantiate(AssetManager.Interactable, __instance.transform);
+        var rightHandCollider = Object.Instantiate(AssetManager.Interactable, __instance.transform);
 
         if (__instance.topOfLadderPosition != null && __instance.bottomOfLadderPosition != null)
         {
@@ -248,25 +275,41 @@ internal static class LadderPatches
             var midPoint = (topPos + bottomPos) / 2f;
             var height = Mathf.Abs(topPos.y - bottomPos.y);
 
-            collider.transform.localPosition = midPoint + new Vector3(0f, 0f, 0.3f);
-            collider.transform.localScale = new Vector3(1.2f, height, 0.8f);
+            // Offset left collider to the left side
+            leftHandCollider.transform.localPosition = midPoint + new Vector3(-0.3f, 0f, 0.3f);
+            leftHandCollider.transform.localScale = new Vector3(0.8f, height, 0.8f);
+
+            // Offset right collider to the right side
+            rightHandCollider.transform.localPosition = midPoint + new Vector3(0.3f, 0f, 0.3f);
+            rightHandCollider.transform.localScale = new Vector3(0.8f, height, 0.8f);
         }
         else
         {
-            collider.transform.localPosition = new Vector3(0f, 0f, 0.3f);
-            collider.transform.localScale = new Vector3(1.2f, 3f, 0.8f);
+            leftHandCollider.transform.localPosition = new Vector3(-0.3f, 0f, 0.3f);
+            leftHandCollider.transform.localScale = new Vector3(0.8f, 3f, 0.8f);
+
+            rightHandCollider.transform.localPosition = new Vector3(0.3f, 0f, 0.3f);
+            rightHandCollider.transform.localScale = new Vector3(0.8f, 3f, 0.8f);
         }
 
-        collider.AddComponent<VRLadder>();
+        // Both colliders reference the same ladder component
+        leftHandCollider.AddComponent<VRLadderInteractable>().ladder = ladderComponent;
+        rightHandCollider.AddComponent<VRLadderInteractable>().ladder = ladderComponent;
 
-        foreach (var existingCollider in __instance.GetComponents<Collider>())
-            existingCollider.enabled = false;
+        foreach (var collider in __instance.GetComponents<Collider>())
+            collider.enabled = false;
     }
 
     [HarmonyPatch(typeof(InteractTrigger), nameof(InteractTrigger.Interact))]
     [HarmonyPrefix]
     private static bool PreventLadderInteract(InteractTrigger __instance)
     {
-        return !__instance.isLadder || Plugin.Config.DisableLadderClimbingInteraction.Value;
+        if (!__instance.isLadder)
+            return true;
+
+        if (Plugin.Config.DisableLadderClimbingInteraction.Value)
+            return true;
+
+        return false;
     }
 }
