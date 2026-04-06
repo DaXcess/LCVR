@@ -1,9 +1,9 @@
 using LCVR.Assets;
 using LCVR.Input;
 using LCVR.Physics;
+using LCVR.Managers;
 using System.Collections.Generic;
 using System.Linq;
-using LCVR.Managers;
 using UnityEngine;
 using UnityEngine.XR;
 
@@ -33,6 +33,7 @@ public class VRInteractor : MonoBehaviour
         new(new Vector3(0.02f, 0.09f, 0), new Vector3(0.12f, 0.1f, 0.07f), Quaternion.identity);
 
     private readonly Collider[] colliderPool = new Collider[8];
+    private readonly VRInteractable[] interactablePool = new VRInteractable[8];
 
     private Transform debugCube;
     private Offset defaultOffset;
@@ -94,11 +95,41 @@ public class VRInteractor : MonoBehaviour
         var center = transform.TransformPoint(offset.OverlapPosition);
         var count = UnityEngine.Physics.OverlapBoxNonAlloc(center, offset.OverlapScale, colliderPool,
             transform.rotation * offset.OverlapRotation, INTERACTABLE_OBJECT_MASK);
-        var interactables = colliderPool[..count].OrderBy(c => (center - c.transform.position).sqrMagnitude)
-            .Select(c => c.GetComponent<VRInteractable>())
-            .Where(i => i != null);
 
-        VRSession.Instance.InteractionManager.ReportInteractables(this, interactables.ToArray());
+        // Extract VRInteractable components and sort by distance (closest first)
+        var interactableCount = 0;
+        for (var i = 0; i < count; i++)
+        {
+            if (colliderPool[i].TryGetComponent<VRInteractable>(out var interactable))
+            {
+                interactablePool[interactableCount++] = interactable;
+            }
+        }
+
+        // Bubble sort by distance (small array, simple and allocation-free)
+        for (var i = 0; i < interactableCount - 1; i++)
+        {
+            for (var j = i + 1; j < interactableCount; j++)
+            {
+                var transformI = (interactablePool[i] as UnityEngine.Component)?.transform;
+                var transformJ = (interactablePool[j] as UnityEngine.Component)?.transform;
+                
+                if (transformI == null || transformJ == null)
+                    continue;
+                
+                var distI = (center - transformI.position).sqrMagnitude;
+                var distJ = (center - transformJ.position).sqrMagnitude;
+                
+                if (distJ < distI)
+                {
+                    (interactablePool[i], interactablePool[j]) = (interactablePool[j], interactablePool[i]);
+                }
+            }
+        }
+
+        // Create result array
+        var result = interactableCount == 0 ? [] : interactablePool[..interactableCount];
+        VRSession.Instance.InteractionManager.ReportInteractables(this, result);
     }
 
     /// <summary>
