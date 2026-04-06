@@ -185,6 +185,14 @@ public class Config(string assemblyPath, ConfigFile file)
         "DisableHangarLeverInteraction", false,
         "Disable needing to physically pull the lever for the big doors on Artiface");
 
+    public ConfigEntry<float> SlapVelocityThreshold { get; } = file.Bind("Interaction", "SlapVelocityThreshold", 2.0f,
+        new ConfigDescription(
+            "The minimum hand velocity (in m/s) required to register a slap gesture on the ship lever.",
+            new AcceptableValueRange<float>(0.5f, 5.0f)));
+
+    public ConfigEntry<bool> DisableSlapInteraction { get; } = file.Bind("Interaction", "DisableSlapInteraction", false,
+        "Disables the velocity-based slap interaction for the ship lever when leaving the moon.");
+
     public ConfigEntry<bool> DisableMuffleInteraction { get; } = file.Bind("Interaction", "DisableMuffleInteraction",
         false,
         "Disables the self-muffling feature, which makes it so that holding your hand in front of your mouth will no longer make you inaudible to enemies.");
