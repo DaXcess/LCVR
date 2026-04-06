@@ -79,7 +79,7 @@ public class ShipLever : MonoBehaviour
     private Actor currentActor;
     private Channel channel;
 
-    public bool CanInteract => lever.triggerScript.interactable && currentActor != Actor.Other;
+    public bool CanInteract => lever.triggerScript.interactable;
     public bool InOrbit => lever.playersManager.inShipPhase;
 
     private void Awake()
@@ -195,7 +195,6 @@ public class ShipLever : MonoBehaviour
                 StopInteracting();
                 break;
             case 2:
-                StopInteracting();
                 ShoveLever(false);
                 break;
         }
