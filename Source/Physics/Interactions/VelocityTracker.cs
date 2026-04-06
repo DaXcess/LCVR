@@ -31,9 +31,7 @@ internal class VelocityTracker : MonoBehaviour
     private void Update()
     {
         // Update velocity tracking for all tracked hands
-        var handsToUpdate = new List<VRInteractor>(trackedHands.Keys);
-        
-        foreach (var interactor in handsToUpdate)
+        foreach (var interactor in trackedHands.Keys)
         {
             UpdateHandVelocity(interactor);
         }
