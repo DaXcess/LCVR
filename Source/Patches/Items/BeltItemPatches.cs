@@ -1,4 +1,12 @@
+using System;
+using System.Collections.Generic;
+using System.Reflection.Emit;
+using GameNetcodeStuff;
 using HarmonyLib;
+using LCVR.Managers;
+using UnityEngine;
+
+using static HarmonyLib.AccessTools;
 
 namespace LCVR.Patches.Items;
 
@@ -41,5 +49,25 @@ internal static class BeltItemPatches
 
         StartOfRound.Instance.localPlayerController.SetInSpecialMenu(false);
         return false;
+    }
+
+    /// <summary>
+    /// Make the belt check for items from your hand instead of your head
+    /// </summary>
+    [HarmonyPatch(typeof(BeltBagItem), nameof(BeltBagItem.ItemInteractLeftRight))]
+    [HarmonyTranspiler]
+    private static IEnumerable<CodeInstruction> RayFromHandPatch(IEnumerable<CodeInstruction> instructions)
+    {
+        return new CodeMatcher(instructions)
+            .MatchForward(false,
+                new CodeMatch(OpCodes.Ldfld,
+                    Field(typeof(PlayerControllerB), nameof(PlayerControllerB.gameplayCamera))))
+            .Repeat(matcher =>
+                matcher.Set(OpCodes.Call, ((Func<PlayerControllerB, Transform>)GetPlayerInteractTransform).Method))
+            .InstructionEnumeration();
+
+        static Transform GetPlayerInteractTransform(PlayerControllerB player) => player.IsLocalPlayer()
+            ? VRSession.Instance.LocalPlayer.PrimaryController.InteractOrigin
+            : player.gameplayCamera.transform;
     }
 }

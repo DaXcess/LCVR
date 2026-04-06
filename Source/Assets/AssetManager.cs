@@ -28,10 +28,11 @@ public static class AssetManager
     
     public static Material SplashMaterial;
     public static Material DefaultRayMat;
+    public static Material PosterizationShaderMat;
 
     public static Shader TMPAlwaysOnTop;
     public static Shader VignettePostProcess;
-    
+
     public static InputActionAsset VRActions;
     public static InputActionAsset DefaultXRActions;
     public static InputActionAsset NullActions;
@@ -82,12 +83,13 @@ public static class AssetManager
 
         TMPAlwaysOnTop = assetsBundle.LoadAsset<Shader>("TextMeshPro Always On Top");
         VignettePostProcess = assetsBundle.LoadAsset<Shader>("Vignette");
-        
+
         RemappableControls =
             assetsBundle.LoadAsset<GameObject>("Remappable Controls").GetComponent<RemappableControls>();
 
         SplashMaterial = assetsBundle.LoadAsset<Material>("Splash");
         DefaultRayMat = assetsBundle.LoadAsset<Material>("Default Ray");
+        PosterizationShaderMat = assetsBundle.LoadAsset<Material>("FullScreen_SpongePosterizeNew");
 
         GithubImage = assetsBundle.LoadAsset<Sprite>("Github");
         KofiImage = assetsBundle.LoadAsset<Sprite>("Ko-Fi");

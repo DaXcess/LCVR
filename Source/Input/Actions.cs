@@ -7,17 +7,19 @@ public class Actions
 {
     public static Actions Instance { get; private set; } = new();
 
-    public InputAction HeadPosition { get; private set; }
-    public InputAction HeadRotation { get; private set; }
-    public InputAction HeadTrackingState { get; private set; }
+    public readonly InputAction HeadPosition;
+    public readonly InputAction HeadRotation;
+    public readonly InputAction HeadTrackingState;
 
-    public InputAction LeftHandPosition { get; private set; }
-    public InputAction LeftHandRotation { get; private set; }
-    public InputAction LeftHandTrackingState { get; private set; }
+    public readonly InputAction LeftHandPosition;
+    public readonly InputAction LeftHandRotation;
+    public readonly InputAction LeftHandVelocity;
+    public readonly InputAction LeftHandTrackingState;
 
-    public InputAction RightHandPosition { get; private set; }
-    public InputAction RightHandRotation { get; private set; }
-    public InputAction RightHandTrackingState { get; private set; }
+    public readonly InputAction RightHandPosition;
+    public readonly InputAction RightHandRotation;
+    public readonly InputAction RightHandVelocity;
+    public readonly InputAction RightHandTrackingState;
 
     private Actions()
     {
@@ -27,11 +29,15 @@ public class Actions
 
         LeftHandPosition = AssetManager.DefaultXRActions.FindAction("Left/Position");
         LeftHandRotation = AssetManager.DefaultXRActions.FindAction("Left/Rotation");
+        LeftHandVelocity = AssetManager.DefaultXRActions.FindAction("Left/Velocity");
         LeftHandTrackingState = AssetManager.DefaultXRActions.FindAction("Left/Tracking State");
 
         RightHandPosition = AssetManager.DefaultXRActions.FindAction("Right/Position");
         RightHandRotation = AssetManager.DefaultXRActions.FindAction("Right/Rotation");
+        RightHandVelocity = AssetManager.DefaultXRActions.FindAction("Right/Velocity");
         RightHandTrackingState = AssetManager.DefaultXRActions.FindAction("Right/Tracking State");
+
+        AssetManager.DefaultXRActions.Enable();
     }
 
     public InputAction this[string name] => IngamePlayerSettings.Instance.playerInput.actions[name];

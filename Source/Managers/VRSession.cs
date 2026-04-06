@@ -207,6 +207,10 @@ public class VRSession : MonoBehaviour
 
         distortionFilters.ForEach(filter => filter.active = false);
 
+        // Replace posterization shader
+        if (HUDManager.Instance.mainCustomPass.customPasses[0] is FullScreenCustomPass pass)
+            pass.fullscreenPassMaterial = AssetManager.PosterizationShaderMat;
+
         // Initialize secondary custom camera
         if (Plugin.Config.EnableCustomCamera.Value)
             InitializeCustomCamera();

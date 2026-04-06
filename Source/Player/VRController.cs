@@ -113,54 +113,47 @@ public class VRController : MonoBehaviour
         if (ShipBuildModeManager.Instance.InBuildMode)
             return;
 
-        try
-        {
-            // Ignore server player controller
-            if (!PlayerController.IsOwner ||
-                (PlayerController.IsServer && !PlayerController.isHostPlayerObject)) return;
+        // Ignore server player controller
+        if (!PlayerController.IsOwner ||
+            (PlayerController.IsServer && !PlayerController.isHostPlayerObject)) return;
 
-            if (!context.performed) return;
-            if (PlayerController.timeSinceSwitchingSlots < 0.2f) return;
+        if (!context.performed) return;
+        if (PlayerController.timeSinceSwitchingSlots < 0.2f) return;
 
-            ShipBuildModeManager.Instance.CancelBuildMode();
+        ShipBuildModeManager.Instance.CancelBuildMode();
 
-            if (PlayerController.isGrabbingObjectAnimation || PlayerController.isTypingChat ||
-                PlayerController.inTerminalMenu || PlayerController.throwingObject || PlayerController.IsInspectingItem)
-                return;
+        if (PlayerController.isGrabbingObjectAnimation || PlayerController.isTypingChat ||
+            PlayerController.inTerminalMenu || PlayerController.throwingObject || PlayerController.IsInspectingItem)
+            return;
 
-            if (PlayerController.inAnimationWithEnemy != null)
-                return;
+        if (PlayerController.inAnimationWithEnemy != null)
+            return;
 
-            if (PlayerController.jetpackControls || PlayerController.disablingJetpackControls)
-                return;
+        if (PlayerController.jetpackControls || PlayerController.disablingJetpackControls)
+            return;
 
-            if (StartOfRound.Instance.suckingPlayersOutOfShip)
-                return;
+        if (StartOfRound.Instance.suckingPlayersOutOfShip)
+            return;
 
-            // Handle belt bag item
-            if (PlayerController.currentlyHeldObjectServer is BeltBagItem bag && TryBagTool(bag))
-                return;
+        if (!PlayerController.activatingItem && !PlayerController.waitingToDropItem)
+            BeginGrabObject();
 
-            // Here we try and pickup the item if it's possible
-            if (!PlayerController.activatingItem && !VRSession.Instance.LocalPlayer.PlayerController.isPlayerDead)
-                BeginGrabObject();
+        // Ignore hold triggers
+        if (PlayerController.hoveringOverTrigger == null || PlayerController.hoveringOverTrigger.holdInteraction)
+            return;
 
-            // WHAT?
-            if (PlayerController.hoveringOverTrigger == null || PlayerController.hoveringOverTrigger.holdInteraction ||
-                (PlayerController.isHoldingObject && !PlayerController.hoveringOverTrigger.oneHandedItemAllowed) ||
-                (PlayerController.twoHanded && (!PlayerController.hoveringOverTrigger.twoHandedItemAllowed ||
-                                                PlayerController.hoveringOverTrigger.specialCharacterAnimation)))
-                return;
+        if (PlayerController.isHoldingObject && PlayerController.hoveringOverTrigger.oneHandedItemAllowed)
+            return;
 
-            if (!PlayerController.InteractTriggerUseConditionsMet()) return;
+        // Prevent picking up when two-handed
+        if (PlayerController.twoHanded && (!PlayerController.hoveringOverTrigger.twoHandedItemAllowed ||
+                                           PlayerController.hoveringOverTrigger.specialCharacterAnimation))
+            return;
 
-            PlayerController.hoveringOverTrigger.Interact(PlayerController.thisPlayerBody);
-        }
-        catch (Exception ex)
-        {
-            Debug.LogError(ex.Message);
-            Debug.LogError(ex.StackTrace);
-        }
+        if (!PlayerController.InteractTriggerUseConditionsMet())
+            return;
+
+        PlayerController.hoveringOverTrigger.Interact(PlayerController.thisPlayerBody);
     }
 
     private void ClickHoldInteraction()
@@ -250,6 +243,7 @@ public class VRController : MonoBehaviour
                 if (component != PlayerController.previousHoveringOverTrigger &&
                     PlayerController.previousHoveringOverTrigger != null)
                 {
+                    PlayerController.previousHoveringOverTrigger.StopInteraction();
                     PlayerController.previousHoveringOverTrigger.isBeingHeldByPlayer = false;
                 }
 
@@ -316,13 +310,28 @@ public class VRController : MonoBehaviour
                 shouldReset = false;
                 IsHovering = true;
 
-                if (PlayerController.FirstEmptyItemSlot() == -1)
+                GrabbableObject component = null;
+                int slot;
+
+                if (PlayerController.ItemOnlySlot == null)
+                {
+                    component = hit.collider.GetComponent<GrabbableObject>();
+                    slot = PlayerController.FirstEmptyItemSlot(component);
+                }
+                else
+                    slot = PlayerController.FirstEmptyItemSlot();
+
+                if (slot == -1)
                 {
                     CursorTip = "Inventory full!";
                 }
                 else
                 {
-                    var component = hit.collider.gameObject.GetComponent<GrabbableObject>();
+                    if (!component)
+                        component = hit.collider.GetComponent<GrabbableObject>();
+
+                    if (component is null)
+                        return;
 
                     if (!GameNetworkManager.Instance.gameHasStarted &&
                         !component.itemProperties.canBeGrabbedBeforeGameStart && StartOfRound.Instance.testRoom == null)
@@ -331,14 +340,10 @@ public class VRController : MonoBehaviour
                         return;
                     }
 
-                    if (component is null)
-                        return;
-
-                    if (PlayerController.currentlyHeldObjectServer is { itemProperties.itemId: 20 } &&
-                        CanBeInsertedIntoBag(component))
-                        CursorTip = "Store in bag";
-                    else if (!string.IsNullOrEmpty(component.customGrabTooltip))
+                    if (!string.IsNullOrEmpty(component.customGrabTooltip))
                         CursorTip = component.customGrabTooltip;
+                    else if (slot == 0x32)
+                        CursorTip = "Equip to belt";
                     else
                         CursorTip = "Grab";
                 }
@@ -375,21 +380,6 @@ public class VRController : MonoBehaviour
 
         GrabItem(hit.collider.transform.gameObject.GetComponent<GrabbableObject>());
     }
-    
-    private bool TryBagTool(BeltBagItem bag)
-    {
-        var ray = new Ray(InteractOrigin.position, InteractOrigin.forward);
-        if (!ray.Raycast(out var hit, 4, 1073742144))
-            return false;
-
-        var item = hit.collider.GetComponent<GrabbableObject>();
-        if (item == null || item == PlayerController.currentlyHeldObjectServer || !CanBeInsertedIntoBag(item))
-            return false;
-
-        bag.TryAddObjectToBag(item);
-
-        return true;
-    }
 
     public void GrabItem(GrabbableObject item)
     {
@@ -411,7 +401,8 @@ public class VRController : MonoBehaviour
             return;
 
         PlayerController.currentlyGrabbingObject.InteractItem();
-        if (PlayerController.currentlyGrabbingObject.grabbable && PlayerController.FirstEmptyItemSlot() != -1)
+        if (PlayerController.currentlyGrabbingObject.grabbable &&
+            PlayerController.FirstEmptyItemSlot(PlayerController.currentlyGrabbingObject) != -1)
         {
             PlayerController.playerBodyAnimator.SetBool(grabInvalidated, false);
             PlayerController.playerBodyAnimator.SetBool(grabValidated, false);
@@ -426,6 +417,7 @@ public class VRController : MonoBehaviour
                 Mathf.Clamp(
                     PlayerController.carryWeight +
                     (PlayerController.currentlyGrabbingObject.itemProperties.weight - 1f), 1f, 10f);
+            StartOfRound.Instance.SendChangedWeightEvent();
             PlayerController.grabObjectAnimationTime =
                 PlayerController.currentlyGrabbingObject.itemProperties.grabAnimationTime > 0f
                     ? PlayerController.currentlyGrabbingObject.itemProperties.grabAnimationTime
@@ -439,11 +431,5 @@ public class VRController : MonoBehaviour
 
             PlayerController.grabObjectCoroutine = PlayerController.StartCoroutine(PlayerController.GrabObject());
         }
-    }
-
-    private static bool CanBeInsertedIntoBag(GrabbableObject item)
-    {
-        return !item.itemProperties.isScrap && !item.isHeld && !item.isHeldByEnemy &&
-               item.itemProperties.itemId is not (123984 or 819501);
     }
 }
