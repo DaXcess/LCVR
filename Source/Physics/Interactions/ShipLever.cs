@@ -120,11 +120,12 @@ public class ShipLever : MonoBehaviour
         transform.eulerAngles = eulerAngles;
     }
 
-    public void ShoveLever(bool isLocal = true)
+    public void ShoveLever(bool isOwner = true)
     {
-        StartCoroutine(PerformLeverAction(isLocal, true));
+        StartCoroutine(PerformLeverAction(isOwner, true));
 
-        channel.SendPacket([2]);
+        if (isOwner)
+            channel.SendPacket([2]);
     }
 
     public void StartInteracting(Transform target, Actor actor)
