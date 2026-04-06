@@ -135,7 +135,7 @@ public class VRController : MonoBehaviour
         if (StartOfRound.Instance.suckingPlayersOutOfShip)
             return;
 
-        if (!PlayerController.activatingItem && !PlayerController.waitingToDropItem)
+        if (!PlayerController.activatingItem && !PlayerController.waitingToDropItem && !PlayerController.isPlayerDead)
             BeginGrabObject();
 
         // Ignore hold triggers

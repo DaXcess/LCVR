@@ -401,16 +401,26 @@ public class VRHUD : MonoBehaviour
         meteorShowerContainer.localPosition = Vector3.down * 100;
         
         // Loading Screen: In front of eyes
-        var loadingScreen = GameObject.Find("LoadingText");
+        var loadingScreen = GameObject.Find("LoadingText").transform;
 
         loadingScreen.transform.SetParent(FaceCanvas.transform, false);
-        loadingScreen.transform.localPosition = Vector3.zero;
+        loadingScreen.transform.localPosition = new Vector3(30, 120);
         loadingScreen.transform.localRotation = Quaternion.identity;
         loadingScreen.transform.localScale = Vector3.one;
 
-        var darkenScreen = GameObject.Find("DarkenScreen");
-
+        var darkenScreen = loadingScreen.Find("DarkenScreen");
         darkenScreen.transform.localScale = Vector3.one * 18;
+
+        var loadingScreenTextBg = loadingScreen.Find("TextBG").GetComponent<RectTransform>();
+        loadingScreenTextBg.anchoredPosition = new Vector2(-25, -120);
+        loadingScreenTextBg.sizeDelta = new Vector2(370, 101.72f);
+
+        var loadingScreenText = loadingScreen.Find("LoadText").GetComponent<TextMeshProUGUI>();
+        loadingScreenText.text = loadingScreenText.text[..^3];
+        loadingScreenText.alignment = TextAlignmentOptions.Center;
+
+        var loadingScreenSeedText = loadingScreen.Find("LoadTextB").GetComponent<TextMeshProUGUI>();
+        loadingScreenSeedText.alignment = TextAlignmentOptions.Center;
 
         // Fired screen: In front of eyes
         var firedScreen = GameObject.Find("GameOverScreen");
