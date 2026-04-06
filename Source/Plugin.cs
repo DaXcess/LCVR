@@ -10,12 +10,10 @@ using System.Net;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Rendering;
 using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.SceneManagement;
 using UnityEngine.XR.Interaction.Toolkit.Inputs.Composites;
 using UnityEngine.XR.Interaction.Toolkit.Inputs.Interactions;
-using UnityEngine.XR.OpenXR;
 using DependencyFlags = BepInEx.BepInDependency.DependencyFlags;
 using VolumeManager = LCVR.Rendering.VolumeManager;
 
@@ -304,11 +302,6 @@ public class Plugin : BaseUnityPlugin
         var asset = QualitySettings.renderPipeline as HDRenderPipelineAsset;
         var settings = asset!.currentPlatformRenderPipelineSettings;
 
-        settings.dynamicResolutionSettings.enabled = Config.EnableDynamicResolution.Value;
-        settings.dynamicResolutionSettings.dynResType = DynamicResolutionType.Hardware;
-        settings.dynamicResolutionSettings.upsampleFilter = Config.DynamicResolutionUpscaleFilter.Value;
-        settings.dynamicResolutionSettings.minPercentage = settings.dynamicResolutionSettings.maxPercentage =
-            Config.DynamicResolutionPercentage.Value;
         settings.supportMotionVectors = true;
 
         settings.xrSettings.occlusionMesh = Config.EnableOcclusionMesh.Value;

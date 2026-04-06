@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
 using Newtonsoft.Json;
-using UnityEngine.Rendering;
 
 namespace LCVR;
 
@@ -40,22 +39,6 @@ public class Config(string assemblyPath, ConfigFile file)
 
     public ConfigEntry<bool> EnableOcclusionMesh { get; } = file.Bind("Performance", "EnableOcclusionMesh", true,
         "The occlusion mesh will cause the game to stop rendering pixels outside of the lens views, which increases performance.");
-
-    public ConfigEntry<bool> EnableDynamicResolution { get; } = file.Bind("Performance", "EnableDynamicResolution",
-        false,
-        "Whether or not dynamic resolution should be enabled. Required for most of these settings to have an effect.");
-
-    public ConfigEntry<DynamicResUpscaleFilter> DynamicResolutionUpscaleFilter { get; } = file.Bind("Performance",
-        "DynamicResolutionUpscaleFilter", DynamicResUpscaleFilter.EdgeAdaptiveScalingUpres,
-        new ConfigDescription(
-            "The filter/algorithm that will be used to perform dynamic resolution upscaling. Defaulted to FSR (Edge Adaptive Scaling).",
-            new AcceptableValueEnum<DynamicResUpscaleFilter>()));
-
-    public ConfigEntry<float> DynamicResolutionPercentage { get; } = file.Bind("Performance",
-        "DynamicResolutionPercentage", 80f,
-        new ConfigDescription(
-            "The percentage of resolution to scale the game down to. The lower the value, the harder the upscale filter has to work which will result in quality loss.",
-            new AcceptableValueRange<float>(10, 100)));
 
     public ConfigEntry<float> CameraResolution { get; } = file.Bind("Performance", "CameraResolution", 0.75f,
         new ConfigDescription(

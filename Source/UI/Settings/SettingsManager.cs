@@ -6,7 +6,6 @@ using LCVR.Managers;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Rendering;
 using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.UI;
 
@@ -254,11 +253,6 @@ public class SettingsManager : MonoBehaviour
 
         var settings = asset.currentPlatformRenderPipelineSettings;
 
-        settings.dynamicResolutionSettings.enabled = Plugin.Config.EnableDynamicResolution.Value;
-        settings.dynamicResolutionSettings.dynResType = DynamicResolutionType.Hardware;
-        settings.dynamicResolutionSettings.upsampleFilter = Plugin.Config.DynamicResolutionUpscaleFilter.Value;
-        settings.dynamicResolutionSettings.minPercentage = settings.dynamicResolutionSettings.maxPercentage =
-            Plugin.Config.DynamicResolutionPercentage.Value;
         settings.supportMotionVectors = true;
 
         settings.xrSettings.occlusionMesh = Plugin.Config.EnableOcclusionMesh.Value;

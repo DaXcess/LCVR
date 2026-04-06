@@ -1,5 +1,4 @@
 ﻿using GameNetcodeStuff;
-using System;
 using UnityEngine.InputSystem;
 using UnityEngine;
 using UnityEngine.XR;

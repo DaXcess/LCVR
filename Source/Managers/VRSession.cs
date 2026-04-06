@@ -161,8 +161,6 @@ public class VRSession : MonoBehaviour
         // Apply optimization configuration
         var hdCamera = MainCamera.GetComponent<HDAdditionalCameraData>();
 
-        hdCamera.allowDynamicResolution = Plugin.Config.EnableDynamicResolution.Value;
-
         hdCamera.DisableQualitySetting(FrameSettingsField.DepthOfField);
         hdCamera.DisableQualitySetting(FrameSettingsField.SSAO);
         hdCamera.DisableQualitySetting(FrameSettingsField.SSAOAsync);

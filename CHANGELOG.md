@@ -1,9 +1,8 @@
 # 1.5.0
 
-**The posterization shader is not yet compatible with VR! Left and right eye will not match!**
-
 **Additions**:
 - Added support for the new utility slot, which is accessible like a normal inventory slot
+- Added the status text UI (like oxygen level critical) to the VR interface
 
 **Changes**:
 - Changed rendering to Single Pass Instanced, this may break some mods
@@ -12,6 +11,9 @@
 - Removed `TypeLoadExceptionFixer` dependency, fixing some issues with UnityExplorer
 - Removed toggle sprint option as this is now a vanilla setting
 - Reverted the vignette shader back to the built-in one, which doesn't look as good but still functions normally for now
+
+**Removals**:
+- Removed dynamic resolution support as it doesn't seem to function properly with SPI rendering
 
 # 1.4.6
 
