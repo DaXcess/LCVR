@@ -152,7 +152,7 @@ public class VRController : MonoBehaviour
         if (PlayerController.hoveringOverTrigger == null || PlayerController.hoveringOverTrigger.holdInteraction)
             return;
 
-        if (PlayerController.isHoldingObject && PlayerController.hoveringOverTrigger.oneHandedItemAllowed)
+        if (PlayerController.isHoldingObject && !PlayerController.hoveringOverTrigger.oneHandedItemAllowed)
             return;
 
         // Prevent picking up when two-handed
