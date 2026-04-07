@@ -2,8 +2,13 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using HarmonyLib;
 using Newtonsoft.Json;
+using Unity.Collections.LowLevel.Unsafe;
+using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.Rendering.HighDefinition;
 
 namespace LCVR;
 
@@ -45,8 +50,10 @@ public class Config(string assemblyPath, ConfigFile file)
             "This setting configures the resolution scale of the game, lower values are more performant, but will make the game look worse. From around 0.8 the difference is negligible (on a Quest 2, with dynamic resolution disabled).",
             new AcceptableValueRange<float>(0.05f, 1.5f)));
 
-    public ConfigEntry<bool> DisableVolumetrics { get; } = file.Bind("Performance", "DisableVolumetrics", false,
-        "Disables volumetrics in the game, which significantly improves performance, but removes all fog and may be considered cheating.");
+    public ConfigEntry<FogQualityOption> FogQuality { get; } = file.Bind("Performance", "FogQuality",
+        FogQualityOption.Default,
+        new ConfigDescription("Specify the quality of volumetrics (fog) in the game",
+            new AcceptableValueEnum<FogQualityOption>()));
 
     // Input configuration
 
@@ -310,10 +317,60 @@ public class Config(string assemblyPath, ConfigFile file)
         }
     }
 
+    public static void ApplySettings()
+    {
+        var asset = QualitySettings.renderPipeline as HDRenderPipelineAsset;
+
+        if (!asset)
+        {
+            Logger.LogError("Failed to apply render pipeline changes: Render pipeline is null??");
+            return;
+        }
+
+        ref var settings = ref asset.m_RenderPipelineSettings;
+
+        settings.supportMotionVectors = true;
+
+        settings.xrSettings.occlusionMesh = Plugin.Config.EnableOcclusionMesh.Value;
+        settings.xrSettings.singlePass = true;
+
+        settings.lodBias =
+            new FloatScalableSetting(
+                [Plugin.Config.LODBias.Value, Plugin.Config.LODBias.Value, Plugin.Config.LODBias.Value],
+                ScalableSettingSchemaId.With3Levels);
+
+        // Volumetrics
+        settings.supportVolumetrics = Plugin.Config.FogQuality.Value != FogQualityOption.Disabled;
+        settings.lightingQualitySettings.Fog_Budget = Plugin.Config.FogQuality.Value switch
+        {
+            FogQualityOption.Disabled => [0f, 0f, 0f],
+            FogQualityOption.Potato => [0.08f, 0.08f, 0.08f],
+            FogQualityOption.Default => [0.1666f, 0.1666f, 0.1666f],
+            FogQualityOption.Lite => [0.24f, 0.24f, 0.24f],
+            FogQualityOption.Medium => [0.333f, 0.333f, 0.333f],
+            FogQualityOption.High => [0.5f, 0.5f, 0.5f],
+            FogQualityOption.Ultra => [0.75f, 0.75f, 0.75f],
+            _ => [0.1666f, 0.1666f, 0.1666f] // Vanilla values
+        };
+
+        InputSystem.settings.defaultButtonPressPoint = Plugin.Config.ButtonPressPoint.Value;
+    }
+
     public enum TurnProviderOption
     {
         Snap,
         Smooth,
+        Disabled
+    }
+
+    public enum FogQualityOption
+    {
+        Ultra,
+        High,
+        Medium,
+        Lite,
+        Default,
+        Potato,
         Disabled
     }
 }

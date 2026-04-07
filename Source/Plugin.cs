@@ -298,20 +298,8 @@ public class Plugin : BaseUnityPlugin
 
         LCVR.Logger.LogDebug("Inserted VR patches using Harmony");
 
-        // Change HDRP settings
-        var asset = QualitySettings.renderPipeline as HDRenderPipelineAsset;
-        var settings = asset!.currentPlatformRenderPipelineSettings;
-
-        settings.supportMotionVectors = true;
-
-        settings.xrSettings.occlusionMesh = Config.EnableOcclusionMesh.Value;
-        settings.xrSettings.singlePass = true;
-
-        settings.lodBias = new FloatScalableSetting([Config.LODBias.Value, Config.LODBias.Value, Config.LODBias.Value],
-            ScalableSettingSchemaId.With3Levels);
-
-        asset.currentPlatformRenderPipelineSettings = settings;
-
+        // Apply settings and register custom shaders
+        Config.ApplySettings();
         VolumeManager.RegisterCustomPostProcessShaders();
 
         // Input settings

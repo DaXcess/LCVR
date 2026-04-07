@@ -3,6 +3,7 @@
 **Additions**:
 - Added support for the new utility slot, which is accessible like a normal inventory slot
 - Added the status text UI (like oxygen level critical) to the VR interface
+- Added a fog quality option
 
 **Changes**:
 - Changed rendering to Single Pass Instanced, this may break some mods
@@ -14,6 +15,7 @@
 
 **Removals**:
 - Removed dynamic resolution support as it doesn't seem to function properly with SPI rendering
+- Removed the ladder climb interaction for now until a better replacement is ready
 
 # 1.4.6
 

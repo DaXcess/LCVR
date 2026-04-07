@@ -250,6 +250,6 @@ public class SpectatingMenu : MonoBehaviour
         lightToggleButtonText.text = spectateManager.LightEnabled ? "Disable Lights" : "Enable Lights";
         fogToggleButtonText.text = spectateManager.FogDisabled ? "Enable Fog" : "Disable Fog";
 
-        fogToggleButton.interactable = !Plugin.Config.DisableVolumetrics.Value;
+        fogToggleButton.interactable = Plugin.Config.FogQuality.Value != Config.FogQualityOption.Disabled;
     }
 }

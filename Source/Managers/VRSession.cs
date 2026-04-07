@@ -171,18 +171,6 @@ public class VRSession : MonoBehaviour
         hdCameras.Do(camera => camera.DisableQualitySetting(FrameSettingsField.SSAO));
         hdCameras.Do(camera => camera.DisableQualitySetting(FrameSettingsField.SSAOAsync));
 
-        if (Plugin.Config.DisableVolumetrics.Value)
-            hdCameras.Do(camera => camera.DisableQualitySetting(FrameSettingsField.Volumetrics));
-
-        // Handle volumetric setting change
-        Plugin.Config.DisableVolumetrics.SettingChanged += (_, _) =>
-        {
-            if (Plugin.Config.DisableVolumetrics.Value)
-                hdCameras.Do(camera => camera.DisableQualitySetting(FrameSettingsField.Volumetrics));
-            else
-                hdCameras.Do(camera => camera.EnableQualitySetting(FrameSettingsField.Volumetrics));
-        };
-        
         XRSettings.eyeTextureResolutionScale = Plugin.Config.CameraResolution.Value;
 
         // Disable lens distortion effects

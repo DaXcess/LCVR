@@ -241,32 +241,6 @@ public class SettingsManager : MonoBehaviour
         if (!VRSession.InVR)
             return;
 
-        #region Reload and apply HDRP pipeline and input settings
-
-        var asset = QualitySettings.renderPipeline as HDRenderPipelineAsset;
-
-        if (!asset)
-        {
-            Logger.LogError("Failed to apply render pipeline changes: Render pipeline is null??");
-            return;
-        }
-
-        var settings = asset.currentPlatformRenderPipelineSettings;
-
-        settings.supportMotionVectors = true;
-
-        settings.xrSettings.occlusionMesh = Plugin.Config.EnableOcclusionMesh.Value;
-        settings.xrSettings.singlePass = true;
-
-        settings.lodBias =
-            new FloatScalableSetting(
-                [Plugin.Config.LODBias.Value, Plugin.Config.LODBias.Value, Plugin.Config.LODBias.Value],
-                ScalableSettingSchemaId.With3Levels);
-
-        asset.currentPlatformRenderPipelineSettings = settings;
-
-        InputSystem.settings.defaultButtonPressPoint = Plugin.Config.ButtonPressPoint.Value;
-
-        #endregion
+        Config.ApplySettings();
     }
 }

@@ -296,7 +296,7 @@ public class SpectatingManager : MonoBehaviour
 
     internal void ToggleFog(bool? enable = null)
     {
-        if (Plugin.Config.DisableVolumetrics.Value)
+        if (Plugin.Config.FogQuality.Value == Config.FogQualityOption.Disabled)
             return;
 
         if (enable.HasValue)
