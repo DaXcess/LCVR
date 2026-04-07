@@ -43,6 +43,7 @@ public class VRSession : MonoBehaviour
     public VRHUD HUD { get; private set; }
 
     public Camera MainCamera { get; private set; }
+    public Camera CustomCamera => customCamera;
     
     public Rendering.VolumeManager VolumeManager { get; private set; }
     public CameraShake CameraShake { get; private set; }
@@ -159,22 +160,27 @@ public class VRSession : MonoBehaviour
         CameraShake = MainCamera.gameObject.AddComponent<CameraShake>();
         
         // Apply optimization configuration
-        var hdCamera = MainCamera.GetComponent<HDAdditionalCameraData>();
-
-        hdCamera.DisableQualitySetting(FrameSettingsField.DepthOfField);
-        hdCamera.DisableQualitySetting(FrameSettingsField.SSAO);
-        hdCamera.DisableQualitySetting(FrameSettingsField.SSAOAsync);
+        HDAdditionalCameraData[] hdCameras = Plugin.Config.EnableCustomCamera.Value
+            ?
+            [
+                MainCamera.GetComponent<HDAdditionalCameraData>(), CustomCamera.GetComponent<HDAdditionalCameraData>()
+            ]
+            : [MainCamera.GetComponent<HDAdditionalCameraData>()];
+        
+        hdCameras.Do(camera => camera.DisableQualitySetting(FrameSettingsField.DepthOfField));
+        hdCameras.Do(camera => camera.DisableQualitySetting(FrameSettingsField.SSAO));
+        hdCameras.Do(camera => camera.DisableQualitySetting(FrameSettingsField.SSAOAsync));
 
         if (Plugin.Config.DisableVolumetrics.Value)
-            hdCamera.DisableQualitySetting(FrameSettingsField.Volumetrics);
+            hdCameras.Do(camera => camera.DisableQualitySetting(FrameSettingsField.Volumetrics));
 
         // Handle volumetric setting change
         Plugin.Config.DisableVolumetrics.SettingChanged += (_, _) =>
         {
             if (Plugin.Config.DisableVolumetrics.Value)
-                hdCamera.DisableQualitySetting(FrameSettingsField.Volumetrics);
+                hdCameras.Do(camera => camera.DisableQualitySetting(FrameSettingsField.Volumetrics));
             else
-                hdCamera.EnableQualitySetting(FrameSettingsField.Volumetrics);
+                hdCameras.Do(camera => camera.EnableQualitySetting(FrameSettingsField.Volumetrics));
         };
         
         XRSettings.eyeTextureResolutionScale = Plugin.Config.CameraResolution.Value;

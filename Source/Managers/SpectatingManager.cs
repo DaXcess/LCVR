@@ -1,5 +1,6 @@
 using System.Collections;
 using GameNetcodeStuff;
+using HarmonyLib;
 using LCVR.Assets;
 using LCVR.Compatibility.MoreCompany;
 using LCVR.Input;
@@ -303,12 +304,18 @@ public class SpectatingManager : MonoBehaviour
         else
             FogDisabled = !FogDisabled;
 
-        var hdCamera = VRSession.Instance.MainCamera.GetComponent<HDAdditionalCameraData>();
+        HDAdditionalCameraData[] cameras = Plugin.Config.EnableCustomCamera.Value
+            ?
+            [
+                VRSession.Instance.MainCamera.GetComponent<HDAdditionalCameraData>(),
+                VRSession.Instance.CustomCamera.GetComponent<HDAdditionalCameraData>()
+            ]
+            : [VRSession.Instance.MainCamera.GetComponent<HDAdditionalCameraData>()];
 
         if (FogDisabled)
-            hdCamera.DisableQualitySetting(FrameSettingsField.Volumetrics);
+            cameras.Do(camera => camera.DisableQualitySetting(FrameSettingsField.Volumetrics));
         else
-            hdCamera.EnableQualitySetting(FrameSettingsField.Volumetrics);
+            cameras.Do(camera => camera.EnableQualitySetting(FrameSettingsField.Volumetrics));
     }
 
     private void TeleportLocalPlayer(Vector3 position, bool inFactory, bool inElevator, bool inHangar)

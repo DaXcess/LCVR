@@ -36,7 +36,7 @@ public class Face : MonoBehaviour, VRInteractable
 
         var item = GetItem();
         if (!item || heldItem == item ||
-            VRSession.Instance.LocalPlayer.PlayerController.timeSinceSwitchingSlots < 0.075f)
+            VRSession.Instance.LocalPlayer.PlayerController.timeSinceSwitchingSlots < 0.075f || !CanInteract)
             return;
 
         heldItem = item;
