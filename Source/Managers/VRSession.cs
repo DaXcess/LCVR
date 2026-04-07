@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using HarmonyLib;
 using LCVR.Assets;
 using LCVR.Physics.Interactions;
@@ -58,6 +59,7 @@ public class VRSession : MonoBehaviour
     #endregion
 
     private PauseMenuEnvironment pauseMenuEnvironment;
+    private GameObject helmetModel;
 
     private void Awake()
     {
@@ -115,6 +117,14 @@ public class VRSession : MonoBehaviour
         }
     }
 
+    private void OnDestroy()
+    {
+        if (!InVR)
+            return;
+
+        Plugin.Config.EnableHelmetVisor.SettingChanged -= HelmetVisorSettingChanged;
+    }
+
     private void InitializeVRSession()
     {
         // Disable base UI input system
@@ -126,15 +136,14 @@ public class VRSession : MonoBehaviour
 
         // Move around the volumetric plane
         var helmetContainer = GameObject.Find("Systems/Rendering/PlayerHUDHelmetModel");
-        var helmetModel = helmetContainer.Find("ScavengerHelmet");
+        helmetModel = helmetContainer.Find("ScavengerHelmet");
         helmetModel.transform.Find("Plane").SetParent(helmetContainer.transform);
 
         // Toggle helmet visor visibility
         helmetModel.SetActive(Plugin.Config.EnableHelmetVisor.Value);
         
         // Listen to setting change for helmet model
-        Plugin.Config.EnableHelmetVisor.SettingChanged +=
-            (_, _) => helmetModel.SetActive(Plugin.Config.EnableHelmetVisor.Value);
+        Plugin.Config.EnableHelmetVisor.SettingChanged += HelmetVisorSettingChanged;
 
         // Move helmet model to child of target point
         var helmetTarget = StartOfRound.Instance.localPlayerController.gameObject
@@ -158,6 +167,10 @@ public class VRSession : MonoBehaviour
         
         // Add camera shaking
         CameraShake = MainCamera.gameObject.AddComponent<CameraShake>();
+
+        // Initialize secondary custom camera
+        if (Plugin.Config.EnableCustomCamera.Value)
+            InitializeCustomCamera();
         
         // Apply optimization configuration
         HDAdditionalCameraData[] hdCameras = Plugin.Config.EnableCustomCamera.Value
@@ -202,10 +215,6 @@ public class VRSession : MonoBehaviour
         // Replace posterization shader
         if (HUDManager.Instance.mainCustomPass.customPasses[0] is FullScreenCustomPass pass)
             pass.fullscreenPassMaterial = AssetManager.PosterizationShaderMat;
-
-        // Initialize secondary custom camera
-        if (Plugin.Config.EnableCustomCamera.Value)
-            InitializeCustomCamera();
 
         // Add keyboard to Terminal
         var terminal = FindObjectOfType<Terminal>();
@@ -380,6 +389,11 @@ public class VRSession : MonoBehaviour
 
         // Misc
         VolumeManager = Instantiate(AssetManager.VolumeManager, transform).GetComponent<Rendering.VolumeManager>();
+    }
+
+    private void HelmetVisorSettingChanged(object sender, EventArgs e)
+    {
+        helmetModel.SetActive(Plugin.Config.EnableHelmetVisor.Value);
     }
 
     #region VR
