@@ -35,6 +35,7 @@ public class VRSession : MonoBehaviour
     private bool customCameraEnabled;
     private Camera customCamera;
     private float customCameraLerpFactor;
+    private int cameraForceUpdateFrames;
 
     #endregion
 
@@ -109,12 +110,14 @@ public class VRSession : MonoBehaviour
         if (!InVR)
             return;
 
-        if (customCameraEnabled)
-        {
-            customCamera.transform.position = MainCamera.transform.position;
-            customCamera.transform.rotation = Quaternion.Lerp(customCamera.transform.rotation,
-                MainCamera.transform.rotation, customCameraLerpFactor);
-        }
+        if (!customCameraEnabled)
+            return;
+
+        customCamera.transform.position = MainCamera.transform.position;
+        customCamera.transform.rotation = Quaternion.Lerp(customCamera.transform.rotation,
+            MainCamera.transform.rotation, cameraForceUpdateFrames > 0 ? 1 : customCameraLerpFactor);
+
+        cameraForceUpdateFrames = Math.Max(cameraForceUpdateFrames - 1, 0);
     }
 
     private void OnDestroy()
@@ -436,11 +439,7 @@ public class VRSession : MonoBehaviour
 
     public void ForceUpdateCamera()
     {
-        if (!customCameraEnabled)
-            return;
-        
-        customCamera.transform.position = MainCamera.transform.position;
-        customCamera.transform.rotation = MainCamera.transform.rotation;
+        cameraForceUpdateFrames = 3;
     }
     
     public void OnEnterTerminal()
