@@ -453,6 +453,19 @@ internal static class PlayerControllerPatches
         // Otherwise fall back to vanilla behavior
         return true;
     }
+
+    /// <summary>
+    /// Force custom camera to update immediately instead of animating after a teleport
+    /// </summary>
+    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.TeleportPlayer))]
+    [HarmonyPostfix]
+    private static void OnPlayerTeleport(PlayerControllerB __instance)
+    {
+        if (!__instance.IsLocalPlayer())
+            return;
+        
+        VRSession.Instance.ForceUpdateCamera();
+    }
 }
 
 [LCVRPatch(LCVRPatchTarget.Universal)]

@@ -434,6 +434,15 @@ public class VRSession : MonoBehaviour
             customCameraLerpFactor = Mathf.Clamp(Plugin.Config.CustomCameraLerpFactor.Value, 0.01f, 1f);
     }
 
+    public void ForceUpdateCamera()
+    {
+        if (!customCameraEnabled)
+            return;
+        
+        customCamera.transform.position = MainCamera.transform.position;
+        customCamera.transform.rotation = MainCamera.transform.rotation;
+    }
+    
     public void OnEnterTerminal()
     {
         HUD.TerminalKeyboard.PresentKeyboard();

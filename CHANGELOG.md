@@ -17,6 +17,9 @@
 - Removed dynamic resolution support as it doesn't seem to function properly with SPI rendering
 - Removed the ladder climb interaction for now until a better replacement is ready
 
+**Fixes**:
+- Fixed smooth camera having jarring motion after player teleports
+
 # 1.4.6
 
 **Additions**:

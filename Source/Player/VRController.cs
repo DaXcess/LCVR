@@ -69,7 +69,7 @@ public class VRController : MonoBehaviour
         // Re-enable local player controller to make sure our "Interact" runs first
         Actions.Instance["Interact"].performed += OnInteractPerformed;
 
-        jiggleDetector = new ShakeDetector(transform, 0.03f, true, 0.25f);
+        jiggleDetector = new ShakeDetector(transform, 0.005f, true, 0.25f);
     }
 
     private void OnEnable()
