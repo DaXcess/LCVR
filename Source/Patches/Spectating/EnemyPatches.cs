@@ -34,6 +34,36 @@ internal static class SpectatorEnemyPatches
     }
 
     /// <summary>
+    /// Prevent a nutcracker from keeping aggro on a spectator after killing them
+    /// </summary>
+    [HarmonyPatch(typeof(NutcrackerEnemyAI), nameof(NutcrackerEnemyAI.Update))]
+    [HarmonyTranspiler]
+    private static IEnumerable<CodeInstruction> NutcrackerLoseAggroPatch(IEnumerable<CodeInstruction> instructions)
+    {
+        return new CodeMatcher(instructions)
+            .MatchForward(false,
+                new CodeMatch(OpCodes.Call, Method(typeof(EnemyAI), nameof(EnemyAI.CheckLineOfSightForPosition))))
+            .Set(OpCodes.Call,
+                ((Func<EnemyAI, Vector3, float, int, float, Transform, int, bool>)CheckLineOfSightAlt).Method)
+            .Insert(
+                new CodeInstruction(OpCodes.Ldarg_0),
+                new CodeInstruction(OpCodes.Ldfld,
+                    Field(typeof(NutcrackerEnemyAI), nameof(NutcrackerEnemyAI.lastPlayerSeenMoving)))
+            )
+            .InstructionEnumeration();
+
+        static bool CheckLineOfSightAlt(EnemyAI enemy, Vector3 position, float width, int range,
+            float proximityAwareness, Transform overrideEye, int playerId)
+        {
+            if ((uint)playerId == StartOfRound.Instance.localPlayerController.playerClientId &&
+                StartOfRound.Instance.localPlayerController.isPlayerDead)
+                return false;
+
+            return enemy.CheckLineOfSightForPosition(position, width, range, proximityAwareness, overrideEye);
+        }
+    }
+
+    /// <summary>
     /// Prevent detection by centipedes that are hidden on the ceiling
     /// </summary>
     [HarmonyPatch(typeof(CentipedeAI), nameof(CentipedeAI.TriggerCentipedeFallServerRpc))]

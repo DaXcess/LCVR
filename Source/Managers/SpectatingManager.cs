@@ -134,7 +134,6 @@ public class SpectatingManager : MonoBehaviour
         EnableLargeDoorCollisions(false);
         EnableDoorCollisions(false);
         EnableShipDoorCollisions(false);
-        SpecialFixEnemies();
 
         // Clear spectator text
         HUDManager.Instance.spectatingPlayerText.text = "";
@@ -413,18 +412,6 @@ public class SpectatingManager : MonoBehaviour
         shipDoorLeft.GetComponent<BoxCollider>().isTrigger = !enable;
         shipDoorRight.GetComponent<BoxCollider>().isTrigger = !enable;
         shipDoorWall.GetComponent<BoxCollider>().isTrigger = !enable;
-    }
-
-    /// <summary>
-    /// Some special fixes for specific enemies
-    /// </summary>
-    private void SpecialFixEnemies()
-    {
-        // Force nutcrackers to lose aggro
-        var nutcrackers = FindObjectsOfType<NutcrackerEnemyAI>();
-        foreach (var nutcracker in nutcrackers)
-            if (nutcracker.lastPlayerSeenMoving == (int)localPlayer.playerClientId)
-                nutcracker.lastPlayerSeenMoving = -1;
     }
 
     private void OnSpectateNext(InputAction.CallbackContext ctx)

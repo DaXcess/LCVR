@@ -422,7 +422,7 @@ public class VRHUD : MonoBehaviour
         loadingScreen.transform.localScale = Vector3.one;
 
         var darkenScreen = loadingScreen.Find("DarkenScreen");
-        darkenScreen.transform.localScale = Vector3.one * 18;
+        darkenScreen.transform.localScale = Vector3.one * 28;
 
         var loadingScreenTextBg = loadingScreen.Find("TextBG").GetComponent<RectTransform>();
         loadingScreenTextBg.anchoredPosition = new Vector2(-25, -120);

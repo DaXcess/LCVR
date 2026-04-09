@@ -60,7 +60,7 @@ public class VRSession : MonoBehaviour
     #endregion
 
     private PauseMenuEnvironment pauseMenuEnvironment;
-    private GameObject helmetModel;
+    private MeshRenderer helmetModel;
 
     private void Awake()
     {
@@ -139,11 +139,12 @@ public class VRSession : MonoBehaviour
 
         // Move around the volumetric plane
         var helmetContainer = GameObject.Find("Systems/Rendering/PlayerHUDHelmetModel");
-        helmetModel = helmetContainer.Find("ScavengerHelmet");
+        helmetModel = helmetContainer.Find("ScavengerHelmet").GetComponent<MeshRenderer>();
         helmetModel.transform.Find("Plane").SetParent(helmetContainer.transform);
+        helmetModel.transform.Find("ScreenHelmetGoop").localScale = new Vector3(1, 0.65f, 1);
 
         // Toggle helmet visor visibility
-        helmetModel.SetActive(Plugin.Config.EnableHelmetVisor.Value);
+        helmetModel.enabled = Plugin.Config.EnableHelmetVisor.Value;
         
         // Listen to setting change for helmet model
         Plugin.Config.EnableHelmetVisor.SettingChanged += HelmetVisorSettingChanged;
@@ -396,7 +397,7 @@ public class VRSession : MonoBehaviour
 
     private void HelmetVisorSettingChanged(object sender, EventArgs e)
     {
-        helmetModel.SetActive(Plugin.Config.EnableHelmetVisor.Value);
+        helmetModel.enabled = Plugin.Config.EnableHelmetVisor.Value;
     }
 
     #region VR
