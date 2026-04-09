@@ -12,6 +12,7 @@
 - Removed `TypeLoadExceptionFixer` dependency, fixing some issues with UnityExplorer
 - Removed toggle sprint option as this is now a vanilla setting
 - Reverted the vignette shader back to the built-in one, which doesn't look as good but still functions normally for now
+- Made some visual changes to some assets
 
 **Removals**:
 - Removed dynamic resolution support as it doesn't seem to function properly with SPI rendering
@@ -19,6 +20,8 @@
 
 **Fixes**:
 - Fixed smooth camera having jarring motion after player teleports
+- Fixed nutcrackers following spectators after kicking them
+- Fixed loading screen partially covering the custom camera
 
 # 1.4.6
 
