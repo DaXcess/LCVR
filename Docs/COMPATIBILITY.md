@@ -26,6 +26,7 @@ Even if your shaders already support SPI rendering (whether you're only using HD
 To tell Unity to also build in SPI support when exporting your assets, you will have to install the Unity OpenXR plugin.
 
 <img width="1279" height="351" alt="image" src="https://github.com/user-attachments/assets/fe8bbcee-19ce-4ff0-a190-016e0cd3dfc9" />
+
 > You can also add the package by name: `com.unity.xr.openxr`
 
 You do not have to configure anything after installing this plugin, just re-export your asset bundle and all bundled shaders will now have SPI variants built in.
