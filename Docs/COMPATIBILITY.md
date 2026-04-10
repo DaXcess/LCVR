@@ -1,6 +1,6 @@
 # Compatibility with LCVR
 
-> This document is specifically for mods that add anything that can be rendered by the game and rendering, it is not about code or hooking into the VR mod.
+> This document is specifically for mods that add anything that can be rendered by the game, it is not about code or hooking into the VR mod.
 
 With the VR mod *finally* hopping over to [Single Pass Instanced rendering](https://docs.unity3d.com/6000.6/Documentation/Manual/SinglePassInstancing.html), a lot of mods will break due to them missing SPI support in their exported shaders.
 
