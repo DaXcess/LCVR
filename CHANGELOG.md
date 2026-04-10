@@ -4,14 +4,16 @@
 - Added support for the new utility slot, which is accessible like a normal inventory slot
 - Added the status text UI (like oxygen level critical) to the VR interface
 - Added a fog quality option
+- Added audible item shaking on certain supported items
 
 **Changes**:
-- Changed rendering to Single Pass Instanced, this may break some mods
+- Changed rendering to Single Pass Instanced, this will break a lot of mods
 - Entrance teleports now behave the same as vanilla when determining your looking direction
 - Motion blur has been disabled and cannot be enabled while in VR
 - Removed `TypeLoadExceptionFixer` dependency, fixing some issues with UnityExplorer
 - Removed toggle sprint option as this is now a vanilla setting
 - Reverted the vignette shader back to the built-in one, which doesn't look as good but still functions normally for now
+- Spectators can no longer experience the underwater effect
 - Made some visual changes to some assets
 
 **Removals**:

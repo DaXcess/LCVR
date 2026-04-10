@@ -82,7 +82,7 @@ public class VRController : MonoBehaviour
         IsHovering = false;
         jiggleDetector.onShake -= OnJiggleDetected;
 
-        if (!PlayerController)
+        if (PlayerController == null)
             return;
         
         PlayerController.cursorIcon.enabled = false;

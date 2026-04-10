@@ -138,7 +138,8 @@ public class SpectatingManager : MonoBehaviour
         // Clear spectator text
         HUDManager.Instance.spectatingPlayerText.text = "";
 
-        // Clear fear effect
+        // Clear effetcs
+        HUDManager.Instance.SetCracksOnVisor(100);
         StartOfRound.Instance.fearLevel = 0;
 
         // Disable interactors

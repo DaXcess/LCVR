@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.HighDefinition;
 
-namespace LCVR.Patches;
+namespace LCVR.Patches.Rendering;
 
 [LCVRPatch]
 [HarmonyPatch]

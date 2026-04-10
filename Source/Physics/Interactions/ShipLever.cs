@@ -34,9 +34,10 @@ internal class ShipLeverInteractable : MonoBehaviour, VRInteractable
 
         currentInteractor = interactor;
 
+        interactor.SnapTo(transform);
         interactor.FingerCurler.ForceFist(true);
 
-        lever.StartInteracting(interactor.transform, ShipLever.Actor.Self);
+        lever.StartInteracting(interactor.TrackedController, ShipLever.Actor.Self);
 
         return true;
     }
@@ -45,6 +46,7 @@ internal class ShipLeverInteractable : MonoBehaviour, VRInteractable
     {
         currentInteractor = null;
 
+        interactor.SnapTo(null);
         interactor.FingerCurler.ForceFist(false);
 
         lever.StopInteracting();
@@ -79,7 +81,7 @@ public class ShipLever : MonoBehaviour
     private Actor currentActor;
     private Channel channel;
 
-    public bool CanInteract => lever.triggerScript.interactable;
+    public bool CanInteract => currentActor != Actor.Other && lever.triggerScript.interactable;
     public bool InOrbit => lever.playersManager.inShipPhase;
 
     private void Awake()
@@ -122,6 +124,10 @@ public class ShipLever : MonoBehaviour
 
     public void ShoveLever(bool isOwner = true)
     {
+        // Can only be shoved if nobody (including ourselves) is interacting with the lever
+        if (currentActor != Actor.None)
+            return;
+
         StartCoroutine(PerformLeverAction(isOwner, true));
 
         if (isOwner)
@@ -135,7 +141,7 @@ public class ShipLever : MonoBehaviour
         rotateTo = target;
         
         if (actor == Actor.Self)
-            channel.SendPacket([1]);
+            channel.SendPacket([0]);
     }
 
     public void StopInteracting()
@@ -153,7 +159,7 @@ public class ShipLever : MonoBehaviour
         finally
         {
             if (currentActor == Actor.Self)
-                channel.SendPacket([0]);
+                channel.SendPacket([1]);
             
             // Always reset at the end
             rotateTo = null;

@@ -1,9 +1,12 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection.Emit;
 using GameNetcodeStuff;
 using HarmonyLib;
 using UnityEngine;
+
+using static HarmonyLib.AccessTools;
 
 namespace LCVR.Patches.Spectating;
 
@@ -141,19 +144,6 @@ internal static class SpectatorEnvironmentPatches
     }
 
     /// <summary>
-    /// Allow dead players to still experience the underwater filter
-    /// </summary>
-    [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.SetFaceUnderwaterFilters))]
-    [HarmonyTranspiler]
-    private static IEnumerable<CodeInstruction> EnableDeadPlayerUnderwater(IEnumerable<CodeInstruction> instructions)
-    {
-        return new CodeMatcher(instructions)
-            .Advance(1)
-            .RemoveInstructions(4)
-            .InstructionEnumeration();
-    }
-
-    /// <summary>
     /// Prevent dead players from dying again if they are underwater as a spectator
     /// </summary>
     [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.SetFaceUnderwaterFilters))]
@@ -176,5 +166,23 @@ internal static class SpectatorEnvironmentPatches
         return !other.CompareTag("Player") ||
                other.GetComponent<PlayerControllerB>() != StartOfRound.Instance.localPlayerController ||
                !StartOfRound.Instance.localPlayerController.isPlayerDead;
+    }
+
+    /// <summary>
+    /// Prevent spectators from creating water splashes
+    /// </summary>
+    [HarmonyPatch(typeof(QuicksandTrigger), nameof(QuicksandTrigger.OnTriggerStay))]
+    [HarmonyTranspiler]
+    private static IEnumerable<CodeInstruction> NoSplashPatch(IEnumerable<CodeInstruction> instructions)
+    {
+        return new CodeMatcher(instructions)
+            .MatchForward(false, new CodeMatch(OpCodes.Ldfld, Field(typeof(PlayerControllerB), nameof(PlayerControllerB.isUnderwater))))
+            .Set(OpCodes.Call, ((Func<PlayerControllerB, bool>)PlayerCantSplash).Method)
+            .InstructionEnumeration();
+
+        static bool PlayerCantSplash(PlayerControllerB player)
+        {
+            return player.isPlayerDead || player.isUnderwater;
+        }
     }
 }

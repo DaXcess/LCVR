@@ -7,7 +7,7 @@ namespace LCVR.Assets;
 
 public static class AssetManager
 {
-    private static AssetBundle assetsBundle;
+    public static AssetBundle assetsBundle;
     private static AssetBundle scenesBundle;
 
     public static GameObject Interactable;
