@@ -178,4 +178,34 @@ internal static class SpectatorEnemyPatches
             return !everyoneDead;
         }
     }
+
+    /// <summary>
+    /// Fix stingrays triggering when dead player walks over them
+    /// </summary>
+    [HarmonyPatch(typeof(StingrayAI), nameof(StingrayAI.Update))]
+    [HarmonyTranspiler]
+    private static IEnumerable<CodeInstruction> StingrayIgnoreDeadPlayer(IEnumerable<CodeInstruction> instructions)
+    {
+        return new CodeMatcher(instructions)
+            // Prevent spectators from being squirted on
+            .MatchForward(false, new CodeMatch(OpCodes.Ldfld, Field(typeof(PlayerControllerB), nameof(PlayerControllerB.gameplayCamera))))
+            .MatchBack(false, new CodeMatch(OpCodes.Ldfld, Field(typeof(GameNetworkManager), nameof(GameNetworkManager.localPlayerController))))
+            .Advance(-1)
+            .RemoveInstructions(3)
+            .Insert(
+                new CodeInstruction(OpCodes.Call, ((Func<PlayerControllerB, bool>)IsLocalAndAlive).Method)
+            )
+            // Detect local player step on
+            .MatchForward(false, new CodeMatch(OpCodes.Callvirt, PropertyGetter(typeof(CharacterController), nameof(CharacterController.isGrounded))))
+            .Set(OpCodes.Call, ((Func<PlayerControllerB, bool>)IsGroundedAndAlive).Method)
+            .Advance(-1)
+            .RemoveInstruction()
+            .InstructionEnumeration();
+
+        static bool IsGroundedAndAlive(PlayerControllerB player) =>
+            player.thisController.isGrounded && !player.isPlayerDead;
+
+        static bool IsLocalAndAlive(PlayerControllerB player) =>
+            player == GameNetworkManager.Instance.localPlayerController && !player.isPlayerDead;
+    }
 }

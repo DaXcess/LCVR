@@ -10,7 +10,6 @@ using System.Net;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.SceneManagement;
 using UnityEngine.XR.Interaction.Toolkit.Inputs.Composites;
 using UnityEngine.XR.Interaction.Toolkit.Inputs.Interactions;

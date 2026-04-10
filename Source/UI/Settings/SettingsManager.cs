@@ -5,8 +5,6 @@ using System.Linq;
 using LCVR.Managers;
 using TMPro;
 using UnityEngine;
-using UnityEngine.InputSystem;
-using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.UI;
 
 namespace LCVR.UI.Settings;
