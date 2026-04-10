@@ -3,7 +3,7 @@
   "description": "Collecting Scrap in VR",
   "version_number": "0.0.0",
   "dependencies": [
-    "BepInEx-BepInExPack-5.4.2100",
+    "BepInEx-BepInExPack-5.4.2305",
     "Evaisa-FixPluginTypesSerialization-1.1.4"
   ],
   "website_url": "https://github.com/DaXcess/LCVR"
