@@ -55,4 +55,5 @@ public enum ChannelType : byte
     Muffle,
     VehicleSteeringWheel,
     VehicleGearStick,
+    ItemJiggle
 }

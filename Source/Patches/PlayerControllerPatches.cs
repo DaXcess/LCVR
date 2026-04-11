@@ -83,10 +83,15 @@ internal static class PlayerControllerPatches
     private static IEnumerable<CodeInstruction> SprintPatch(IEnumerable<CodeInstruction> instructions)
     {
         return new CodeMatcher(instructions)
+            // Insert our sprint value as truth
             .MatchForward(false, new CodeMatch(OpCodes.Ldstr, "Sprint"))
             .Advance(-1)
             .SetAndAdvance(OpCodes.Call, ((Func<float>)GetSprintValue).Method)
             .RemoveInstructions(4)
+            // Remove vanilla toggle sprint
+            .MatchForward(false, new CodeMatch(OpCodes.Call, PropertyGetter(typeof(IngamePlayerSettings), nameof(IngamePlayerSettings.Instance))))
+            .SetOpcodeAndAdvance(OpCodes.Ldc_I4_0)
+            .RemoveInstructions(2)
             .InstructionEnumeration();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

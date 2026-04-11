@@ -1,11 +1,14 @@
-﻿using GameNetcodeStuff;
+﻿using System;
+using GameNetcodeStuff;
 using UnityEngine.InputSystem;
 using UnityEngine;
 using UnityEngine.XR;
 using LCVR.Input;
 using LCVR.Assets;
 using System.Collections.Generic;
+using System.IO;
 using LCVR.Managers;
+using LCVR.Networking;
 
 namespace LCVR.Player;
 
@@ -26,6 +29,7 @@ public class VRController : MonoBehaviour
     private LineRenderer debugLineRenderer;
 
     private ShakeDetector jiggleDetector;
+    private Channel jiggleChannel;
 
     private static string CursorTip
     {
@@ -70,17 +74,20 @@ public class VRController : MonoBehaviour
         Actions.Instance["Interact"].performed += OnInteractPerformed;
 
         jiggleDetector = new ShakeDetector(transform, 0.005f, true, 0.25f);
+        jiggleChannel = NetworkSystem.Instance.CreateChannel(ChannelType.ItemJiggle);
     }
 
     private void OnEnable()
     {
         jiggleDetector.onShake += OnJiggleDetected;
+        jiggleChannel.OnPacketReceived += OnJiggleReceived;
     }
 
     private void OnDisable()
     {
         IsHovering = false;
         jiggleDetector.onShake -= OnJiggleDetected;
+        jiggleChannel.OnPacketReceived -= OnJiggleReceived;
 
         if (PlayerController == null)
             return;
@@ -450,6 +457,21 @@ public class VRController : MonoBehaviour
         if (PlayerController.currentlyHeldObjectServer is not {} item || item.isPocketed)
             return;
 
-        item.JiggleItemEffect(Actions.Instance.RightHandVelocity.ReadValue<Vector3>().magnitude);
+        var loudness = Actions.Instance.RightHandVelocity.ReadValue<Vector3>().magnitude;
+        item.JiggleItemEffect(loudness);
+
+        jiggleChannel.SendPacket(BitConverter.GetBytes(loudness));
+    }
+
+    private static void OnJiggleReceived(ushort playerId, BinaryReader reader)
+    {
+        if (!NetworkSystem.Instance.TryGetPlayer(playerId, out var player))
+            return;
+
+        if (player.PlayerController.currentlyHeldObjectServer is not { } item || item.isPocketed)
+            return;
+
+        var loudness = reader.ReadSingle();
+        item.JiggleItemEffect(loudness);
     }
 }

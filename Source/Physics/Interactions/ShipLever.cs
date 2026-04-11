@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace LCVR.Physics.Interactions;
 
-internal class ShipLeverInteractable : MonoBehaviour, VRInteractable
+public class ShipLeverInteractable : MonoBehaviour, VRInteractable
 {
     private ShipLever lever;
     private VRInteractor currentInteractor;
@@ -34,7 +34,7 @@ internal class ShipLeverInteractable : MonoBehaviour, VRInteractable
 
         currentInteractor = interactor;
 
-        interactor.SnapTo(transform);
+        interactor.SnapTo(transform, rotationOffset: new Vector3(0, 0, -90));
         interactor.FingerCurler.ForceFist(true);
 
         lever.StartInteracting(interactor.TrackedController, ShipLever.Actor.Self);
