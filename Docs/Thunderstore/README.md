@@ -237,7 +237,7 @@ This mod, in addition to adding VR and motion controls, also adds a few special 
 
 Hate having to just watch a flat screen where your fellow employees die to the horrors of the facilities? Well fear no more! With the new Company™ Device© you retain the rights to wander the desolate planets even when your physical body is no longer showing signs compatible with life!
 
-_Since the company was a big fan of using Linux for the Device©, the colors look more gray when dead since they cheaped out on the HDR support._
+_Since the company wants to cut costs, the colors look more gray when dead. This is for **your** benefit!_
 
 You can teleport to other employees by using the **Interact** _(Default: Right Controller Trigger)_ button. This will cycle through each employee in the lobby that has not yet met their maker. Use this to quickly see how a fellow employee is going about their day, or to get unstuck if you have fallen into a pit.
 
