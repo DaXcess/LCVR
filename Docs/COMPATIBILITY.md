@@ -1,4 +1,4 @@
-# Compatibility with LCVR
+# Shader compatibility with LCVR
 
 > This document is specifically for mods that add anything that can be rendered by the game, it is not about code or hooking into the VR mod.
 
