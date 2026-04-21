@@ -6,8 +6,8 @@ With the VR mod *finally* hopping over to [Single Pass Instanced rendering](http
 
 Single Pass Instanced rendering requires two things from shaders for them to render properly, which are:
 
-- The shaders **must** support GPU instancing
-- The shaders **must** be built with Stereo variants
+- The shaders **must** support Stereo instancing (`UNITY_VERTEX_INPUT_INSTANCE_ID`, `UNITY_VERTEX_OUTPUT_STEREO`, etc)
+- The shaders **must** be built with Stereo variants (OpenXR package needs to be installed)
 
 # Supporting SPI in custom shaders
 
