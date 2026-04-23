@@ -36,3 +36,7 @@ You do not have to configure anything after installing this plugin, just re-expo
 # Note about Lethal Level Loader
 
 Whenever you re-export your assets in a Lethal Level Loader mod, make sure both the scene lethalbundle file and the assets lethalbundle file have been updated. I've seen multiple reports of modded moons only *partially* working and it has almost always come down to the scene bundle supporting OpenXR rendering, but the assets bundle was left untouched, meaning all shaders and materials in the other bundle failed to render properly.
+
+You can force a rebuild when exporting asset bundles to be sure that everything is updated correctly. This may increase build times (though you'll have to recompile the shaders anyway so it was guaranteed to take a while already).
+
+<img width="1135" height="415" alt="image" src="https://github.com/user-attachments/assets/659a25f9-4c74-49a3-a714-d2475f48b865" />
