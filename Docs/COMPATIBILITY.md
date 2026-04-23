@@ -32,3 +32,7 @@ To tell Unity to also build in SPI support when exporting your assets, you will 
 You do not have to configure anything after installing this plugin, just re-export your asset bundle and all bundled shaders will now have SPI variants built in.
 
 > In the case play mode starts behaving weirdly, disable VR by going to `Player Settings` -> `XR Plug-in Management` and disabling the `Initialize XR on Startup` option
+
+# Note about Lethal Level Loader
+
+Whenever you re-export your assets in a Lethal Level Loader mod, make sure both the scene lethalbundle file and the assets lethalbundle file have been updated. I've seen multiple reports of modded moons only *partially* working and it has almost always come down to the scene bundle supporting OpenXR rendering, but the assets bundle was left untouched, meaning all shaders and materials in the other bundle failed to render properly.
