@@ -10,7 +10,7 @@ namespace LCVR.UI.Spectating;
 [SuppressMessage("ReSharper", "Unity.PerformanceCriticalCodeInvocation")]
 public class SpectatingMenu : MonoBehaviour
 {
-    private const int InteractionLayer = 25; // Terrain, idc
+    private const int InteractionLayer = 26; // Do not use 25, otherwise Nutcrackers wont spot VR-Players
 
     private static readonly int Visible = Animator.StringToHash("Visible");
 
