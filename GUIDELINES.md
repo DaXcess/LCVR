@@ -13,7 +13,7 @@ This document outlines how you may (and how you may not) make use of AI tooling 
 
 - **Do not** use AI to write a huge chunk of changes for you. It is imperative that you fully understand each line of code that is submitted in a PR.
 - **Do not** use AI to write function, property or field descriptions (`<summary>`), as **you** must understand the purpose of these fields and functions yourself, which you can use to write your own description (translating from your language is fine if you struggle with English).
-- **Do not** use AI to communicate for you in PRs and issues. If you struggle with English, write your queries and responses in your own language first, and then translate them with any tool of your choise (AI is allowed there). Ideally, have both your original text and the English version, putting either one in a block quote (`> {text}`).
+- **Do not** use AI to communicate for you in PRs and issues. If you struggle with English, write your queries and responses in your own language first, and then translate them with any tool of your choice (AI is allowed there). Ideally, have both your original text and the English version, putting either one in a block quote (`> {text}`).
 
 ## Disclosure requirements
 
